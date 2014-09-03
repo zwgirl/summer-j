@@ -12,6 +12,8 @@ public class TestArrayCopy {
             arr[i] = i;  
         }  
         Date d2 = new Date();  
+        
+        test((s)->{return 3;});
           
         System.out.println(d2.getTime() - d1.getTime());  
           
@@ -21,5 +23,17 @@ public class TestArrayCopy {
         System.arraycopy(arr,0, arr2, 0, 10000000);  
         Date d4 = new Date();  
         System.out.println(d4.getTime() - d3.getTime());      
-    }  
+    }
+
+	private static void test(OOO object) {
+		// TODO Auto-generated method stub
+		
+	}  
+	
+	String test;
+	
+	interface OOO{
+//		int fff(int a);
+		float dd(int d);
+	}
 } 

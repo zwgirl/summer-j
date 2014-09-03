@@ -247,17 +247,6 @@ NumericType -> IntegralType
 NumericType -> FloatingPointType
 /:$readableName NumericType:/
 
---cym add
---Type ::= FunctionType
---FunctionType ::= '(' TypeListopt  ')' ':' Type 
---TypeListopt ::= $empty
---TypeListopt ::= TypeList
---TypeList ::= Type
---TypeList ::= TypeList ',' Type
---cym add end
-
---PrimitiveType -> TypeAnnotationsopt 'boolean'  --cym comment
---PrimitiveType -> TypeAnnotationsopt 'void'    --comment
 PrimitiveType -> 'boolean'
 PrimitiveType -> 'void'
 IntegralType -> 'byte'
@@ -269,6 +258,15 @@ IntegralType -> 'char'
 FloatingPointType -> 'float'
 FloatingPointType -> 'double'
 /:$readableName FloatingPointType:/
+
+--cym add
+Type -> FunctionType
+FunctionType ::= 'function' '<' Type PushLPAREN TypeListopt  PushRPAREN  '>'
+TypeListopt ::= $empty
+TypeListopt -> TypeList
+TypeList ::= Type
+TypeList ::= TypeList ',' Type
+--cym add end
 
 ReferenceType ::= ClassOrInterfaceType
 /.$putCase consumeReferenceType(); $break ./
@@ -461,7 +459,8 @@ InternalCompilationUnit ::= $empty
 --/:$readableName ModuleDeclaration:/
 
 --ModuleDeclaration ::= ObjectElementDeclarationopt Modifiersopt ModuleHeader ModuleBody
-ModuleDeclaration ::= Modifiersopt ModuleHeader ModuleBody
+--ModuleDeclaration ::= Modifiersopt ModuleHeader ModuleBody
+ModuleDeclaration ::= ObjectElementDeclarationopt ModuleHeader ModuleBody
 /.$putCase consumeModuleDeclaration(); $break ./
 /:$readableName ModuleDeclaration:/
 
@@ -1143,7 +1142,11 @@ BlockStatement -> LocalVariableDeclarationStatement
 BlockStatement -> Statement
 
 --cym add 
---BlockStatement -> MethodDeclaration
+BlockStatement -> FunctionDeclaration
+
+FunctionDeclaration -> FunctionHeader MethodBody
+FunctionHeader ::= 'function' TypeParameters Type '(' FormalParameterListopt MethodHeaderRightParen
+
 --cym add end
 --1.1 feature
 BlockStatement -> ClassDeclaration
@@ -1499,6 +1502,15 @@ PrimaryNoNewArray -> ArrayAccess
 -----------------------------------------------------------------------
 
 PrimaryNoNewArray -> LambdaExpression
+--cym add
+PrimaryNoNewArray -> FunctionExpression
+
+FunctionExpression ::= 'function' Type PushLPAREN FormalParameterListopt PushRPAREN MethodBody
+/.$putCase consumeFunctionExpression(); $break ./
+/:$readableName FunctionExpression:/
+/:$compliance 1.8:/
+--cym add end
+
 PrimaryNoNewArray -> ReferenceExpression
 /:$readableName Expression:/
 

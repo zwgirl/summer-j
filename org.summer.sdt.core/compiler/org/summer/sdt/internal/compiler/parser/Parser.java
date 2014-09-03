@@ -172,8 +172,8 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 
 	public static short check_table[] = null;
 	public static final int CurlyBracket = 2;
-	private static final boolean DEBUG = false;
-	private static final boolean DEBUG_AUTOMATON = false;
+	private static final boolean DEBUG = true;
+	private static final boolean DEBUG_AUTOMATON = true;
 	private static final String EOF_TOKEN = "$eof" ; //$NON-NLS-1$
 	private static final String ERROR_TOKEN = "$error" ; //$NON-NLS-1$
 	//expression stack
@@ -11702,26 +11702,32 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		   Return if there is a constructor declaration in the methods declaration */
 	
 	
+		Statement[] statements = new Statement[length];
+				
 		// Looks for the size of each array .
 	
 		if (length == 0)
 			return;
 		int[] flag = new int[length + 1]; //plus one -- see <HERE>
 		int size = 0;
-		for (int i = length - 1; i >= 0; i--) {
+		for (int i = length - 1, j=0; i >= 0; i--) {
 			ASTNode astNode = this.astStack[this.astPtr--];
 			if (astNode instanceof TypeDeclaration) {
 				//methods and constructors have been regrouped into one single list
 				flag[i] = 2;
 				size++;
 			}
+			
+			statements[j++] = (Statement) astNode;
 		}
 	
 		//arrays creation
-		ModuleDeclaration typeDecl = (ModuleDeclaration) this.astStack[this.astPtr];
+		ModuleDeclaration moduleDecl = (ModuleDeclaration) this.astStack[this.astPtr];
 		if (size != 0) {
-			typeDecl.types = new TypeDeclaration[size];
+			moduleDecl.types = new TypeDeclaration[size];
 		}
+		
+		moduleDecl.statements = statements;
 	
 		//arrays fill up
 		size = 0;
@@ -11736,7 +11742,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 						System.arraycopy(
 							this.astStack,
 							this.astPtr + start + 1,
-							typeDecl.types,
+							moduleDecl.types,
 							size - length2,
 							length2);
 						break;

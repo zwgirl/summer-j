@@ -36,6 +36,7 @@ public class ModuleDeclaration extends ASTNode implements ProblemSeverities, Ref
 	public boolean ignoreMethodBodies = false;
 	
 	public CompilationResult compilationResult;
+	public Statement[] statements;
 
 	public ModuleDeclaration(CompilationResult compilationResult/*
 							 * ProblemReporter problemReporter,
