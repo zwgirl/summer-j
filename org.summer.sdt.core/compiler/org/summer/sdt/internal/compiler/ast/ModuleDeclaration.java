@@ -1,25 +1,41 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.core.compiler.CategorizedProblem;
+import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.core.compiler.IProblem;
+import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.CompilationResult;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
+import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
+import org.summer.sdt.internal.compiler.lookup.ModuleBinding;
 import org.summer.sdt.internal.compiler.lookup.ModuleScope;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.problem.AbortCompilation;
 import org.summer.sdt.internal.compiler.problem.AbortCompilationUnit;
 import org.summer.sdt.internal.compiler.problem.AbortMethod;
 import org.summer.sdt.internal.compiler.problem.AbortType;
+import org.summer.sdt.internal.compiler.problem.ProblemReporter;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
+import org.summer.sdt.internal.compiler.util.Util;
 
 public class ModuleDeclaration extends ASTNode implements ProblemSeverities, ReferenceContext{
+	
+	public static Statement[] no_statements = new Statement[0];
+	public static TypeDeclaration[] no_typedeclarations = new TypeDeclaration[0];
 	
 	public int declarationSourceStart;
 	public int declarationSourceEnd;
 	public int bodyStart;
 	public int bodyEnd; // doesn't include the trailing comment if any.
 	
-	public TypeDeclaration[] types;
+	public TypeDeclaration[] types = no_typedeclarations;
 	public int[][] comments;
 
 	public ModuleScope scope;
@@ -36,7 +52,9 @@ public class ModuleDeclaration extends ASTNode implements ProblemSeverities, Ref
 	public boolean ignoreMethodBodies = false;
 	
 	public CompilationResult compilationResult;
-	public Statement[] statements;
+	public Statement[] statements = no_statements;
+	
+	public ModuleBinding binding;
 
 	public ModuleDeclaration(CompilationResult compilationResult/*
 							 * ProblemReporter problemReporter,
@@ -75,43 +93,64 @@ public class ModuleDeclaration extends ASTNode implements ProblemSeverities, Ref
 	public void resolve(CompilationUnitScope scope) {
 		int startingTypeIndex = 0;
 		if (this.types != null /*&& isPackageInfo()*/) {
-			// resolve synthetic type declaration
-			final TypeDeclaration syntheticTypeDeclaration = this.types[0];
-			// set empty javadoc to avoid missing warning (see bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=95286)
-			if (syntheticTypeDeclaration.javadoc == null) {
-				syntheticTypeDeclaration.javadoc = new Javadoc(syntheticTypeDeclaration.declarationSourceStart, syntheticTypeDeclaration.declarationSourceStart);
-			}
-			syntheticTypeDeclaration.resolve(this.scope);
-			/*
-			 * resolve javadoc package if any, skip this step if we don't have a valid scope due to an earlier error (bug 252555)
-			 * we do it now as the javadoc in the fake type won't be resolved. The peculiar usage of MethodScope to resolve the
-			 * package level javadoc is because the CU level resolve method	is a NOP to mimic Javadoc's behavior and can't be used
-			 * as such.
-			 */
-			if (this.javadoc != null && syntheticTypeDeclaration.staticInitializerScope != null) {
-				this.javadoc.resolve(syntheticTypeDeclaration.staticInitializerScope);
-			}
-			startingTypeIndex = 1;
+//			// resolve synthetic type declaration
+//			final TypeDeclaration syntheticTypeDeclaration = this.types[0];
+//			// set empty javadoc to avoid missing warning (see bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=95286)
+//			if (syntheticTypeDeclaration.javadoc == null) {
+//				syntheticTypeDeclaration.javadoc = new Javadoc(syntheticTypeDeclaration.declarationSourceStart, syntheticTypeDeclaration.declarationSourceStart);
+//			}
+//			syntheticTypeDeclaration.resolve(this.scope);
+//			/*
+//			 * resolve javadoc package if any, skip this step if we don't have a valid scope due to an earlier error (bug 252555)
+//			 * we do it now as the javadoc in the fake type won't be resolved. The peculiar usage of MethodScope to resolve the
+//			 * package level javadoc is because the CU level resolve method	is a NOP to mimic Javadoc's behavior and can't be used
+//			 * as such.
+//			 */
+//			if (this.javadoc != null && syntheticTypeDeclaration.staticInitializerScope != null) {
+//				this.javadoc.resolve(syntheticTypeDeclaration.staticInitializerScope);
+//			}
+//			startingTypeIndex = 1;
 		} else {
 			// resolve compilation unit javadoc package if any
 			if (this.javadoc != null) {
 				this.javadoc.resolve(this.scope);
 			}
 		}
-//		if (this.currentPackage != null && this.currentPackage.annotations != null && !isPackageInfo) {
-//			this.scope.problemReporter().invalidFileNameForPackageAnnotations(this.currentPackage.annotations[0]);
-//		}
+	
 		try {
-			if (this.types != null) {
-				for (int i = startingTypeIndex, count = this.types.length; i < count; i++) {
-					this.types[i].resolve(this.scope);
-				}
+	//		resolveJavadoc();
+//			resolveAnnotations(this.scope, this.annotations, this.binding);
+			
+//			long sourceLevel = this.scope.compilerOptions().sourceLevel;
+	
+			resolveStatements();
+	//		// check @Deprecated annotation presence
+	//		if (this.binding != null
+	//				&& (this.binding.getAnnotationTagBits() & TagBits.AnnotationDeprecated) == 0
+	//				&& (this.binding.modifiers & ClassFileConstants.AccDeprecated) != 0
+	//				&& sourceLevel >= ClassFileConstants.JDK1_5) {
+	//			this.scope.problemReporter().missingDeprecatedAnnotationForMethod(this);
+	//		}
+		} catch (AbortMethod e) {
+			// ========= abort on fatal error =============
+			this.ignoreFurtherInvestigation = true;
+		}
+	}
+
+	public void resolveStatements() {
+
+		if (this.statements != null) {
+			for (int i = 0, length = this.statements.length; i < length; i++) {
+				if(this.statements[i] instanceof TypeDeclaration){
+					TypeDeclaration typeDecl = (TypeDeclaration) this.statements[i];
+					typeDecl.resolve();
+				}else
+				this.statements[i].resolve(this.scope);
 			}
-//			if (!this.compilationResult.hasMandatoryErrors()) checkUnusedImports();
-//			reportNLSProblems();
-		} catch (AbortCompilationUnit e) {
-//			this.ignoreFurtherInvestigation = true;
-			return;
+//		} else if ((this.bits & UndocumentedEmptyBlock) != 0) {
+//			if (!this.isConstructor() || this.arguments != null) { // https://bugs.eclipse.org/bugs/show_bug.cgi?id=319626
+//				this.scope.problemReporter().undocumentedEmptyBlock(this.bodyStart-1, this.bodyEnd+1);
+//			}
 		}
 	}
 	
@@ -194,5 +233,22 @@ public class ModuleDeclaration extends ASTNode implements ProblemSeverities, Ref
 	public void tagAsHavingIgnoredMandatoryErrors(int problemId) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public void traverse(ASTVisitor visitor, BlockScope blockScope) {
+		try {
+			if (visitor.visit(this, blockScope)) {
+				if (this.statements != null) {
+					int length = this.statements.length;
+					for (int i = 0; i < length; i++) {
+						Statement statement = this.statements[i];
+						statement.traverse(visitor, this.scope);
+					}
+				}
+			}
+			visitor.endVisit(this, blockScope);
+		} catch (AbortType e) {
+			// silent abort
+		}
 	}
 }

@@ -34,23 +34,23 @@ public class UnaryExpression extends OperatorExpression {
 		this.bits |= operator << OperatorSHIFT; // encode operator
 	}
 
-public FlowInfo analyseCode(
-		BlockScope currentScope,
-		FlowContext flowContext,
-		FlowInfo flowInfo) {
-	this.expression.checkNPE(currentScope, flowContext, flowInfo);
-	if (((this.bits & OperatorMASK) >> OperatorSHIFT) == NOT) {
-		flowContext.tagBits ^= FlowContext.INSIDE_NEGATION;
-		flowInfo = this.expression.
-			analyseCode(currentScope, flowContext, flowInfo).
-			asNegatedCondition();
-		flowContext.tagBits ^= FlowContext.INSIDE_NEGATION;
-		return flowInfo;
-	} else {
-		return this.expression.
-			analyseCode(currentScope, flowContext, flowInfo);
+	public FlowInfo analyseCode(
+			BlockScope currentScope,
+			FlowContext flowContext,
+			FlowInfo flowInfo) {
+		this.expression.checkNPE(currentScope, flowContext, flowInfo);
+		if (((this.bits & OperatorMASK) >> OperatorSHIFT) == NOT) {
+			flowContext.tagBits ^= FlowContext.INSIDE_NEGATION;
+			flowInfo = this.expression.
+				analyseCode(currentScope, flowContext, flowInfo).
+				asNegatedCondition();
+			flowContext.tagBits ^= FlowContext.INSIDE_NEGATION;
+			return flowInfo;
+		} else {
+			return this.expression.
+				analyseCode(currentScope, flowContext, flowInfo);
+		}
 	}
-}
 
 	public Constant optimizedBooleanConstant() {
 

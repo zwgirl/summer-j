@@ -84,7 +84,7 @@ public class ConditionalExpression extends OperatorExpression {
 		this.sourceEnd = valueIfFalse.sourceEnd;
 	}
 
-public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext,
+	public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext,
 			FlowInfo flowInfo) {
 		int initialComplaintLevel = (flowInfo.reachMode() & FlowInfo.UNREACHABLE) != 0 ? Statement.COMPLAINED_FAKE_REACHABLE : Statement.NOT_COMPLAINED;
 		Constant cst = this.condition.optimizedBooleanConstant();

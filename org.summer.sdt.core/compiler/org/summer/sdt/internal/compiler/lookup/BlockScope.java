@@ -131,6 +131,25 @@ public class BlockScope extends Scope {
 	/* Insert a local variable into a given scope, updating its position
 	 * and checking there are not too many locals or arguments allocated.
 	 */
+	//cym comment
+//	public final void addLocalVariable(LocalVariableBinding binding) {
+//		checkAndSetModifiersForVariable(binding);
+//		// insert local in scope
+//		if (this.localIndex == this.locals.length)
+//			System.arraycopy(
+//				this.locals,
+//				0,
+//				(this.locals = new LocalVariableBinding[this.localIndex * 2]),
+//				0,
+//				this.localIndex);
+//		this.locals[this.localIndex++] = binding;
+//	
+//		// update local variable binding
+//		binding.declaringScope = this;
+//		binding.id = outerMostMethodScope().analysisIndex++;
+//		// share the outermost method scope analysisIndex
+//	}
+	
 	public final void addLocalVariable(LocalVariableBinding binding) {
 		checkAndSetModifiersForVariable(binding);
 		// insert local in scope
@@ -145,7 +164,8 @@ public class BlockScope extends Scope {
 	
 		// update local variable binding
 		binding.declaringScope = this;
-		binding.id = outerMostMethodScope().analysisIndex++;
+		if(!(this instanceof ModuleScope))   //cym
+			binding.id = outerMostMethodScope().analysisIndex++;
 		// share the outermost method scope analysisIndex
 	}
 	
@@ -966,7 +986,14 @@ public class BlockScope extends Scope {
 	 * (unit, type or method) in case the problem handler decides it is necessary
 	 * to abort.
 	 */
+//	public ProblemReporter problemReporter() {
+//		return methodScope().problemReporter();
+//	}
+	//cym modified
 	public ProblemReporter problemReporter() {
+		if(this instanceof ModuleScope)
+			return ((ModuleScope)this).compilationUnitScope().problemReporter();
+			
 		return methodScope().problemReporter();
 	}
 	

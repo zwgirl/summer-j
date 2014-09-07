@@ -25,6 +25,7 @@ import org.summer.sdt.core.compiler.IProblem;
 import org.summer.sdt.core.dom.rewrite.ASTRewrite;
 import org.summer.sdt.internal.compiler.parser.Scanner;
 import org.summer.sdt.internal.compiler.util.Util;
+import org.summer.sdt.internal.core.Module;
 
 /**
  * Java compilation unit AST node type. This is the type of the root of an AST.
@@ -76,6 +77,7 @@ public class CompilationUnit extends ASTNode {
 	 *
 	 * @since 3.0
 	 */
+	//cym add
 	public static final ChildPropertyDescriptor MODULE_PROPERTY =
 		new ChildPropertyDescriptor(CompilationUnit.class, "module", ModuleDeclaration.class, OPTIONAL, NO_CYCLE_RISK); //$NON-NLS-1$
 
@@ -191,6 +193,11 @@ public class CompilationUnit extends ASTNode {
 	 */
 	private ASTNode.NodeList types =
 		new ASTNode.NodeList(TYPES_PROPERTY);
+	
+	/**
+	 * cym add
+	 */
+	private ModuleDeclaration moduleDeclaration;
 
 	/**
 	 * Creates a new AST node for a compilation owned by the given AST.
@@ -218,6 +225,7 @@ public class CompilationUnit extends ASTNode {
 			acceptChild(visitor, getPackage());
 			acceptChildren(visitor, this.imports);
 			acceptChildren(visitor, this.types);
+			acceptChild(visitor, getModuleDeclaration());   //cym add
 		}
 		visitor.endVisit(this);
 	}
@@ -233,6 +241,9 @@ public class CompilationUnit extends ASTNode {
 			(PackageDeclaration) ASTNode.copySubtree(target, getPackage()));
 		result.imports().addAll(ASTNode.copySubtrees(target, imports()));
 		result.types().addAll(ASTNode.copySubtrees(target, types()));
+		
+		result.setModuleDeclaration(
+				(ModuleDeclaration) ASTNode.copySubtree(target, getModuleDeclaration())); //cym add
 		return result;
 	}
 
@@ -553,6 +564,14 @@ public class CompilationUnit extends ASTNode {
 	 */
 	public PackageDeclaration getPackage() {
 		return this.optionalPackageDeclaration;
+	}
+	
+	/**
+	 * cym add
+	 * @return
+	 */
+	public ModuleDeclaration getModuleDeclaration() {
+		return this.moduleDeclaration;
 	}
 
 	/**
@@ -1026,7 +1045,16 @@ public class CompilationUnit extends ASTNode {
 		this.optionalPackageDeclaration = pkgDecl;
 		postReplaceChild(oldChild, pkgDecl, PACKAGE_PROPERTY);
 	}
-
+	
+	/**
+	 * cym add
+	 */
+	public void setModuleDeclaration(ModuleDeclaration moduleDeclaration) {
+		ASTNode oldChild = this.moduleDeclaration;
+		preReplaceChild(oldChild, moduleDeclaration, MODULE_PROPERTY);
+		this.moduleDeclaration = moduleDeclaration;
+		postReplaceChild(oldChild, moduleDeclaration, MODULE_PROPERTY);
+	}
 
 	/**
 	 * Sets the array of problems reported by the compiler during the parsing or

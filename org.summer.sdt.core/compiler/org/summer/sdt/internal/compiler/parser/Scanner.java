@@ -1164,11 +1164,11 @@ public class Scanner implements TerminalTokens {
 	}
 	protected int getNextToken0() throws InvalidInputException {
 		this.wasAcr = false;
-		if (this.diet) {
-			jumpOverMethodBody();
-			this.diet = false;
-			return this.currentPosition > this.eofPosition ? TokenNameEOF : TokenNameRBRACE;
-		}
+//		if (this.diet) {
+//			jumpOverMethodBody();
+//			this.diet = false;
+//			return this.currentPosition > this.eofPosition ? TokenNameEOF : TokenNameRBRACE;
+//		}
 		int whiteStart = 0;
 		try {
 			while (true) { //loop for jumping over comments

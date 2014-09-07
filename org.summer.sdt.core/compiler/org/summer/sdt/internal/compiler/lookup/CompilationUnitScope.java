@@ -57,6 +57,9 @@ public class CompilationUnitScope extends Scope {
 	private boolean skipCachingImports;
 
 	boolean connectingHierarchy;
+	
+	//cym add
+	public ModuleBinding moduleBinding;
 
 	public CompilationUnitScope(CompilationUnitDeclaration unit, LookupEnvironment environment) {
 		super(COMPILATION_UNIT_SCOPE, null);
@@ -79,10 +82,116 @@ public class CompilationUnitScope extends Scope {
 			this.referencedSuperTypes = null;
 		}
 	}
+//	void buildFieldsAndMethods() {
+//		for (int i = 0, length = this.topLevelTypes.length; i < length; i++)
+//			this.topLevelTypes[i].scope.buildFieldsAndMethods();
+//		
+//		moduleBinding.scope.buildFieldsAndMethods();  //cym add
+//	}
+	
 	void buildFieldsAndMethods() {
-		for (int i = 0, length = this.topLevelTypes.length; i < length; i++)
-			this.topLevelTypes[i].scope.buildFieldsAndMethods();
+		moduleBinding.scope.buildFieldsAndMethods();  //cym add
 	}
+	
+//	void buildTypeBindings(AccessRestriction accessRestriction) {
+//		this.topLevelTypes = new SourceTypeBinding[0]; // want it initialized if the package cannot be resolved
+//		boolean firstIsSynthetic = false;
+//		if (this.referenceContext.compilationResult.compilationUnit != null) {
+//			char[][] expectedPackageName = this.referenceContext.compilationResult.compilationUnit.getPackageName();
+//			if (expectedPackageName != null
+//					&& !CharOperation.equals(this.currentPackageName, expectedPackageName)) {
+//	
+//				// only report if the unit isn't structurally empty
+//				if (this.referenceContext.currentPackage != null
+//						|| this.referenceContext.types != null
+//						|| this.referenceContext.imports != null) {
+//					problemReporter().packageIsNotExpectedPackage(this.referenceContext);
+//				}
+//				this.currentPackageName = expectedPackageName.length == 0 ? CharOperation.NO_CHAR_CHAR : expectedPackageName;
+//			}
+//		}
+//		if (this.currentPackageName == CharOperation.NO_CHAR_CHAR) {
+//			// environment default package is never null
+//			this.fPackage = this.environment.defaultPackage;
+//		} else {
+//			if ((this.fPackage = this.environment.createPackage(this.currentPackageName)) == null) {
+//				if (this.referenceContext.currentPackage != null) {
+//					problemReporter().packageCollidesWithType(this.referenceContext); // only report when the unit has a package statement
+//				}
+//				// ensure fPackage is not null
+//				this.fPackage = this.environment.defaultPackage;
+//				return;
+//			} else if (this.referenceContext.isPackageInfo()) {
+//				// resolve package annotations now if this is "package-info.java".
+//				if (this.referenceContext.types == null || this.referenceContext.types.length == 0) {
+//					this.referenceContext.types = new TypeDeclaration[1];
+//					this.referenceContext.createPackageInfoType();
+//					firstIsSynthetic = true;
+//				}
+//				// ensure the package annotations are copied over before resolution
+//				if (this.referenceContext.currentPackage != null && this.referenceContext.currentPackage.annotations != null) {
+//					this.referenceContext.types[0].annotations = this.referenceContext.currentPackage.annotations;
+//				}
+//			}
+//			recordQualifiedReference(this.currentPackageName); // always dependent on your own package
+//		}
+//	
+//		// Skip typeDeclarations which know of previously reported errors
+//		TypeDeclaration[] types = this.referenceContext.types;
+//		int typeLength = (types == null) ? 0 : types.length;
+//		this.topLevelTypes = new SourceTypeBinding[typeLength];
+//		int count = 0;
+//		nextType: for (int i = 0; i < typeLength; i++) {
+//			TypeDeclaration typeDecl = types[i];
+//			if (this.environment.isProcessingAnnotations && this.environment.isMissingType(typeDecl.name))
+//				throw new SourceTypeCollisionException(); // resolved a type ref before APT generated the type
+//			ReferenceBinding typeBinding = this.fPackage.getType0(typeDecl.name);
+//			recordSimpleReference(typeDecl.name); // needed to detect collision cases
+//			if (typeBinding != null && typeBinding.isValidBinding() && !(typeBinding instanceof UnresolvedReferenceBinding)) {
+//				// if its an unresolved binding - its fixed up whenever its needed, see UnresolvedReferenceBinding.resolve()
+//				if (this.environment.isProcessingAnnotations)
+//					throw new SourceTypeCollisionException(); // resolved a type ref before APT generated the type
+//				// if a type exists, check that its a valid type
+//				// it can be a NotFound problem type if its a secondary type referenced before its primary type found in additional units
+//				// and it can be an unresolved type which is now being defined
+//				problemReporter().duplicateTypes(this.referenceContext, typeDecl);
+//				continue nextType;
+//			}
+//			if (this.fPackage != this.environment.defaultPackage && this.fPackage.getPackage(typeDecl.name) != null) {
+//				// if a package exists, it must be a valid package - cannot be a NotFound problem package
+//				// this is now a warning since a package does not really 'exist' until it contains a type, see JLS v2, 7.4.3
+//				problemReporter().typeCollidesWithPackage(this.referenceContext, typeDecl);
+//			}
+//	
+//			if ((typeDecl.modifiers & ClassFileConstants.AccPublic) != 0) {
+//				char[] mainTypeName;
+//				if ((mainTypeName = this.referenceContext.getMainTypeName()) != null // mainTypeName == null means that implementor of ICompilationUnit decided to return null
+//						&& !CharOperation.equals(mainTypeName, typeDecl.name)) {
+//					problemReporter().publicClassMustMatchFileName(this.referenceContext, typeDecl);
+//					// tolerate faulty main type name (91091), allow to proceed into type construction
+//				}
+//			}
+//	
+//			ClassScope child = new ClassScope(this, typeDecl);
+//			SourceTypeBinding type = child.buildType(null, this.fPackage, accessRestriction);
+//			if (firstIsSynthetic && i == 0)
+//				type.modifiers |= ClassFileConstants.AccSynthetic;
+//			if (type != null)
+//				this.topLevelTypes[count++] = type;
+//		}
+//	
+//		// shrink topLevelTypes... only happens if an error was reported
+//		if (count != this.topLevelTypes.length)
+//			System.arraycopy(this.topLevelTypes, 0, this.topLevelTypes = new SourceTypeBinding[count], 0, count);
+//		
+//		if(referenceContext.module != null){
+//			ModuleScope moduleScope = new ModuleScope(this, referenceContext.module);
+//			this.moduleBinding = moduleScope.buildBindings(accessRestriction);
+//		}
+//		
+//		
+//	}
+	
 	void buildTypeBindings(AccessRestriction accessRestriction) {
 		this.topLevelTypes = new SourceTypeBinding[0]; // want it initialized if the package cannot be resolved
 		boolean firstIsSynthetic = false;
@@ -125,55 +234,14 @@ public class CompilationUnitScope extends Scope {
 			}
 			recordQualifiedReference(this.currentPackageName); // always dependent on your own package
 		}
-	
-		// Skip typeDeclarations which know of previously reported errors
-		TypeDeclaration[] types = this.referenceContext.types;
-		int typeLength = (types == null) ? 0 : types.length;
-		this.topLevelTypes = new SourceTypeBinding[typeLength];
-		int count = 0;
-		nextType: for (int i = 0; i < typeLength; i++) {
-			TypeDeclaration typeDecl = types[i];
-			if (this.environment.isProcessingAnnotations && this.environment.isMissingType(typeDecl.name))
-				throw new SourceTypeCollisionException(); // resolved a type ref before APT generated the type
-			ReferenceBinding typeBinding = this.fPackage.getType0(typeDecl.name);
-			recordSimpleReference(typeDecl.name); // needed to detect collision cases
-			if (typeBinding != null && typeBinding.isValidBinding() && !(typeBinding instanceof UnresolvedReferenceBinding)) {
-				// if its an unresolved binding - its fixed up whenever its needed, see UnresolvedReferenceBinding.resolve()
-				if (this.environment.isProcessingAnnotations)
-					throw new SourceTypeCollisionException(); // resolved a type ref before APT generated the type
-				// if a type exists, check that its a valid type
-				// it can be a NotFound problem type if its a secondary type referenced before its primary type found in additional units
-				// and it can be an unresolved type which is now being defined
-				problemReporter().duplicateTypes(this.referenceContext, typeDecl);
-				continue nextType;
-			}
-			if (this.fPackage != this.environment.defaultPackage && this.fPackage.getPackage(typeDecl.name) != null) {
-				// if a package exists, it must be a valid package - cannot be a NotFound problem package
-				// this is now a warning since a package does not really 'exist' until it contains a type, see JLS v2, 7.4.3
-				problemReporter().typeCollidesWithPackage(this.referenceContext, typeDecl);
-			}
-	
-			if ((typeDecl.modifiers & ClassFileConstants.AccPublic) != 0) {
-				char[] mainTypeName;
-				if ((mainTypeName = this.referenceContext.getMainTypeName()) != null // mainTypeName == null means that implementor of ICompilationUnit decided to return null
-						&& !CharOperation.equals(mainTypeName, typeDecl.name)) {
-					problemReporter().publicClassMustMatchFileName(this.referenceContext, typeDecl);
-					// tolerate faulty main type name (91091), allow to proceed into type construction
-				}
-			}
-	
-			ClassScope child = new ClassScope(this, typeDecl);
-			SourceTypeBinding type = child.buildType(null, this.fPackage, accessRestriction);
-			if (firstIsSynthetic && i == 0)
-				type.modifiers |= ClassFileConstants.AccSynthetic;
-			if (type != null)
-				this.topLevelTypes[count++] = type;
+		
+		if(referenceContext.module != null){
+			ModuleScope moduleScope = new ModuleScope(this, referenceContext.module);
+			this.moduleBinding = moduleScope.buildBindings(accessRestriction);
 		}
-	
-		// shrink topLevelTypes... only happens if an error was reported
-		if (count != this.topLevelTypes.length)
-			System.arraycopy(this.topLevelTypes, 0, this.topLevelTypes = new SourceTypeBinding[count], 0, count);
+		
 	}
+	
 	void checkAndSetImports() {
 		if (this.referenceContext.imports == null) {
 			this.imports = getDefaultImports();

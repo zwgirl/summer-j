@@ -773,6 +773,50 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		return ++this.functionalExpressionsCount;
 	}
 	
+//	public void resolve() {
+//		int startingTypeIndex = 0;
+//		boolean isPackageInfo = isPackageInfo();
+//		if (this.types != null && isPackageInfo) {
+//			// resolve synthetic type declaration
+//			final TypeDeclaration syntheticTypeDeclaration = this.types[0];
+//			// set empty javadoc to avoid missing warning (see bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=95286)
+//			if (syntheticTypeDeclaration.javadoc == null) {
+//				syntheticTypeDeclaration.javadoc = new Javadoc(syntheticTypeDeclaration.declarationSourceStart, syntheticTypeDeclaration.declarationSourceStart);
+//			}
+//			syntheticTypeDeclaration.resolve(this.scope);
+//			/*
+//			 * resolve javadoc package if any, skip this step if we don't have a valid scope due to an earlier error (bug 252555)
+//			 * we do it now as the javadoc in the fake type won't be resolved. The peculiar usage of MethodScope to resolve the
+//			 * package level javadoc is because the CU level resolve method	is a NOP to mimic Javadoc's behavior and can't be used
+//			 * as such.
+//			 */
+//			if (this.javadoc != null && syntheticTypeDeclaration.staticInitializerScope != null) {
+//				this.javadoc.resolve(syntheticTypeDeclaration.staticInitializerScope);
+//			}
+//			startingTypeIndex = 1;
+//		} else {
+//			// resolve compilation unit javadoc package if any
+//			if (this.javadoc != null) {
+//				this.javadoc.resolve(this.scope);
+//			}
+//		}
+//		if (this.currentPackage != null && this.currentPackage.annotations != null && !isPackageInfo) {
+//			this.scope.problemReporter().invalidFileNameForPackageAnnotations(this.currentPackage.annotations[0]);
+//		}
+//		try {
+//			if (this.types != null) {
+//				for (int i = startingTypeIndex, count = this.types.length; i < count; i++) {
+//					this.types[i].resolve(this.scope);
+//				}
+//			}
+//			if (!this.compilationResult.hasMandatoryErrors()) checkUnusedImports();
+//			reportNLSProblems();
+//		} catch (AbortCompilationUnit e) {
+//			this.ignoreFurtherInvestigation = true;
+//			return;
+//		}
+//	}
+	
 	public void resolve() {
 		int startingTypeIndex = 0;
 		boolean isPackageInfo = isPackageInfo();
@@ -804,10 +848,8 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 			this.scope.problemReporter().invalidFileNameForPackageAnnotations(this.currentPackage.annotations[0]);
 		}
 		try {
-			if (this.types != null) {
-				for (int i = startingTypeIndex, count = this.types.length; i < count; i++) {
-					this.types[i].resolve(this.scope);
-				}
+			if (this.module != null) {
+				module.resolve(this.scope);
 			}
 			if (!this.compilationResult.hasMandatoryErrors()) checkUnusedImports();
 			reportNLSProblems();

@@ -18,29 +18,15 @@ public class ModuleDeclaration extends ASTNode{
 	 */
 	Javadoc optionalDocComment = null;
 	
-	static final ChildPropertyDescriptor internalNamePropertyFactory(Class nodeClass) {
-		return new ChildPropertyDescriptor(nodeClass, "name", SimpleName.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
-	}
-	
 	public static final ChildPropertyDescriptor NAME_PROPERTY =
-			internalNamePropertyFactory(ModuleDeclaration.class);
+			new ChildPropertyDescriptor(ModuleDeclaration.class, "name", SimpleName.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
 	
 	/**
 	 * The "javadoc" structural property of this node type (child type: {@link Javadoc}).
 	 * @since 3.0
 	 */
 	public static final ChildPropertyDescriptor JAVADOC_PROPERTY =
-		internalJavadocPropertyFactory(ModuleDeclaration.class);
-	
-	/**
-	 * Creates and returns a structural property descriptor for the
-	 * "javadoc" property declared on the given concrete node type (child type: {@link Javadoc}).
-	 *
-	 * @return the property descriptor
-	 */
-	static final ChildPropertyDescriptor internalJavadocPropertyFactory(Class nodeClass) {
-		return new ChildPropertyDescriptor(nodeClass, "javadoc", Javadoc.class, OPTIONAL, NO_CYCLE_RISK); //$NON-NLS-1$
-	}
+			new ChildPropertyDescriptor(ModuleDeclaration.class, "javadoc", Javadoc.class, OPTIONAL, NO_CYCLE_RISK); //$NON-NLS-1$
 	
 	/**
 	 * The "types" structural property of this node type (element type: {@link AbstractTypeDeclaration}).
@@ -48,7 +34,7 @@ public class ModuleDeclaration extends ASTNode{
 	 * @since 3.0
 	 */
 	public static final ChildListPropertyDescriptor TYPES_PROPERTY =
-		new ChildListPropertyDescriptor(CompilationUnit.class, "types", AbstractTypeDeclaration.class, CYCLE_RISK); //$NON-NLS-1$
+		new ChildListPropertyDescriptor(ModuleDeclaration.class, "types", AbstractTypeDeclaration.class, CYCLE_RISK); //$NON-NLS-1$
 	
 	/**
 	 * A list of property descriptors (element type:
@@ -60,7 +46,7 @@ public class ModuleDeclaration extends ASTNode{
 
 	static {
 		List properyList = new ArrayList(4);
-		createPropertyList(CompilationUnit.class, properyList);
+		createPropertyList(ModuleDeclaration.class, properyList);
 		addProperty(NAME_PROPERTY, properyList);
 		addProperty(JAVADOC_PROPERTY, properyList);
 		addProperty(TYPES_PROPERTY, properyList);
@@ -118,7 +104,7 @@ public class ModuleDeclaration extends ASTNode{
 	 * Sets the name of the type declared in this type declaration to the
 	 * given name.
 	 *
-	 * @param typeName the new type name
+	 * @param moduleName the new type name
 	 * @exception IllegalArgumentException if:
 	 * <ul>
 	 * <li>the node belongs to a different AST</li>
@@ -126,15 +112,15 @@ public class ModuleDeclaration extends ASTNode{
 	 * </ul>
 	 * @since 2.0 (originally declared on {@link TypeDeclaration})
 	 */
-	public void setName(SimpleName typeName) {
-		if (name == null) {
+	public void setName(SimpleName moduleName) {
+		if (moduleName == null) {
 			throw new IllegalArgumentException();
 		}
 		ChildPropertyDescriptor p = internalNameProperty();
 		ASTNode oldChild = this.name;
-		preReplaceChild(oldChild, name, p);
-		this.name = typeName;
-		postReplaceChild(oldChild, name, p);
+		preReplaceChild(oldChild, moduleName, p);
+		this.name = moduleName;
+		postReplaceChild(oldChild, moduleName, p);
 	}
 	
 	/**
@@ -289,6 +275,11 @@ public class ModuleDeclaration extends ASTNode{
 			+ (this.optionalDocComment == null ? 0 : getJavadoc().treeSize())
 			+ (this.name == null ? 0 : getName().treeSize())
 			+ (this.types == null ? 0 : types.listSize());
+	}
+
+	public void resolveBinding() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

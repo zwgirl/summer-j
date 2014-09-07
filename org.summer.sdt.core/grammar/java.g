@@ -332,8 +332,8 @@ SimpleName -> 'Identifier'
 /:$readableName SimpleName:/
 
 QualifiedName ::= Name '.' SimpleName 
-/.$putCase consumeQualifiedName(); $break ./
---/:$readableName QualifiedName:/
+/.$putCase consumeQualifiedName(false); $break ./
+/:$readableName QualifiedName:/
 --------------------------------------------------------------
 --Name ::= SimpleName   
 ----Name -> SimpleName --cym add
@@ -458,9 +458,9 @@ InternalCompilationUnit ::= $empty
 --/.$putCase consumeModuleDeclaration(); $break ./
 --/:$readableName ModuleDeclaration:/
 
---ModuleDeclaration ::= ObjectElementDeclarationopt Modifiersopt ModuleHeader ModuleBody
---ModuleDeclaration ::= Modifiersopt ModuleHeader ModuleBody
-ModuleDeclaration ::= ObjectElementDeclarationopt ModuleHeader ModuleBody
+--ModuleDeclaration ::= ObjectElementDeclarationopt ModuleHeader NestedMethod '{' BlockStatementsopt '}' 
+ModuleDeclaration ::= ModuleHeader NestedMethod '{' BlockStatementsopt '}' 
+--ModuleDeclaration ::= ObjectElementDeclarationopt ModuleHeader Block --'{' BlockStatementsopt '}'
 /.$putCase consumeModuleDeclaration(); $break ./
 /:$readableName ModuleDeclaration:/
 
@@ -468,47 +468,69 @@ ModuleHeader ::= 'module' 'Identifier'
 /.$putCase consumeModuleHeader(); $break ./
 /:$readableName ModuleHeader:/
 
-ModuleBody ::= '{' BlockStatementsopt '}'
-/:$readableName ModuleBody:/
-/:$no_statements_recovery:/
+--ModuleBody ::= EnterModule '{' BlockStatementsopt '}' 
+--/:$readableName ModuleBody:/
+--/:$no_statements_recovery:/
+
+--EnterModule ::= $empty
+--/.$putCase consumeNestedMethod(); $break ./
+--/:$readableName NestedMethod:/
+
+--EnterModule1 ::= $empty
 
 -----------------------------------------------
 -- xaml declaration
 -----------------------------------------------
-ObjectElementDeclarationopt ::= $empty
-ObjectElementDeclarationopt -> ObjectElementDeclaration
+--ObjectElementDeclarationopt ::= $empty
+--ObjectElementDeclarationopt -> ObjectElementDeclaration
+--/:$readableName ObjectElementDeclarationopt:/
 
-ElementDeclaration -> ObjectElementDeclaration
-ElementDeclaration -> AttributeElementDeclaration
+--ElementDeclaration -> ObjectElementDeclaration
+--ElementDeclaration -> AttributeElementDeclaration
+--/:$readableName ElementDeclaration:/
 
-ElementListopt ::= $empty
-ElementListopt -> ElementList
-ElementList -> ElementDeclaration
-ElementList ::= ElementList ElementDeclaration
+--ElementListopt ::= $empty
+--ElementListopt -> ElementList
+--/:$readableName ElementListopt:/
 
-ObjectElementDeclaration ::= '<' Type AttributeListopt '/>'
-ObjectElementDeclaration ::= '<' Type AttributeListopt '>' 
-    	ElementListopt
-	'</' Type '>'
-AttributeElementDeclaration ::= '<'  Type '->' SimpleName '>'
-       ElementListopt
-    '</' Type '->' SimpleName '>'
+--ElementList -> ElementDeclaration
+--ElementList ::= ElementList ElementDeclaration
+--/:$readableName ElementList:/
 
-AttributeListopt ::= $empty
-AttributeListopt ::= AttributeList
-AttributeList ::= Attribute
-AttributeList ::= AttributeList Attribute
+--ObjectElementDeclaration ::= '<' Type AttributeListopt '/>'
+--ObjectElementDeclaration ::= '<' Type AttributeListopt '>' 
+--    	ElementListopt
+--	'</' Type '>'
+--/:$readableName ObjectElementDeclaration:/
 
-Attribute ::= GeneralAttribute
-Attribute ::= AttachAttribute
 
-AttachAttribute ::=  Type  SimpleName '=' PropertyExpression
-GeneralAttribute ::= SimpleName '=' PropertyExpression
+--AttributeElementDeclaration ::= '<'  Type '->' SimpleName '>'
+--       ElementListopt
+--    '</' Type '->' SimpleName '>'
+--/:$readableName AttributeElementDeclaration:/
 
-MarkupExtenson ::= '{' Type AttributeList '}'
+--AttributeListopt ::= $empty
+--AttributeListopt ::= AttributeList
+--/:$readableName AttributeListopt:/
 
-PropertyExpression ::= StringLiteral 
-PropertyExpression ::= MarkupExtenson
+--AttributeList ::= Attribute
+--AttributeList ::= AttributeList Attribute
+--/:$readableName AttributeList:/
+
+--Attribute ::= GeneralAttribute
+--Attribute ::= AttachAttribute
+--/:$readableName Attribute:/
+
+--AttachAttribute ::=  Type  SimpleName '=' PropertyExpression
+--/:$readableName AttachAttribute:/
+--GeneralAttribute ::= SimpleName '=' PropertyExpression
+--/:$readableName GeneralAttribute:/
+
+--MarkupExtenson ::= '{' Type AttributeList '}'
+--/:$MarkupExtenson GeneralAttribute:/
+
+--PropertyExpression ::= StringLiteral 
+--PropertyExpression ::= MarkupExtenson
 -----------------------------------------------
 -- xaml end
 -----------------------------------------------
@@ -1143,9 +1165,20 @@ BlockStatement -> Statement
 
 --cym add 
 BlockStatement -> FunctionDeclaration
+/:$readableName FunctionDeclaration:/
 
-FunctionDeclaration -> FunctionHeader MethodBody
-FunctionHeader ::= 'function' TypeParameters Type '(' FormalParameterListopt MethodHeaderRightParen
+FunctionDeclaration -> FunctionHeader NestedMethod '{' BlockStatementsopt '}' 
+/.$putCase consumeFunctionDeclaration(); $break ./
+/:$readableName FunctionDeclaration:/
+
+FunctionHeader ::= FunctionHeaderName FormalParameterListopt ')'
+/:$readableName FunctionHeader:/
+
+FunctionHeaderName ::= 'function' TypeParameters Type 'Identifier' '('
+/.$putCase consumeFunctionHeaderNameWithTypeParameters(); $break ./
+FunctionHeaderName ::= 'function' Type 'Identifier' '('
+/.$putCase consumeFunctionHeaderName(); $break ./
+/:$readableName FunctionHeaderName:/
 
 --cym add end
 --1.1 feature

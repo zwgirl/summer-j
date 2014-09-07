@@ -1327,6 +1327,117 @@ class ASTConverter {
 		return typeLiteral;
 	}
 
+//	public CompilationUnit convert(org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration unit, char[] source) {
+//		try {
+//			if(unit.compilationResult.recoveryScannerData != null) {
+//				RecoveryScanner recoveryScanner = new RecoveryScanner(this.scanner, unit.compilationResult.recoveryScannerData.removeUnused());
+//				this.scanner = recoveryScanner;
+//				this.docParser.scanner = this.scanner;
+//			}
+//			this.compilationUnitSource = source;
+//			this.compilationUnitSourceLength = source.length;
+//			this.scanner.setSource(source, unit.compilationResult);
+//			CompilationUnit compilationUnit = new CompilationUnit(this.ast);
+//			compilationUnit.setStatementsRecoveryData(unit.compilationResult.recoveryScannerData);
+//	
+//			// Parse comments
+//			int[][] comments = unit.comments;
+//			if (comments != null) {
+//				buildCommentsTable(compilationUnit, comments);
+//			}
+//	
+//			// handle the package declaration immediately
+//			// There is no node corresponding to the package declaration
+//			if (this.resolveBindings) {
+//				recordNodes(compilationUnit, unit);
+//			}
+//			if (unit.currentPackage != null) {
+//				PackageDeclaration packageDeclaration = convertPackage(unit);
+//				compilationUnit.setPackage(packageDeclaration);
+//			}
+//			org.summer.sdt.internal.compiler.ast.ImportReference[] imports = unit.imports;
+//			if (imports != null) {
+//				int importLength = imports.length;
+//				for (int i = 0; i < importLength; i++) {
+//					compilationUnit.imports().add(convertImport(imports[i]));
+//				}
+//			}
+//	
+//			org.summer.sdt.internal.compiler.ast.TypeDeclaration[] types = unit.types;
+//			if (types != null) {
+//				int typesLength = types.length;
+//				for (int i = 0; i < typesLength; i++) {
+//					org.summer.sdt.internal.compiler.ast.TypeDeclaration declaration = types[i];
+//					if (CharOperation.equals(declaration.name, TypeConstants.PACKAGE_INFO_NAME)) {
+//						continue;
+//					}
+//					ASTNode type = convert(declaration);
+//					if (type == null) {
+//						compilationUnit.setFlags(compilationUnit.getFlags() | ASTNode.MALFORMED);
+//					} else {
+//						compilationUnit.types().add(type);
+//					}
+//				}
+//			}
+//			compilationUnit.setSourceRange(unit.sourceStart, unit.sourceEnd - unit.sourceStart  + 1);
+//	
+//			int problemLength = unit.compilationResult.problemCount;
+//			if (problemLength != 0) {
+//				CategorizedProblem[] resizedProblems = null;
+//				final CategorizedProblem[] problems = unit.compilationResult.getProblems();
+//				final int realProblemLength=problems.length;
+//				if (realProblemLength == problemLength) {
+//					resizedProblems = problems;
+//				} else {
+//					System.arraycopy(problems, 0, (resizedProblems = new CategorizedProblem[realProblemLength]), 0, realProblemLength);
+//				}
+//				ASTSyntaxErrorPropagator syntaxErrorPropagator = new ASTSyntaxErrorPropagator(resizedProblems);
+//				compilationUnit.accept(syntaxErrorPropagator);
+//				ASTRecoveryPropagator recoveryPropagator =
+//					new ASTRecoveryPropagator(resizedProblems, unit.compilationResult.recoveryScannerData);
+//				compilationUnit.accept(recoveryPropagator);
+//				compilationUnit.setProblems(resizedProblems);
+//			}
+//			if (this.resolveBindings) {
+//				lookupForScopes();
+//			}
+//			compilationUnit.initCommentMapper(this.scanner);
+//			if (SourceRangeVerifier.DEBUG) {
+//				String bugs = new SourceRangeVerifier().process(compilationUnit);
+//				if (bugs != null) {
+//					StringBuffer message = new StringBuffer("Bad AST node structure:");  //$NON-NLS-1$
+//					String lineDelimiter = Util.findLineSeparator(source);
+//					if (lineDelimiter == null) lineDelimiter = System.getProperty("line.separator");//$NON-NLS-1$
+//					message.append(lineDelimiter);
+//					message.append(bugs.replaceAll("\n", lineDelimiter)); //$NON-NLS-1$
+//					message.append(lineDelimiter);
+//					message.append("----------------------------------- SOURCE BEGIN -------------------------------------"); //$NON-NLS-1$
+//					message.append(lineDelimiter);
+//					message.append(source);
+//					message.append(lineDelimiter);
+//					message.append("----------------------------------- SOURCE END -------------------------------------"); //$NON-NLS-1$
+//					Util.log(new IllegalStateException("Bad AST node structure"), message.toString()); //$NON-NLS-1$
+//					if (SourceRangeVerifier.DEBUG_THROW) {
+//						throw new IllegalStateException(message.toString());
+//					}
+//				}
+//			}
+//			return compilationUnit;
+//		} catch(IllegalArgumentException e) {
+//			StringBuffer message = new StringBuffer("Exception occurred during compilation unit conversion:");  //$NON-NLS-1$
+//			String lineDelimiter = Util.findLineSeparator(source);
+//			if (lineDelimiter == null) lineDelimiter = System.getProperty("line.separator");//$NON-NLS-1$
+//			message.append(lineDelimiter);
+//			message.append("----------------------------------- SOURCE BEGIN -------------------------------------"); //$NON-NLS-1$
+//			message.append(lineDelimiter);
+//			message.append(source);
+//			message.append(lineDelimiter);
+//			message.append("----------------------------------- SOURCE END -------------------------------------"); //$NON-NLS-1$
+//			Util.log(e, message.toString());
+//			throw e;
+//		}
+//	}
+	
 	public CompilationUnit convert(org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration unit, char[] source) {
 		try {
 			if(unit.compilationResult.recoveryScannerData != null) {
@@ -1380,6 +1491,15 @@ class ASTConverter {
 				}
 			}
 			compilationUnit.setSourceRange(unit.sourceStart, unit.sourceEnd - unit.sourceStart  + 1);
+			
+			
+			//cym add
+			org.summer.sdt.internal.compiler.ast.ModuleDeclaration moduleDecl = unit.module;
+			if(moduleDecl != null){
+ 				ModuleDeclaration moduleNode = convert(moduleDecl);
+				compilationUnit.setModuleDeclaration(moduleNode);
+			}
+			//cym add end
 	
 			int problemLength = unit.compilationResult.problemCount;
 			if (problemLength != 0) {
@@ -2965,7 +3085,7 @@ class ASTConverter {
 		return typeDecl;
 	}
 	
-	public ASTNode convert(org.summer.sdt.internal.compiler.ast.ModuleDeclaration moduleDeclaration) {
+	public ModuleDeclaration convert(org.summer.sdt.internal.compiler.ast.ModuleDeclaration moduleDeclaration) {
 //		int kind = org.summer.sdt.internal.compiler.ast.TypeDeclaration.kind(moduleDeclaration.modifiers);
 //		switch (kind) {
 //			case org.summer.sdt.internal.compiler.ast.TypeDeclaration.ENUM_DECL :
@@ -3007,7 +3127,7 @@ class ASTConverter {
 		if (this.resolveBindings) {
 			recordNodes(moduleDecl, moduleDeclaration);
 			recordNodes(moduleName, moduleDeclaration);
-//			moduleDecl.resolveBinding();
+			moduleDecl.resolveBinding();
 		}
 		this.referenceContext = oldReferenceContext;
 		return moduleDecl;

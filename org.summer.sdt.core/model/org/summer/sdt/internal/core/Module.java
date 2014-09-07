@@ -2,10 +2,13 @@ package org.summer.sdt.internal.core;
 
 import org.summer.sdt.core.IModule;
 import org.summer.sdt.core.ISourceRange;
+import org.summer.sdt.core.IType;
+import org.summer.sdt.core.ITypeRoot;
 import org.summer.sdt.core.JavaModelException;
 import org.summer.sdt.core.SourceRange;
+import org.summer.sdt.core.compiler.CharOperation;
 
-public class Module extends SourceRefElement implements IModule{
+public class Module extends Member implements IModule{
 
 	/*
 	 * This element's name, or an empty <code>String</code> if this
@@ -15,8 +18,10 @@ public class Module extends SourceRefElement implements IModule{
 	public int declarationSourceStart, declarationSourceEnd;
 	public int nameStart, nameEnd;
 	
-	protected Module(JavaElement parent) {
+	protected Module(JavaElement parent, String name) {
 		super(parent);
+		
+		this.name = name;
 	}
 	
 	public String getElementName() {
@@ -39,6 +44,11 @@ public class Module extends SourceRefElement implements IModule{
 
 	protected char getHandleMementoDelimiter() {
 		return JavaElement.JEM_COMPILATIONUNIT;
+	}
+
+	@Override
+	public String[] getCategories() throws JavaModelException {
+		return CharOperation.NO_STRINGS;
 	}
 
 }

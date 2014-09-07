@@ -73,6 +73,9 @@ public abstract class Scope {
 	public final static int CLASS_SCOPE = 3;
 	public final static int COMPILATION_UNIT_SCOPE = 4;
 	public final static int METHOD_SCOPE = 2;
+	
+	//cym add
+	public final static int MODULE_SCOPE = 5;
 
 	/* Argument Compatibilities */
 	public final static int NOT_COMPATIBLE = -1;
@@ -2101,6 +2104,8 @@ public abstract class Scope {
 							insideTypeAnnotation = methodScope.insideTypeAnnotation;
 
 							//$FALL-THROUGH$ could duplicate the code below to save a cast - questionable optimization
+							
+						case MODULE_SCOPE:  //cym add
 						case BLOCK_SCOPE :
 							LocalVariableBinding variableBinding = scope.findVariable(name);
 							// looks in this scope only

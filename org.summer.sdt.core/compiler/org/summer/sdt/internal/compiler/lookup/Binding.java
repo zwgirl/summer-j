@@ -41,6 +41,8 @@ public abstract class Binding {
 	public static final int INTERSECTION_CAST_TYPE = TYPE | ASTNode.Bit16;
 	public static final int POLY_TYPE = TYPE | ASTNode.Bit17;
 	
+	public static final int MODULE_TYPE = TYPE | ASTNode.Bit18;   //cym add
+	
 	// In the unlikely event you add a new type binding, remember to update TypeBindingVisitor and Scope.substitute methods. 
 
 	// Shared binding collections

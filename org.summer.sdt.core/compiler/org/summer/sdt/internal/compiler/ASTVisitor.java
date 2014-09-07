@@ -73,6 +73,7 @@ import org.summer.sdt.internal.compiler.ast.MarkerAnnotation;
 import org.summer.sdt.internal.compiler.ast.MemberValuePair;
 import org.summer.sdt.internal.compiler.ast.MessageSend;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
+import org.summer.sdt.internal.compiler.ast.ModuleDeclaration;
 import org.summer.sdt.internal.compiler.ast.NormalAnnotation;
 import org.summer.sdt.internal.compiler.ast.NullLiteral;
 import org.summer.sdt.internal.compiler.ast.OR_OR_Expression;
@@ -232,6 +233,11 @@ public abstract class ASTVisitor {
 	public void endVisit(
 		ExplicitConstructorCall explicitConstructor,
 		BlockScope scope) {
+		// do nothing by default
+	}
+	
+	//cym add
+	public void endVisit(ModuleDeclaration module, BlockScope scope) {
 		// do nothing by default
 	}
 	public void endVisit(
@@ -723,6 +729,13 @@ public abstract class ASTVisitor {
 	public boolean visit(FalseLiteral falseLiteral, BlockScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
+	
+	public boolean visit(
+    		ModuleDeclaration module,
+    		BlockScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+	
 	public boolean visit(FieldDeclaration fieldDeclaration, MethodScope scope) {
 		return true; // do nothing by default, keep traversing
 	}

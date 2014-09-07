@@ -1537,4 +1537,16 @@ public class SourceMapper
 		return false;
 	}
 
+	@Override
+	public void enterModule(ModuleInfo typeInfo) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void exitModule(int declarationEnd) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
