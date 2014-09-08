@@ -817,19 +817,19 @@ public class SourceElementNotifier {
 	
 		if (notifyTypePresence){
 			char[] implicitSuperclassName = TypeConstants.CharArray_JAVA_LANG_OBJECT;
-			ISourceElementRequestor.ModuleInfo typeInfo = new ISourceElementRequestor.ModuleInfo();
-			typeInfo.typeAnnotated = ((moduleDeclaration.bits & ASTNode.HasTypeAnnotations) != 0);
+			ISourceElementRequestor.ModuleInfo moduleInfo = new ISourceElementRequestor.ModuleInfo();
+			moduleInfo.typeAnnotated = ((moduleDeclaration.bits & ASTNode.HasTypeAnnotations) != 0);
 			if (isInRange) {
-				typeInfo.declarationStart = moduleDeclaration.declarationSourceStart;
-				typeInfo.declarationEnd = moduleDeclaration.declarationSourceEnd;
+				moduleInfo.declarationStart = moduleDeclaration.declarationSourceStart;
+				moduleInfo.declarationEnd = moduleDeclaration.declarationSourceEnd;
 				
-				typeInfo.name = moduleDeclaration.name;
-				typeInfo.nameSourceStart = moduleDeclaration.sourceStart;
-				typeInfo.nameSourceEnd = moduleDeclaration.sourceEnd;
-				typeInfo.categories = (char[][]) this.nodesToCategories.get(moduleDeclaration);
-				typeInfo.annotations = moduleDeclaration.annotations;
-				typeInfo.node = moduleDeclaration;
-				this.requestor.enterModule(typeInfo);
+				moduleInfo.name = moduleDeclaration.name;
+				moduleInfo.nameSourceStart = moduleDeclaration.sourceStart;
+				moduleInfo.nameSourceEnd = moduleDeclaration.sourceEnd;
+				moduleInfo.categories = (char[][]) this.nodesToCategories.get(moduleDeclaration);
+				moduleInfo.annotations = moduleDeclaration.annotations;
+				moduleInfo.node = moduleDeclaration;
+				this.requestor.enterModule(moduleInfo);
 			}
 			if (this.nestedTypeIndex == this.typeNames.length) {
 				// need a resize

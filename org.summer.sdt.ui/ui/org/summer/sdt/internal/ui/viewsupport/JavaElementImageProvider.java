@@ -300,6 +300,9 @@ public class JavaElementImageProvider {
 
 				case IJavaElement.ANNOTATION:
 					return JavaPluginImages.DESC_OBJS_ANNOTATION;
+					
+				case IJavaElement.MODULE:    //cym add
+					return JavaPluginImages.DESC_OBJS_MODULE;
 
 				default:
 					// ignore. Must be a new, yet unknown Java element

@@ -75,6 +75,12 @@ public class JavaPluginImages {
 	public static final String IMG_OBJS_CLASS= NAME_PREFIX + "class_obj.gif"; 			//$NON-NLS-1$
 	public static final String IMG_OBJS_CLASSALT= NAME_PREFIX + "classfo_obj.gif"; 			//$NON-NLS-1$
 	public static final String IMG_OBJS_CLASS_DEFAULT= NAME_PREFIX + "class_default_obj.gif"; 			//$NON-NLS-1$
+	
+	
+	//cym add
+	public static final String IMG_OBJS_MODULE= NAME_PREFIX + "module_obj.gif"; 			//$NON-NLS-1$
+	public static final String IMG_OBJS_MODULELT= NAME_PREFIX + "modulefo_obj.gif"; 			//$NON-NLS-1$
+	public static final String IMG_OBJS_MODULE_DEFAULT= NAME_PREFIX + "module_default_obj.gif"; 			//$NON-NLS-1$
 
 	public static final String IMG_OBJS_INNER_CLASS_PUBLIC= NAME_PREFIX + "innerclass_public_obj.gif"; //$NON-NLS-1$
 	public static final String IMG_OBJS_INNER_CLASS_DEFAULT= NAME_PREFIX + "innerclass_default_obj.gif"; //$NON-NLS-1$
@@ -220,6 +226,9 @@ public class JavaPluginImages {
 
 	public static final ImageDescriptor DESC_OBJS_CLASS= createManagedFromKey(T_OBJ, IMG_OBJS_CLASS);
 	public static final ImageDescriptor DESC_OBJS_CLASS_DEFAULT= createManagedFromKey(T_OBJ, IMG_OBJS_CLASS_DEFAULT);
+	
+	public static final ImageDescriptor DESC_OBJS_MODULE= createManagedFromKey(T_OBJ, IMG_OBJS_MODULE);   //cym 
+	public static final ImageDescriptor DESC_OBJS_MODULE_DEFAULT= createManagedFromKey(T_OBJ, IMG_OBJS_MODULE_DEFAULT);  //cym
 
 	public static final ImageDescriptor DESC_OBJS_INNER_CLASS_PUBLIC= createManagedFromKey(T_OBJ, IMG_OBJS_INNER_CLASS_PUBLIC);
 	public static final ImageDescriptor DESC_OBJS_INNER_CLASS_DEFAULT= createManagedFromKey(T_OBJ, IMG_OBJS_INNER_CLASS_DEFAULT);
