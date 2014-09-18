@@ -851,166 +851,328 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 	 *  @param selectionSourceEnd int
 	 *      a range in the source where the selection is.
 	 */
+//cym comment
+//	public void select(
+//		ICompilationUnit sourceUnit,
+//		int selectionSourceStart,
+//		int selectionSourceEnd) {
+//
+//		char[] source = sourceUnit.getContents();
+//
+//		if(DEBUG) {
+//			System.out.print("SELECTION IN "); //$NON-NLS-1$
+//			System.out.print(sourceUnit.getFileName());
+//			System.out.print(" FROM "); //$NON-NLS-1$
+//			System.out.print(selectionSourceStart);
+//			System.out.print(" TO "); //$NON-NLS-1$
+//			System.out.println(selectionSourceEnd);
+//			System.out.println("SELECTION - Source :"); //$NON-NLS-1$
+//			System.out.println(source);
+//		}
+//		if (!checkSelection(source, selectionSourceStart, selectionSourceEnd)) {
+//			return;
+//		}
+//		if (DEBUG) {
+//			System.out.print("SELECTION - Checked : \""); //$NON-NLS-1$
+//			System.out.print(new String(source, this.actualSelectionStart, this.actualSelectionEnd-this.actualSelectionStart+1));
+//			System.out.println('"');
+//		}
+//		try {
+//			this.acceptedAnswer = false;
+//			CompilationResult result = new CompilationResult(sourceUnit, 1, 1, this.compilerOptions.maxProblemsPerUnit);
+//			CompilationUnitDeclaration parsedUnit =
+//				this.parser.dietParse(sourceUnit, result, this.actualSelectionStart, this.actualSelectionEnd);
+//
+//			if (parsedUnit != null) {
+//				if(DEBUG) {
+//					System.out.println("SELECTION - Diet AST :"); //$NON-NLS-1$
+//					System.out.println(parsedUnit.toString());
+//				}
+//
+//				// scan the package & import statements first
+//				if (parsedUnit.currentPackage instanceof SelectionOnPackageReference) {
+//					char[][] tokens =
+//						((SelectionOnPackageReference) parsedUnit.currentPackage).tokens;
+//					this.noProposal = false;
+//					this.requestor.acceptPackage(CharOperation.concatWith(tokens, '.'));
+//					return;
+//				}
+//				ImportReference[] imports = parsedUnit.imports;
+//				if (imports != null) {
+//					for (int i = 0, length = imports.length; i < length; i++) {
+//						ImportReference importReference = imports[i];
+//						if (importReference instanceof SelectionOnImportReference) {
+//							char[][] tokens = ((SelectionOnImportReference) importReference).tokens;
+//							this.noProposal = false;
+//							this.requestor.acceptPackage(CharOperation.concatWith(tokens, '.'));
+//							this.nameEnvironment.findTypes(CharOperation.concatWith(tokens, '.'), false, false, IJavaSearchConstants.TYPE, this);
+//
+//							this.lookupEnvironment.buildTypeBindings(parsedUnit, null /*no access restriction*/);
+//							if ((this.unitScope = parsedUnit.scope) != null) {
+//								int tokenCount = tokens.length;
+//								char[] lastToken = tokens[tokenCount - 1];
+//								char[][] qualifierTokens = CharOperation.subarray(tokens, 0, tokenCount - 1);
+//
+//								if(qualifierTokens != null && qualifierTokens.length > 0) {
+//									Binding binding = this.unitScope.getTypeOrPackage(qualifierTokens);
+//									if(binding != null && binding instanceof ReferenceBinding) {
+//										ReferenceBinding ref = (ReferenceBinding) binding;
+//										selectMemberTypeFromImport(parsedUnit, lastToken, ref, importReference.isStatic());
+//										if(importReference.isStatic()) {
+//											selectStaticFieldFromStaticImport(parsedUnit, lastToken, ref);
+//											selectStaticMethodFromStaticImport(parsedUnit, lastToken, ref);
+//										}
+//									}
+//								}
+//							}
+//
+//							// accept qualified types only if no unqualified type was accepted
+//							if(!this.acceptedAnswer) {
+//								acceptQualifiedTypes();
+//								if (!this.acceptedAnswer) {
+//									this.nameEnvironment.findTypes(this.selectedIdentifier, false, false, IJavaSearchConstants.TYPE, this);
+//									// try with simple type name
+//									if(!this.acceptedAnswer) {
+//										acceptQualifiedTypes();
+//									}
+//								}
+//							}
+//							if(this.noProposal && this.problem != null) {
+//								this.requestor.acceptError(this.problem);
+//							}
+//							return;
+//						}
+//					}
+//				}
+//				if (parsedUnit.types != null || parsedUnit.isPackageInfo()) {
+//					if(selectDeclaration(parsedUnit))
+//						return;
+//					this.lookupEnvironment.buildTypeBindings(parsedUnit, null /*no access restriction*/);
+//					if ((this.unitScope = parsedUnit.scope)  != null) {
+//						try {
+//							this.lookupEnvironment.completeTypeBindings(parsedUnit, true);
+//							
+//							CompilationUnitDeclaration previousUnitBeingCompleted = this.lookupEnvironment.unitBeingCompleted;
+//							this.lookupEnvironment.unitBeingCompleted = parsedUnit;
+//							parsedUnit.scope.faultInTypes();
+//							this.lookupEnvironment.unitBeingCompleted = previousUnitBeingCompleted;
+//							ASTNode node = null;
+//							if (parsedUnit.types != null)
+//								node = parseBlockStatements(parsedUnit, selectionSourceStart);
+//							if(DEBUG) {
+//								System.out.println("SELECTION - AST :"); //$NON-NLS-1$
+//								System.out.println(parsedUnit.toString());
+//							}
+//							parsedUnit.resolve();
+//							if (node != null) {
+//								selectLocalDeclaration(node);
+//							}
+//						} catch (SelectionNodeFound e) {
+//							if (e.binding != null) {
+//								if(DEBUG) {
+//									System.out.println("SELECTION - Selection binding:"); //$NON-NLS-1$
+//									System.out.println(e.binding.toString());
+//								}
+//								// if null then we found a problem in the selection node
+//								selectFrom(e.binding, parsedUnit, sourceUnit, e.isDeclaration);
+//							}
+//						}
+//					}
+//				}
+//			}
+//			// only reaches here if no selection could be derived from the parsed tree
+//			// thus use the selected source and perform a textual type search
+//			if (!this.acceptedAnswer) {
+//				this.nameEnvironment.findTypes(this.selectedIdentifier, false, false, IJavaSearchConstants.TYPE, this);
+//
+//				// accept qualified types only if no unqualified type was accepted
+//				if(!this.acceptedAnswer) {
+//					acceptQualifiedTypes();
+//					
+//					// accept types from all the workspace only if no type was found in the project scope
+//					if (this.noProposal) {
+//						findAllTypes(this.selectedIdentifier);
+//					}
+//				}
+//			}
+//			if(this.noProposal && this.problem != null) {
+//				this.requestor.acceptError(this.problem);
+//			}
+//		} catch (IndexOutOfBoundsException e) { // work-around internal failure - 1GEMF6D
+//			if(DEBUG) {
+//				System.out.println("Exception caught by SelectionEngine:"); //$NON-NLS-1$
+//				e.printStackTrace(System.out);
+//			}
+//		} catch (AbortCompilation e) { // ignore this exception for now since it typically means we cannot find java.lang.Object
+//			if(DEBUG) {
+//				System.out.println("Exception caught by SelectionEngine:"); //$NON-NLS-1$
+//				e.printStackTrace(System.out);
+//			}
+//		} finally {
+//			reset(true);
+//		}
+//	}
+	
 	public void select(
-		ICompilationUnit sourceUnit,
-		int selectionSourceStart,
-		int selectionSourceEnd) {
+			ICompilationUnit sourceUnit,
+			int selectionSourceStart,
+			int selectionSourceEnd) {
 
-		char[] source = sourceUnit.getContents();
+			char[] source = sourceUnit.getContents();
 
-		if(DEBUG) {
-			System.out.print("SELECTION IN "); //$NON-NLS-1$
-			System.out.print(sourceUnit.getFileName());
-			System.out.print(" FROM "); //$NON-NLS-1$
-			System.out.print(selectionSourceStart);
-			System.out.print(" TO "); //$NON-NLS-1$
-			System.out.println(selectionSourceEnd);
-			System.out.println("SELECTION - Source :"); //$NON-NLS-1$
-			System.out.println(source);
-		}
-		if (!checkSelection(source, selectionSourceStart, selectionSourceEnd)) {
-			return;
-		}
-		if (DEBUG) {
-			System.out.print("SELECTION - Checked : \""); //$NON-NLS-1$
-			System.out.print(new String(source, this.actualSelectionStart, this.actualSelectionEnd-this.actualSelectionStart+1));
-			System.out.println('"');
-		}
-		try {
-			this.acceptedAnswer = false;
-			CompilationResult result = new CompilationResult(sourceUnit, 1, 1, this.compilerOptions.maxProblemsPerUnit);
-			CompilationUnitDeclaration parsedUnit =
-				this.parser.dietParse(sourceUnit, result, this.actualSelectionStart, this.actualSelectionEnd);
+			if(DEBUG) {
+				System.out.print("SELECTION IN "); //$NON-NLS-1$
+				System.out.print(sourceUnit.getFileName());
+				System.out.print(" FROM "); //$NON-NLS-1$
+				System.out.print(selectionSourceStart);
+				System.out.print(" TO "); //$NON-NLS-1$
+				System.out.println(selectionSourceEnd);
+				System.out.println("SELECTION - Source :"); //$NON-NLS-1$
+				System.out.println(source);
+			}
+			if (!checkSelection(source, selectionSourceStart, selectionSourceEnd)) {
+				return;
+			}
+			if (DEBUG) {
+				System.out.print("SELECTION - Checked : \""); //$NON-NLS-1$
+				System.out.print(new String(source, this.actualSelectionStart, this.actualSelectionEnd-this.actualSelectionStart+1));
+				System.out.println('"');
+			}
+			try {
+				this.acceptedAnswer = false;
+				CompilationResult result = new CompilationResult(sourceUnit, 1, 1, this.compilerOptions.maxProblemsPerUnit);
+				CompilationUnitDeclaration parsedUnit =
+					this.parser.dietParse(sourceUnit, result, this.actualSelectionStart, this.actualSelectionEnd);
 
-			if (parsedUnit != null) {
-				if(DEBUG) {
-					System.out.println("SELECTION - Diet AST :"); //$NON-NLS-1$
-					System.out.println(parsedUnit.toString());
-				}
+				if (parsedUnit != null) {
+					if(DEBUG) {
+						System.out.println("SELECTION - Diet AST :"); //$NON-NLS-1$
+						System.out.println(parsedUnit.toString());
+					}
 
-				// scan the package & import statements first
-				if (parsedUnit.currentPackage instanceof SelectionOnPackageReference) {
-					char[][] tokens =
-						((SelectionOnPackageReference) parsedUnit.currentPackage).tokens;
-					this.noProposal = false;
-					this.requestor.acceptPackage(CharOperation.concatWith(tokens, '.'));
-					return;
-				}
-				ImportReference[] imports = parsedUnit.imports;
-				if (imports != null) {
-					for (int i = 0, length = imports.length; i < length; i++) {
-						ImportReference importReference = imports[i];
-						if (importReference instanceof SelectionOnImportReference) {
-							char[][] tokens = ((SelectionOnImportReference) importReference).tokens;
-							this.noProposal = false;
-							this.requestor.acceptPackage(CharOperation.concatWith(tokens, '.'));
-							this.nameEnvironment.findTypes(CharOperation.concatWith(tokens, '.'), false, false, IJavaSearchConstants.TYPE, this);
+					// scan the package & import statements first
+					if (parsedUnit.currentPackage instanceof SelectionOnPackageReference) {
+						char[][] tokens =
+							((SelectionOnPackageReference) parsedUnit.currentPackage).tokens;
+						this.noProposal = false;
+						this.requestor.acceptPackage(CharOperation.concatWith(tokens, '.'));
+						return;
+					}
+					ImportReference[] imports = parsedUnit.imports;
+					if (imports != null) {
+						for (int i = 0, length = imports.length; i < length; i++) {
+							ImportReference importReference = imports[i];
+							if (importReference instanceof SelectionOnImportReference) {
+								char[][] tokens = ((SelectionOnImportReference) importReference).tokens;
+								this.noProposal = false;
+								this.requestor.acceptPackage(CharOperation.concatWith(tokens, '.'));
+								this.nameEnvironment.findTypes(CharOperation.concatWith(tokens, '.'), false, false, IJavaSearchConstants.TYPE, this);
 
-							this.lookupEnvironment.buildTypeBindings(parsedUnit, null /*no access restriction*/);
-							if ((this.unitScope = parsedUnit.scope) != null) {
-								int tokenCount = tokens.length;
-								char[] lastToken = tokens[tokenCount - 1];
-								char[][] qualifierTokens = CharOperation.subarray(tokens, 0, tokenCount - 1);
+								this.lookupEnvironment.buildTypeBindings(parsedUnit, null /*no access restriction*/);
+								if ((this.unitScope = parsedUnit.scope) != null) {
+									int tokenCount = tokens.length;
+									char[] lastToken = tokens[tokenCount - 1];
+									char[][] qualifierTokens = CharOperation.subarray(tokens, 0, tokenCount - 1);
 
-								if(qualifierTokens != null && qualifierTokens.length > 0) {
-									Binding binding = this.unitScope.getTypeOrPackage(qualifierTokens);
-									if(binding != null && binding instanceof ReferenceBinding) {
-										ReferenceBinding ref = (ReferenceBinding) binding;
-										selectMemberTypeFromImport(parsedUnit, lastToken, ref, importReference.isStatic());
-										if(importReference.isStatic()) {
-											selectStaticFieldFromStaticImport(parsedUnit, lastToken, ref);
-											selectStaticMethodFromStaticImport(parsedUnit, lastToken, ref);
+									if(qualifierTokens != null && qualifierTokens.length > 0) {
+										Binding binding = this.unitScope.getTypeOrPackage(qualifierTokens);
+										if(binding != null && binding instanceof ReferenceBinding) {
+											ReferenceBinding ref = (ReferenceBinding) binding;
+											selectMemberTypeFromImport(parsedUnit, lastToken, ref, importReference.isStatic());
+											if(importReference.isStatic()) {
+												selectStaticFieldFromStaticImport(parsedUnit, lastToken, ref);
+												selectStaticMethodFromStaticImport(parsedUnit, lastToken, ref);
+											}
 										}
 									}
 								}
-							}
 
-							// accept qualified types only if no unqualified type was accepted
-							if(!this.acceptedAnswer) {
-								acceptQualifiedTypes();
-								if (!this.acceptedAnswer) {
-									this.nameEnvironment.findTypes(this.selectedIdentifier, false, false, IJavaSearchConstants.TYPE, this);
-									// try with simple type name
-									if(!this.acceptedAnswer) {
-										acceptQualifiedTypes();
+								// accept qualified types only if no unqualified type was accepted
+								if(!this.acceptedAnswer) {
+									acceptQualifiedTypes();
+									if (!this.acceptedAnswer) {
+										this.nameEnvironment.findTypes(this.selectedIdentifier, false, false, IJavaSearchConstants.TYPE, this);
+										// try with simple type name
+										if(!this.acceptedAnswer) {
+											acceptQualifiedTypes();
+										}
 									}
 								}
-							}
-							if(this.noProposal && this.problem != null) {
-								this.requestor.acceptError(this.problem);
-							}
-							return;
-						}
-					}
-				}
-				if (parsedUnit.types != null || parsedUnit.isPackageInfo()) {
-					if(selectDeclaration(parsedUnit))
-						return;
-					this.lookupEnvironment.buildTypeBindings(parsedUnit, null /*no access restriction*/);
-					if ((this.unitScope = parsedUnit.scope)  != null) {
-						try {
-							this.lookupEnvironment.completeTypeBindings(parsedUnit, true);
-							
-							CompilationUnitDeclaration previousUnitBeingCompleted = this.lookupEnvironment.unitBeingCompleted;
-							this.lookupEnvironment.unitBeingCompleted = parsedUnit;
-							parsedUnit.scope.faultInTypes();
-							this.lookupEnvironment.unitBeingCompleted = previousUnitBeingCompleted;
-							ASTNode node = null;
-							if (parsedUnit.types != null)
-								node = parseBlockStatements(parsedUnit, selectionSourceStart);
-							if(DEBUG) {
-								System.out.println("SELECTION - AST :"); //$NON-NLS-1$
-								System.out.println(parsedUnit.toString());
-							}
-							parsedUnit.resolve();
-							if (node != null) {
-								selectLocalDeclaration(node);
-							}
-						} catch (SelectionNodeFound e) {
-							if (e.binding != null) {
-								if(DEBUG) {
-									System.out.println("SELECTION - Selection binding:"); //$NON-NLS-1$
-									System.out.println(e.binding.toString());
+								if(this.noProposal && this.problem != null) {
+									this.requestor.acceptError(this.problem);
 								}
-								// if null then we found a problem in the selection node
-								selectFrom(e.binding, parsedUnit, sourceUnit, e.isDeclaration);
+								return;
+							}
+						}
+					}
+					if ((parsedUnit.module!= null && parsedUnit.module.types != null) || parsedUnit.isPackageInfo()) {
+						if(selectDeclaration(parsedUnit))
+							return;
+						this.lookupEnvironment.buildTypeBindings(parsedUnit, null /*no access restriction*/);
+						if ((this.unitScope = parsedUnit.scope)  != null) {
+							try {
+								this.lookupEnvironment.completeTypeBindings(parsedUnit, true);
+								
+								CompilationUnitDeclaration previousUnitBeingCompleted = this.lookupEnvironment.unitBeingCompleted;
+								this.lookupEnvironment.unitBeingCompleted = parsedUnit;
+								parsedUnit.scope.faultInTypes();
+								this.lookupEnvironment.unitBeingCompleted = previousUnitBeingCompleted;
+								ASTNode node = null;
+								if (parsedUnit.module.types != null)
+									node = parseBlockStatements(parsedUnit, selectionSourceStart);
+								if(DEBUG) {
+									System.out.println("SELECTION - AST :"); //$NON-NLS-1$
+									System.out.println(parsedUnit.toString());
+								}
+								parsedUnit.resolve();
+								if (node != null) {
+									selectLocalDeclaration(node);
+								}
+							} catch (SelectionNodeFound e) {
+								if (e.binding != null) {
+									if(DEBUG) {
+										System.out.println("SELECTION - Selection binding:"); //$NON-NLS-1$
+										System.out.println(e.binding.toString());
+									}
+									// if null then we found a problem in the selection node
+									selectFrom(e.binding, parsedUnit, sourceUnit, e.isDeclaration);
+								}
 							}
 						}
 					}
 				}
-			}
-			// only reaches here if no selection could be derived from the parsed tree
-			// thus use the selected source and perform a textual type search
-			if (!this.acceptedAnswer) {
-				this.nameEnvironment.findTypes(this.selectedIdentifier, false, false, IJavaSearchConstants.TYPE, this);
+				// only reaches here if no selection could be derived from the parsed tree
+				// thus use the selected source and perform a textual type search
+				if (!this.acceptedAnswer) {
+					this.nameEnvironment.findTypes(this.selectedIdentifier, false, false, IJavaSearchConstants.TYPE, this);
 
-				// accept qualified types only if no unqualified type was accepted
-				if(!this.acceptedAnswer) {
-					acceptQualifiedTypes();
-					
-					// accept types from all the workspace only if no type was found in the project scope
-					if (this.noProposal) {
-						findAllTypes(this.selectedIdentifier);
+					// accept qualified types only if no unqualified type was accepted
+					if(!this.acceptedAnswer) {
+						acceptQualifiedTypes();
+						
+						// accept types from all the workspace only if no type was found in the project scope
+						if (this.noProposal) {
+							findAllTypes(this.selectedIdentifier);
+						}
 					}
 				}
+				if(this.noProposal && this.problem != null) {
+					this.requestor.acceptError(this.problem);
+				}
+			} catch (IndexOutOfBoundsException e) { // work-around internal failure - 1GEMF6D
+				if(DEBUG) {
+					System.out.println("Exception caught by SelectionEngine:"); //$NON-NLS-1$
+					e.printStackTrace(System.out);
+				}
+			} catch (AbortCompilation e) { // ignore this exception for now since it typically means we cannot find java.lang.Object
+				if(DEBUG) {
+					System.out.println("Exception caught by SelectionEngine:"); //$NON-NLS-1$
+					e.printStackTrace(System.out);
+				}
+			} finally {
+				reset(true);
 			}
-			if(this.noProposal && this.problem != null) {
-				this.requestor.acceptError(this.problem);
-			}
-		} catch (IndexOutOfBoundsException e) { // work-around internal failure - 1GEMF6D
-			if(DEBUG) {
-				System.out.println("Exception caught by SelectionEngine:"); //$NON-NLS-1$
-				e.printStackTrace(System.out);
-			}
-		} catch (AbortCompilation e) { // ignore this exception for now since it typically means we cannot find java.lang.Object
-			if(DEBUG) {
-				System.out.println("Exception caught by SelectionEngine:"); //$NON-NLS-1$
-				e.printStackTrace(System.out);
-			}
-		} finally {
-			reset(true);
 		}
-	}
 
 	private void selectMemberTypeFromImport(CompilationUnitDeclaration parsedUnit, char[] lastToken, ReferenceBinding ref, boolean staticOnly) {
 		int fieldLength = lastToken.length;

@@ -1,7 +1,7 @@
 
 public class InnerClass {
 
-	String name;
+	String name1;
 	public class MemberClass{
 		String addr;
 		public MemberClass() {

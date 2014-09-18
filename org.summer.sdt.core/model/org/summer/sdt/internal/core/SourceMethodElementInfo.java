@@ -45,43 +45,43 @@ public abstract class SourceMethodElementInfo extends AnnotatableInfo implements
 	 */
 	protected ITypeParameter[] typeParameters = TypeParameter.NO_TYPE_PARAMETERS;
 
-public char[][] getArgumentNames() {
-	return this.argumentNames;
-}
-public char[][] getExceptionTypeNames() {
-	return this.exceptionTypes;
-}
-public abstract char[] getReturnTypeName();
-
-public char[][][] getTypeParameterBounds() {
-	int length = this.typeParameters.length;
-	char[][][] typeParameterBounds = new char[length][][];
-	for (int i = 0; i < length; i++) {
-		try {
-			TypeParameterElementInfo info = (TypeParameterElementInfo) ((JavaElement)this.typeParameters[i]).getElementInfo();
-			typeParameterBounds[i] = info.bounds;
-		} catch (JavaModelException e) {
-			// type parameter does not exist: ignore
+	public char[][] getArgumentNames() {
+		return this.argumentNames;
+	}
+	public char[][] getExceptionTypeNames() {
+		return this.exceptionTypes;
+	}
+	public abstract char[] getReturnTypeName();
+	
+	public char[][][] getTypeParameterBounds() {
+		int length = this.typeParameters.length;
+		char[][][] typeParameterBounds = new char[length][][];
+		for (int i = 0; i < length; i++) {
+			try {
+				TypeParameterElementInfo info = (TypeParameterElementInfo) ((JavaElement)this.typeParameters[i]).getElementInfo();
+				typeParameterBounds[i] = info.bounds;
+			} catch (JavaModelException e) {
+				// type parameter does not exist: ignore
+			}
 		}
+		return typeParameterBounds;
 	}
-	return typeParameterBounds;
-}
-public char[][] getTypeParameterNames() {
-	int length = this.typeParameters.length;
-	if (length == 0) return CharOperation.NO_CHAR_CHAR;
-	char[][] typeParameterNames = new char[length][];
-	for (int i = 0; i < length; i++) {
-		typeParameterNames[i] = this.typeParameters[i].getElementName().toCharArray();
+	public char[][] getTypeParameterNames() {
+		int length = this.typeParameters.length;
+		if (length == 0) return CharOperation.NO_CHAR_CHAR;
+		char[][] typeParameterNames = new char[length][];
+		for (int i = 0; i < length; i++) {
+			typeParameterNames[i] = this.typeParameters[i].getElementName().toCharArray();
+		}
+		return typeParameterNames;
 	}
-	return typeParameterNames;
-}
-public abstract boolean isConstructor();
-public abstract boolean isAnnotationMethod();
-protected void setArgumentNames(char[][] names) {
-	this.argumentNames = names;
-}
-protected void setExceptionTypeNames(char[][] types) {
-	this.exceptionTypes = types;
-}
-protected abstract void setReturnType(char[] type);
+	public abstract boolean isConstructor();
+	public abstract boolean isAnnotationMethod();
+	protected void setArgumentNames(char[][] names) {
+		this.argumentNames = names;
+	}
+	protected void setExceptionTypeNames(char[][] types) {
+		this.exceptionTypes = types;
+	}
+	protected abstract void setReturnType(char[] type);
 }

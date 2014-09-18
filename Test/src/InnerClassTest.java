@@ -1,9 +1,12 @@
+import java.util.HashMap;
+
 
 public class InnerClassTest {
 	public static void main(String[] args) {
 
 		
 		InnerClass iClass = new InnerClass();
+		iClass.
 		InnerClass.MemberClass mClass = iClass.new MemberClass();
 		mClass.getAddr();
 		
@@ -14,7 +17,7 @@ public class InnerClassTest {
 		
 		
 		class TTT{
-			
+			HashMap hh;
 		}
 		
 		TTT t = new TTT();

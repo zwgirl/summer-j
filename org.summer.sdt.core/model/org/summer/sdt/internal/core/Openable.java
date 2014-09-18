@@ -31,7 +31,7 @@ import org.summer.sdt.internal.core.util.Util;
  * @see IJavaElement
  * @see IOpenable
  */
-@SuppressWarnings({"rawtypes"})
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class Openable extends JavaElement implements IOpenable, IBufferChangedListener {
 
 	protected Openable(JavaElement parent) {

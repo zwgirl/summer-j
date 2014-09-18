@@ -765,89 +765,89 @@ public class ClasspathEntry implements IClasspathEntry {
 
 			case IClasspathEntry.CPE_PROJECT :
 				entry = new ClasspathEntry(
-												IPackageFragmentRoot.K_SOURCE,
-												IClasspathEntry.CPE_PROJECT,
-												path,
-												ClasspathEntry.INCLUDE_ALL, // inclusion patterns
-												ClasspathEntry.EXCLUDE_NONE, // exclusion patterns
-												null, // source attachment
-												null, // source attachment root
-												null, // specific output folder
-												isExported,
-												accessRules,
-												combineAccessRestrictions,
-												extraAttributes);
+											IPackageFragmentRoot.K_SOURCE,
+											IClasspathEntry.CPE_PROJECT,
+											path,
+											ClasspathEntry.INCLUDE_ALL, // inclusion patterns
+											ClasspathEntry.EXCLUDE_NONE, // exclusion patterns
+											null, // source attachment
+											null, // source attachment root
+											null, // specific output folder
+											isExported,
+											accessRules,
+											combineAccessRestrictions,
+											extraAttributes);
 				break;
 			case IClasspathEntry.CPE_LIBRARY :
 				entry = JavaCore.newLibraryEntry(
-												path,
-												sourceAttachmentPath,
-												sourceAttachmentRootPath,
-												accessRules,
-												extraAttributes,
-												isExported);
+											path,
+											sourceAttachmentPath,
+											sourceAttachmentRootPath,
+											accessRules,
+											extraAttributes,
+											isExported);
 				break;
 			case IClasspathEntry.CPE_SOURCE :
 				// must be an entry in this project or specify another project
 				String projSegment = path.segment(0);
 				if (projSegment != null && projSegment.equals(project.getElementName())) { // this project
 					entry = JavaCore.newSourceEntry(
-												path, 
-												inclusionPatterns, 
-												exclusionPatterns, 
-												outputLocation, 
-												extraAttributes);
+											path, 
+											inclusionPatterns, 
+											exclusionPatterns, 
+											outputLocation, 
+											extraAttributes);
 				} else {
 					if (path.segmentCount() == 1) {
 						// another project
 						entry = JavaCore.newProjectEntry(
-												path,
-												accessRules,
-												combineAccessRestrictions,
-												extraAttributes,
-												isExported);
+											path,
+											accessRules,
+											combineAccessRestrictions,
+											extraAttributes,
+											isExported);
 					} else {
 						// an invalid source folder
 						entry = JavaCore.newSourceEntry(
-												path, 
-												inclusionPatterns, 
-												exclusionPatterns, 
-												outputLocation, 
-												extraAttributes);
+											path, 
+											inclusionPatterns, 
+											exclusionPatterns, 
+											outputLocation, 
+											extraAttributes);
 					}
 				}
 				break;
 			case IClasspathEntry.CPE_VARIABLE :
 				entry = JavaCore.newVariableEntry(
-												path,
-												sourceAttachmentPath,
-												sourceAttachmentRootPath,
-												accessRules,
-												extraAttributes,
-												isExported);
+											path,
+											sourceAttachmentPath,
+											sourceAttachmentRootPath,
+											accessRules,
+											extraAttributes,
+											isExported);
 				break;
 			case IClasspathEntry.CPE_CONTAINER :
 				entry = JavaCore.newContainerEntry(
-												path,
-												accessRules,
-												extraAttributes,
-												isExported);
+											path,
+											accessRules,
+											extraAttributes,
+											isExported);
 				break;
 			case ClasspathEntry.K_OUTPUT :
 				if (!path.isAbsolute()) return null;
 				entry = new ClasspathEntry(
-												ClasspathEntry.K_OUTPUT,
-												IClasspathEntry.CPE_LIBRARY,
-												path,
-												INCLUDE_ALL,
-												EXCLUDE_NONE,
-												null, // source attachment
-												null, // source attachment root
-												null, // custom output location
-												false,
-												null, // no access rules
-												false, // no accessible files to combine
-												NO_EXTRA_ATTRIBUTES);
+											ClasspathEntry.K_OUTPUT,
+											IClasspathEntry.CPE_LIBRARY,
+											path,
+											INCLUDE_ALL,
+											EXCLUDE_NONE,
+											null, // source attachment
+											null, // source attachment root
+											null, // custom output location
+											false,
+											null, // no access rules
+											false, // no accessible files to combine
+											NO_EXTRA_ATTRIBUTES);
 				break;
 			default :
 				throw new AssertionFailedException(Messages.bind(Messages.classpath_unknownKind, kindAttr));

@@ -40,103 +40,103 @@ public class BasicCompilationUnit implements ICompilationUnit {
 	protected char[] mainTypeName;
 	protected String encoding;
 
-public BasicCompilationUnit(char[] contents, char[][] packageName, String fileName) {
-	this.contents = contents;
-	this.fileName = fileName.toCharArray();
-	this.packageName = packageName;
-}
-
-public BasicCompilationUnit(char[] contents, char[][] packageName, String fileName, String encoding) {
-	this(contents, packageName, fileName);
-	this.encoding = encoding;
-}
-
-public BasicCompilationUnit(char[] contents, char[][] packageName, String fileName, IJavaElement javaElement) {
-	this(contents, packageName, fileName);
-	initEncoding(javaElement);
-}
-
-/*
- * Initialize compilation unit encoding.
- * If we have a project, then get file name corresponding IFile and retrieve its encoding using
- * new API for encoding.
- * In case of a class file, then go through project in order to let the possibility to retrieve
- * a corresponding source file resource.
- * If we have a compilation unit, then get encoding from its resource directly...
- */
-private void initEncoding(IJavaElement javaElement) {
-	if (javaElement != null) {
-		try {
-			IJavaProject javaProject = javaElement.getJavaProject();
-			switch (javaElement.getElementType()) {
-				case IJavaElement.COMPILATION_UNIT:
-					IFile file = (IFile) javaElement.getResource();
-					if (file != null) {
-						this.encoding = file.getCharset();
+	public BasicCompilationUnit(char[] contents, char[][] packageName, String fileName) {
+		this.contents = contents;
+		this.fileName = fileName.toCharArray();
+		this.packageName = packageName;
+	}
+	
+	public BasicCompilationUnit(char[] contents, char[][] packageName, String fileName, String encoding) {
+		this(contents, packageName, fileName);
+		this.encoding = encoding;
+	}
+	
+	public BasicCompilationUnit(char[] contents, char[][] packageName, String fileName, IJavaElement javaElement) {
+		this(contents, packageName, fileName);
+		initEncoding(javaElement);
+	}
+	
+	/*
+	 * Initialize compilation unit encoding.
+	 * If we have a project, then get file name corresponding IFile and retrieve its encoding using
+	 * new API for encoding.
+	 * In case of a class file, then go through project in order to let the possibility to retrieve
+	 * a corresponding source file resource.
+	 * If we have a compilation unit, then get encoding from its resource directly...
+	 */
+	private void initEncoding(IJavaElement javaElement) {
+		if (javaElement != null) {
+			try {
+				IJavaProject javaProject = javaElement.getJavaProject();
+				switch (javaElement.getElementType()) {
+					case IJavaElement.COMPILATION_UNIT:
+						IFile file = (IFile) javaElement.getResource();
+						if (file != null) {
+							this.encoding = file.getCharset();
+							break;
+						}
+						// if no file, then get project encoding
+						// $FALL-THROUGH$
+					default:
+						IProject project = (IProject) javaProject.getResource();
+						if (project != null) {
+							this.encoding = project.getDefaultCharset();
+						}
 						break;
-					}
-					// if no file, then get project encoding
-					// $FALL-THROUGH$
-				default:
-					IProject project = (IProject) javaProject.getResource();
-					if (project != null) {
-						this.encoding = project.getDefaultCharset();
-					}
-					break;
+				}
+			} catch (CoreException e1) {
+				this.encoding = null;
 			}
-		} catch (CoreException e1) {
+		} else  {
 			this.encoding = null;
 		}
-	} else  {
-		this.encoding = null;
 	}
-}
-
-public char[] getContents() {
-	if (this.contents != null)
-		return this.contents;   // answer the cached source
-
-	// otherwise retrieve it
-	try {
-		return Util.getFileCharContent(new File(new String(this.fileName)), this.encoding);
-	} catch (IOException e) {
-		// could not read file: returns an empty array
-	}
-	return CharOperation.NO_CHAR;
-}
-/**
- * @see org.summer.sdt.internal.compiler.env.IDependent#getFileName()
- */
-public char[] getFileName() {
-	return this.fileName;
-}
-public char[] getMainTypeName() {
-	if (this.mainTypeName == null) {
-		int start = CharOperation.lastIndexOf('/', this.fileName) + 1;
-		if (start == 0 || start < CharOperation.lastIndexOf('\\', this.fileName))
-			start = CharOperation.lastIndexOf('\\', this.fileName) + 1;
-		int separator = CharOperation.indexOf('|', this.fileName) + 1;
-		if (separator > start) // case of a .class file in a default package in a jar
-			start = separator;
-
-		int end = CharOperation.lastIndexOf('$', this.fileName);
-		if (end == -1 || !Util.isClassFileName(this.fileName)) {
-			end = CharOperation.lastIndexOf('.', this.fileName);
-			if (end == -1)
-				end = this.fileName.length;
+	
+	public char[] getContents() {
+		if (this.contents != null)
+			return this.contents;   // answer the cached source
+	
+		// otherwise retrieve it
+		try {
+			return Util.getFileCharContent(new File(new String(this.fileName)), this.encoding);
+		} catch (IOException e) {
+			// could not read file: returns an empty array
 		}
-
-		this.mainTypeName = CharOperation.subarray(this.fileName, start, end);
+		return CharOperation.NO_CHAR;
 	}
-	return this.mainTypeName;
-}
-public char[][] getPackageName() {
-	return this.packageName;
-}
-public boolean ignoreOptionalProblems() {
-	return false;
-}
-public String toString(){
-	return "CompilationUnit: "+new String(this.fileName); //$NON-NLS-1$
-}
+	/**
+	 * @see org.summer.sdt.internal.compiler.env.IDependent#getFileName()
+	 */
+	public char[] getFileName() {
+		return this.fileName;
+	}
+	public char[] getMainTypeName() {
+		if (this.mainTypeName == null) {
+			int start = CharOperation.lastIndexOf('/', this.fileName) + 1;
+			if (start == 0 || start < CharOperation.lastIndexOf('\\', this.fileName))
+				start = CharOperation.lastIndexOf('\\', this.fileName) + 1;
+			int separator = CharOperation.indexOf('|', this.fileName) + 1;
+			if (separator > start) // case of a .class file in a default package in a jar
+				start = separator;
+	
+			int end = CharOperation.lastIndexOf('$', this.fileName);
+			if (end == -1 || !Util.isClassFileName(this.fileName)) {
+				end = CharOperation.lastIndexOf('.', this.fileName);
+				if (end == -1)
+					end = this.fileName.length;
+			}
+	
+			this.mainTypeName = CharOperation.subarray(this.fileName, start, end);
+		}
+		return this.mainTypeName;
+	}
+	public char[][] getPackageName() {
+		return this.packageName;
+	}
+	public boolean ignoreOptionalProblems() {
+		return false;
+	}
+	public String toString(){
+		return "CompilationUnit: "+new String(this.fileName); //$NON-NLS-1$
+	}
 }

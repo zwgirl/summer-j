@@ -16,35 +16,35 @@ import org.summer.sdt.internal.compiler.env.IBinaryTypeAnnotation;
 public final class FieldInfoWithTypeAnnotation extends FieldInfoWithAnnotation {
 	private TypeAnnotationInfo[] typeAnnotations;
 
-FieldInfoWithTypeAnnotation(FieldInfo info, AnnotationInfo[] annos, TypeAnnotationInfo[] typeAnnos) {
-	super(info, annos);
-	this.typeAnnotations = typeAnnos;
-}
-public IBinaryTypeAnnotation[] getTypeAnnotations() {
-	return this.typeAnnotations;
-}
-protected void initialize() {
-	for (int i = 0, max = this.typeAnnotations.length; i < max; i++)
-		this.typeAnnotations[i].initialize();
-	super.initialize();
-}
-protected void reset() {
-	if (this.typeAnnotations != null)
-		for (int i = 0, max = this.typeAnnotations.length; i < max; i++)
-			this.typeAnnotations[i].reset();
-	super.reset();
-}
-public String toString() {
-	StringBuffer buffer = new StringBuffer(getClass().getName());
-	if (this.typeAnnotations != null) {
-		buffer.append('\n');
-		buffer.append("type annotations:"); //$NON-NLS-1$
-		for (int i = 0; i < this.typeAnnotations.length; i++) {
-			buffer.append(this.typeAnnotations[i]);
-			buffer.append('\n');
-		}
+	FieldInfoWithTypeAnnotation(FieldInfo info, AnnotationInfo[] annos, TypeAnnotationInfo[] typeAnnos) {
+		super(info, annos);
+		this.typeAnnotations = typeAnnos;
 	}
-	toStringContent(buffer);
-	return buffer.toString();
-}
+	public IBinaryTypeAnnotation[] getTypeAnnotations() {
+		return this.typeAnnotations;
+	}
+	protected void initialize() {
+		for (int i = 0, max = this.typeAnnotations.length; i < max; i++)
+			this.typeAnnotations[i].initialize();
+		super.initialize();
+	}
+	protected void reset() {
+		if (this.typeAnnotations != null)
+			for (int i = 0, max = this.typeAnnotations.length; i < max; i++)
+				this.typeAnnotations[i].reset();
+		super.reset();
+	}
+	public String toString() {
+		StringBuffer buffer = new StringBuffer(getClass().getName());
+		if (this.typeAnnotations != null) {
+			buffer.append('\n');
+			buffer.append("type annotations:"); //$NON-NLS-1$
+			for (int i = 0; i < this.typeAnnotations.length; i++) {
+				buffer.append(this.typeAnnotations[i]);
+				buffer.append('\n');
+			}
+		}
+		toStringContent(buffer);
+		return buffer.toString();
+	}
 }

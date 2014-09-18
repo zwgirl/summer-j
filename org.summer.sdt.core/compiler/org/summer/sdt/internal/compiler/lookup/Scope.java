@@ -2050,7 +2050,17 @@ public abstract class Scope {
 	}
 
 	public LocalVariableBinding findVariable(char[] variable) {
+		Scope previous = parent;
+		while(previous != null){
+			LocalVariableBinding local = previous.findVariable(variable);
+			if(local != null){
+				return local;
+			}
+			
+			previous = previous.parent;
+		}
 
+		
 		return null;
 	}
 

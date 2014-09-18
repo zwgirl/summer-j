@@ -23,42 +23,42 @@ public class ClassSignature {
 
 	char[] className;
 
-public ClassSignature(final char[] className) {
-	this.className = className;
-}
-
-/**
- * @return name of the type in the class file format
- */
-public char[] getTypeName() {
-	return this.className;
-}
-
-public String toString() {
-	StringBuffer buffer = new StringBuffer();
-	buffer.append(this.className);
-	buffer.append(".class"); //$NON-NLS-1$
-	return buffer.toString();
-}
-
-public int hashCode() {
-	final int prime = 31;
-	int result = 1;
-	result = prime * result + CharOperation.hashCode(this.className);
-	return result;
-}
-
-public boolean equals(Object obj) {
-	if (this == obj) {
-		return true;
+	public ClassSignature(final char[] className) {
+		this.className = className;
 	}
-	if (obj == null) {
-		return false;
+	
+	/**
+	 * @return name of the type in the class file format
+	 */
+	public char[] getTypeName() {
+		return this.className;
 	}
-	if (getClass() != obj.getClass()) {
-		return false;
+	
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(this.className);
+		buffer.append(".class"); //$NON-NLS-1$
+		return buffer.toString();
 	}
-	ClassSignature other = (ClassSignature) obj;
-	return Arrays.equals(this.className, other.className);
-}
+	
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + CharOperation.hashCode(this.className);
+		return result;
+	}
+	
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		ClassSignature other = (ClassSignature) obj;
+		return Arrays.equals(this.className, other.className);
+	}
 }

@@ -452,6 +452,18 @@ public class BlockScope extends Scope {
 		return null;
 	}
 	
+	//cym comment
+//	public LocalVariableBinding findVariable(char[] variableName) {
+//		int varLength = variableName.length;
+//		for (int i = this.localIndex-1; i >= 0; i--) { // lookup backward to reach latest additions first
+//			LocalVariableBinding local;
+//			char[] localName;
+//			if ((localName = (local = this.locals[i]).name).length == varLength && CharOperation.equals(localName, variableName))
+//				return local;
+//		}
+//		return null;
+//	}
+	
 	public LocalVariableBinding findVariable(char[] variableName) {
 		int varLength = variableName.length;
 		for (int i = this.localIndex-1; i >= 0; i--) { // lookup backward to reach latest additions first
@@ -460,7 +472,8 @@ public class BlockScope extends Scope {
 			if ((localName = (local = this.locals[i]).name).length == varLength && CharOperation.equals(localName, variableName))
 				return local;
 		}
-		return null;
+		
+		return super.findVariable(variableName);
 	}
 	
 	/* API
