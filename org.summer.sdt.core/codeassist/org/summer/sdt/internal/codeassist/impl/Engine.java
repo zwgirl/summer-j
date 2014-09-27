@@ -261,24 +261,10 @@ public abstract class Engine implements ITypeRequestor {
 	 * and parse its block statements if it is a method or an initializer.
 	 * Returns the node or null if not found
 	 */
-	//cym comment
-//	protected ASTNode parseBlockStatements(CompilationUnitDeclaration unit, int position) {
-//		int length = unit.types.length;
-//		for (int i = 0; i < length; i++) {
-//			TypeDeclaration type = unit.types[i];
-//			if (type.declarationSourceStart < position
-//				&& type.declarationSourceEnd >= position) {
-//				getParser().scanner.setSource(unit.compilationResult);
-//				return parseBlockStatements(type, unit, position);
-//			}
-//		}
-//		return null;
-//	}
-	
 	protected ASTNode parseBlockStatements(CompilationUnitDeclaration unit, int position) {
-		int length = unit.module.types.length;
+		int length = unit.types.length;
 		for (int i = 0; i < length; i++) {
-			TypeDeclaration type = unit.module.types[i];
+			TypeDeclaration type = unit.types[i];
 			if (type.declarationSourceStart < position
 				&& type.declarationSourceEnd >= position) {
 				getParser().scanner.setSource(unit.compilationResult);

@@ -250,12 +250,6 @@ public class CompilationUnitStructureRequestor extends ReferenceInfoAdapter impl
 		return new PackageDeclaration((CompilationUnit) parent, name);
 	}
 	
-	//cym add
-	protected Module createModuleHandle(JavaElement parent, ModuleInfo moduleInfo) {
-		String nameString= new String(moduleInfo.name);
-		return new Module(parent, nameString);
-	}
-	
 	protected SourceType createTypeHandle(JavaElement parent, TypeInfo typeInfo) {
 		String nameString= new String(typeInfo.name);
 		return new SourceType(parent, nameString);
@@ -502,55 +496,6 @@ public class CompilationUnitStructureRequestor extends ReferenceInfoAdapter impl
 	/**
 	 * @see ISourceElementRequestor
 	 */
-	//cym add
-	public void enterModule(ModuleInfo moduleInfo) {
-	
-		Object parentInfo = this.infoStack.peek();
-		JavaElement parentHandle= (JavaElement) this.handleStack.peek();
-		Module handle = createModuleHandle(parentHandle, moduleInfo); //NB: occurenceCount is computed in resolveDuplicates
-		resolveDuplicates(handle);
-	
-		this.infoStack.push(moduleInfo);
-		this.handleStack.push(handle);
-	
-//		if (parentHandle.getElementType() == IJavaElement.MODULE)
-//			((ModuleInfo) parentInfo).childrenCategories.put(handle, moduleInfo.categories);
-		addToChildren(parentInfo, handle);
-	}
-	
-	//cym add
-	private ModuleElementInfo createModuleElementInfo(ModuleInfo moduleInfo, Module handle) {
-		ModuleElementInfo info =  new ModuleElementInfo();
-		info.setHandle(handle);
-		info.setSourceRangeStart(moduleInfo.declarationStart);
-		info.setNameSourceStart(moduleInfo.nameSourceStart);
-		info.setNameSourceEnd(moduleInfo.nameSourceEnd);
-		JavaModelManager manager = JavaModelManager.getJavaModelManager();
-		info.addCategories(handle, moduleInfo.categories);
-		this.newElements.put(handle, info);
-	
-		if (moduleInfo.annotations != null) {
-			int length = moduleInfo.annotations.length;
-			this.unitInfo.annotationNumber += length;
-			for (int i = 0; i < length; i++) {
-				org.summer.sdt.internal.compiler.ast.Annotation annotation = moduleInfo.annotations[i];
-				acceptAnnotation(annotation, info, handle);
-			}
-		}
-		if (moduleInfo.childrenCategories != null) {
-			Iterator iterator = moduleInfo.childrenCategories.entrySet().iterator();
-			while (iterator.hasNext()) {
-				Map.Entry entry = (Map.Entry) iterator.next();
-				info.addCategories((IJavaElement) entry.getKey(), (char[][]) entry.getValue());
-			}
-			
-		}
-		return info;
-	}
-	
-	/**
-	 * @see ISourceElementRequestor
-	 */
 	public void enterType(TypeInfo typeInfo) {
 	
 		Object parentInfo = this.infoStack.peek();
@@ -764,20 +709,6 @@ public class CompilationUnitStructureRequestor extends ReferenceInfoAdapter impl
 		SourceTypeElementInfo info = createTypeInfo(typeInfo, handle);
 		info.setSourceRangeEnd(declarationEnd);
 		info.children = getChildren(typeInfo);
-		
-		this.handleStack.pop();
-		this.infoStack.pop();
-	}
-	
-	/**
-	 * @see ISourceElementRequestor
-	 */
-	public void exitModule(int declarationEnd) {
-		Module handle = (Module) this.handleStack.peek();
-		ModuleInfo moduleInfo = (ModuleInfo) this.infoStack.peek();
-		ModuleElementInfo info = createModuleElementInfo(moduleInfo, handle);
-		info.setSourceRangeEnd(declarationEnd);
-		info.children = getChildren(moduleInfo);
 		
 		this.handleStack.pop();
 		this.infoStack.pop();

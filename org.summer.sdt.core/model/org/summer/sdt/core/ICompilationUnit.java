@@ -461,11 +461,6 @@ public interface ICompilationUnit extends ITypeRoot, IWorkingCopy, ISourceManipu
 	IType[] getTypes() throws JavaModelException;
 	
 	/**
-	 * 
-	 * @return
-	 */
-	IModule getModule();
-	/**
 	 * Returns a new working copy of this compilation unit if it is a primary compilation unit,
 	 * or this compilation unit if it is already a non-primary working copy.
 	 * <p>

@@ -28,7 +28,6 @@ import org.summer.sdt.core.dom.AST;
 import org.summer.sdt.internal.compiler.IProblemFactory;
 import org.summer.sdt.internal.compiler.SourceElementParser;
 import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
-import org.summer.sdt.internal.compiler.ast.ModuleDeclaration;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.problem.AbortCompilationUnit;
 import org.summer.sdt.internal.compiler.problem.DefaultProblemFactory;
@@ -53,7 +52,6 @@ public class CompilationUnit extends Openable implements ICompilationUnit, org.s
 
 	protected String name;
 	public WorkingCopyOwner owner;
-	public Module module;
 
 	/**
 	 * Constructs a handle to a compilation unit with the given name in the
@@ -913,10 +911,6 @@ public class CompilationUnit extends Openable implements ICompilationUnit, org.s
 	 */
 	public IType getType(String typeName) {
 		return new SourceType(this, typeName);
-	}
-	
-	public IModule getModule(){
-		return module;
 	}
 	/**
 	 * @see ICompilationUnit#getTypes()

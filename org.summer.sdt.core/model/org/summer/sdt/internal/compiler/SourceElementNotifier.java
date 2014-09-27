@@ -37,7 +37,6 @@ import org.summer.sdt.internal.compiler.ast.ImportReference;
 import org.summer.sdt.internal.compiler.ast.Initializer;
 import org.summer.sdt.internal.compiler.ast.MessageSend;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
-import org.summer.sdt.internal.compiler.ast.ModuleDeclaration;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.ThisReference;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
@@ -389,85 +388,6 @@ public class SourceElementNotifier {
 	/*
 	 * Update the bodyStart of the corresponding parse node
 	 */
-//	public void notifySourceElementRequestor(
-//			CompilationUnitDeclaration parsedUnit,
-//			int sourceStart,
-//			int sourceEnd,
-//			boolean reportReference,
-//			HashtableOfObjectToInt sourceEndsMap,
-//			Map nodesToCategoriesMap) {
-//	
-//		this.initialPosition = sourceStart;
-//		this.eofPosition = sourceEnd;
-//	
-//		this.reportReferenceInfo = reportReference;
-//		this.sourceEnds = sourceEndsMap;
-//		this.nodesToCategories = nodesToCategoriesMap;
-//	
-//		try {
-//			// range check
-//			boolean isInRange =
-//						this.initialPosition <= parsedUnit.sourceStart
-//						&& this.eofPosition >= parsedUnit.sourceEnd;
-//	
-//			// collect the top level ast nodes
-//			int length = 0;
-//			ASTNode[] nodes = null;
-//			if (isInRange) {
-//				this.requestor.enterCompilationUnit();
-//			}
-//			ImportReference currentPackage = parsedUnit.currentPackage;
-//			if (this.localDeclarationVisitor !=  null) {
-//				this.localDeclarationVisitor.currentPackage = currentPackage;
-//			}
-//			ImportReference[] imports = parsedUnit.imports;
-//			TypeDeclaration[] types = parsedUnit.types;
-//			length =
-//				(currentPackage == null ? 0 : 1)
-//				+ (imports == null ? 0 : imports.length)
-//				+ (types == null ? 0 : types.length);
-//			nodes = new ASTNode[length];
-//			int index = 0;
-//			if (currentPackage != null) {
-//				nodes[index++] = currentPackage;
-//			}
-//			if (imports != null) {
-//				for (int i = 0, max = imports.length; i < max; i++) {
-//					nodes[index++] = imports[i];
-//				}
-//			}
-//			if (types != null) {
-//				for (int i = 0, max = types.length; i < max; i++) {
-//					nodes[index++] = types[i];
-//				}
-//			}
-//	
-//			// notify the nodes in the syntactical order
-//			if (length > 0) {
-//				quickSort(nodes, 0, length-1);
-//				for (int i=0;i<length;i++) {
-//					ASTNode node = nodes[i];
-//					if (node instanceof ImportReference) {
-//						ImportReference importRef = (ImportReference)node;
-//						if (node == parsedUnit.currentPackage) {
-//							notifySourceElementRequestor(importRef, true);
-//						} else {
-//							notifySourceElementRequestor(importRef, false);
-//						}
-//					} else { // instanceof TypeDeclaration
-//						notifySourceElementRequestor((TypeDeclaration)node, true, null, currentPackage);
-//					}
-//				}
-//			}
-//	
-//			if (isInRange) {
-//				this.requestor.exitCompilationUnit(parsedUnit.sourceEnd);
-//			}
-//		} finally {
-//			reset();
-//		}
-//	}
-	
 	public void notifySourceElementRequestor(
 			CompilationUnitDeclaration parsedUnit,
 			int sourceStart,
@@ -501,12 +421,10 @@ public class SourceElementNotifier {
 			}
 			ImportReference[] imports = parsedUnit.imports;
 			TypeDeclaration[] types = parsedUnit.types;
-			ModuleDeclaration moduleDecl = parsedUnit.module;
 			length =
 				(currentPackage == null ? 0 : 1)
 				+ (imports == null ? 0 : imports.length)
-				+ (types == null ? 0 : types.length)
-				+ (moduleDecl == null ? 0 : 1);
+				+ (types == null ? 0 : types.length);
 			nodes = new ASTNode[length];
 			int index = 0;
 			if (currentPackage != null) {
@@ -522,10 +440,6 @@ public class SourceElementNotifier {
 					nodes[index++] = types[i];
 				}
 			}
-			
-			if(moduleDecl !=null){
-				nodes[index++] = moduleDecl;
-			}
 	
 			// notify the nodes in the syntactical order
 			if (length > 0) {
@@ -539,10 +453,8 @@ public class SourceElementNotifier {
 						} else {
 							notifySourceElementRequestor(importRef, false);
 						}
-					} else if(node instanceof TypeDeclaration){ // instanceof TypeDeclaration
+					} else { // instanceof TypeDeclaration
 						notifySourceElementRequestor((TypeDeclaration)node, true, null, currentPackage);
-					} else if(node instanceof ModuleDeclaration){ // instanceof TypeDeclaration
-						notifySourceElementRequestor((ModuleDeclaration)node, true, null, currentPackage);
 					}
 				}
 			}
@@ -792,64 +704,6 @@ public class SourceElementNotifier {
 		if (notifyTypePresence){
 			if (isInRange){
 				this.requestor.exitType(typeDeclaration.declarationSourceEnd);
-			}
-			this.nestedTypeIndex--;
-		}
-	}
-	
-	//cym add
-	protected void notifySourceElementRequestor(ModuleDeclaration moduleDeclaration, boolean notifyTypePresence, TypeDeclaration declaringType, ImportReference currentPackage) {
-		
-		if (CharOperation.equals(TypeConstants.PACKAGE_INFO_NAME, moduleDeclaration.name)) return;
-	
-		// range check
-		boolean isInRange =
-			this.initialPosition <= moduleDeclaration.declarationSourceStart
-			&& this.eofPosition >= moduleDeclaration.declarationSourceEnd;
-	
-//		FieldDeclaration[] fields = moduleDeclaration.fields;
-//		AbstractMethodDeclaration[] methods = moduleDeclaration.methods;
-		TypeDeclaration[] memberTypes = moduleDeclaration.types;
-//		int fieldCounter = fields == null ? 0 : fields.length;
-//		int methodCounter = methods == null ? 0 : methods.length;
-		int memberTypeCounter = memberTypes == null ? 0 : memberTypes.length;
-//		int methodIndex = 0;
-	
-		if (notifyTypePresence){
-			char[] implicitSuperclassName = TypeConstants.CharArray_JAVA_LANG_OBJECT;
-			ISourceElementRequestor.ModuleInfo moduleInfo = new ISourceElementRequestor.ModuleInfo();
-			moduleInfo.typeAnnotated = ((moduleDeclaration.bits & ASTNode.HasTypeAnnotations) != 0);
-			if (isInRange) {
-				moduleInfo.declarationStart = moduleDeclaration.declarationSourceStart;
-				moduleInfo.declarationEnd = moduleDeclaration.declarationSourceEnd;
-				
-				moduleInfo.name = moduleDeclaration.name;
-				moduleInfo.nameSourceStart = moduleDeclaration.sourceStart;
-				moduleInfo.nameSourceEnd = moduleDeclaration.sourceEnd;
-				moduleInfo.categories = (char[][]) this.nodesToCategories.get(moduleDeclaration);
-				moduleInfo.annotations = moduleDeclaration.annotations;
-				moduleInfo.node = moduleDeclaration;
-				this.requestor.enterModule(moduleInfo);
-			}
-			if (this.nestedTypeIndex == this.typeNames.length) {
-				// need a resize
-				System.arraycopy(this.typeNames, 0, (this.typeNames = new char[this.nestedTypeIndex * 2][]), 0, this.nestedTypeIndex);
-				System.arraycopy(this.superTypeNames, 0, (this.superTypeNames = new char[this.nestedTypeIndex * 2][]), 0, this.nestedTypeIndex);
-			}
-			this.typeNames[this.nestedTypeIndex] = moduleDeclaration.name;
-			this.superTypeNames[this.nestedTypeIndex++] = implicitSuperclassName;
-		}
-		
-		TypeDeclaration[] types = moduleDeclaration.types;
-		int typeIndex = 0, typeCounter = 0;
-		if(types != null) typeCounter = moduleDeclaration.types.length;
-		while ((typeIndex < typeCounter)) {
-			TypeDeclaration nextTypeDeclaration = types[typeIndex++];
-			notifySourceElementRequestor(nextTypeDeclaration, true, null, currentPackage);
-		}
-		if (notifyTypePresence){
-			if (isInRange){
-				this.requestor.exitModule(moduleDeclaration.declarationSourceEnd);
 			}
 			this.nestedTypeIndex--;
 		}

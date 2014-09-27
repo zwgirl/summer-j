@@ -362,12 +362,17 @@ public abstract class AssistParser extends Parser {
 		popElement(K_METHOD_DELIMITER);
 		super.consumeClassBodyDeclaration();
 	}
+	
 	protected void consumeClassBodyopt() {
 		super.consumeClassBodyopt();
 		popElement(K_SELECTOR);
 	}
 	protected void consumeClassHeader() {
 		super.consumeClassHeader();
+		pushOnElementStack(K_TYPE_DELIMITER);
+	}
+	protected void consumeModuleHeader() {
+		super.consumeModuleHeader();
 		pushOnElementStack(K_TYPE_DELIMITER);
 	}
 	protected void consumeConstructorBody() {

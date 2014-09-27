@@ -18,7 +18,6 @@ import org.summer.sdt.internal.compiler.ast.Annotation;
 import org.summer.sdt.internal.compiler.ast.Expression;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
-import org.summer.sdt.internal.compiler.ast.ModuleDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 
 /*
@@ -46,20 +45,6 @@ import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
  */
 @SuppressWarnings("rawtypes")
 public interface ISourceElementRequestor {
-	
-	public static class ModuleInfo {
-		public boolean typeAnnotated;
-		public int declarationStart;
-		public int declarationEnd;
-		public char[] name;
-		public int nameSourceStart;
-		public int nameSourceEnd;
-		public char[][] categories;
-		public TypeInfo[] types;
-		public Annotation[] annotations;
-		public ModuleDeclaration node;
-		public HashMap childrenCategories = new HashMap();
-	}
 
 	public static class TypeInfo {
 		public boolean typeAnnotated;
@@ -198,8 +183,6 @@ public interface ISourceElementRequestor {
 	
 	void enterType(TypeInfo typeInfo);
 	
-	void enterModule(ModuleInfo typeInfo);   //cym ad
-
 	void exitCompilationUnit(int declarationEnd);
 
 	void exitConstructor(int declarationEnd);
@@ -216,5 +199,4 @@ public interface ISourceElementRequestor {
 
 	void exitType(int declarationEnd);
 	
-	void exitModule(int declarationEnd);  //cym add
 }

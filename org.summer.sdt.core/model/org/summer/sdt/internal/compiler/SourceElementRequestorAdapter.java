@@ -11,7 +11,6 @@
 package org.summer.sdt.internal.compiler;
 
 import org.summer.sdt.core.compiler.CategorizedProblem;
-import org.summer.sdt.internal.compiler.ISourceElementRequestor.ModuleInfo;
 import org.summer.sdt.internal.compiler.ast.Expression;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 
@@ -203,20 +202,6 @@ public class SourceElementRequestorAdapter implements ISourceElementRequestor {
 	 */
 	public void exitType(int declarationEnd) {
 		// default implementation: do nothing
-	}
-
-	//cym add
-	@Override
-	public void enterModule(ModuleInfo typeInfo) {
-		System.out.println("public void enterModule(ModuleInfo typeInfo) ");
-		
-	}
-
-	//cym add
-	@Override
-	public void exitModule(int declarationEnd) {
-		System.out.println("public void exitModule(int declarationEnd)  ");
-		
 	}
 
 }

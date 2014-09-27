@@ -459,7 +459,7 @@ InternalCompilationUnit ::= $empty
 --/:$readableName ModuleDeclaration:/
 
 --ModuleDeclaration ::= ObjectElementDeclarationopt ModuleHeader NestedMethod '{' BlockStatementsopt '}' 
-ModuleDeclaration ::= ModuleHeader NestedMethod '{' BlockStatementsopt '}' 
+ModuleDeclaration ::= ModuleHeader ModuleBody 
 --ModuleDeclaration ::= ObjectElementDeclarationopt ModuleHeader Block --'{' BlockStatementsopt '}'
 /.$putCase consumeModuleDeclaration(); $break ./
 /:$readableName ModuleDeclaration:/
@@ -467,6 +467,44 @@ ModuleDeclaration ::= ModuleHeader NestedMethod '{' BlockStatementsopt '}'
 ModuleHeader ::= 'module' 'Identifier'
 /.$putCase consumeModuleHeader(); $break ./
 /:$readableName ModuleHeader:/
+
+ModuleBody ::= '{' ModuleBodyDeclarationsopt '}'
+/:$readableName ModuleBody:/
+/:$no_statements_recovery:/
+
+ModuleBodyDeclarationsopt ::= $empty
+/.$putCase consumeEmptyModuleBodyDeclarationsopt(); $break ./
+ModuleBodyDeclarationsopt ::= NestedType ModuleBodyDeclarations
+/.$putCase consumeModuleBodyDeclarationsopt(); $break ./
+/:$readableName ModuleBodyDeclarations:/
+
+ModuleBodyDeclarations ::= ModuleBodyDeclaration
+ModuleBodyDeclarations ::= ModuleBodyDeclarations ClassBodyDeclaration
+/.$putCase consumeClassBodyDeclarations(); $break ./
+/:$readableName ModuleBodyDeclarations:/
+
+ModuleBodyDeclaration -> ModuleMemberDeclaration
+ModuleBodyDeclaration -> StaticInitializer
+/.$putCase consumeClassBodyDeclaration(); $break ./
+/:$readableName ModuleBodyDeclaration:/
+
+--cym add
+ModuleMemberDeclaration -> PropertyDeclaration
+ModuleMemberDeclaration -> EventDeclaration
+ModuleMemberDeclaration -> IndexerDeclaration
+--cym add end
+
+ModuleMemberDeclaration -> FieldDeclaration
+ModuleMemberDeclaration -> MethodDeclaration
+--1.1 feature
+ModuleMemberDeclaration -> ClassDeclaration
+--1.1 feature
+ModuleMemberDeclaration -> InterfaceDeclaration
+-- 1.5 feature
+ModuleMemberDeclaration -> EnumDeclaration
+ModuleMemberDeclaration -> AnnotationTypeDeclaration
+/:$readableName ModuleMemberDeclaration:/
+
 
 --ModuleBody ::= EnterModule '{' BlockStatementsopt '}' 
 --/:$readableName ModuleBody:/

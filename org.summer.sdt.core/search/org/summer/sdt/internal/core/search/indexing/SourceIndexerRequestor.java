@@ -416,14 +416,4 @@ public class SourceIndexerRequestor implements ISourceElementRequestor, IIndexCo
 			System.arraycopy(this.enclosingTypeNames, 0, this.enclosingTypeNames = new char[this.depth*2][], 0, this.depth);
 		this.enclosingTypeNames[this.depth++] = typeName;
 	}
-	@Override
-	public void enterModule(ModuleInfo typeInfo) {
-		// TODO Auto-generated method stub
-		
-	}
-	@Override
-	public void exitModule(int declarationEnd) {
-		// TODO Auto-generated method stub
-		
-	}
 }

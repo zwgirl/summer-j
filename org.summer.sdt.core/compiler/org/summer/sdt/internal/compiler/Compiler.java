@@ -946,10 +946,10 @@ public class Compiler implements ITypeRequestor, ProblemSeverities {
 				unit.resolve();
 
 				// flow analysis
-				if (analyzeCode) unit.analyseCode();
+//				if (analyzeCode) unit.analyseCode();   //cym comment
 
 				// code generation
-				if (generateCode) unit.generateCode();
+//				if (generateCode) unit.generateCode();  //cym comment
 
 				// finalize problems (suppressWarnings)
 				unit.finalizeProblems();

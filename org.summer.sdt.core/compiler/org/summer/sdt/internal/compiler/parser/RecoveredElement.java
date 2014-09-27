@@ -20,7 +20,6 @@ import org.summer.sdt.internal.compiler.ast.Block;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
-import org.summer.sdt.internal.compiler.ast.ModuleDeclaration;
 import org.summer.sdt.internal.compiler.ast.Statement;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.util.Util;
@@ -131,20 +130,6 @@ public class RecoveredElement {
 		if (this.parent == null) return this; // ignore
 		this.updateSourceEndIfNecessary(previousAvailableLineEnd(typeDeclaration.declarationSourceStart - 1));
 		return this.parent.add(typeDeclaration, bracketBalanceValue);
-	}
-	
-	
-	//cym add
-	/*
-	 *	Record a type declaration
-	 */
-	public RecoveredElement add(ModuleDeclaration moduleDeclaration, int bracketBalanceValue){
-	
-		/* default behavior is to delegate recording to parent if any */
-		resetPendingModifiers();
-		if (this.parent == null) return this; // ignore
-		this.updateSourceEndIfNecessary(previousAvailableLineEnd(moduleDeclaration.declarationSourceStart - 1));
-		return this.parent.add(moduleDeclaration, bracketBalanceValue);
 	}
 	
 	protected void addBlockStatement(RecoveredBlock recoveredBlock) {

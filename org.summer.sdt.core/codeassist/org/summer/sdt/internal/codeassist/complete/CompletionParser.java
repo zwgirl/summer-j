@@ -2237,7 +2237,7 @@ public class CompletionParser extends AssistParser {
 		super.consumeClassBodyopt();
 	}
 	/* (non-Javadoc)
-	 * @see org.summer.sdt.internal.compiler.parser.Parser#consumeClassDeclaration()
+	 * @see org.eclipse.jdt.internal.compiler.parser.Parser#consumeClassDeclaration()
 	 */
 	protected void consumeClassDeclaration() {
 		if (this.astPtr >= 0) {
@@ -2325,7 +2325,7 @@ public class CompletionParser extends AssistParser {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.summer.sdt.internal.compiler.parser.Parser#consumeCompilationUnit()
+	 * @see org.eclipse.jdt.internal.compiler.parser.Parser#consumeCompilationUnit()
 	 */
 	protected void consumeCompilationUnit() {
 		this.javadoc = null;

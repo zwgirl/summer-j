@@ -26,7 +26,6 @@ import org.summer.sdt.internal.compiler.lookup.ImportBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.ModuleScope;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
@@ -265,19 +264,6 @@ public class Javadoc extends ASTNode {
 	 * Resolve compilation unit javadoc
 	 */
 	public void resolve(CompilationUnitScope unitScope) {
-		if ((this.bits & ASTNode.ResolveJavadoc) == 0) {
-			return;
-		}
-		// Do nothing - This is to mimic the SDK's javadoc tool behavior, which neither
-		// sanity checks nor generates documentation using comments at the CU scope 
-		// (unless the unit happens to be package-info.java - in which case we don't come here.) 
-	}
-	
-	//cym add
-	/*
-	 * Resolve compilation unit javadoc
-	 */
-	public void resolve(ModuleScope unitScope) {
 		if ((this.bits & ASTNode.ResolveJavadoc) == 0) {
 			return;
 		}

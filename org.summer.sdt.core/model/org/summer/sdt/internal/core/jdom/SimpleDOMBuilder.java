@@ -191,19 +191,4 @@ public void exitType(int declarationEnd) {
 protected SourceElementParser getParser(Map settings) {
 	return new SourceElementParser(this, new DefaultProblemFactory(), new CompilerOptions(settings), false/*don't report local declarations*/, true/*optimize string literals*/);
 }
-
-
-//cym add
-@Override
-public void enterModule(ModuleInfo typeInfo) {
-	System.out.println("public void enterModule(ModuleInfo typeInfo) ");
-	
-}
-
-//cym add
-@Override
-public void exitModule(int declarationEnd) {
-	System.out.println("public void exitModule(int declarationEnd)  ");
-	
-}
 }

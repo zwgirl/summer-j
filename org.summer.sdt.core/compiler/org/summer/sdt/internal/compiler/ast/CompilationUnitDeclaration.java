@@ -55,7 +55,6 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	public ImportReference currentPackage;
 	public ImportReference[] imports;
 	public TypeDeclaration[] types;
-	public ModuleDeclaration module;  //cym add
 	public int[][] comments;
 
 	public boolean ignoreFurtherInvestigation = false; // once pointless to investigate due to errors
@@ -516,24 +515,23 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 //		generateHtml(fsa, module, importManager, fileName);
 //  	}
 ////	(function(){}){
-////		　　var t = new Person1();
-////		　　t.begin();
-////		　　t.setName();
-////		　　t.setAge();
-////		　　t.content = (function(){
-////		　　var t = new XXX():
-////		　　t.beginInit();
-////		　　t.xxx = ;
-////		　　...
-////		　　t.AdChild((function(){
-////		　　。。。
-////		　　})（）)
-////		　　t.endInit();
-////		　　})()
-////		　　addChild();
-////		　　for(){
-////		　　
-////		　　}
+////		銆��var t = new Person1();
+////		銆��t.begin();
+////		銆��t.setName();
+////		銆��t.setAge();
+////		銆��t.content = (function(){
+////		銆��var t = new XXX():
+////		銆��t.beginInit();
+////		銆��t.xxx = ;
+////		銆��...
+////		銆��t.AdChild((function(){
+////		銆��銆傘�銆�////		銆��})锛堬級)
+////		銆��t.endInit();
+////		銆��})()
+////		銆��addChild();
+////		銆��for(){
+////		銆��
+////		銆��}
 ////		}
 //	private void generateUI(TreeAppendable b, XElement ele) {
 //		b.newLine();
@@ -773,50 +771,6 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		return ++this.functionalExpressionsCount;
 	}
 	
-//	public void resolve() {
-//		int startingTypeIndex = 0;
-//		boolean isPackageInfo = isPackageInfo();
-//		if (this.types != null && isPackageInfo) {
-//			// resolve synthetic type declaration
-//			final TypeDeclaration syntheticTypeDeclaration = this.types[0];
-//			// set empty javadoc to avoid missing warning (see bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=95286)
-//			if (syntheticTypeDeclaration.javadoc == null) {
-//				syntheticTypeDeclaration.javadoc = new Javadoc(syntheticTypeDeclaration.declarationSourceStart, syntheticTypeDeclaration.declarationSourceStart);
-//			}
-//			syntheticTypeDeclaration.resolve(this.scope);
-//			/*
-//			 * resolve javadoc package if any, skip this step if we don't have a valid scope due to an earlier error (bug 252555)
-//			 * we do it now as the javadoc in the fake type won't be resolved. The peculiar usage of MethodScope to resolve the
-//			 * package level javadoc is because the CU level resolve method	is a NOP to mimic Javadoc's behavior and can't be used
-//			 * as such.
-//			 */
-//			if (this.javadoc != null && syntheticTypeDeclaration.staticInitializerScope != null) {
-//				this.javadoc.resolve(syntheticTypeDeclaration.staticInitializerScope);
-//			}
-//			startingTypeIndex = 1;
-//		} else {
-//			// resolve compilation unit javadoc package if any
-//			if (this.javadoc != null) {
-//				this.javadoc.resolve(this.scope);
-//			}
-//		}
-//		if (this.currentPackage != null && this.currentPackage.annotations != null && !isPackageInfo) {
-//			this.scope.problemReporter().invalidFileNameForPackageAnnotations(this.currentPackage.annotations[0]);
-//		}
-//		try {
-//			if (this.types != null) {
-//				for (int i = startingTypeIndex, count = this.types.length; i < count; i++) {
-//					this.types[i].resolve(this.scope);
-//				}
-//			}
-//			if (!this.compilationResult.hasMandatoryErrors()) checkUnusedImports();
-//			reportNLSProblems();
-//		} catch (AbortCompilationUnit e) {
-//			this.ignoreFurtherInvestigation = true;
-//			return;
-//		}
-//	}
-	
 	public void resolve() {
 		int startingTypeIndex = 0;
 		boolean isPackageInfo = isPackageInfo();
@@ -848,8 +802,10 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 			this.scope.problemReporter().invalidFileNameForPackageAnnotations(this.currentPackage.annotations[0]);
 		}
 		try {
-			if (this.module != null) {
-				module.resolve(this.scope);
+			if (this.types != null) {
+				for (int i = startingTypeIndex, count = this.types.length; i < count; i++) {
+					this.types[i].resolve(this.scope);
+				}
 			}
 			if (!this.compilationResult.hasMandatoryErrors()) checkUnusedImports();
 			reportNLSProblems();
@@ -858,6 +814,7 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 			return;
 		}
 	}
+	
 	
 	private void reportNLSProblems() {
 		if (this.nlsTags != null || this.stringLiterals != null) {

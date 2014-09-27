@@ -1491,15 +1491,6 @@ class ASTConverter {
 				}
 			}
 			compilationUnit.setSourceRange(unit.sourceStart, unit.sourceEnd - unit.sourceStart  + 1);
-			
-			
-			//cym add
-			org.summer.sdt.internal.compiler.ast.ModuleDeclaration moduleDecl = unit.module;
-			if(moduleDecl != null){
- 				ModuleDeclaration moduleNode = convert(moduleDecl);
-				compilationUnit.setModuleDeclaration(moduleNode);
-			}
-			//cym add end
 	
 			int problemLength = unit.compilationResult.problemCount;
 			if (problemLength != 0) {
@@ -3083,54 +3074,6 @@ class ASTConverter {
 		}
 		this.referenceContext = oldReferenceContext;
 		return typeDecl;
-	}
-	
-	public ModuleDeclaration convert(org.summer.sdt.internal.compiler.ast.ModuleDeclaration moduleDeclaration) {
-//		int kind = org.summer.sdt.internal.compiler.ast.TypeDeclaration.kind(moduleDeclaration.modifiers);
-//		switch (kind) {
-//			case org.summer.sdt.internal.compiler.ast.TypeDeclaration.ENUM_DECL :
-//				if (this.ast.apiLevel == AST.JLS2_INTERNAL) {
-//					return null;
-//				} else {
-//					return convertToEnumDeclaration(moduleDeclaration);
-//				}
-//			case org.summer.sdt.internal.compiler.ast.TypeDeclaration.ANNOTATION_TYPE_DECL :
-//				if (this.ast.apiLevel == AST.JLS2_INTERNAL) {
-//					return null;
-//				} else {
-//					return convertToAnnotationDeclaration(moduleDeclaration);
-//				}
-//		}
-
-		checkCanceled();
-		ModuleDeclaration moduleDecl = new ModuleDeclaration(this.ast);
-		ASTNode oldReferenceContext = this.referenceContext;
-		this.referenceContext = moduleDecl;
-		final SimpleName moduleName = new SimpleName(this.ast);
-		moduleName.internalSetIdentifier(new String(moduleDeclaration.name));
-		moduleName.setSourceRange(moduleDeclaration.sourceStart, moduleDeclaration.sourceEnd - moduleDeclaration.sourceStart + 1);
-		moduleDecl.setName(moduleName);
-		moduleDecl.setSourceRange(moduleDeclaration.declarationSourceStart, moduleDeclaration.bodyEnd - moduleDeclaration.declarationSourceStart + 1);
-
-		org.summer.sdt.internal.compiler.ast.TypeDeclaration[] types = moduleDeclaration.types;
-		if (types != null) {
-			switch(this.ast.apiLevel) {
-				case AST.JLS2_INTERNAL :
-					moduleDecl.setFlags(moduleDecl.getFlags() | ASTNode.MALFORMED);
-					break;
-				default :
-					for (int index = 0, length = types.length; index < length; index++) {
-						moduleDecl.getTypes().add(convert(types[index]));
-					}
-			}
-		}
-		if (this.resolveBindings) {
-			recordNodes(moduleDecl, moduleDeclaration);
-			recordNodes(moduleName, moduleDeclaration);
-			moduleDecl.resolveBinding();
-		}
-		this.referenceContext = oldReferenceContext;
-		return moduleDecl;
 	}
 
 	public TypeParameter convert(org.summer.sdt.internal.compiler.ast.TypeParameter typeParameter) {

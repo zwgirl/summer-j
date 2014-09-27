@@ -34,22 +34,41 @@ public interface ParserBasicInformation {
 //		ERROR_ACTION = 15802;
 	
     int 
+//    ERROR_SYMBOL      = 128,
+//    MAX_NAME_LENGTH   = 41,
+//    NUM_STATES        = 1149,
+//
+//    NT_OFFSET         = 128,
+//    SCOPE_UBOUND      = 164,
+//    SCOPE_SIZE        = 165,
+//    LA_STATE_OFFSET   = 14722,
+//    MAX_LA            = 1,
+//    NUM_RULES         = 812,
+//    NUM_TERMINALS     = 128,
+//    NUM_NON_TERMINALS = 370,
+//    NUM_SYMBOLS       = 498,
+//    START_STATE       = 925,
+//    EOFT_SYMBOL       = 74,
+//    EOLT_SYMBOL       = 74,
+//    ACCEPT_ACTION     = 14721,
+//    ERROR_ACTION      = 14722;
+    
     ERROR_SYMBOL      = 128,
     MAX_NAME_LENGTH   = 41,
-    NUM_STATES        = 1149,
+    NUM_STATES        = 1153,
 
     NT_OFFSET         = 128,
     SCOPE_UBOUND      = 164,
     SCOPE_SIZE        = 165,
-    LA_STATE_OFFSET   = 14722,
+    LA_STATE_OFFSET   = 15134,
     MAX_LA            = 1,
-    NUM_RULES         = 812,
+    NUM_RULES         = 828,
     NUM_TERMINALS     = 128,
-    NUM_NON_TERMINALS = 370,
-    NUM_SYMBOLS       = 498,
-    START_STATE       = 925,
+    NUM_NON_TERMINALS = 375,
+    NUM_SYMBOLS       = 503,
+    START_STATE       = 980,
     EOFT_SYMBOL       = 74,
     EOLT_SYMBOL       = 74,
-    ACCEPT_ACTION     = 14721,
-    ERROR_ACTION      = 14722;
+    ACCEPT_ACTION     = 15133,
+    ERROR_ACTION      = 15134;
 }

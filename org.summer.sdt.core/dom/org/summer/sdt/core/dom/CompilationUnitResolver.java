@@ -1204,10 +1204,10 @@ class CompilationUnitResolver extends Compiler {
 				unit.resolve();
 
 				// flow analysis
-				if (analyzeCode) unit.analyseCode();
+//				if (analyzeCode) unit.analyseCode();   //cym comment
 
-				// code generation
-				if (generateCode) unit.generateCode();
+				// code generation 
+//				if (generateCode) unit.generateCode();  //cym comment
 
 				// finalize problems (suppressWarnings)
 				unit.finalizeProblems();
