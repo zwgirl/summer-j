@@ -47,6 +47,7 @@ import org.summer.sdt.internal.compiler.ast.FieldReference;
 import org.summer.sdt.internal.compiler.ast.FloatLiteral;
 import org.summer.sdt.internal.compiler.ast.ForStatement;
 import org.summer.sdt.internal.compiler.ast.ForeachStatement;
+import org.summer.sdt.internal.compiler.ast.FunctionType;
 import org.summer.sdt.internal.compiler.ast.IfStatement;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 import org.summer.sdt.internal.compiler.ast.Initializer;
@@ -160,6 +161,17 @@ public abstract class ASTVisitor {
 	public void endVisit(ArrayReference arrayReference, BlockScope scope) {
 		// do nothing by default
 	}
+	
+	//cym add
+	public void endVisit(FunctionType functionType, BlockScope scope) {
+		// do nothing by default
+	}
+	
+	//cym add
+	public void endVisit(FunctionType functionType, ClassScope scope) {
+		// do nothing by default
+	}
+	
 	public void endVisit(ArrayTypeReference arrayTypeReference, BlockScope scope) {
 		// do nothing by default
 	}
@@ -638,6 +650,15 @@ public abstract class ASTVisitor {
 		ClassScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
+	//cym add
+	public boolean visit(FunctionType functionType, BlockScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+	
+	public boolean visit(FunctionType functionType, ClassScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+	
 	public boolean visit(ArrayReference arrayReference, BlockScope scope) {
 		return true; // do nothing by default, keep traversing
 	}

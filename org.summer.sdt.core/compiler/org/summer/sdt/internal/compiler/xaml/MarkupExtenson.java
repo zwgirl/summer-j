@@ -8,7 +8,7 @@ package org.summer.sdt.internal.compiler.xaml;
  *
  */
 public class MarkupExtenson extends Element {
-	protected MarkupExtenson() {
+	public MarkupExtenson() {
 		super();
 	}
 }

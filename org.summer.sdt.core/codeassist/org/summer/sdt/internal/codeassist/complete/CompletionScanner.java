@@ -293,6 +293,10 @@ public class CompletionScanner extends Scanner {
 									return TokenNameLEFT_SHIFT_EQUAL;
 								return TokenNameLEFT_SHIFT;
 							}
+							//cym add 2014-9-29
+							if(getNextChar('/')){
+								return TokenNameCLOSE_ELEMENT;
+							}
 							return TokenNameLESS;
 						}
 					case '>' :
@@ -796,6 +800,12 @@ public class CompletionScanner extends Scanner {
 								}
 								break;
 							}
+							
+							//cym add 2014-9-29
+							if(getNextChar('>')){
+								return TokenNameCLOSE_TAG;
+							}
+							
 							if (getNextChar('='))
 								return TokenNameDIVIDE_EQUAL;
 							return TokenNameDIVIDE;

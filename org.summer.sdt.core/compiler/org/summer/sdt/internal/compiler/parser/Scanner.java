@@ -1337,6 +1337,12 @@ public class Scanner implements TerminalTokens {
 									return TokenNameLEFT_SHIFT_EQUAL;
 								return TokenNameLEFT_SHIFT;
 							}
+							
+							//cym add
+							if(getNextChar('/')){
+								return TokenNameCLOSE_ELEMENT;
+							}
+							
 							return TokenNameLESS;
 						}
 					case '>' :
@@ -1778,6 +1784,10 @@ public class Scanner implements TerminalTokens {
 								}
 								break;
 							}
+						}
+						//cym add
+						if(getNextChar('>')){
+							return TokenNameCLOSE_TAG;
 						}
 						if (getNextChar('='))
 							return TokenNameDIVIDE_EQUAL;
@@ -4184,6 +4194,13 @@ public class Scanner implements TerminalTokens {
 				return "."; //$NON-NLS-1$
 			case TokenNameEQUAL :
 				return "="; //$NON-NLS-1$
+			
+			//cym add
+			case TokenNameCLOSE_ELEMENT :
+				return "</"; //$NON-NLS-1$
+			case TokenNameCLOSE_TAG :
+				return "/¡·"; //$NON-NLS-1$
+				
 			case TokenNameEOF :
 				return "EOF"; //$NON-NLS-1$
 			case TokenNameWHITESPACE :

@@ -83,6 +83,9 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	int suppressWarningsCount;
 	public int functionalExpressionsCount;
 	public FunctionalExpression[] functionalExpressions;
+	
+	//cym add 
+	public Element element;   //XAML root Element
 
 	public CompilationUnitDeclaration(ProblemReporter problemReporter, CompilationResult compilationResult, int sourceLength) {
 		this.problemReporter = problemReporter;
