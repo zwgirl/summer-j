@@ -6,7 +6,7 @@ package org.summer.sdt.internal.compiler.ast;
  * 
  *         using by XAML
  */
-public abstract class Attribute extends ASTNode{
+public abstract class Attribute extends Statement{
 	public FieldReference field;
 	public Expression expression;
 	
@@ -15,6 +15,11 @@ public abstract class Attribute extends ASTNode{
 
 	@Override
 	public StringBuffer print(int indent, StringBuffer output) {
+		return printStatement(indent, output);
+	}
+	
+	@Override
+	public StringBuffer printStatement(int indent, StringBuffer output) {
 		printPropertyName(indent, output);
 		output.append(" = ");
 		expression.printExpression(indent, output);

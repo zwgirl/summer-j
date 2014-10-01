@@ -1,12 +1,14 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
+
 /**
  * 
  * @author cym
  * 
  *         using by XAML
  */
-public abstract class Element extends ASTNode {
+public abstract class Element extends Statement {
 	public int closeMode;
 	public static final int CLOSE_TAG = 1;   // "/>"
 	public static final int CLOSE_ELEMENT = 2;		 // "</"
@@ -23,6 +25,11 @@ public abstract class Element extends ASTNode {
 	public int bodyEnd; // doesn't include the trailing comment if any.
 
 	public StringBuffer print(int indent, StringBuffer output) {
+		return printStatement(indent, output);
+	}
+	
+	@Override
+	public StringBuffer printStatement(int indent, StringBuffer output) {
 		printIndent(indent, output);
 		
 		output.append("<");
@@ -43,7 +50,6 @@ public abstract class Element extends ASTNode {
 		printTagName(indent, output);
 		
 		return output.append(">");
-		
 	}
 	
 	protected abstract void printTagName(int indent, StringBuffer output);
@@ -61,6 +67,11 @@ public abstract class Element extends ASTNode {
 			element.print(indent + 1, output);
 		}
 		return output;
+	}
+
+	public void resolve(CompilationUnitScope scope) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

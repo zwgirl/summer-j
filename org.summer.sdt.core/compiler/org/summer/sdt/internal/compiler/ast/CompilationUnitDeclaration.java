@@ -814,6 +814,11 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 					this.types[i].resolve(this.scope);
 				}
 			}
+			//cym add
+			if (this.element != null) {
+				this.element.resolve(this.scope);
+			}
+			
 			if (!this.compilationResult.hasMandatoryErrors()) checkUnusedImports();
 			reportNLSProblems();
 		} catch (AbortCompilationUnit e) {

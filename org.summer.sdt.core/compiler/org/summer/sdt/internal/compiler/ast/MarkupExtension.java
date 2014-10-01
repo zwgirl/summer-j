@@ -15,9 +15,7 @@ public class MarkupExtension extends Expression {
 
 	@Override
 	public StringBuffer print(int indent, StringBuffer output) {
-		output.append("{").append(type.getLastToken());
-		printProperties(indent, output);
-		return output.append(" }");
+		return printExpression(indent, output);
 	}
 	
 	protected void printProperties(int indent, StringBuffer output){
@@ -29,7 +27,9 @@ public class MarkupExtension extends Expression {
 
 	@Override
 	public StringBuffer printExpression(int indent, StringBuffer output) {
-		return print(indent, output);
+		output.append("{").append(type.getLastToken());
+		printProperties(indent, output);
+		return output.append(" }");
 	}
 
 }
