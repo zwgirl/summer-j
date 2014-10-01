@@ -35,8 +35,8 @@ public interface TerminalTokens {
 		TokenNameCOMMENT_BLOCK = 1002,
 		TokenNameCOMMENT_JAVADOC = 1003;
 
-	public final static int
-	TokenNameIdentifier = 22,
+    public final static int
+    TokenNameIdentifier = 22,
     TokenNameabstract = 60,
     TokenNameassert = 81,
     TokenNameboolean = 33,
@@ -83,7 +83,7 @@ public interface TerminalTokens {
     TokenNamesynchronized = 59,
     TokenNamethis = 43,
     TokenNamethrow = 89,
-    TokenNamethrows = 114,
+    TokenNamethrows = 113,
     TokenNametransient = 67,
     TokenNametrue = 50,
     TokenNametry = 90,
@@ -92,11 +92,11 @@ public interface TerminalTokens {
     TokenNamewhile = 80,
     TokenNameref = 125,
     TokenNameout = 126,
-    TokenNameget = 115,
-    TokenNameset = 116,
-    TokenNameadd = 117,
-    TokenNameremove = 118,
-    TokenNameevent = 119,
+    TokenNameget = 114,
+    TokenNameset = 115,
+    TokenNameadd = 116,
+    TokenNameremove = 117,
+    TokenNameevent = 118,
     TokenNamemodule = 108,
     TokenNameexport = 127,
     TokenNamefunction = 42,
@@ -160,8 +160,8 @@ public interface TerminalTokens {
     TokenNameBeginIntersectionCast = 73,
     TokenNameBeginTypeArguments = 92,
     TokenNameElidedSemicolonAndRightBrace = 75,
-    TokenNameCLOSE_TAG = 113,
+    TokenNameCLOSE_TAG = 119,
     TokenNameCLOSE_ELEMENT = 120,
-    TokenNameEOF = 74,
-	TokenNameERROR = 128;
+	    TokenNameEOF = 74,
+		TokenNameERROR = 128;
 }

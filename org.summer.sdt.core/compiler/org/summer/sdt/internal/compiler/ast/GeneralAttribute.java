@@ -11,4 +11,8 @@ public class GeneralAttribute extends Attribute{
 		// TODO Auto-generated constructor stub
 	}
 
+	@Override
+	protected void printPropertyName(int indent, StringBuffer output) {
+		output.append(field.token);
+	}
 }

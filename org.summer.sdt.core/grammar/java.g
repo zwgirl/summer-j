@@ -464,14 +464,7 @@ InternalCompilationUnit ::= $empty
 -----------------------------------------------
 -- module declaration
 -----------------------------------------------
---ModuleDeclaration ::= 'module' 'Identifier' '{' ObjectElementDeclarationopt BlockStatementsopt '}'
---ModuleDeclaration ::= ObjectElementDeclarationopt 'module' 'Identifier' '{'  BlockStatementsopt '}'
---/.$putCase consumeModuleDeclaration(); $break ./
---/:$readableName ModuleDeclaration:/
-
---ModuleDeclaration ::= ObjectElementDeclarationopt ModuleHeader NestedMethod '{' BlockStatementsopt '}' 
 ModuleDeclaration ::= ModuleHeader ModuleBody 
---ModuleDeclaration ::= ObjectElementDeclarationopt ModuleHeader Block --'{' BlockStatementsopt '}'
 /.$putCase consumeModuleDeclaration(); $break ./
 /:$readableName ModuleDeclaration:/
 
@@ -479,7 +472,6 @@ ModuleHeader ::= 'module' 'Identifier'
 /.$putCase consumeModuleHeader(); $break ./
 /:$readableName ModuleHeader:/
 
---ModuleBody ::= '{' ObjectElementopt  ModuleBodyDeclarationsopt '}'
 ModuleBody ::= '{'  ModuleBodyDeclarationsopt '}'
 /:$readableName ModuleBody:/
 /:$no_statements_recovery:/
@@ -540,6 +532,7 @@ Element -> AttributeElement
 /:$readableName ElementDeclaration:/
 
 ElementListopt ::= $empty
+/.$putCase consumeElementListopt(); $break ./
 ElementListopt -> ElementList
 /:$readableName ElementListopt:/
 
@@ -549,10 +542,9 @@ ElementList ::= ElementList Element
 /:$readableName ElementList:/
 
 ObjectElement ::=  ElementTag '/>'
+/.$putCase consumeEmptyObjectElement(); $break ./
 ObjectElement ::=  ElementTag AttributeList '/>'
---ObjectElement ::=  ElementTag '>' 
---    	ElementListopt
---	'</' SimpleName '>'
+/.$putCase consumeObjectElementNoChild(); $break ./
 ObjectElement ::= ElementTag AttributeListopt '>' 
     	ElementListopt
 	'</' SimpleName '>'
@@ -560,12 +552,19 @@ ObjectElement ::= ElementTag AttributeListopt '>'
 /:$readableName ObjectElement:/
 
 AttributeListopt ::= $empty
+/.$putCase consumeAttributeListopt(); $break ./
 AttributeListopt -> AttributeList
 /:$readableName AttributeListopt:/
 
-ElementTag ::= '<' SimpleName
+AttributeElementTag ::= $empty
+/.$putCase consumeAttributeElementTag(); $break ./
+/:$readableName AttributeElementTag:/
 
-AttributeElement ::= ElementTag '.' SimpleName '>'
+ElementTag ::= '<' SimpleName
+/.$putCase consumeElementTag(); $break ./
+/:$readableName ElementTag:/
+
+AttributeElement ::= '<' SimpleName '.' SimpleName AttributeElementTag '>'
        ElementListopt
     '</' SimpleName '.' SimpleName '>'
 /.$putCase consumeAttributeElement(); $break ./
@@ -588,12 +587,13 @@ GeneralAttribute ::= SimpleName '=' PropertyExpression
 /.$putCase consumeGeneralAttribute(); $break ./
 /:$readableName GeneralAttribute:/
 
+PropertyExpression ::= StringLiteral
+PropertyExpression ::= MarkupExtenson
+
 MarkupExtenson ::= '{' SimpleName AttributeList '}'
 /.$putCase consumeMarkupExtenson(); $break ./
-/:$readableName GeneralAttribute:/
+/:$readableName MarkupExtenson:/
 
-PropertyExpression ::= StringLiteral 
-PropertyExpression ::= MarkupExtenson
 ----------------------------------------------
 -- xaml end
 -----------------------------------------------

@@ -15,7 +15,11 @@ public abstract class Attribute extends ASTNode{
 
 	@Override
 	public StringBuffer print(int indent, StringBuffer output) {
-		// TODO Auto-generated method stub
-		return null;
+		printPropertyName(indent, output);
+		output.append(" = ");
+		expression.printExpression(indent, output);
+		return output;
 	}
+	
+	protected abstract void printPropertyName(int indent, StringBuffer output);
 }

@@ -670,6 +670,10 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 				currentImport.print(0, output).append(";\n"); //$NON-NLS-1$
 			}
 	
+		if(this.element != null){
+			this.element.print(indent, output).append("\n");
+		}
+		
 		if (this.types != null) {
 			for (int i = 0; i < this.types.length; i++) {
 				this.types[i].print(indent, output).append("\n"); //$NON-NLS-1$

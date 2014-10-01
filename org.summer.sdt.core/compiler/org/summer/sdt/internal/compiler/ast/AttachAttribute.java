@@ -8,10 +8,16 @@ package org.summer.sdt.internal.compiler.ast;
  */
 public class AttachAttribute extends Attribute {
 	public TypeReference type;
-	public FieldReference field;
 
 	public AttachAttribute() {
 		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	protected void printPropertyName(int indent, StringBuffer output) {
+		output.append(type.getLastToken());
+		output.append(".");
+		output.append(field.token);
 	}
 
 }
