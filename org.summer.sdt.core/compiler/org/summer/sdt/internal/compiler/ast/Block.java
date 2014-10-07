@@ -21,8 +21,10 @@ import org.summer.sdt.internal.compiler.codegen.BranchLabel;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class Block extends Statement {
 
@@ -154,5 +156,19 @@ public class Block extends Statement {
 		if (this.statements != null) {
 			this.statements[this.statements.length - 1].branchChainTo(label);
 		}
+	}
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		buffer.append(Javascript.LBRACE);
+		buffer.append(Javascript.CR);
+		if(this.statements != null){
+			for(Statement statement : this.statements){
+				buffer.append(Javascript.CR);
+				statement.generateJavascript(scope, indent, buffer);
+			}
+		}
+		buffer.append(Javascript.CR);
+		buffer.append(Javascript.RBRACE);
+		
 	}
 }

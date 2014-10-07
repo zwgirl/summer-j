@@ -29,10 +29,12 @@ import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.SwitchFlowContext;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.SyntheticMethodBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
@@ -643,5 +645,19 @@ public class SwitchStatement extends Statement {
 		if (this.breakLabel.forwardReferenceCount() > 0) {
 			label.becomeDelegateFor(this.breakLabel);
 		}
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		buffer.append(Javascript.SWITCH).append(Javascript.LPAREN);
+		this.expression.generateJavascript(scope, indent, buffer);
+		buffer.append(Javascript.RPAREN).append(Javascript.LBRACE);
+		
+		for(Statement statement : this.statements){
+			buffer.append(Javascript.CR);
+			statement.generateJavascript(scope, indent, buffer);
+		}
+		
+		buffer.append(Javascript.RBRACE);
 	}
 }

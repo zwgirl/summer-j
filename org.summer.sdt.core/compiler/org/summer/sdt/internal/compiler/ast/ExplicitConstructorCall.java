@@ -552,4 +552,10 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 	public InferenceContext18 freshInferenceContext(Scope scope) {
 		return new InferenceContext18(scope, this.arguments, this);
 	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

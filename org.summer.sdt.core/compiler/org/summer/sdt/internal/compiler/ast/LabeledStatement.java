@@ -17,7 +17,9 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.LabelFlowContext;
 import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class LabeledStatement extends Statement {
 
@@ -143,5 +145,11 @@ public class LabeledStatement extends Statement {
 			if (this.statement != null) this.statement.traverse(visitor, blockScope);
 		}
 		visitor.endVisit(this, blockScope);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		buffer.append(label).append(Javascript.COLON);
+		statement.generateJavascript(scope, indent, buffer);
 	}
 }

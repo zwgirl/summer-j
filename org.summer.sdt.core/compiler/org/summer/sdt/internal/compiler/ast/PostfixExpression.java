@@ -12,7 +12,9 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class PostfixExpression extends CompoundAssignment {
 
@@ -68,5 +70,18 @@ public class PostfixExpression extends CompoundAssignment {
 			this.lhs.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
+	}
+	
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		lhs.generateJavascript(scope, indent, buffer);
+		switch (this.operator) {
+		case PLUS :
+			buffer.append(Javascript.PLUS_PLUS);
+			break;
+		case MINUS :
+			buffer.append(Javascript.MINUS_MINUS);
+			break;
+		}
 	}
 }

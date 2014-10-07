@@ -28,6 +28,7 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
@@ -220,5 +221,11 @@ public StringBuffer printStatement(int tab, StringBuffer output) {
 		this.exceptionArgument.printExpression(0, output);
 	}
 	return output.append(';');
+}
+
+@Override
+public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+	// TODO Auto-generated method stub
+	
 }
 }

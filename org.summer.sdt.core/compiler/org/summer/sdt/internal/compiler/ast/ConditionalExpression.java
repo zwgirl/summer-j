@@ -40,6 +40,7 @@ import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.BaseTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -813,6 +814,16 @@ public class ConditionalExpression extends OperatorExpression {
 			this.valueIfFalse.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		condition.generateJavascript(scope, indent, buffer);
+		buffer.append(Javascript.WHITESPACE).append(Javascript.QUESTION).append(Javascript.WHITESPACE);
+		valueIfTrue.generateJavascript(scope, indent, buffer);
+		buffer.append(Javascript.WHITESPACE).append(Javascript.COLON).append(Javascript.WHITESPACE);
+		valueIfFalse.generateJavascript(scope, indent, buffer);
+		
 	}
 }
 

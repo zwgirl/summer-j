@@ -68,6 +68,10 @@ public class SourceTypeBinding extends ReferenceBinding {
 	public ReferenceBinding superclass;                    // MUST NOT be modified directly, use setter !
 	public ReferenceBinding[] superInterfaces;             // MUST NOT be modified directly, use setter !
 	private FieldBinding[] fields;                         // MUST NOT be modified directly, use setter !
+	
+	//XAML
+	private FieldBinding element;						   // MUST NOT be modified directly, use setter !
+	
 	private MethodBinding[] methods;                       // MUST NOT be modified directly, use setter !
 	public ReferenceBinding[] memberTypes;                 // MUST NOT be modified directly, use setter !
 	public TypeVariableBinding[] typeVariables;            // MUST NOT be modified directly, use setter !
@@ -904,6 +908,24 @@ public class SourceTypeBinding extends ReferenceBinding {
 		this.tagBits |= TagBits.AreFieldsComplete;
 		return this.fields;
 	}
+	
+	public FieldBinding element(){
+		try {
+			// lazily sort fields
+//			if ((this.tagBits & TagBits.AreFieldsSorted) == 0) {
+//				int length = this.fields.length;
+//				if (length > 1)
+//					ReferenceBinding.sortFields(this.fields, 0, length);
+//				this.tagBits |= TagBits.AreFieldsSorted;
+//			}
+			if (resolveTypeFor(this.element) == null) {
+			}
+		} finally {
+		}
+		this.tagBits |= TagBits.AreFieldsComplete;
+		return this.element;
+	}
+	
 	/**
 	 * @see org.summer.sdt.internal.compiler.lookup.TypeBinding#genericTypeSignature()
 	 */

@@ -26,6 +26,7 @@ import org.summer.sdt.internal.compiler.codegen.Opcodes;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
@@ -66,7 +67,6 @@ public class FieldReference extends Reference implements InvocationSite {
 		this.sourceStart = (int) (pos >>> 32);
 		this.sourceEnd = (int) (pos & 0x00000000FFFFFFFFL);
 		this.bits |= Binding.FIELD;
-	
 	}
 	
 	public FlowInfo analyseAssignment(BlockScope currentScope, FlowContext flowContext, FlowInfo flowInfo, Assignment assignment, boolean isCompound) {
@@ -738,5 +738,13 @@ public class FieldReference extends Reference implements InvocationSite {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		receiver.generateJavascript(scope, indent, buffer);
+		buffer.append(Javascript.DOT);
+		buffer.append(this.token);
+		
 	}
 }

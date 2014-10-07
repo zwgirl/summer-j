@@ -19,6 +19,7 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class MarkerAnnotation extends Annotation {
 
@@ -50,5 +51,11 @@ public class MarkerAnnotation extends Annotation {
 			}
 		}
 		visitor.endVisit(this, scope);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
 	}
 }

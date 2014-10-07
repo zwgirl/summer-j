@@ -1272,4 +1272,10 @@ public class LambdaExpression extends FunctionalExpression implements ReferenceC
 		}
 		return this.classType = new LambdaTypeBinding();
 	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

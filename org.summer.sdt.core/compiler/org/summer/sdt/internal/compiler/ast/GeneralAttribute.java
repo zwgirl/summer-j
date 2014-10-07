@@ -4,6 +4,7 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 /**
  * 
@@ -42,7 +43,13 @@ public class GeneralAttribute extends Attribute{
 	}
 
 	@Override
-	public void resolve(BlockScope scope) {
+	public StringBuffer printExpression(int indent, StringBuffer output) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
 		// TODO Auto-generated method stub
 		
 	}

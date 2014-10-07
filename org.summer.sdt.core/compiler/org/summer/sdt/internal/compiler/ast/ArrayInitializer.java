@@ -29,6 +29,7 @@ import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class ArrayInitializer extends Expression {
@@ -252,5 +253,11 @@ public class ArrayInitializer extends Expression {
 			}
 		}
 		visitor.endVisit(this, scope);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
 	}
 }

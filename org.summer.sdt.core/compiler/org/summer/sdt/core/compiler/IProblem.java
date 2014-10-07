@@ -1823,4 +1823,9 @@ void setSourceStart(int sourceStart);
 	
 	/** @since 3.10 */
 	int LambdaShapeComputationError = 1101;
+	
+	/**
+	 * XAML
+	 */
+	int DuplicateNamedElement = 2000;
 }

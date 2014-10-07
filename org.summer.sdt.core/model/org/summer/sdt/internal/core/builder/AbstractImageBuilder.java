@@ -19,6 +19,7 @@ import org.summer.sdt.internal.compiler.Compiler;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.ICompilationUnit;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
+import org.summer.sdt.internal.compiler.javascript.JavascriptFile;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.problem.*;
 import org.summer.sdt.internal.compiler.util.SimpleSet;
@@ -195,12 +196,60 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 						createProblemFor(compilationUnit.resource, null, Messages.build_inconsistentClassFile, JavaCore.ERROR);
 				}
 			}
+			
+			//cym add
+			try {
+				writeJavascriptFile(result, compilationUnit);
+			} catch (CoreException e) {
+				Util.log(e, "JavaBuilder handling CoreException"); //$NON-NLS-1$
+				if (e.getStatus().getCode() == IResourceStatus.CASE_VARIANT_EXISTS)
+					createProblemFor(compilationUnit.resource, null, Messages.bind(Messages.build_classFileCollision, e.getMessage()), JavaCore.ERROR);
+				else
+					createProblemFor(compilationUnit.resource, null, Messages.build_inconsistentClassFile, JavaCore.ERROR);
+			}
+			
 			if (result.hasAnnotations && this.filesWithAnnotations != null) // only initialized if an annotation processor is attached
 				this.filesWithAnnotations.add(compilationUnit);
 	
 			this.compiler.lookupEnvironment.releaseClassFiles(classFiles);
 			finishedWith(typeLocator, result, compilationUnit.getMainTypeName(), definedTypeNames, duplicateTypeNames);
 			this.notifier.compiled(compilationUnit);
+		}
+	}
+	
+	//cym add
+	protected void writeJavascriptFile(CompilationResult result, SourceFile compilationUnit) throws CoreException{
+		
+		String fileName = new String(compilationUnit.getFileName()); // the qualified type name "p1/p2/A"
+		IPath filePath = new Path(fileName);
+		IContainer outputFolder = compilationUnit.sourceLocation.binaryFolder;
+		IContainer container = outputFolder;
+		if (filePath.segmentCount() > 1) {
+			container = createFolder(filePath.removeLastSegments(1), outputFolder);
+			filePath = new Path(filePath.lastSegment());
+		}
+	
+		IFile file = container.getFile(filePath.addFileExtension("js"));
+		writeJavascriptFileContents(result.javascriptFile, file, fileName);
+	}
+	
+	protected void writeJavascriptFileContents(JavascriptFile jsFile, IFile file, String qualifiedFileName) throws CoreException {
+	//	InputStream input = new SequenceInputStream(
+	//			new ByteArrayInputStream(classFile.header, 0, classFile.headerOffset),
+	//			new ByteArrayInputStream(classFile.contents, 0, classFile.contentsOffset));
+		InputStream input = new StringBufferInputStream(jsFile.content.toString());
+		if (file.exists()) {
+			// Deal with shared output folders... last one wins... no collision cases detected
+			if (JavaBuilder.DEBUG)
+				System.out.println("Writing changed class file " + file.getName());//$NON-NLS-1$
+			if (!file.isDerived())
+				file.setDerived(true, null);
+			file.setContents(input, true, false, null);
+		} else {
+			// Default implementation just writes out the bytes for the new class file...
+			if (JavaBuilder.DEBUG)
+				System.out.println("Writing new class file " + file.getName());//$NON-NLS-1$
+			file.create(input, IResource.FORCE | IResource.DERIVED, null);
 		}
 	}
 	

@@ -15,6 +15,7 @@ import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.ElementValuePair;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 /**
  * Normal annotation node
@@ -86,5 +87,11 @@ public class NormalAnnotation extends Annotation {
 			}
 		}
 		visitor.endVisit(this, scope);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
 	}
 }

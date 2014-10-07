@@ -214,4 +214,10 @@ public class QualifiedTypeReference extends TypeReference {
 	public int getAnnotatableLevels() {
 		return this.tokens.length;
 	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

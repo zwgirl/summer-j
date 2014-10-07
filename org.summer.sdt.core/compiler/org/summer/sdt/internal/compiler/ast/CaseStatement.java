@@ -18,10 +18,12 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IntConstant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class CaseStatement extends Statement {
@@ -140,5 +142,16 @@ public class CaseStatement extends Statement {
 			if (this.constantExpression != null) this.constantExpression.traverse(visitor, blockScope);
 		}
 		visitor.endVisit(this, blockScope);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		if (this.constantExpression == null) {
+			buffer.append(Javascript.DEFAULT).append(Javascript.WHITESPACE).append(Javascript.COLON);
+		} else {
+			buffer.append(Javascript.CASE).append(Javascript.WHITESPACE);
+			constantExpression.generateJavascript(scope, indent, buffer);
+			buffer.append(Javascript.WHITESPACE).append(Javascript.COLON);
+		}
 	}
 }

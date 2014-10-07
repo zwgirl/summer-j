@@ -1250,4 +1250,9 @@ public abstract class Expression extends Statement {
 	public VariableBinding nullAnnotatedVariableBinding(boolean supportTypeAnnotations) {
 		return null;
 	}
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -320,6 +320,9 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 	// for all reference context entries.
 	public static final int HasFunctionalInterfaceTypes = ASTNode.Bit22;
 	
+	//XAML
+	public static final int IsNamedAttribute = ASTNode.Bit10;
+	
 	public static final Argument [] NO_ARGUMENTS = new Argument [0];
 
 	public ASTNode() {

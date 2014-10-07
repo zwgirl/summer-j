@@ -11,101 +11,7 @@
 package org.summer.sdt.internal.compiler;
 
 import org.summer.sdt.core.compiler.IProblem;
-import org.summer.sdt.internal.compiler.ast.AND_AND_Expression;
-import org.summer.sdt.internal.compiler.ast.AllocationExpression;
-import org.summer.sdt.internal.compiler.ast.AnnotationMethodDeclaration;
-import org.summer.sdt.internal.compiler.ast.Argument;
-import org.summer.sdt.internal.compiler.ast.ArrayAllocationExpression;
-import org.summer.sdt.internal.compiler.ast.ArrayInitializer;
-import org.summer.sdt.internal.compiler.ast.ArrayQualifiedTypeReference;
-import org.summer.sdt.internal.compiler.ast.ArrayReference;
-import org.summer.sdt.internal.compiler.ast.ArrayTypeReference;
-import org.summer.sdt.internal.compiler.ast.AssertStatement;
-import org.summer.sdt.internal.compiler.ast.Assignment;
-import org.summer.sdt.internal.compiler.ast.BinaryExpression;
-import org.summer.sdt.internal.compiler.ast.Block;
-import org.summer.sdt.internal.compiler.ast.BreakStatement;
-import org.summer.sdt.internal.compiler.ast.CaseStatement;
-import org.summer.sdt.internal.compiler.ast.CastExpression;
-import org.summer.sdt.internal.compiler.ast.CharLiteral;
-import org.summer.sdt.internal.compiler.ast.ClassLiteralAccess;
-import org.summer.sdt.internal.compiler.ast.Clinit;
-import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
-import org.summer.sdt.internal.compiler.ast.CompoundAssignment;
-import org.summer.sdt.internal.compiler.ast.ConditionalExpression;
-import org.summer.sdt.internal.compiler.ast.ConstructorDeclaration;
-import org.summer.sdt.internal.compiler.ast.ContinueStatement;
-import org.summer.sdt.internal.compiler.ast.DoStatement;
-import org.summer.sdt.internal.compiler.ast.DoubleLiteral;
-import org.summer.sdt.internal.compiler.ast.EmptyStatement;
-import org.summer.sdt.internal.compiler.ast.EqualExpression;
-import org.summer.sdt.internal.compiler.ast.ExplicitConstructorCall;
-import org.summer.sdt.internal.compiler.ast.ExtendedStringLiteral;
-import org.summer.sdt.internal.compiler.ast.FalseLiteral;
-import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
-import org.summer.sdt.internal.compiler.ast.FieldReference;
-import org.summer.sdt.internal.compiler.ast.FloatLiteral;
-import org.summer.sdt.internal.compiler.ast.ForStatement;
-import org.summer.sdt.internal.compiler.ast.ForeachStatement;
-import org.summer.sdt.internal.compiler.ast.FunctionType;
-import org.summer.sdt.internal.compiler.ast.IfStatement;
-import org.summer.sdt.internal.compiler.ast.ImportReference;
-import org.summer.sdt.internal.compiler.ast.Initializer;
-import org.summer.sdt.internal.compiler.ast.InstanceOfExpression;
-import org.summer.sdt.internal.compiler.ast.IntLiteral;
-import org.summer.sdt.internal.compiler.ast.IntersectionCastTypeReference;
-import org.summer.sdt.internal.compiler.ast.Javadoc;
-import org.summer.sdt.internal.compiler.ast.JavadocAllocationExpression;
-import org.summer.sdt.internal.compiler.ast.JavadocArgumentExpression;
-import org.summer.sdt.internal.compiler.ast.JavadocArrayQualifiedTypeReference;
-import org.summer.sdt.internal.compiler.ast.JavadocArraySingleTypeReference;
-import org.summer.sdt.internal.compiler.ast.JavadocFieldReference;
-import org.summer.sdt.internal.compiler.ast.JavadocImplicitTypeReference;
-import org.summer.sdt.internal.compiler.ast.JavadocMessageSend;
-import org.summer.sdt.internal.compiler.ast.JavadocQualifiedTypeReference;
-import org.summer.sdt.internal.compiler.ast.JavadocReturnStatement;
-import org.summer.sdt.internal.compiler.ast.JavadocSingleNameReference;
-import org.summer.sdt.internal.compiler.ast.JavadocSingleTypeReference;
-import org.summer.sdt.internal.compiler.ast.LabeledStatement;
-import org.summer.sdt.internal.compiler.ast.LambdaExpression;
-import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
-import org.summer.sdt.internal.compiler.ast.LongLiteral;
-import org.summer.sdt.internal.compiler.ast.MarkerAnnotation;
-import org.summer.sdt.internal.compiler.ast.MemberValuePair;
-import org.summer.sdt.internal.compiler.ast.MessageSend;
-import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
-import org.summer.sdt.internal.compiler.ast.NormalAnnotation;
-import org.summer.sdt.internal.compiler.ast.NullLiteral;
-import org.summer.sdt.internal.compiler.ast.OR_OR_Expression;
-import org.summer.sdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
-import org.summer.sdt.internal.compiler.ast.ParameterizedSingleTypeReference;
-import org.summer.sdt.internal.compiler.ast.PostfixExpression;
-import org.summer.sdt.internal.compiler.ast.PrefixExpression;
-import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
-import org.summer.sdt.internal.compiler.ast.QualifiedNameReference;
-import org.summer.sdt.internal.compiler.ast.QualifiedSuperReference;
-import org.summer.sdt.internal.compiler.ast.QualifiedThisReference;
-import org.summer.sdt.internal.compiler.ast.QualifiedTypeReference;
-import org.summer.sdt.internal.compiler.ast.ReferenceExpression;
-import org.summer.sdt.internal.compiler.ast.ReturnStatement;
-import org.summer.sdt.internal.compiler.ast.SingleMemberAnnotation;
-import org.summer.sdt.internal.compiler.ast.SingleNameReference;
-import org.summer.sdt.internal.compiler.ast.SingleTypeReference;
-import org.summer.sdt.internal.compiler.ast.StringLiteral;
-import org.summer.sdt.internal.compiler.ast.StringLiteralConcatenation;
-import org.summer.sdt.internal.compiler.ast.SuperReference;
-import org.summer.sdt.internal.compiler.ast.SwitchStatement;
-import org.summer.sdt.internal.compiler.ast.SynchronizedStatement;
-import org.summer.sdt.internal.compiler.ast.ThisReference;
-import org.summer.sdt.internal.compiler.ast.ThrowStatement;
-import org.summer.sdt.internal.compiler.ast.TrueLiteral;
-import org.summer.sdt.internal.compiler.ast.TryStatement;
-import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
-import org.summer.sdt.internal.compiler.ast.TypeParameter;
-import org.summer.sdt.internal.compiler.ast.UnaryExpression;
-import org.summer.sdt.internal.compiler.ast.UnionTypeReference;
-import org.summer.sdt.internal.compiler.ast.WhileStatement;
-import org.summer.sdt.internal.compiler.ast.Wildcard;
+import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
@@ -610,6 +516,32 @@ public abstract class ASTVisitor {
 	public void endVisit(IntersectionCastTypeReference intersectionCastTypeReference, BlockScope scope) {
 		// do nothing by default
 	}
+	
+	//XAML
+	public void endVisit(Element element, ClassScope scope) {
+		// do nothing by default
+	}
+	
+	public void endVisit(ObjectElement element, ClassScope scope) {
+		// do nothing by default
+	}
+	
+	public void endVisit(AttributeElement element, ClassScope scope) {
+		// do nothing by default
+	}
+	
+	public void endVisit(GeneralAttribute element, ClassScope scope) {
+		// do nothing by default
+	}
+	public void endVisit(AttachAttribute element, ClassScope scope) {
+		// do nothing by default
+	}
+	
+	public void endVisit(MarkupExtension element, ClassScope scope) {
+		// do nothing by default
+	}
+	//END XAML
+	
 	public boolean visit(
     		AllocationExpression allocationExpression,
     		BlockScope scope) {
@@ -1108,4 +1040,29 @@ public abstract class ASTVisitor {
 	public boolean visit(IntersectionCastTypeReference intersectionCastTypeReference, BlockScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
+	
+	//XAML
+	public boolean visit(Element element, ClassScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+	
+	public boolean visit(ObjectElement element, ClassScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+	
+	public boolean visit(AttributeElement element, ClassScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+	
+	public boolean visit(GeneralAttribute element, ClassScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+	public boolean visit(AttachAttribute element, ClassScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+	
+	public boolean visit(MarkupExtension element, ClassScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+	//END XAML
 }

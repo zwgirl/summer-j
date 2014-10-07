@@ -139,4 +139,10 @@ public class JavadocImplicitTypeReference extends TypeReference {
 	public StringBuffer printExpression(int indent, StringBuffer output) {
 		return new StringBuffer();
 	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

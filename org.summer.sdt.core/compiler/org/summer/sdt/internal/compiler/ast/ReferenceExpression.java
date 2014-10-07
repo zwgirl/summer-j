@@ -848,4 +848,10 @@ public class ReferenceExpression extends FunctionalExpression implements Invocat
 	public boolean isArrayConstructorReference() {
 		return isConstructorReference() && this.lhs.resolvedType != null && this.lhs.resolvedType.isArrayType();
 	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

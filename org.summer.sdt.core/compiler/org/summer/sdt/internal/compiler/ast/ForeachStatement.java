@@ -35,6 +35,7 @@ import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
@@ -575,5 +576,14 @@ public class ForeachStatement extends Statement {
 			}
 		}
 		visitor.endVisit(this, blockScope);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+//		public LocalDeclaration elementVariable;
+//		public int elementVariableImplicitWidening = -1;
+//		public Expression collection;
+//		public Statement action;
+		
 	}
 }

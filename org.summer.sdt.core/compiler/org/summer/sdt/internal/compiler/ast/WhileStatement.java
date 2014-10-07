@@ -23,7 +23,9 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.LoopingFlowContext;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class WhileStatement extends Statement {
@@ -288,5 +290,17 @@ public class WhileStatement extends Statement {
 				this.action.traverse(visitor, blockScope);
 		}
 		visitor.endVisit(this, blockScope);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		indent(indent, buffer);
+		buffer.append(Javascript.WHILE).append(Javascript.LPAREN);
+		if(condition != null){
+			condition.generateJavascript(scope, indent, buffer);
+		}
+		buffer.append(Javascript.RPAREN);
+		action.generateJavascript(scope, indent, buffer);
+		
 	}
 }

@@ -16,6 +16,7 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IntConstant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.parser.ScannerHelper;
 
@@ -172,5 +173,13 @@ public class IntLiteral extends NumberLiteral {
 	public void traverse(ASTVisitor visitor, BlockScope scope) {
 		visitor.visit(this, scope);
 		visitor.endVisit(this, scope);
+	}
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		if(this.reducedForm != null){
+			buffer.append(this.reducedForm);
+		} else {
+			buffer.append(this.source);
+		}
 	}
 }

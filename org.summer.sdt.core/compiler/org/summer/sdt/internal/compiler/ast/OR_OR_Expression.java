@@ -22,8 +22,10 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 //dedicated treatment for the ||
@@ -299,5 +301,13 @@ public class OR_OR_Expression extends BinaryExpression {
 			this.right.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
+	}
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		left.generateJavascript(scope, indent, buffer);
+		buffer.append(Javascript.WHITESPACE);
+		buffer.append(Javascript.OR_OR);
+		buffer.append(Javascript.WHITESPACE);
+		right.generateJavascript(scope, indent, buffer);
 	}
 }

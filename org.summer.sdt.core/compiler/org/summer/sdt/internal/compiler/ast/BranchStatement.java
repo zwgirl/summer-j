@@ -13,6 +13,7 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.internal.compiler.codegen.BranchLabel;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public abstract class BranchStatement extends Statement {
 
@@ -21,53 +22,59 @@ public abstract class BranchStatement extends Statement {
 	public SubRoutineStatement[] subroutines;
 	public int initStateIndex = -1;
 
-/**
- * BranchStatement constructor comment.
- */
-public BranchStatement(char[] label, int sourceStart,int sourceEnd) {
-	this.label = label ;
-	this.sourceStart = sourceStart;
-	this.sourceEnd = sourceEnd;
-}
-
-/**
- * Branch code generation
- *
- *   generate the finallyInvocationSequence.
- */
-public void generateCode(BlockScope currentScope, CodeStream codeStream) {
-	if ((this.bits & ASTNode.IsReachable) == 0) {
-		return;
+	/**
+	 * BranchStatement constructor comment.
+	 */
+	public BranchStatement(char[] label, int sourceStart,int sourceEnd) {
+		this.label = label ;
+		this.sourceStart = sourceStart;
+		this.sourceEnd = sourceEnd;
 	}
-	int pc = codeStream.position;
-
-	// generation of code responsible for invoking the finally
-	// blocks in sequence
-	if (this.subroutines != null){
-		for (int i = 0, max = this.subroutines.length; i < max; i++){
-			SubRoutineStatement sub = this.subroutines[i];
-			boolean didEscape = sub.generateSubRoutineInvocation(currentScope, codeStream, this.targetLabel, this.initStateIndex, null);
-			if (didEscape) {
-					codeStream.recordPositionsFrom(pc, this.sourceStart);
-					SubRoutineStatement.reenterAllExceptionHandlers(this.subroutines, i, codeStream);
-					if (this.initStateIndex != -1) {
-						codeStream.removeNotDefinitelyAssignedVariables(currentScope, this.initStateIndex);
-						codeStream.addDefinitelyAssignedVariables(currentScope, this.initStateIndex);
-					}
-					return;
+	
+	/**
+	 * Branch code generation
+	 *
+	 *   generate the finallyInvocationSequence.
+	 */
+	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
+		if ((this.bits & ASTNode.IsReachable) == 0) {
+			return;
+		}
+		int pc = codeStream.position;
+	
+		// generation of code responsible for invoking the finally
+		// blocks in sequence
+		if (this.subroutines != null){
+			for (int i = 0, max = this.subroutines.length; i < max; i++){
+				SubRoutineStatement sub = this.subroutines[i];
+				boolean didEscape = sub.generateSubRoutineInvocation(currentScope, codeStream, this.targetLabel, this.initStateIndex, null);
+				if (didEscape) {
+						codeStream.recordPositionsFrom(pc, this.sourceStart);
+						SubRoutineStatement.reenterAllExceptionHandlers(this.subroutines, i, codeStream);
+						if (this.initStateIndex != -1) {
+							codeStream.removeNotDefinitelyAssignedVariables(currentScope, this.initStateIndex);
+							codeStream.addDefinitelyAssignedVariables(currentScope, this.initStateIndex);
+						}
+						return;
+				}
 			}
 		}
+		codeStream.goto_(this.targetLabel);
+		codeStream.recordPositionsFrom(pc, this.sourceStart);
+		SubRoutineStatement.reenterAllExceptionHandlers(this.subroutines, -1, codeStream);
+		if (this.initStateIndex != -1) {
+			codeStream.removeNotDefinitelyAssignedVariables(currentScope, this.initStateIndex);
+			codeStream.addDefinitelyAssignedVariables(currentScope, this.initStateIndex);
+		}
 	}
-	codeStream.goto_(this.targetLabel);
-	codeStream.recordPositionsFrom(pc, this.sourceStart);
-	SubRoutineStatement.reenterAllExceptionHandlers(this.subroutines, -1, codeStream);
-	if (this.initStateIndex != -1) {
-		codeStream.removeNotDefinitelyAssignedVariables(currentScope, this.initStateIndex);
-		codeStream.addDefinitelyAssignedVariables(currentScope, this.initStateIndex);
+	
+	public void resolve(BlockScope scope) {
+		// nothing to do during name resolution
 	}
-}
-
-public void resolve(BlockScope scope) {
-	// nothing to do during name resolution
-}
+	
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

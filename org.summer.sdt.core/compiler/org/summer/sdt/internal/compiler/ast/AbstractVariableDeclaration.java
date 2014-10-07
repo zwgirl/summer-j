@@ -52,7 +52,6 @@ public abstract class AbstractVariableDeclaration extends Statement implements I
 	public static final int PARAMETER = 5;
 	public static final int TYPE_PARAMETER = 6;
 
-
 	/**
 	 * @see org.summer.sdt.internal.compiler.lookup.InvocationSite#genericTypeArguments()
 	 */

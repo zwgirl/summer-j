@@ -30,11 +30,14 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
+import org.summer.sdt.internal.compiler.ast.Element;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
+import org.summer.sdt.internal.compiler.ast.StringLiteral;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeParameter;
 import org.summer.sdt.internal.compiler.ast.TypeReference;
@@ -112,8 +115,45 @@ public class ClassScope extends Scope {
 		anonymousType.faultInTypesForFieldsAndMethods();
 		anonymousType.verifyMethods(environment().methodVerifier());
 	}
+	
+	void buildXAML(){
+		if(this.referenceContext.element == null){
+			return;
+		}
+		
+		final SourceTypeBinding sourceType = this.referenceContext.binding;
+		final HashtableOfObject namedElements = new HashtableOfObject(0);
+		ASTVisitor visitor = new ASTVisitor() {
+			@Override
+			public boolean visit(Element node, ClassScope scope) {
+				if(node.name != null){
+					StringLiteral str = (StringLiteral) node.name.expression;
+					char[] name = str.source();
+					if (namedElements.containsKey(name)) {
+						Element previous = (Element) namedElements.get(name);
+						if(previous != null){
+							problemReporter().duplicateNamedElementInType(sourceType, previous.name.field);
+						}
+						
+						namedElements.put(name, null); // ensure that the duplicate field is found & removed
+						problemReporter().duplicateNamedElementInType(sourceType, node.name.field);
+					} else {
+						namedElements.put(name, node);
+					}
+				}
+				return true;
+			}
+		};
+		
+		this.referenceContext.element.traverse(visitor, this);
+		FieldBinding[] elementBindings = new FieldBinding[namedElements.size()];
+		for(int i = 0, length = namedElements.size(); i < length; i++ ){
+			elementBindings[i] = new FieldBinding(namedElements.keyTable[i], null, ClassFileConstants.AccPublic | ClassFileConstants.AccFinal | ExtraCompilerModifiers.AccUnresolved, sourceType, null);
+		}
+	}
 
 	void buildFields() {
+		buildXAML();
 		SourceTypeBinding sourceType = this.referenceContext.binding;
 		if (sourceType.areFieldsInitialized()) return;
 		if (this.referenceContext.fields == null) {

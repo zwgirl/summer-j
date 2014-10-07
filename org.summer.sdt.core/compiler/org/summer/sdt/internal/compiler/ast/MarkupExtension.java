@@ -1,5 +1,7 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.lookup.Scope;
+
 /**
  * 
  * @author cym
@@ -30,6 +32,12 @@ public class MarkupExtension extends Expression {
 		output.append("{").append(type.getLastToken());
 		printProperties(indent, output);
 		return output.append(" }");
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

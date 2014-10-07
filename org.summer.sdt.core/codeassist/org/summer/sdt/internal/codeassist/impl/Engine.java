@@ -326,8 +326,31 @@ public abstract class Engine implements ITypeRequestor {
 				}
 			}
 		}
+//		//XAML
+//		Element element = type.element;
+//		if(element != null){
+//			if(element.sourceStart > position && element.sourceEnd < position){
+//				return parserElement(element);
+//			}
+//		}
 		return null;
 	}
+	
+//	private ASTNode parserElement(Element element, int position){
+//		ASTNode result = element;
+//		for(Attribute attr : element.attributes){
+//			if(attr.sourceStart > position){
+//				continue;
+//			}
+//			if(attr.sourceEnd >= position){
+//				return attr;
+//			}
+//		}
+//		
+//		for(Element child : element.children){
+//			parserElement(element);
+//		}
+//	}
 
 	protected void reset(boolean resetLookupEnvironment) {
 		if (resetLookupEnvironment) this.lookupEnvironment.reset();

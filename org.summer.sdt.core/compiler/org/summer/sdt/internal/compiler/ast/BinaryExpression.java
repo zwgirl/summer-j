@@ -20,8 +20,10 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 
@@ -1912,5 +1914,58 @@ public class BinaryExpression extends OperatorExpression {
 			this.right.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
+	}
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		left.generateJavascript(scope, indent, buffer);
+		buffer.append(Javascript.WHITESPACE);
+		switch ((this.bits & ASTNode.OperatorMASK) >> ASTNode.OperatorSHIFT) {
+			case PLUS :
+				buffer.append(Javascript.PLUS);
+				break;
+			case MINUS :
+				buffer.append(Javascript.MINUS);
+				break;
+			case MULTIPLY :
+				buffer.append(Javascript.MULTIPLY);
+				break;
+			case DIVIDE :
+				buffer.append(Javascript.DIVIDE);
+				break;
+			case REMAINDER :
+				buffer.append(Javascript.REMAINDER);
+				break;
+			case AND :
+				buffer.append(Javascript.AND);
+				break;
+			case OR :
+				buffer.append(Javascript.OR);
+				break;
+			case XOR :
+				buffer.append(Javascript.XOR);
+				break;
+			case LEFT_SHIFT :
+				buffer.append(Javascript.LEFT_SHIFT);
+				break;
+			case RIGHT_SHIFT :
+				buffer.append(Javascript.RIGHT_SHIFT);
+				break;
+			case UNSIGNED_RIGHT_SHIFT :
+				buffer.append(Javascript.UNSIGNED_RIGHT_SHIFT);
+				break;
+			case GREATER :
+				buffer.append(Javascript.GREATER);
+				break;
+			case GREATER_EQUAL :
+				buffer.append(Javascript.GREATER_EQUAL);
+				break;
+			case LESS :
+				buffer.append(Javascript.LESS);
+				break;
+			case LESS_EQUAL :
+				buffer.append(Javascript.LESS_EQUAL);
+		}
+		buffer.append(Javascript.WHITESPACE);
+		right.generateJavascript(scope, indent, buffer);
 	}
 }

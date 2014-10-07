@@ -33,6 +33,7 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -1160,5 +1161,17 @@ public class QualifiedNameReference extends NameReference {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		boolean dotSet = false;
+		for(char[] segment : tokens){
+			if(dotSet){
+				buffer.append(Javascript.DOT);
+			}
+			buffer.append(segment);
+			dotSet = true;
+		}
 	}
 }

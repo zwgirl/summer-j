@@ -20,6 +20,7 @@ import org.summer.sdt.internal.compiler.flow.InsideSubRoutineFlowContext;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 
@@ -218,5 +219,11 @@ public class SynchronizedStatement extends SubRoutineStatement {
 			this.block.traverse(visitor, this.scope);
 		}
 		visitor.endVisit(this, blockScope);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
 	}
 }

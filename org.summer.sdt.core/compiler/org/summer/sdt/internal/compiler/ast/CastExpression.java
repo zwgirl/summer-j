@@ -638,4 +638,10 @@ public class CastExpression extends Expression {
 		}
 		visitor.endVisit(this, blockScope);
 	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

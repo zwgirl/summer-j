@@ -198,4 +198,10 @@ public class IntersectionCastTypeReference extends TypeReference {
 		}
 		return output;
 	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -31,6 +31,7 @@ import org.summer.sdt.internal.compiler.flow.InitializationFlowContext;
 import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -59,6 +60,7 @@ import org.summer.sdt.internal.compiler.problem.AbortType;
 import org.summer.sdt.internal.compiler.problem.ProblemReporter;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 import org.summer.sdt.internal.compiler.util.Util;
+import static org.summer.sdt.internal.compiler.javascript.Javascript.*;
 
 public class TypeDeclaration extends Statement implements ProblemSeverities, ReferenceContext {
 	// Type decl kinds
@@ -101,6 +103,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 
 	// 1.5 support
 	public TypeParameter[] typeParameters;
+	
+	//XAML root element
+	public Element element;
 
 	public TypeDeclaration(CompilationResult compilationResult){
 		this.compilationResult = compilationResult;
@@ -938,6 +943,13 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	
 	public StringBuffer printBody(int indent, StringBuffer output) {
 		output.append(" {"); //$NON-NLS-1$
+		
+		//for XAML
+		if(this.element != null){
+			output.append('\n');
+			this.element.print(indent + 1, output).append("\n");
+		}
+		
 		if (this.memberTypes != null) {
 			for (int i = 0; i < this.memberTypes.length; i++) {
 				if (this.memberTypes[i] != null) {
@@ -1032,6 +1044,12 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			return;
 		}
 		try {
+			
+			//cym add
+			if (this.element != null) {
+				this.element.resolve(this.scope);
+			}
+			
 			boolean old = this.staticInitializerScope.insideTypeAnnotation;
 			try {
 				this.staticInitializerScope.insideTypeAnnotation = true;
@@ -1560,6 +1578,82 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	 */
 	public boolean isSecondary() {
 		return (this.bits & ASTNode.IsSecondaryType) != 0;
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		buffer.append(CR);
+		if(this.methods != null){
+			for(AbstractMethodDeclaration method : methods){
+				if(method instanceof ConstructorDeclaration){
+					buffer.append(CR);
+					buffer.append(FUNCTION).append(WHITESPACE).append(this.name).append(LPAREN);
+					if(method.arguments != null){
+						boolean commaSet = false;
+						for(Argument arg : method.arguments){
+							if(commaSet){
+								buffer.append(COMMA).append(WHITESPACE);
+							}
+							
+							buffer.append(arg.name);
+						}
+					}
+					buffer.append(RPAREN);
+				} else {
+					buffer.append(CR);
+					if(method.isStatic()){
+						buffer.append(this.name).append(DOT).append(method.selector).append(EQUAL).append(WHITESPACE);
+					} else{
+						buffer.append(this.name).append(DOT).append(PROTOTYPE).append(DOT).append(method.selector).append(WHITESPACE).append(EQUAL).append(WHITESPACE);
+					}
+					buffer.append(FUNCTION).append(LPAREN);
+					if(method.arguments != null){
+						boolean commaSet = false;
+						for(Argument arg : method.arguments){
+							if(commaSet){
+								buffer.append(COMMA).append(WHITESPACE);
+							}
+							
+							buffer.append(arg.name);
+						}
+					}
+					buffer.append(RPAREN);
+				}
+				
+				buffer.append(LBRACE);
+				
+				generateMothodBody(method, scope, indent, buffer);
+				buffer.append(Javascript.CR);
+				buffer.append(RBRACE);
+			}
+		}
+		
+		if(this.fields != null){
+			for(FieldDeclaration field : this.fields){
+				buffer.append(CR);
+				buffer.append(OBJECT).append(DOT).append(DEFINEPROPERTY).append(LPAREN);
+				if(field.isStatic()){
+					buffer.append(this.name);
+				} else {
+					buffer.append(this.name).append(DOT).append(PROTOTYPE);
+				}
+				buffer.append(COMMA).append(WHITESPACE);
+				buffer.append(field.name).append(COMMA).append(WHITESPACE);
+				buffer.append(LBRACE);
+				
+				buffer.append(RBRACE).append(RPAREN).append(SEMICOLON);
+			}
+		}
+		
+	}
+
+	private void generateMothodBody(AbstractMethodDeclaration method, Scope scope, int indent, StringBuffer buffer) {
+		if(method.statements != null) {
+			for(Statement statement : method.statements){
+				buffer.append(Javascript.CR);
+				statement.generateJavascript(scope, indent, buffer);
+			}
+		}
 	}
 
 }

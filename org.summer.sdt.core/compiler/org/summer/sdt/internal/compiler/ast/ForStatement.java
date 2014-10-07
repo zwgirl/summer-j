@@ -24,8 +24,10 @@ import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.LoopingFlowContext;
 import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class ForStatement extends Statement {
@@ -432,5 +434,40 @@ public class ForStatement extends Statement {
 				this.action.traverse(visitor, this.scope);
 		}
 		visitor.endVisit(this, blockScope);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		buffer.append(Javascript.FOR).append(Javascript.LPAREN);
+		if(this.initializations != null){
+			boolean commaSet = false;
+			for(Statement statement : this.initializations){
+				if(commaSet){
+					buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+				}
+				statement.generateJavascript(scope, indent, buffer);
+				commaSet = true;
+			}
+		}
+		buffer.append(Javascript.SEMICOLON).append(Javascript.WHITESPACE);
+		if(condition != null){
+			condition.generateJavascript(scope, indent, buffer);
+		}
+		buffer.append(Javascript.SEMICOLON).append(Javascript.WHITESPACE);
+		
+		if(increments != null){
+			boolean commaSet = false;
+			for(Statement statement : this.increments){
+				if(commaSet){
+					buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+				}
+				statement.generateJavascript(scope, indent, buffer);
+				commaSet = true;
+			}
+		}
+		buffer.append(Javascript.RPAREN);
+		if(action != null){
+			action.generateJavascript(scope, indent, buffer);
+		}
 	}
 }

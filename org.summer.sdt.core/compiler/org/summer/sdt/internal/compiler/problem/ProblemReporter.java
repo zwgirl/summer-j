@@ -98,6 +98,7 @@ import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.summer.sdt.internal.compiler.ast.CompoundAssignment;
 import org.summer.sdt.internal.compiler.ast.ConditionalExpression;
 import org.summer.sdt.internal.compiler.ast.ConstructorDeclaration;
+import org.summer.sdt.internal.compiler.ast.Element;
 import org.summer.sdt.internal.compiler.ast.EqualExpression;
 import org.summer.sdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.summer.sdt.internal.compiler.ast.Expression;
@@ -1798,6 +1799,21 @@ public class ProblemReporter extends ProblemHandler {
 			fieldDecl.sourceStart,
 			fieldDecl.sourceEnd);
 	}
+	
+	/**
+	 * XAML 2014-10-03
+	 * @param type
+	 * @param fieldDecl
+	 */
+	public void duplicateNamedElementInType(SourceTypeBinding type, FieldReference fieldDecl) {
+		this.handle(
+			IProblem.DuplicateField,
+			new String[] {new String(type.sourceName()), new String(fieldDecl.token)},
+			new String[] {new String(type.shortReadableName()), new String(fieldDecl.token)},
+			fieldDecl.sourceStart,
+			fieldDecl.sourceEnd);
+	}
+	
 	public void duplicateImport(ImportReference importRef) {
 		String[] arguments = new String[] {CharOperation.toString(importRef.tokens)};
 		this.handle(

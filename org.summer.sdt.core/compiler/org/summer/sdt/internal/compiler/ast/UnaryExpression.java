@@ -21,7 +21,9 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.BooleanConstant;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class UnaryExpression extends OperatorExpression {
@@ -314,5 +316,26 @@ public class UnaryExpression extends OperatorExpression {
 			this.expression.traverse(visitor, blockScope);
 		}
 		visitor.endVisit(this, blockScope);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		switch ((this.bits & OperatorMASK) >> OperatorSHIFT) {
+			case NOT :
+				buffer.append(Javascript.NOT);
+				this.expression.generateJavascript(scope, indent, buffer);
+				break;
+			case TWIDDLE :
+				buffer.append(Javascript.TWIDDLE);
+				this.expression.generateJavascript(scope, indent, buffer);
+				break;
+			case MINUS :
+				buffer.append(Javascript.MINUS);
+				this.expression.generateJavascript(scope, indent, buffer);
+				break;
+			case PLUS :
+				buffer.append(Javascript.PLUS);
+				this.expression.generateJavascript(scope, indent, buffer);
+		}
 	}
 }

@@ -45,6 +45,7 @@ import org.summer.sdt.core.compiler.IProblem;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.env.ICompilationUnit;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
+import org.summer.sdt.internal.compiler.javascript.JavascriptFile;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.parser.RecoveryScannerData;
@@ -68,7 +69,7 @@ public class CompilationResult {
 	public boolean hasFunctionalTypes = false;
 	public int lineSeparatorPositions[];
 	public RecoveryScannerData recoveryScannerData;
-	public Map compiledTypes = new Hashtable(11);
+	public Map<char[], ClassFile> compiledTypes = new Hashtable(11);
 	public int unitIndex, totalUnitsKnown;
 	public boolean hasBeenAccepted = false;
 	public char[] fileName;
@@ -78,6 +79,9 @@ public class CompilationResult {
 	public boolean checkSecondaryTypes = false; // check for secondary types which were created after the initial buildTypeBindings call
 	private int numberOfErrors;
 	private boolean hasMandatoryErrors;
+	
+	//cym add
+	public JavascriptFile javascriptFile;   //generate for javascript
 
 	private static final int[] EMPTY_LINE_ENDS = Util.EMPTY_INT_ARRAY;
 	private static final Comparator PROBLEM_COMPARATOR = new Comparator() {
@@ -408,6 +412,14 @@ public class CompilationResult {
 	        this.hasInconsistentToplevelHierarchies = true;
 	    }
 		this.compiledTypes.put(typeName, classFile);
+	}
+	
+	
+	/**
+	 * For now, remember the javascript file.
+	 */
+	public void record(JavascriptFile jsFile) {
+		this.javascriptFile = jsFile;
 	}
 	
 	private void recordTask(CategorizedProblem newProblem) {

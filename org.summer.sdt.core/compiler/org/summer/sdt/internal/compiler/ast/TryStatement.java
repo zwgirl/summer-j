@@ -52,6 +52,7 @@ import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
@@ -1223,5 +1224,10 @@ protected void verifyDuplicationAndOrder(int length, TypeBinding[] argumentTypes
 			}
 		}
 	}
+}
+@Override
+public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+	// TODO Auto-generated method stub
+	
 }
 }

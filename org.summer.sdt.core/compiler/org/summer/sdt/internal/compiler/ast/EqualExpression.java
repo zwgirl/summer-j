@@ -26,10 +26,12 @@ import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.BooleanConstant;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
@@ -951,5 +953,14 @@ public class EqualExpression extends BinaryExpression {
 			this.right.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
+	}
+	
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		left.generateJavascript(scope, indent, buffer);
+		buffer.append(Javascript.WHITESPACE);
+		buffer.append(Javascript.EQUAL_EQUAL);
+		buffer.append(Javascript.WHITESPACE);
+		right.generateJavascript(scope, indent, buffer);
 	}
 }

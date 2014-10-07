@@ -1049,4 +1049,10 @@ public class SingleNameReference extends NameReference implements OperatorIds {
 	public char[][] getName() {
 		return new char[][] {this.token};
 	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		buffer.append(this.token);
+		
+	}
 }

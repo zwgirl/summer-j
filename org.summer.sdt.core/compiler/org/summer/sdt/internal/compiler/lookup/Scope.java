@@ -75,7 +75,7 @@ public abstract class Scope {
 	public final static int METHOD_SCOPE = 2;
 	
 	//cym add
-	public final static int MODULE_SCOPE = 5;
+	public final static int ELEMENT_SCOPE = 5;
 
 	/* Argument Compatibilities */
 	public final static int NOT_COMPATIBLE = -1;
@@ -2115,7 +2115,6 @@ public abstract class Scope {
 
 							//$FALL-THROUGH$ could duplicate the code below to save a cast - questionable optimization
 							
-						case MODULE_SCOPE:  //cym add
 						case BLOCK_SCOPE :
 							LocalVariableBinding variableBinding = scope.findVariable(name);
 							// looks in this scope only

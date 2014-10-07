@@ -157,4 +157,10 @@ public class UnionTypeReference extends TypeReference {
 		return this; // arrays are not legal as union types.
 	}
 
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

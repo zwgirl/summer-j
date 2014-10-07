@@ -32,6 +32,7 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -352,5 +353,20 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 				this.initialization.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		buffer.append(Javascript.OBJECT).append(Javascript.DEFINEPROPERTY).append(Javascript.LPAREN);
+		if(isStatic()){
+			buffer.append(scope.enclosingClassScope().referenceContext.name);
+		} else {
+			buffer.append(scope.enclosingClassScope().referenceContext.name).append(Javascript.DOT).append(Javascript.PROTOTYPE);
+		}
+		buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE).append(this.name).append(Javascript.COMMA);
+		buffer.append(Javascript.LBRACE).append(Javascript.CR);
+		indent(indent + 1 , buffer);
+		//TODO
+		buffer.append(Javascript.RBRACE).append(Javascript.RPAREN).append(Javascript.SEMICOLON);
 	}
 }

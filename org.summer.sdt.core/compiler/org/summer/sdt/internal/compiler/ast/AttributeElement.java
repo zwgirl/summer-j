@@ -4,9 +4,9 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class AttributeElement extends Element{
-	public TypeReference type;
 	public FieldReference field;
 	
 	@Override
@@ -40,4 +40,11 @@ public class AttributeElement extends Element{
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

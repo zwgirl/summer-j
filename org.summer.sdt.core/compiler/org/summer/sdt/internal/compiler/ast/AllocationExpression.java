@@ -60,6 +60,7 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
@@ -829,5 +830,22 @@ public class AllocationExpression extends Expression implements Invocation {
 	}
 	public InferenceContext18 freshInferenceContext(Scope scope) {
 		return new InferenceContext18(scope, this.arguments, this);
+	}
+
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		buffer.append(Javascript.NEW).append(Javascript.WHITESPACE);
+		buffer.append(type.getLastToken());
+		buffer.append(Javascript.LPAREN);
+		
+		boolean commaSet = false;
+		for(Expression arg : arguments){
+			if(commaSet){
+				buffer.append(Javascript.COMMA);
+			}
+			arg.generateJavascript(scope, indent, buffer);
+		}
+		
+		buffer.append(Javascript.RPAREN);
 	}
 }

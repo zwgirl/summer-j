@@ -22,9 +22,11 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class CompoundAssignment extends Assignment implements OperatorIds {
@@ -44,28 +46,28 @@ public class CompoundAssignment extends Assignment implements OperatorIds {
 		this.operator = operator ;
 	}
 
-public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext,
+	public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext,
 		FlowInfo flowInfo) {
-	// record setting a variable: various scenarii are possible, setting an array reference,
-	// a field reference, a blank final field reference, a field of an enclosing instance or
-	// just a local variable.
-	if (this.resolvedType.id != T_JavaLangString) {
-		this.lhs.checkNPE(currentScope, flowContext, flowInfo);
-		// account for exceptions thrown by any arithmetics:
-		flowContext.recordAbruptExit();
-	}
-	flowInfo = ((Reference) this.lhs).analyseAssignment(currentScope, flowContext, flowInfo, this, true).unconditionalInits();
-	if (this.resolvedType.id == T_JavaLangString) {
-		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=339250
-		LocalVariableBinding local = this.lhs.localVariableBinding();
-		if (local != null) {
-			// compound assignment results in a definitely non null value for String
-			flowInfo.markAsDefinitelyNonNull(local);
-			flowContext.markFinallyNullStatus(local, FlowInfo.NON_NULL);
+		// record setting a variable: various scenarii are possible, setting an array reference,
+		// a field reference, a blank final field reference, a field of an enclosing instance or
+		// just a local variable.
+		if (this.resolvedType.id != T_JavaLangString) {
+			this.lhs.checkNPE(currentScope, flowContext, flowInfo);
+			// account for exceptions thrown by any arithmetics:
+			flowContext.recordAbruptExit();
 		}
+		flowInfo = ((Reference) this.lhs).analyseAssignment(currentScope, flowContext, flowInfo, this, true).unconditionalInits();
+		if (this.resolvedType.id == T_JavaLangString) {
+			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=339250
+			LocalVariableBinding local = this.lhs.localVariableBinding();
+			if (local != null) {
+				// compound assignment results in a definitely non null value for String
+				flowInfo.markAsDefinitelyNonNull(local);
+				flowContext.markFinallyNullStatus(local, FlowInfo.NON_NULL);
+			}
+		}
+		return flowInfo;
 	}
-	return flowInfo;
-}
 
 	public boolean checkCastCompatibility() {
 		return true;
@@ -220,5 +222,12 @@ public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext,
 			this.expression.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
+	}
+	
+	@Override
+	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		lhs.generateJavascript(scope, indent, buffer);
+		buffer.append(Javascript.WHITESPACE).append(operatorToString()).append(Javascript.WHITESPACE);
+		expression.generateJavascript(scope, indent, buffer);
 	}
 }
