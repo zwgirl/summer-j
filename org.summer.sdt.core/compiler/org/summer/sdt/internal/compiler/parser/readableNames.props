@@ -247,7 +247,6 @@ NonWildTypeArgumentsopt=NonWildTypeArgumentsopt
 NormalAnnotation=NormalAnnotation
 NumericType=NumericType
 ObjectElement=ObjectElement
-ObjectElementopt=ObjectObjectElementopt
 OnlySynchronized=OnlySynchronized
 OnlyTypeArguments=TypeArguments
 OnlyTypeArgumentsForCastExpression=TypeArguments
