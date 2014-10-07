@@ -442,20 +442,20 @@ InternalCompilationUnit ::= PackageDeclaration
 /.$putCase consumeInternalCompilationUnit(); $break ./
 InternalCompilationUnit ::= PackageDeclaration ImportDeclarations ReduceImports 
 /.$putCase consumeInternalCompilationUnit(); $break ./
---cym add
---InternalCompilationUnit ::= PackageDeclaration ImportDeclarations ReduceImports ObjectElement
---/.$putCase consumeInternalCompilationUnit(); $break ./
---end
 
-InternalCompilationUnit ::= PackageDeclaration ImportDeclarations ReduceImports ObjectElementopt ModuleDeclaration
+--InternalCompilationUnit ::= PackageDeclaration ImportDeclarations ReduceImports ObjectElementopt ModuleDeclaration
+InternalCompilationUnit ::= PackageDeclaration ImportDeclarations ReduceImports  ModuleDeclaration
 /.$putCase consumeInternalCompilationUnitWithModule(); $break ./
-InternalCompilationUnit ::= PackageDeclaration ObjectElementopt ModuleDeclaration
+--InternalCompilationUnit ::= PackageDeclaration ObjectElementopt ModuleDeclaration
+InternalCompilationUnit ::= PackageDeclaration  ModuleDeclaration
 /.$putCase consumeInternalCompilationUnitWithModule(); $break ./
 InternalCompilationUnit ::= ImportDeclarations ReduceImports
 /.$putCase consumeInternalCompilationUnit(); $break ./
-InternalCompilationUnit ::= ObjectElementopt ModuleDeclaration
+--InternalCompilationUnit ::= ObjectElementopt ModuleDeclaration
+InternalCompilationUnit ::=  ModuleDeclaration
 /.$putCase consumeInternalCompilationUnitWithModule(); $break ./
-InternalCompilationUnit ::= ImportDeclarations ReduceImports ObjectElementopt ModuleDeclaration
+--InternalCompilationUnit ::= ImportDeclarations ReduceImports ObjectElementopt ModuleDeclaration
+InternalCompilationUnit ::= ImportDeclarations ReduceImports  ModuleDeclaration
 /.$putCase consumeInternalCompilationUnitWithModule(); $break ./
 InternalCompilationUnit ::= $empty
 /.$putCase consumeEmptyInternalCompilationUnit(); $break ./
@@ -472,6 +472,7 @@ ModuleHeader ::= 'module' 'Identifier'
 /.$putCase consumeModuleHeader(); $break ./
 /:$readableName ModuleHeader:/
 
+ModuleBody ::= '{'  ObjectElement ModuleBodyDeclarationsopt '}'
 ModuleBody ::= '{'  ModuleBodyDeclarationsopt '}'
 /:$readableName ModuleBody:/
 /:$no_statements_recovery:/
@@ -509,23 +510,10 @@ ModuleMemberDeclaration -> EnumDeclaration
 ModuleMemberDeclaration -> AnnotationTypeDeclaration
 /:$readableName ModuleMemberDeclaration:/
 
-
---ModuleBody ::= EnterModule '{' BlockStatementsopt '}' 
---/:$readableName ModuleBody:/
---/:$no_statements_recovery:/
-
---EnterModule ::= $empty
---/.$putCase consumeNestedMethod(); $break ./
---/:$readableName NestedMethod:/
-
---EnterModule1 ::= $empty
-
 -----------------------------------------------
 -- xaml declaration
 -----------------------------------------------
-ObjectElementopt ::= $empty
-ObjectElementopt -> ObjectElement
-/:$readableName ObjectObjectElementopt:/
+
 
 Element -> ObjectElement
 Element -> AttributeElement
@@ -765,6 +753,7 @@ InterfaceType ::= ClassOrInterfaceType
 /.$putCase consumeInterfaceType(); $break ./
 /:$readableName InterfaceType:/
 
+ClassBody ::= '{' ObjectElement ClassBodyDeclarationsopt '}'
 ClassBody ::= '{' ClassBodyDeclarationsopt '}'
 /:$readableName ClassBody:/
 /:$no_statements_recovery:/
