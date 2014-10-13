@@ -11,6 +11,9 @@ public class Javascript {
 	public static final String ELSE = "else";
 	public static final String VAR = "var";
 	public static final String LET = "let";
+	public static final String TRY = "try";
+	public static final String CATCH = "catch";
+	public static final String FINALLY = "finally";
 	public static final String CONST = "const";
 	public static final String SWITCH = "switch";
 	public static final Object RETURN = "return";

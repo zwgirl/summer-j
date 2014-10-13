@@ -390,6 +390,7 @@ public class ReturnStatement extends Statement {
 	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
 		buffer.append(Javascript.RETURN);
 		if(expression != null){
+			buffer.append(Javascript.WHITESPACE);
 			expression.generateJavascript(scope, indent, buffer);
 		}
 		buffer.append(Javascript.SEMICOLON);

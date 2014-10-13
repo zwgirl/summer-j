@@ -2965,7 +2965,7 @@ public class Scanner implements TerminalTokens {
 		switch (data[index]) {
 			case 'a' :
 				switch(length) {
-					case 3: //abstract
+					case 3: //add
 					if ((data[++index] == 'd')
 						&& (data[++index] == 'd')) {
 							return TokenNameadd;
@@ -3138,15 +3138,15 @@ public class Scanner implements TerminalTokens {
 							return TokenNameevent;
 						else
 							return TokenNameIdentifier;	
-					case 6 :
-						if ((data[++index] == 'x')
-							&& (data[++index] == 'p')
-							&& (data[++index] == 'o')
-							&& (data[++index] == 'r')
-							&& (data[++index] == 't'))
-							return TokenNameexport;
-						else
-							return TokenNameIdentifier;
+//					case 6 :
+//						if ((data[++index] == 'x')
+//							&& (data[++index] == 'p')
+//							&& (data[++index] == 'o')
+//							&& (data[++index] == 'r')
+//							&& (data[++index] == 't'))
+//							return TokenNameexport;
+//						else
+//							return TokenNameIdentifier;
 					case 7 :
 						if ((data[++index] == 'x')
 							&& (data[++index] == 't')
@@ -3413,18 +3413,21 @@ public class Scanner implements TerminalTokens {
 							} else
 								return TokenNameIdentifier;
 					case 6:
-						if ((data[++index] == 'e')
-								&& (data[++index] == 't')
-								&& (data[++index] == 'u')
-								&& (data[++index] == 'r')
-								&& (data[++index] == 'n')) {
+						if (data[++index] == 'e'){
+							if((data[++index] == 't')
+									&& (data[++index] == 'u')
+									&& (data[++index] == 'r')
+									&& (data[++index] == 'n')) {
 								return TokenNamereturn;
-							} else if((data[++index] == 'e')
-									&& (data[++index] == 'm')
-									&& (data[++index] == 'o')
-									&& (data[++index] == 'v')
-									&& (data[++index] == 'e'))
+							} else if((data[index] == 'm')
+								&& (data[++index] == 'o')
+								&& (data[++index] == 'v')
+								&& (data[++index] == 'e')){
 								return TokenNameremove;
+							} else 
+								return TokenNameIdentifier;
+						} else 
+							return TokenNameIdentifier;
 					default:
 						return TokenNameIdentifier;
 				}

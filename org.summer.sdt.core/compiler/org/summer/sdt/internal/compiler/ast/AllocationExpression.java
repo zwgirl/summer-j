@@ -838,12 +838,14 @@ public class AllocationExpression extends Expression implements Invocation {
 		buffer.append(type.getLastToken());
 		buffer.append(Javascript.LPAREN);
 		
-		boolean commaSet = false;
-		for(Expression arg : arguments){
-			if(commaSet){
-				buffer.append(Javascript.COMMA);
+		if(this.arguments != null){
+			boolean commaSet = false;
+			for(Expression arg : arguments){
+				if(commaSet){
+					buffer.append(Javascript.COMMA);
+				}
+				arg.generateJavascript(scope, indent, buffer);
 			}
-			arg.generateJavascript(scope, indent, buffer);
 		}
 		
 		buffer.append(Javascript.RPAREN);

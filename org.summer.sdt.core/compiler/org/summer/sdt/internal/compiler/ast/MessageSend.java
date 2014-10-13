@@ -70,6 +70,7 @@ import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
@@ -1084,7 +1085,20 @@ public class MessageSend extends Expression implements Invocation {
 	}
 	@Override
 	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+		if(this.receiver != null){
+			this.receiver.generateJavascript(scope, indent, buffer);
+			buffer.append(Javascript.DOT);
+		}
+		buffer.append(this.selector);
+		buffer.append(Javascript.LPAREN);
+		if(arguments != null){
+			for(int i = 0, length = this.arguments.length; i < length; i++){
+				if(i >= 1){
+					buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+				}
+				arguments[i].generateJavascript(scope, indent, buffer);
+			}
+		}
+		buffer.append(Javascript.RPAREN);
 	}
 }

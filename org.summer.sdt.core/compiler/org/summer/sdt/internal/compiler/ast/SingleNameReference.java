@@ -29,6 +29,7 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -1052,6 +1053,15 @@ public class SingleNameReference extends NameReference implements OperatorIds {
 
 	@Override
 	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+		if(this.binding instanceof FieldBinding){
+			FieldBinding fieldBinding = (FieldBinding) this.binding;
+			if(fieldBinding.isStatic()){
+				buffer.append(fieldBinding.declaringClass.shortReadableName());
+			} else {
+				buffer.append(Javascript.THIS);
+			}
+			buffer.append(Javascript.DOT);
+		}
 		buffer.append(this.token);
 		
 	}

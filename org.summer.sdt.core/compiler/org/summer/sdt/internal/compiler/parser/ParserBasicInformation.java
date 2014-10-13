@@ -15,22 +15,22 @@ package org.summer.sdt.internal.compiler.parser;
 public interface ParserBasicInformation {
 
 	int 
-    ERROR_SYMBOL      = 128,
+    ERROR_SYMBOL      = 127,
     MAX_NAME_LENGTH   = 41,
-    NUM_STATES        = 1165,
+    NUM_STATES        = 1328,
 
-    NT_OFFSET         = 128,
-    SCOPE_UBOUND      = 166,
-    SCOPE_SIZE        = 167,
-    LA_STATE_OFFSET   = 14895,
+    NT_OFFSET         = 127,
+    SCOPE_UBOUND      = 231,
+    SCOPE_SIZE        = 232,
+    LA_STATE_OFFSET   = 16049,
     MAX_LA            = 1,
-    NUM_RULES         = 848,
-    NUM_TERMINALS     = 128,
-    NUM_NON_TERMINALS = 387,
-    NUM_SYMBOLS       = 515,
-    START_STATE       = 1946,
-    EOFT_SYMBOL       = 74,
-    EOLT_SYMBOL       = 74,
-    ACCEPT_ACTION     = 14894,
-    ERROR_ACTION      = 14895;
+    NUM_RULES         = 965,
+    NUM_TERMINALS     = 127,
+    NUM_NON_TERMINALS = 394,
+    NUM_SYMBOLS       = 521,
+    START_STATE       = 1085,
+    EOFT_SYMBOL       = 73,
+    EOLT_SYMBOL       = 73,
+    ACCEPT_ACTION     = 16048,
+    ERROR_ACTION      = 16049;
 }

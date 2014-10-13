@@ -237,6 +237,7 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 	//	InputStream input = new SequenceInputStream(
 	//			new ByteArrayInputStream(classFile.header, 0, classFile.headerOffset),
 	//			new ByteArrayInputStream(classFile.contents, 0, classFile.contentsOffset));
+		@SuppressWarnings("deprecation")
 		InputStream input = new StringBufferInputStream(jsFile.content.toString());
 		if (file.exists()) {
 			// Deal with shared output folders... last one wins... no collision cases detected
