@@ -849,9 +849,25 @@ public class ReferenceExpression extends FunctionalExpression implements Invocat
 		return isConstructorReference() && this.lhs.resolvedType != null && this.lhs.resolvedType.isArrayType();
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
+	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
 		
+		this.lhs.generateJavascript(scope, 0, output);
+		output.append("::"); //$NON-NLS-1$
+		if (this.typeArguments != null) {
+			output.append('<');
+			int max = this.typeArguments.length - 1;
+			for (int j = 0; j < max; j++) {
+				this.typeArguments[j].generateJavascript(scope, 0, output);
+				output.append(", ");//$NON-NLS-1$
+			}
+			this.typeArguments[max].generateJavascript(scope, 0, output);
+			output.append('>');
+		}
+		if (isConstructorReference())
+			output.append("new"); //$NON-NLS-1$
+		else 
+			output.append(this.selector);
+		
+		return output;
 	}
 }

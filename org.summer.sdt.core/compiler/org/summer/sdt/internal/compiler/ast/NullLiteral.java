@@ -71,10 +71,4 @@ public class NullLiteral extends MagicLiteral {
 		visitor.visit(this, scope);
 		visitor.endVisit(this, scope);
 	}
-
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(Javascript.NULL);
-		
-	}
 }

@@ -1273,9 +1273,33 @@ public class LambdaExpression extends FunctionalExpression implements ReferenceC
 		return this.classType = new LambdaTypeBinding();
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
+		return generateExpression(scope, tab, output, false);
+	}
+
+	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output, boolean makeShort) {
+		int parenthesesCount = (this.bits & ASTNode.ParenthesizedMASK) >> ASTNode.ParenthesizedSHIFT;
+		String suffix = ""; //$NON-NLS-1$
+		for(int i = 0; i < parenthesesCount; i++) {
+			output.append('(');
+			suffix += ')';
+		}
+		output.append('(');
+		if (this.arguments != null) {
+			for (int i = 0; i < this.arguments.length; i++) {
+				if (i > 0) output.append(", "); //$NON-NLS-1$
+				this.arguments[i].print(0, output);
+			}
+		}
+		output.append(") -> " ); //$NON-NLS-1$
+		if (makeShort) {
+			output.append("{}"); //$NON-NLS-1$
+		} else {
+			if (this.body != null)
+				this.body.print(this.body instanceof Block ? tab : 0, output);
+			else
+				output.append("<@incubator>"); //$NON-NLS-1$
+		}
+		return output.append(suffix);
 	}
 }

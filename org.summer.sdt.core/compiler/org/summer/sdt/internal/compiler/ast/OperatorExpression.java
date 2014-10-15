@@ -13,6 +13,7 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.util.Util;
 
 public abstract class OperatorExpression extends Expression implements OperatorIds {
@@ -1564,4 +1565,12 @@ public abstract class OperatorExpression extends Expression implements OperatorI
 	}
 
 	public abstract StringBuffer printExpressionNoParenthesis(int indent, StringBuffer output);
+	
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output){
+
+		output.append('(');
+		return printExpressionNoParenthesis(0, output).append(')');
+	}
+
+	public abstract StringBuffer generateExpressionNoParenthesis(Scope scope, int indent, StringBuffer output);
 }

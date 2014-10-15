@@ -134,10 +134,9 @@ public class ClassLiteralAccess extends Expression {
 		}
 		visitor.endVisit(this, blockScope);
 	}
+	
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+		return this.type.generateJavascript(scope, 0, output).append(".class"); //$NON-NLS-1$
 	}
 }

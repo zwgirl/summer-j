@@ -148,8 +148,14 @@ public class LabeledStatement extends Statement {
 	}
 
 	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(label).append(Javascript.COLON);
-		statement.generateJavascript(scope, indent, buffer);
+	public StringBuffer generateStatement(Scope scope, int indent,
+			StringBuffer output) {
+
+		printIndent(indent, output).append(this.label).append(": "); //$NON-NLS-1$
+		if (this.statement == null)
+			output.append(';');
+		else
+			this.statement.printStatement(0, output);
+		return output;
 	}
 }

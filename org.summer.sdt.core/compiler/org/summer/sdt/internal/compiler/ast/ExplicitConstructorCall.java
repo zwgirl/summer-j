@@ -554,8 +554,9 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 	}
 
 	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+	public StringBuffer generateStatement(Scope scope, int indent,
+			StringBuffer output) {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 }

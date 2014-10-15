@@ -235,17 +235,15 @@ public class DoStatement extends Statement {
 		visitor.endVisit(this, scope);
 	}
 	
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		indent(indent, buffer);
-		buffer.append(Javascript.DO).append(Javascript.WHITESPACE);
-		action.generateJavascript(scope, indent, buffer);
-		
-		buffer.append(Javascript.WHILE).append(Javascript.LPAREN);
-		if(condition != null){
-			condition.generateJavascript(scope, indent, buffer);
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		printIndent(indent, output).append("do"); //$NON-NLS-1$
+		if (this.action == null)
+			output.append(" ;\n"); //$NON-NLS-1$
+		else {
+			output.append('\n');
+			this.action.generateStatement(scope, indent + 1, output).append('\n');
 		}
-		buffer.append(Javascript.RPAREN);
-		buffer.append(Javascript.SEMICOLON);
+		printIndent(indent, output).append("while ("); //$NON-NLS-1$
+		return this.condition.generateExpression(scope, 0, output).append(");"); //$NON-NLS-1$
 	}
 }

@@ -289,17 +289,25 @@ public class IfStatement extends Statement {
 		}
 		visitor.endVisit(this, blockScope);
 	}
-
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(Javascript.IF).append(Javascript.LPAREN);
-		condition.generateJavascript(scope, indent, buffer);
-		buffer.append(Javascript.RPAREN);
-		thenStatement.generateJavascript(scope, indent, buffer);
-		
-		if(elseStatement != null){
-			buffer.append(Javascript.ELSE).append(Javascript.CR);
-			elseStatement.generateJavascript(scope, indent, buffer);
+	
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		printIndent(indent, output).append("if ("); //$NON-NLS-1$
+		this.condition.generateExpression(scope, 0, output).append(")\n");	//$NON-NLS-1$
+		if(this.thenStatement instanceof Block){
+			this.thenStatement.generateStatement(scope, indent, output);
+		} else{
+			this.thenStatement.generateStatement(scope, indent + 1, output);
 		}
+		if (this.elseStatement != null) {
+			output.append('\n');
+			printIndent(indent, output);
+			output.append("else\n"); //$NON-NLS-1$
+			if(elseStatement instanceof Block){
+				this.elseStatement.generateStatement(scope, indent, output);
+			} else {
+				this.elseStatement.generateStatement(scope, indent + 1, output);
+			}
+		}
+		return output;
 	}
 }

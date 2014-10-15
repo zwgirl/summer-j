@@ -14,6 +14,7 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public abstract class Literal extends Expression {
@@ -55,4 +56,9 @@ public abstract class Literal extends Expression {
 	}
 
 	public abstract char[] source();
+	
+	@Override
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		return output.append(source());
+	}
 }

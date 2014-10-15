@@ -104,10 +104,4 @@ public class CharLiteral extends NumberLiteral {
 		visitor.visit(this, blockScope);
 		visitor.endVisit(this, blockScope);
 	}
-
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
-	}
 }

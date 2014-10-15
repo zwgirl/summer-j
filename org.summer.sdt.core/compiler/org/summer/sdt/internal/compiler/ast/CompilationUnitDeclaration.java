@@ -32,6 +32,7 @@ import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
 import org.summer.sdt.internal.compiler.lookup.ImportBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.parser.NLSTag;
@@ -354,6 +355,7 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	 * Bytecode generation
 	 */
 	public void generateCode() {
+		generateJavascript();   //cym add
 		if (this.ignoreFurtherInvestigation) {
 			if (this.types != null) {
 				for (int i = 0, count = this.types.length; i < count; i++) {
@@ -372,8 +374,62 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		} catch (AbortCompilationUnit e) {
 			// ignore
 		}
+	}
+	
+//	public StringBuffer print(int indent, StringBuffer output) {
+//		if (this.currentPackage != null) {
+//			printIndent(indent, output).append("package "); //$NON-NLS-1$
+//			this.currentPackage.print(0, output, false).append(";\n"); //$NON-NLS-1$
+//		}
+//		if (this.imports != null)
+//			for (int i = 0; i < this.imports.length; i++) {
+//				printIndent(indent, output).append("import "); //$NON-NLS-1$
+//				ImportReference currentImport = this.imports[i];
+//				if (currentImport.isStatic()) {
+//					output.append("static "); //$NON-NLS-1$
+//				}
+//				currentImport.print(0, output).append(";\n"); //$NON-NLS-1$
+//			}
+//		
+//		if (this.types != null) {
+//			for (int i = 0; i < this.types.length; i++) {
+//				this.types[i].print(indent, output).append("\n"); //$NON-NLS-1$
+//			}
+//		}
+//		return output;
+//	}
+	
+	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output){
+		generateAMDHeader(indent, output);
 		
-		generateJavascript();   //cym add
+		if (this.ignoreFurtherInvestigation) {
+			if (this.types != null) {
+				for (int i = 0, count = this.types.length; i < count; i++) {
+					this.types[i].ignoreFurtherInvestigation = true;
+					// propagate the flag to request problem type creation
+					this.types[i].generateJavascript(this.scope, 0, output);
+				}
+			}
+			return output;
+		}
+		try {
+			if (this.types != null) {
+				for (int i = 0, count = this.types.length; i < count; i++)
+//					this.types[i].generateJavascript(this.scope, 0, buffer);
+				generateModuleBody(indent + 1, output, this.types[i]);
+			}
+		} catch (AbortCompilationUnit e) {
+			// ignore
+		}
+		
+		if (this.types != null) {
+			generateExportObject(indent + 1, output, this.types[0]);
+		}
+		
+		output.append(Javascript.CR);
+		output.append(Javascript.RBRACE).append(Javascript.RPAREN).append(Javascript.SEMICOLON);
+		
+		return output;
 	}
 	
 	//cym add
@@ -384,152 +440,131 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		compilationResult.javascriptFile = new JavascriptFile();
 		StringBuffer buffer = compilationResult.javascriptFile.content;
 		
-		generateAMDHeader(buffer);
-		
-		if (this.ignoreFurtherInvestigation) {
-			if (this.types != null) {
-				for (int i = 0, count = this.types.length; i < count; i++) {
-					this.types[i].ignoreFurtherInvestigation = true;
-					// propagate the flag to request problem type creation
-					this.types[i].generateJavascript(this.scope, 0, buffer);
-				}
-			}
-			return;
-		}
-		try {
-			if (this.types != null) {
-				for (int i = 0, count = this.types.length; i < count; i++)
-//					this.types[i].generateJavascript(this.scope, 0, buffer);
-				generateModuleBody(buffer, 1, this.types[i]);
-			}
-		} catch (AbortCompilationUnit e) {
-			// ignore
-		}
-		
-		if (this.types != null) {
-			generateExportObject(buffer, this.types[0]);
-		}
-		
-		buffer.append(Javascript.CR);
-		buffer.append(Javascript.RPAREN).append(Javascript.RBRACE).append(Javascript.SEMICOLON);
+		generateJavascript(this.scope, 0, buffer);
 	}
 	
-	private void generateExportObject(StringBuffer buffer, TypeDeclaration type) {
-		buffer.append(Javascript.CR);
-		buffer.append(Javascript.RETURN).append(Javascript.WHITESPACE).append(Javascript.LBRACE);
+	private void generateExportObject(int indent, StringBuffer output, TypeDeclaration type) {
+		output.append(Javascript.CR);
+		printIndent(indent, output).append(Javascript.RETURN).append(Javascript.WHITESPACE).append(Javascript.LBRACE);
 		
 		if(type.fields != null){
 			for(FieldDeclaration field : type.fields){
 				if(field instanceof Initializer){
 					continue;
 				}
-				buffer.append(Javascript.CR);
-				buffer.append(field.name).append(Javascript.WHITESPACE).append(Javascript.COLON).append(Javascript.WHITESPACE);
-				buffer.append(field.name);
-				buffer.append(Javascript.COMMA);
+				output.append(Javascript.CR);
+				printIndent(indent + 1, output).append(field.name).append(Javascript.WHITESPACE).append(Javascript.COLON).append(Javascript.WHITESPACE);
+				output.append(field.name);
+				output.append(Javascript.COMMA);
 			}
 		}
 
 		if(type.methods != null){
 			for(AbstractMethodDeclaration method : type.methods){
-				buffer.append(Javascript.CR);
-				buffer.append(method.selector).append(Javascript.WHITESPACE).append(Javascript.COLON).append(Javascript.WHITESPACE);
-				buffer.append(method.selector);
-				buffer.append(Javascript.COMMA);
+				output.append(Javascript.CR);
+				printIndent(indent + 1, output).append(method.selector).append(Javascript.WHITESPACE).append(Javascript.COLON).append(Javascript.WHITESPACE);
+				output.append(method.selector);
+				output.append(Javascript.COMMA);
 			}
 		}
 		
-		buffer.append(Javascript.CR);
-		buffer.append(Javascript.RBRACE).append(Javascript.SEMICOLON);
+		output.append(Javascript.CR);
+		printIndent(indent, output).append(Javascript.RBRACE).append(Javascript.SEMICOLON);
 	}
 
-	private void generateModuleBody(StringBuffer buffer, int indent, TypeDeclaration type){
+	private void generateModuleBody(int indent, StringBuffer output, TypeDeclaration type){
 		if(type.fields != null){
 			for(FieldDeclaration field : type.fields){
 				if(field instanceof Initializer){
 					continue;
 				}
-				buffer.append(Javascript.CR);
+				
+				if(field instanceof PropertyDeclaration){
+					PropertyDeclaration prop = (PropertyDeclaration) field;
+				}
+				output.append(Javascript.CR);
 				if(field.isFinal())
-					buffer.append(Javascript.CONST);
+					printIndent(indent, output).append(Javascript.CONST);
 				else 
-					buffer.append(Javascript.VAR);
-				buffer.append(Javascript.WHITESPACE).append(field.name);
+					printIndent(indent, output).append(Javascript.LET);
+				output.append(Javascript.WHITESPACE).append(field.name);
 				
 				if(field.initialization != null){
-					buffer.append(Javascript.WHITESPACE).append(Javascript.EQUAL).append(Javascript.WHITESPACE);
-					field.initialization.generateJavascript(scope, 0, buffer);
+					output.append(Javascript.WHITESPACE).append(Javascript.EQUAL).append(Javascript.WHITESPACE);
+					field.initialization.generateJavascript(scope, 0, output);
 				}
-				buffer.append(Javascript.SEMICOLON);
+				output.append(Javascript.SEMICOLON);
 			}
 		}
 
 		if(type.methods != null){
 			for(AbstractMethodDeclaration method : type.methods){
-				buffer.append(Javascript.CR);
-				buffer.append(Javascript.FUNCTION).append(Javascript.WHITESPACE).append(method.selector).append(Javascript.LPAREN);
-				if(method.arguments != null){
-					boolean commaSet = false;
-					for(Argument arg : method.arguments){
-						if(commaSet){
-							buffer.append(Javascript.COMMA);
-						}
-						buffer.append(arg.name);
-					}
-				}
-				
-				buffer.append(Javascript.RPAREN).append(Javascript.LBRACE);
-				buffer.append(Javascript.CR);
-				
-				buffer.append(Javascript.RBRACE);
+				output.append(Javascript.CR);
+//				printIndent(indent, output).append(Javascript.FUNCTION).append(Javascript.WHITESPACE).append(method.selector).append(Javascript.LPAREN);
+//				if(method.arguments != null){
+//					boolean commaSet = false;
+//					for(Argument arg : method.arguments){
+//						if(commaSet){
+//							output.append(Javascript.COMMA);
+//						}
+//						output.append(arg.name);
+//					}
+//				}
+//				
+//				output.append(Javascript.RPAREN).append(Javascript.LBRACE);
+//				output.append(Javascript.CR);
+//				
+//				printIndent(indent, output).append(Javascript.RBRACE);
+				method.generateJavascript(scope, indent, output);
 			}
 		}
 		
 		if(type.memberTypes != null){
 			for(TypeDeclaration member : type.memberTypes){
-				member.generateJavascript(scope, indent, buffer);
+				member.generateJavascript(scope, indent , output);
 			}
 		}
 
 	}
 	
-	private void generateAMDHeader(StringBuffer buffer) {
-		buffer.append(Javascript.DEFINE).append(Javascript.LPAREN).append(Javascript.DOUBLE_QUOTE).append(Javascript.DOUBLE_QUOTE);
-		buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE);
-		buffer.append(Javascript.LBRACKET);
+	private void generateAMDHeader(int indent, StringBuffer output) {
+		printIndent(indent, output);
+		output.append(Javascript.DEFINE).append(Javascript.LPAREN).append(Javascript.DOUBLE_QUOTE).append(Javascript.DOUBLE_QUOTE);
+		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+		output.append(Javascript.LBRACKET);
 		
 		boolean commaSet = false;
 		if(imports != null){
 			for(ImportReference imp : imports){
 				if(commaSet){
-					buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+					output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
 				}
-				buffer.append(Javascript.DOUBLE_QUOTE);
+				output.append(Javascript.DOUBLE_QUOTE);
 				for (int i = 0; i < imp.tokens.length; i++) {
-					if (i > 0) buffer.append('.');
-					buffer.append(imp.tokens[i]);
+					if (i > 0) output.append('.');
+					output.append(imp.tokens[i]);
 				}
-				buffer.append(Javascript.DOUBLE_QUOTE);
+				output.append(Javascript.DOUBLE_QUOTE);
 				
 				commaSet = true;
 			}
 		}
 
-		buffer.append(Javascript.RBRACKET);
-		buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE);;
-		buffer.append(Javascript.FUNCTION).append(Javascript.LPAREN);
+		output.append(Javascript.RBRACKET);
+		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);;
+		output.append(Javascript.FUNCTION).append(Javascript.LPAREN);
 		
 		if(imports != null){
 			commaSet = false;
 			for(ImportReference imp : imports){
 				if(commaSet){
-					buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+					output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
 				}
-				buffer.append(imp.tokens[imp.tokens.length - 1]);
+				output.append(imp.tokens[imp.tokens.length - 1]);
 				commaSet = true;
 			}
 		}
-		buffer.append(Javascript.RPAREN).append(Javascript.LBRACE);
+		output.append(Javascript.RPAREN).append(Javascript.LBRACE);
 	}
 
 //	public void doGenerate(final Resource input, final IFileSystemAccess fsa) {

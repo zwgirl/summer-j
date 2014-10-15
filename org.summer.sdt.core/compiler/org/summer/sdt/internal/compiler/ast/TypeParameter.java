@@ -191,9 +191,25 @@ public class TypeParameter extends AbstractVariableDeclaration {
 		visitor.endVisit(this, scope);
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+	/* (non-Javadoc)
+	 * @see org.summer.sdt.internal.compiler.ast.AstNode#print(int, java.lang.StringBuffer)
+	 */
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		if (this.annotations != null) {
+			generateAnnotations(this.annotations, output);
+			output.append(' ');
+		}
+		output.append(this.name);
+		if (this.type != null) {
+			output.append(" extends "); //$NON-NLS-1$
+			this.type.generateJavascript(scope, 0, output);
+		}
+		if (this.bounds != null){
+			for (int i = 0; i < this.bounds.length; i++) {
+				output.append(" & "); //$NON-NLS-1$
+				this.bounds[i].generateJavascript(scope, 0, output);
+			}
+		}
+		return output;
 	}
 }

@@ -831,23 +831,31 @@ public class AllocationExpression extends Expression implements Invocation {
 	public InferenceContext18 freshInferenceContext(Scope scope) {
 		return new InferenceContext18(scope, this.arguments, this);
 	}
-
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(Javascript.NEW).append(Javascript.WHITESPACE);
-		buffer.append(type.getLastToken());
-		buffer.append(Javascript.LPAREN);
-		
-		if(this.arguments != null){
-			boolean commaSet = false;
-			for(Expression arg : arguments){
-				if(commaSet){
-					buffer.append(Javascript.COMMA);
-				}
-				arg.generateJavascript(scope, indent, buffer);
+	
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		if (this.type != null) { // type null for enum constant initializations
+			output.append(Javascript.NEW).append(Javascript.WHITESPACE); 
+		}
+//		if (this.typeArguments != null) {
+//			output.append('<');
+//			int max = this.typeArguments.length - 1;
+//			for (int j = 0; j < max; j++) {
+//				this.typeArguments[j].print(0, output);
+//				output.append(", ");//$NON-NLS-1$
+//			}
+//			this.typeArguments[max].print(0, output);
+//			output.append('>');
+//		}
+		if (this.type != null) { // type null for enum constant initializations
+			this.type.generateExpression(scope, 0, output);
+		}
+		output.append(Javascript.LPAREN);
+		if (this.arguments != null) {
+			for (int i = 0; i < this.arguments.length; i++) {
+				if (i > 0) output.append(Javascript.COMMA).append(Javascript.WHITESPACE); 
+				this.arguments[i].generateExpression(scope, 0, output);
 			}
 		}
-		
-		buffer.append(Javascript.RPAREN);
+		return output.append(Javascript.RPAREN);
 	}
 }

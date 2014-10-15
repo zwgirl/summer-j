@@ -435,39 +435,41 @@ public class ForStatement extends Statement {
 		}
 		visitor.endVisit(this, blockScope);
 	}
+	
+	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output) {
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(Javascript.FOR).append(Javascript.LPAREN);
-		if(this.initializations != null){
-			boolean commaSet = false;
-			for(Statement statement : this.initializations){
-				if(commaSet){
-					buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE);
-				}
-				statement.generateJavascript(scope, indent, buffer);
-				commaSet = true;
+		printIndent(tab, output).append("for ("); //$NON-NLS-1$
+		//inits
+		if (this.initializations != null) {
+			for (int i = 0; i < this.initializations.length; i++) {
+				//nice only with expressions
+				if (i > 0) output.append(", "); //$NON-NLS-1$
+				this.initializations[i].generateJavascript(scope, 0, output);
 			}
 		}
-		buffer.append(Javascript.SEMICOLON).append(Javascript.WHITESPACE);
-		if(condition != null){
-			condition.generateJavascript(scope, indent, buffer);
-		}
-		buffer.append(Javascript.SEMICOLON).append(Javascript.WHITESPACE);
-		
-		if(increments != null){
-			boolean commaSet = false;
-			for(Statement statement : this.increments){
-				if(commaSet){
-					buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE);
-				}
-				statement.generateJavascript(scope, indent, buffer);
-				commaSet = true;
+		output.append("; "); //$NON-NLS-1$
+		//cond
+		if (this.condition != null) this.condition.generateExpression(scope, 0, output);
+		output.append("; "); //$NON-NLS-1$
+		//updates
+		if (this.increments != null) {
+			for (int i = 0; i < this.increments.length; i++) {
+				if (i > 0) output.append(", "); //$NON-NLS-1$
+				this.increments[i].generateJavascript(scope, 0, output);
 			}
 		}
-		buffer.append(Javascript.RPAREN);
-		if(action != null){
-			action.generateJavascript(scope, indent, buffer);
+		output.append(") "); //$NON-NLS-1$
+		//block
+		if (this.action == null)
+			output.append(';');
+		else {
+			output.append('\n');
+			if(action instanceof Block){
+				this.action.generateStatement(scope, tab, output);
+			} else {
+				this.action.generateStatement(scope, tab + 1, output);
+			}
 		}
+		return output;
 	}
 }

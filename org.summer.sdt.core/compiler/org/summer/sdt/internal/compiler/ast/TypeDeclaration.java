@@ -60,6 +60,7 @@ import org.summer.sdt.internal.compiler.problem.AbortType;
 import org.summer.sdt.internal.compiler.problem.ProblemReporter;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 import org.summer.sdt.internal.compiler.util.Util;
+
 import static org.summer.sdt.internal.compiler.javascript.Javascript.*;
 
 public class TypeDeclaration extends Statement implements ProblemSeverities, ReferenceContext {
@@ -589,7 +590,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				}
 			}
 	
-			// generate all fiels
+			// generate all fields
 			classFile.addFieldInfos();
 	
 			if (this.memberTypes != null) {
@@ -926,6 +927,16 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						this.bits |= (fieldDeclaration.bits & ASTNode.HasSyntaxErrors);
 						break;
 				}
+				
+				//cym 2014-10-13 
+				if(fieldDeclaration instanceof PropertyDeclaration){
+					PropertyDeclaration prop = (PropertyDeclaration) fieldDeclaration;
+					if(prop.accessors != null){
+						for(MethodDeclaration method : prop.accessors){
+							method.parseStatements(parser, unit);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -1034,8 +1045,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	public StringBuffer printStatement(int tab, StringBuffer output) {
 		return print(tab, output);
 	}
-	
-	
 	
 	public void resolve() {
 		SourceTypeBinding sourceType = this.binding;
@@ -1580,80 +1589,189 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		return (this.bits & ASTNode.IsSecondaryType) != 0;
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(CR);
-		if(this.methods != null){
-			for(AbstractMethodDeclaration method : methods){
-				if(method instanceof ConstructorDeclaration){
-					buffer.append(CR);
-					buffer.append(FUNCTION).append(WHITESPACE).append(this.name).append(LPAREN);
-					if(method.arguments != null){
-						boolean commaSet = false;
-						for(Argument arg : method.arguments){
-							if(commaSet){
-								buffer.append(COMMA).append(WHITESPACE);
-							}
-							
-							buffer.append(arg.name);
-						}
-					}
-					buffer.append(RPAREN);
-				} else {
-					buffer.append(CR);
-					if(method.isStatic()){
-						buffer.append(this.name).append(DOT).append(method.selector).append(EQUAL).append(WHITESPACE);
-					} else{
-						buffer.append(this.name).append(DOT).append(PROTOTYPE).append(DOT).append(method.selector).append(WHITESPACE).append(EQUAL).append(WHITESPACE);
-					}
-					buffer.append(FUNCTION).append(LPAREN);
-					if(method.arguments != null){
-						boolean commaSet = false;
-						for(Argument arg : method.arguments){
-							if(commaSet){
-								buffer.append(COMMA).append(WHITESPACE);
-							}
-							
-							buffer.append(arg.name);
-						}
-					}
-					buffer.append(RPAREN);
-				}
-				
-				buffer.append(LBRACE);
-				
-				generateMothodBody(method, scope, indent, buffer);
-				buffer.append(Javascript.CR);
-				buffer.append(RBRACE);
-			}
+//	@Override
+//	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+//		buffer.append(CR);
+//		if(this.methods != null){
+//			for(AbstractMethodDeclaration method : methods){
+//				if(method instanceof ConstructorDeclaration){
+//					buffer.append(CR);
+//					buffer.append(FUNCTION).append(WHITESPACE).append(this.name).append(LPAREN);
+//					if(method.arguments != null){
+//						boolean commaSet = false;
+//						for(Argument arg : method.arguments){
+//							if(commaSet){
+//								buffer.append(COMMA).append(WHITESPACE);
+//							}
+//							
+//							buffer.append(arg.name);
+//						}
+//					}
+//					buffer.append(RPAREN);
+//				} else {
+//					buffer.append(CR);
+//					if(method.isStatic()){
+//						buffer.append(this.name).append(DOT).append(method.selector).append(EQUAL).append(WHITESPACE);
+//					} else{
+//						buffer.append(this.name).append(DOT).append(PROTOTYPE).append(DOT).append(method.selector).append(WHITESPACE).append(EQUAL).append(WHITESPACE);
+//					}
+//					buffer.append(FUNCTION).append(LPAREN);
+//					if(method.arguments != null){
+//						boolean commaSet = false;
+//						for(Argument arg : method.arguments){
+//							if(commaSet){
+//								buffer.append(COMMA).append(WHITESPACE);
+//							}
+//							
+//							buffer.append(arg.name);
+//						}
+//					}
+//					buffer.append(RPAREN);
+//				}
+//				
+//				buffer.append(LBRACE);
+//				
+//				generateMothodBody(method, scope, indent, buffer);
+//				buffer.append(Javascript.CR);
+//				buffer.append(RBRACE);
+//			}
+//		}
+//		
+//		if(this.fields != null){
+//			for(FieldDeclaration field : this.fields){
+//				if(field instanceof Initializer){
+//					continue;
+//				}
+//				buffer.append(CR);
+//				buffer.append(OBJECT).append(DOT).append(DEFINEPROPERTY).append(LPAREN);
+//				if(field.isStatic()){
+//					buffer.append(this.name);
+//				} else {
+//					buffer.append(this.name).append(DOT).append(PROTOTYPE);
+//				}
+//				buffer.append(COMMA).append(WHITESPACE);
+//				buffer.append(field.name).append(COMMA).append(WHITESPACE);
+//				buffer.append(LBRACE);
+//				
+//				buffer.append(RBRACE).append(RPAREN).append(SEMICOLON);
+//			}
+//		}
+//		
+//	}
+//
+//	private void generateMothodBody(AbstractMethodDeclaration method, Scope scope, int indent, StringBuffer buffer) {
+//		if(method.statements != null) {
+//			for(Statement statement : method.statements){
+//				buffer.append(Javascript.CR);
+//				statement.generateJavascript(scope, indent, buffer);
+//			}
+//		}
+//	}
+	
+	
+	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
+		if (this.javadoc != null) {
+			this.javadoc.print(indent, output);
 		}
-		
-		if(this.fields != null){
-			for(FieldDeclaration field : this.fields){
-				buffer.append(CR);
-				buffer.append(OBJECT).append(DOT).append(DEFINEPROPERTY).append(LPAREN);
-				if(field.isStatic()){
-					buffer.append(this.name);
-				} else {
-					buffer.append(this.name).append(DOT).append(PROTOTYPE);
-				}
-				buffer.append(COMMA).append(WHITESPACE);
-				buffer.append(field.name).append(COMMA).append(WHITESPACE);
-				buffer.append(LBRACE);
-				
-				buffer.append(RBRACE).append(RPAREN).append(SEMICOLON);
-			}
+		if ((this.bits & ASTNode.IsAnonymousType) == 0) {
+			printIndent(indent, output);
+			generateHeader(scope, 0, output);
 		}
-		
+		return generateBody(scope, indent, output);
 	}
-
-	private void generateMothodBody(AbstractMethodDeclaration method, Scope scope, int indent, StringBuffer buffer) {
-		if(method.statements != null) {
-			for(Statement statement : method.statements){
-				buffer.append(Javascript.CR);
-				statement.generateJavascript(scope, indent, buffer);
+	
+	public StringBuffer generateBody(Scope scope, int indent, StringBuffer output) {
+		output.append(" {"); //$NON-NLS-1$
+		
+		//for XAML
+		if(this.element != null){
+			output.append('\n');
+			this.element.print(indent + 1, output).append("\n");
+		}
+		
+		if (this.memberTypes != null) {
+			for (int i = 0; i < this.memberTypes.length; i++) {
+				if (this.memberTypes[i] != null) {
+					output.append('\n');
+					this.memberTypes[i].generateJavascript(scope, indent + 1, output);
+				}
 			}
 		}
+		if (this.fields != null) {
+			for (int fieldI = 0; fieldI < this.fields.length; fieldI++) {
+				if (this.fields[fieldI] != null) {
+					output.append('\n');
+					this.fields[fieldI].generateJavascript(scope, indent + 1, output);
+				}
+			}
+		}
+		if (this.methods != null) {
+			for (int i = 0; i < this.methods.length; i++) {
+				if (this.methods[i] != null) {
+					output.append('\n');
+					this.methods[i].generateJavascript(scope, indent + 1, output);
+				}
+			}
+		}
+		output.append('\n');
+		return printIndent(indent, output).append('}');
+	}
+	
+	public StringBuffer generateHeader(Scope scope, int indent, StringBuffer output) {
+		printModifiers(this.modifiers, output);
+		if (this.annotations != null) {
+			generateAnnotations(this.annotations, output);
+			output.append(' ');
+		}
+	
+		switch (kind(this.modifiers)) {
+			case TypeDeclaration.CLASS_DECL :
+				output.append("class "); //$NON-NLS-1$
+				break;
+			case TypeDeclaration.INTERFACE_DECL :
+				output.append("interface "); //$NON-NLS-1$
+				break;
+			case TypeDeclaration.ENUM_DECL :
+				output.append("enum "); //$NON-NLS-1$
+				break;
+			case TypeDeclaration.ANNOTATION_TYPE_DECL :
+				output.append("@interface "); //$NON-NLS-1$
+				break;
+		}
+		output.append(this.name);
+		if (this.typeParameters != null) {
+			output.append("<");//$NON-NLS-1$
+			for (int i = 0; i < this.typeParameters.length; i++) {
+				if (i > 0) output.append( ", "); //$NON-NLS-1$
+				this.typeParameters[i].print(0, output);
+			}
+			output.append(">");//$NON-NLS-1$
+		}
+		if (this.superclass != null) {
+			output.append(" extends ");  //$NON-NLS-1$
+			this.superclass.print(0, output);
+		}
+		if (this.superInterfaces != null && this.superInterfaces.length > 0) {
+			switch (kind(this.modifiers)) {
+				case TypeDeclaration.CLASS_DECL :
+				case TypeDeclaration.ENUM_DECL :
+					output.append(" implements "); //$NON-NLS-1$
+					break;
+				case TypeDeclaration.INTERFACE_DECL :
+				case TypeDeclaration.ANNOTATION_TYPE_DECL :
+					output.append(" extends "); //$NON-NLS-1$
+					break;
+			}
+			for (int i = 0; i < this.superInterfaces.length; i++) {
+				if (i > 0) output.append( ", "); //$NON-NLS-1$
+				this.superInterfaces[i].generateJavascript(scope, 0, output);
+			}
+		}
+		return output;
+	}
+	
+	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output) {
+		return generateJavascript(scope, tab, output);
 	}
 
 }

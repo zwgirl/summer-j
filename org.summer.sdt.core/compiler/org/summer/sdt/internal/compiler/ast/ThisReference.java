@@ -162,9 +162,9 @@ public class ThisReference extends Reference {
 		visitor.endVisit(this, blockScope);
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(Javascript.THIS);
-		
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output){
+
+		if (isImplicitThis()) return output;
+		return output.append("this"); //$NON-NLS-1$
 	}
 }

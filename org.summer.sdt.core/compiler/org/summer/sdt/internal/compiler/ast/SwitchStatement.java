@@ -646,18 +646,22 @@ public class SwitchStatement extends Statement {
 			label.becomeDelegateFor(this.breakLabel);
 		}
 	}
+	
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(Javascript.SWITCH).append(Javascript.LPAREN);
-		this.expression.generateJavascript(scope, indent, buffer);
-		buffer.append(Javascript.RPAREN).append(Javascript.LBRACE);
-		
-		for(Statement statement : this.statements){
-			buffer.append(Javascript.CR);
-			statement.generateJavascript(scope, indent, buffer);
+		printIndent(indent, output).append("switch ("); //$NON-NLS-1$
+		this.expression.generateExpression(scope, 0, output).append(") {"); //$NON-NLS-1$
+		if (this.statements != null) {
+			for (int i = 0; i < this.statements.length; i++) {
+				output.append('\n');
+				if (this.statements[i] instanceof CaseStatement) {
+					this.statements[i].generateStatement(scope, indent, output);
+				} else {
+					this.statements[i].generateStatement(scope, indent+2, output);
+				}
+			}
 		}
-		
-		buffer.append(Javascript.RBRACE);
+		output.append("\n"); //$NON-NLS-1$
+		return printIndent(indent, output).append('}');
 	}
 }

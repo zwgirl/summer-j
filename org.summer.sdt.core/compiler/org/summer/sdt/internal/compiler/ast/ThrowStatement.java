@@ -30,68 +30,68 @@ public class ThrowStatement extends Statement {
 	public Expression exception;
 	public TypeBinding exceptionType;
 
-public ThrowStatement(Expression exception, int sourceStart, int sourceEnd) {
-	this.exception = exception;
-	this.sourceStart = sourceStart;
-	this.sourceEnd = sourceEnd;
-}
-
-public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext, FlowInfo flowInfo) {
-	this.exception.analyseCode(currentScope, flowContext, flowInfo);
-	this.exception.checkNPE(currentScope, flowContext, flowInfo);
-	// need to check that exception thrown is actually caught somewhere
-	flowContext.checkExceptionHandlers(this.exceptionType, this, flowInfo, currentScope);
-	currentScope.checkUnclosedCloseables(flowInfo, flowContext, this, currentScope);
-	flowContext.recordAbruptExit();
-	return FlowInfo.DEAD_END;
-}
-
-/**
- * Throw code generation
- *
- * @param currentScope org.summer.sdt.internal.compiler.lookup.BlockScope
- * @param codeStream org.summer.sdt.internal.compiler.codegen.CodeStream
- */
-public void generateCode(BlockScope currentScope, CodeStream codeStream) {
-	if ((this.bits & ASTNode.IsReachable) == 0)
-		return;
-	int pc = codeStream.position;
-	this.exception.generateCode(currentScope, codeStream, true);
-	codeStream.athrow();
-	codeStream.recordPositionsFrom(pc, this.sourceStart);
-}
-
-public StringBuffer printStatement(int indent, StringBuffer output) {
-	printIndent(indent, output).append("throw "); //$NON-NLS-1$
-	this.exception.printExpression(0, output);
-	return output.append(';');
-}
-
-public void resolve(BlockScope scope) {
-	this.exceptionType = this.exception.resolveType(scope);
-	recordExceptionsForEnclosingLambda(scope, this.exceptionType);
-	if (this.exceptionType != null && this.exceptionType.isValidBinding()) {
-		if (this.exceptionType == TypeBinding.NULL) {
-			if (scope.compilerOptions().complianceLevel <= ClassFileConstants.JDK1_3){
-				// if compliant with 1.4, this problem will not be reported
-				scope.problemReporter().cannotThrowNull(this.exception);
-			}
-	 	} else if (this.exceptionType.findSuperTypeOriginatingFrom(TypeIds.T_JavaLangThrowable, true) == null) {
-			scope.problemReporter().cannotThrowType(this.exception, this.exceptionType);
-		}
-		this.exception.computeConversion(scope, this.exceptionType, this.exceptionType);
+	public ThrowStatement(Expression exception, int sourceStart, int sourceEnd) {
+		this.exception = exception;
+		this.sourceStart = sourceStart;
+		this.sourceEnd = sourceEnd;
 	}
-}
-
-public void traverse(ASTVisitor visitor, BlockScope blockScope) {
-	if (visitor.visit(this, blockScope))
-		this.exception.traverse(visitor, blockScope);
-	visitor.endVisit(this, blockScope);
-}
-
-@Override
-public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-	// TODO Auto-generated method stub
 	
-}
+	public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext, FlowInfo flowInfo) {
+		this.exception.analyseCode(currentScope, flowContext, flowInfo);
+		this.exception.checkNPE(currentScope, flowContext, flowInfo);
+		// need to check that exception thrown is actually caught somewhere
+		flowContext.checkExceptionHandlers(this.exceptionType, this, flowInfo, currentScope);
+		currentScope.checkUnclosedCloseables(flowInfo, flowContext, this, currentScope);
+		flowContext.recordAbruptExit();
+		return FlowInfo.DEAD_END;
+	}
+	
+	/**
+	 * Throw code generation
+	 *
+	 * @param currentScope org.summer.sdt.internal.compiler.lookup.BlockScope
+	 * @param codeStream org.summer.sdt.internal.compiler.codegen.CodeStream
+	 */
+	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
+		if ((this.bits & ASTNode.IsReachable) == 0)
+			return;
+		int pc = codeStream.position;
+		this.exception.generateCode(currentScope, codeStream, true);
+		codeStream.athrow();
+		codeStream.recordPositionsFrom(pc, this.sourceStart);
+	}
+	
+	public StringBuffer printStatement(int indent, StringBuffer output) {
+		printIndent(indent, output).append("throw "); //$NON-NLS-1$
+		this.exception.printExpression(0, output);
+		return output.append(';');
+	}
+	
+	public void resolve(BlockScope scope) {
+		this.exceptionType = this.exception.resolveType(scope);
+		recordExceptionsForEnclosingLambda(scope, this.exceptionType);
+		if (this.exceptionType != null && this.exceptionType.isValidBinding()) {
+			if (this.exceptionType == TypeBinding.NULL) {
+				if (scope.compilerOptions().complianceLevel <= ClassFileConstants.JDK1_3){
+					// if compliant with 1.4, this problem will not be reported
+					scope.problemReporter().cannotThrowNull(this.exception);
+				}
+		 	} else if (this.exceptionType.findSuperTypeOriginatingFrom(TypeIds.T_JavaLangThrowable, true) == null) {
+				scope.problemReporter().cannotThrowType(this.exception, this.exceptionType);
+			}
+			this.exception.computeConversion(scope, this.exceptionType, this.exceptionType);
+		}
+	}
+	
+	public void traverse(ASTVisitor visitor, BlockScope blockScope) {
+		if (visitor.visit(this, blockScope))
+			this.exception.traverse(visitor, blockScope);
+		visitor.endVisit(this, blockScope);
+	}
+	
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		printIndent(indent, output).append("throw "); //$NON-NLS-1$
+		this.exception.generateExpression(scope, 0, output);
+		return output.append(';');
+	}
 }

@@ -1915,57 +1915,11 @@ public class BinaryExpression extends OperatorExpression {
 		}
 		visitor.endVisit(this, scope);
 	}
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		left.generateJavascript(scope, indent, buffer);
-		buffer.append(Javascript.WHITESPACE);
-		switch ((this.bits & ASTNode.OperatorMASK) >> ASTNode.OperatorSHIFT) {
-			case PLUS :
-				buffer.append(Javascript.PLUS);
-				break;
-			case MINUS :
-				buffer.append(Javascript.MINUS);
-				break;
-			case MULTIPLY :
-				buffer.append(Javascript.MULTIPLY);
-				break;
-			case DIVIDE :
-				buffer.append(Javascript.DIVIDE);
-				break;
-			case REMAINDER :
-				buffer.append(Javascript.REMAINDER);
-				break;
-			case AND :
-				buffer.append(Javascript.AND);
-				break;
-			case OR :
-				buffer.append(Javascript.OR);
-				break;
-			case XOR :
-				buffer.append(Javascript.XOR);
-				break;
-			case LEFT_SHIFT :
-				buffer.append(Javascript.LEFT_SHIFT);
-				break;
-			case RIGHT_SHIFT :
-				buffer.append(Javascript.RIGHT_SHIFT);
-				break;
-			case UNSIGNED_RIGHT_SHIFT :
-				buffer.append(Javascript.UNSIGNED_RIGHT_SHIFT);
-				break;
-			case GREATER :
-				buffer.append(Javascript.GREATER);
-				break;
-			case GREATER_EQUAL :
-				buffer.append(Javascript.GREATER_EQUAL);
-				break;
-			case LESS :
-				buffer.append(Javascript.LESS);
-				break;
-			case LESS_EQUAL :
-				buffer.append(Javascript.LESS_EQUAL);
-		}
-		buffer.append(Javascript.WHITESPACE);
-		right.generateJavascript(scope, indent, buffer);
+	
+	public StringBuffer generateExpressionNoParenthesis(Scope scope, int indent, StringBuffer output) {
+		// keep implementation in sync with
+		// CombinedBinaryExpression#printExpressionNoParenthesis
+		this.left.generateExpression(scope, indent, output).append(' ').append(operatorToString()).append(' ');
+		return this.right.generateExpression(scope, 0, output);
 	}
 }

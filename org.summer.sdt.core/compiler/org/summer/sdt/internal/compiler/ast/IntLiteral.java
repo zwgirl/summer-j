@@ -174,12 +174,4 @@ public class IntLiteral extends NumberLiteral {
 		visitor.visit(this, scope);
 		visitor.endVisit(this, scope);
 	}
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		if(this.reducedForm != null){
-			buffer.append(this.reducedForm);
-		} else {
-			buffer.append(this.source);
-		}
-	}
 }

@@ -51,6 +51,7 @@ import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.NestedTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.SyntheticArgumentBinding;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
@@ -635,5 +636,22 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 	}
 	public TypeParameter[] typeParameters() {
 	    return this.typeParameters;
+	}
+	
+	public StringBuffer generateBody(Scope scope, int indent, StringBuffer output) {
+		output.append(" {"); //$NON-NLS-1$
+		if (this.constructorCall != null) {
+			output.append('\n');
+			this.constructorCall.generateStatement(scope, indent, output);
+		}
+		if (this.statements != null) {
+			for (int i = 0; i < this.statements.length; i++) {
+				output.append('\n');
+				this.statements[i].generateStatement(scope, indent, output);
+			}
+		}
+		output.append('\n');
+		printIndent(indent == 0 ? 0 : indent - 1, output).append('}');
+		return output;
 	}
 }

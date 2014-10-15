@@ -578,12 +578,23 @@ public class ForeachStatement extends Statement {
 		visitor.endVisit(this, blockScope);
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-//		public LocalDeclaration elementVariable;
-//		public int elementVariableImplicitWidening = -1;
-//		public Expression collection;
-//		public Statement action;
-		
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+
+		printIndent(indent, output).append("for ("); //$NON-NLS-1$
+		this.elementVariable.generateAsExpression(scope, 0, output);
+		output.append(" : ");//$NON-NLS-1$
+		if (this.collection != null) {
+			this.collection.print(0, output).append(") "); //$NON-NLS-1$
+		} else {
+			output.append(')');
+		}
+		//block
+		if (this.action == null) {
+			output.append(';');
+		} else {
+			output.append('\n');
+			this.action.generateStatement(scope, indent + 1, output);
+		}
+		return output;
 	}
 }

@@ -88,10 +88,4 @@ public class NormalAnnotation extends Annotation {
 		}
 		visitor.endVisit(this, scope);
 	}
-
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
-	}
 }

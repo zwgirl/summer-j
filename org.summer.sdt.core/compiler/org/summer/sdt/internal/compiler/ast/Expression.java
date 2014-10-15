@@ -1250,9 +1250,16 @@ public abstract class Expression extends Statement {
 	public VariableBinding nullAnnotatedVariableBinding(boolean supportTypeAnnotations) {
 		return null;
 	}
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+	
+	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
+		printIndent(indent, output);
+		return printExpression(indent, output);
 	}
+	
+	public abstract StringBuffer generateExpression(Scope scope, int indent, StringBuffer output);
+	
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		return print(indent, output).append(";"); //$NON-NLS-1$
+	}
+
 }

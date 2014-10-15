@@ -2304,7 +2304,8 @@ public class DiagnoseParser implements ParserBasicInformation, TerminalTokens, C
 						*/
 						break;
 					}
-					if(this.reportProblem) problemReporter().parseErrorInsertToComplete(
+					if(this.reportProblem) 
+						problemReporter().parseErrorInsertToComplete(
 						errorStart,
 						errorEnd,
 						buf.toString(),
@@ -2488,7 +2489,8 @@ public class DiagnoseParser implements ParserBasicInformation, TerminalTokens, C
 						*/
 						break;
 					}
-	                if(this.reportProblem) problemReporter().parseErrorInsertToComplete(
+	                if(this.reportProblem) 
+	                	problemReporter().parseErrorInsertToComplete(
 						errorStart,
 						errorEnd,
 						buf.toString(),

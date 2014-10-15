@@ -27,6 +27,7 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
@@ -246,9 +247,24 @@ public class ArrayAllocationExpression extends Expression {
 		return this.annotationsOnDimensions;
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		output.append(Javascript.NEW).append(Javascript.WHITESPACE); 
+		this.type.print(0, output);
+		for (int i = 0; i < this.dimensions.length; i++) {
+			if (this.annotationsOnDimensions != null && this.annotationsOnDimensions[i] != null) {
+				output.append(Javascript.WHITESPACE);
+//				printAnnotations(this.annotationsOnDimensions[i], output);
+				output.append(' ');
+			}
+			if (this.dimensions[i] == null)
+				output.append("[]"); //$NON-NLS-1$
+			else {
+				output.append('[');
+				this.dimensions[i].generateExpression(scope, 0, output);
+				output.append(']');
+			}
+		}
+		if (this.initializer != null) this.initializer.generateExpression(scope, 0, output);
+		return output;
 	}
 }

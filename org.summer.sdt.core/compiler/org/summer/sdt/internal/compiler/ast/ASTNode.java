@@ -597,6 +597,51 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 	}
 
 	public abstract StringBuffer print(int indent, StringBuffer output);
+	
+	public abstract StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output);
+	
+	public static StringBuffer generateAnnotations(Annotation[] annotations, StringBuffer output) {
+		int length = annotations.length;
+		for (int i = 0; i < length; i++) {
+			if (i > 0) {
+				output.append(" "); //$NON-NLS-1$
+			}
+			Annotation annotation2 = annotations[i];
+			if (annotation2 != null) {
+				annotation2.print(0, output);
+			} else {
+				output.append('?');
+			}
+		}
+		return output;
+	}
+	
+	public static StringBuffer generateModifiers(int modifiers, StringBuffer output) {
+
+		if ((modifiers & ClassFileConstants.AccPublic) != 0)
+			output.append("public "); //$NON-NLS-1$
+		if ((modifiers & ClassFileConstants.AccPrivate) != 0)
+			output.append("private "); //$NON-NLS-1$
+		if ((modifiers & ClassFileConstants.AccProtected) != 0)
+			output.append("protected "); //$NON-NLS-1$
+		if ((modifiers & ClassFileConstants.AccStatic) != 0)
+			output.append("static "); //$NON-NLS-1$
+		if ((modifiers & ClassFileConstants.AccFinal) != 0)
+			output.append("final "); //$NON-NLS-1$
+		if ((modifiers & ClassFileConstants.AccSynchronized) != 0)
+			output.append("synchronized "); //$NON-NLS-1$
+		if ((modifiers & ClassFileConstants.AccVolatile) != 0)
+			output.append("volatile "); //$NON-NLS-1$
+		if ((modifiers & ClassFileConstants.AccTransient) != 0)
+			output.append("transient "); //$NON-NLS-1$
+		if ((modifiers & ClassFileConstants.AccNative) != 0)
+			output.append("native "); //$NON-NLS-1$
+		if ((modifiers & ClassFileConstants.AccAbstract) != 0)
+			output.append("abstract "); //$NON-NLS-1$
+		if ((modifiers & ExtraCompilerModifiers.AccDefaultMethod) != 0)
+			output.append("default "); //$NON-NLS-1$
+		return output;
+	}
 
 	public static StringBuffer printAnnotations(Annotation[] annotations, StringBuffer output) {
 		int length = annotations.length;

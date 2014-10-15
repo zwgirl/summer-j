@@ -133,8 +133,9 @@ public class InstanceOfExpression extends OperatorExpression {
 	}
 
 	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+	public StringBuffer generateExpressionNoParenthesis(Scope scope,
+			int indent, StringBuffer output) {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 }

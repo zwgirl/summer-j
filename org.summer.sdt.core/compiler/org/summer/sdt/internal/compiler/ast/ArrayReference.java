@@ -225,9 +225,8 @@ public class ArrayReference extends Reference {
 		visitor.endVisit(this, scope);
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		this.receiver.generateExpression(scope, 0, output).append('[');
+		return this.position.generateExpression(scope, 0, output).append(']');
 	}
 }

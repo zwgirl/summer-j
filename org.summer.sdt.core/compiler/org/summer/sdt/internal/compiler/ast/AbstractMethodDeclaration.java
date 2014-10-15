@@ -36,6 +36,7 @@ import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.AnnotationBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -44,6 +45,7 @@ import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
@@ -685,5 +687,75 @@ public abstract class AbstractMethodDeclaration
 //					this.binding.parameters[i] = this.binding.parameters[i].unannotated();
 			}			
 		}
+	}
+	
+	public StringBuffer generateJavascript(Scope scope, int tab, StringBuffer output) {
+
+		if (this.javadoc != null) {
+			this.javadoc.print(tab, output);
+		}
+		printIndent(tab, output);
+//		printModifiers(this.modifiers, output);
+//		if (this.annotations != null) {
+//			printAnnotations(this.annotations, output);
+//			output.append(' ');
+//		}
+//
+//		TypeParameter[] typeParams = typeParameters();
+//		if (typeParams != null) {
+//			output.append('<');
+//			int max = typeParams.length - 1;
+//			for (int j = 0; j < max; j++) {
+//				typeParams[j].print(0, output);
+//				output.append(", ");//$NON-NLS-1$
+//			}
+//			typeParams[max].print(0, output);
+//			output.append('>');
+//		}
+
+//		printReturnType(0, output).
+		output.append(Javascript.FUNCTION).append(Javascript.WHITESPACE);
+		output.append(this.selector).append('(');
+		if (this.receiver != null) {
+			this.receiver.print(0, output);
+		}
+		if (this.arguments != null) {
+			for (int i = 0; i < this.arguments.length; i++) {
+				if (i > 0 || this.receiver != null) output.append(", "); //$NON-NLS-1$
+				this.arguments[i].generateJavascript(scope, 0, output);
+			}
+		}
+		output.append(')');
+//		if (this.thrownExceptions != null) {
+//			output.append(" throws "); //$NON-NLS-1$
+//			for (int i = 0; i < this.thrownExceptions.length; i++) {
+//				if (i > 0) output.append(", "); //$NON-NLS-1$
+//				this.thrownExceptions[i].print(0, output);
+//			}
+//		}
+		generateBody(scope, tab + 1, output);
+		return output;
+	}
+
+	public StringBuffer generateBody(Scope scope, int indent, StringBuffer output) {
+
+		if (isAbstract() || (this.modifiers & ExtraCompilerModifiers.AccSemicolonBody) != 0)
+			return output.append(';');
+
+		output.append(" {"); //$NON-NLS-1$
+		if (this.statements != null) {
+			for (int i = 0; i < this.statements.length; i++) {
+				output.append('\n');
+				this.statements[i].generateStatement(scope, indent, output);
+			}
+		}
+		output.append('\n');
+		printIndent(indent == 0 ? 0 : indent - 1, output).append('}');
+		return output;
+	}
+
+	public StringBuffer generateReturnType(Scope scope, int indent, StringBuffer output) {
+
+		return output;
 	}
 }

@@ -386,13 +386,10 @@ public class ReturnStatement extends Statement {
 		visitor.endVisit(this, scope);
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(Javascript.RETURN);
-		if(expression != null){
-			buffer.append(Javascript.WHITESPACE);
-			expression.generateJavascript(scope, indent, buffer);
-		}
-		buffer.append(Javascript.SEMICOLON);
+	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output){
+		printIndent(tab, output).append("return "); //$NON-NLS-1$
+		if (this.expression != null )
+			this.expression.generateExpression(scope, 0, output) ;
+		return output.append(';');
 	}
 }

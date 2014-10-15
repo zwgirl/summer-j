@@ -355,18 +355,25 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		visitor.endVisit(this, scope);
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(Javascript.OBJECT).append(Javascript.DEFINEPROPERTY).append(Javascript.LPAREN);
-		if(isStatic()){
-			buffer.append(scope.enclosingClassScope().referenceContext.name);
-		} else {
-			buffer.append(scope.enclosingClassScope().referenceContext.name).append(Javascript.DOT).append(Javascript.PROTOTYPE);
+//	@Override
+//	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+//		buffer.append(Javascript.OBJECT).append(Javascript.DEFINEPROPERTY).append(Javascript.LPAREN);
+//		if(isStatic()){
+//			buffer.append(scope.enclosingClassScope().referenceContext.name);
+//		} else {
+//			buffer.append(scope.enclosingClassScope().referenceContext.name).append(Javascript.DOT).append(Javascript.PROTOTYPE);
+//		}
+//		buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE).append(this.name).append(Javascript.COMMA);
+//		buffer.append(Javascript.LBRACE).append(Javascript.CR);
+//		indent(indent + 1 , buffer);
+//		//TODO
+//		buffer.append(Javascript.RBRACE).append(Javascript.RPAREN).append(Javascript.SEMICOLON);
+//	}
+	
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		if (this.javadoc != null) {
+			this.javadoc.generateJavascript(scope, indent, output);
 		}
-		buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE).append(this.name).append(Javascript.COMMA);
-		buffer.append(Javascript.LBRACE).append(Javascript.CR);
-		indent(indent + 1 , buffer);
-		//TODO
-		buffer.append(Javascript.RBRACE).append(Javascript.RPAREN).append(Javascript.SEMICOLON);
+		return super.generateStatement(scope, indent, output);
 	}
 }

@@ -143,15 +143,15 @@ public class CaseStatement extends Statement {
 		}
 		visitor.endVisit(this, blockScope);
 	}
-
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+	
+	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output) {
+		printIndent(tab, output);
 		if (this.constantExpression == null) {
-			buffer.append(Javascript.DEFAULT).append(Javascript.WHITESPACE).append(Javascript.COLON);
+			output.append(Javascript.DEFAULT).append(Javascript.WHITESPACE).append(Javascript.COLON);
 		} else {
-			buffer.append(Javascript.CASE).append(Javascript.WHITESPACE);
-			constantExpression.generateJavascript(scope, indent, buffer);
-			buffer.append(Javascript.WHITESPACE).append(Javascript.COLON);
+			output.append(Javascript.CASE).append(Javascript.WHITESPACE);
+			this.constantExpression.generateExpression(scope, 0, output).append(Javascript.WHITESPACE).append(Javascript.COLON);
 		}
+		return output;
 	}
 }

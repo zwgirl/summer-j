@@ -103,15 +103,9 @@ public class ContinueStatement extends BranchStatement {
 		visitor.endVisit(this, blockScope);
 	}
 	
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		indent(indent, buffer);
-		
-		buffer.append(Javascript.CONTINUE);
-		if(label !=null ){
-			buffer.append(label);
-		}
-		
-		buffer.append(Javascript.SEMICOLON);
+	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output) {
+		printIndent(tab, output).append("continue "); //$NON-NLS-1$
+		if (this.label != null) output.append(this.label);
+		return output.append(';');
 	}
 }

@@ -639,9 +639,15 @@ public class CastExpression extends Expression {
 		visitor.endVisit(this, blockScope);
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		int parenthesesCount = (this.bits & ASTNode.ParenthesizedMASK) >> ASTNode.ParenthesizedSHIFT;
+		String suffix = ""; //$NON-NLS-1$
+		for(int i = 0; i < parenthesesCount; i++) {
+			output.append('(');
+			suffix += ')';
+		}
+		output.append('(');
+		this.type.print(0, output).append(") "); //$NON-NLS-1$
+		return this.expression.generateExpression(scope, 0, output).append(suffix);
 	}
 }

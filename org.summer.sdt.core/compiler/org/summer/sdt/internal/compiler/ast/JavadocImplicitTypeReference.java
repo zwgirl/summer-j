@@ -141,8 +141,8 @@ public class JavadocImplicitTypeReference extends TypeReference {
 	}
 
 	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+	public StringBuffer generateExpression(Scope scope, int indent,
+			StringBuffer output) {
+		return new StringBuffer();
 	}
 }

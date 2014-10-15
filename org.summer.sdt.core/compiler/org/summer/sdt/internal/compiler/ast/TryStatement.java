@@ -1226,52 +1226,36 @@ public class TryStatement extends SubRoutineStatement {
 			}
 		}
 	}
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(TRY).append(WHITESPACE).append(LBRACE);
-		if(tryBlock != null){
-			if(tryBlock.statements != null){
-				for(Statement statement : tryBlock.statements){
-					buffer.append(CR);
-					statement.generateJavascript(scope, indent, buffer);
-				}
+	
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		int length = this.resources.length;
+		printIndent(indent, output).append("try" + (length == 0 ? "\n" : " (")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		for (int i = 0; i < length; i++) {
+			this.resources[i].generateAsExpression(scope, 0, output);
+			if (i != length - 1) {
+				output.append(";\n"); //$NON-NLS-1$
+				printIndent(indent + 2, output);
 			}
 		}
-		buffer.append(CR).append(RBRACE).append(WHITESPACE);
-
-		if(catchBlocks != null){
-			
-			if(catchBlocks != null){
-				for(int i = 0, length = catchBlocks.length; i < length; i++){
-					Argument arg = catchArguments[i];
-					buffer.append(CATCH).append(LPAREN);
-					arg.generateJavascript(scope, indent, buffer);
-					buffer.append(RPAREN);
-					buffer.append(LBRACE);
-					Block block = catchBlocks[i];
-					
-					if(block.statements != null){
-						for(Statement statement : block.statements){
-							buffer.append(CR);
-							statement.generateJavascript(scope, indent, buffer);
-						}
-					}
-					
-					buffer.append(CR).append(RBRACE).append(WHITESPACE);
-				}
-			}
+		if (length > 0) {
+			output.append(")\n"); //$NON-NLS-1$
 		}
-		if(finallyBlock != null){
-			buffer.append(FINALLY).append(WHITESPACE).append(LBRACE);
-			if(finallyBlock != null){
-				if(finallyBlock.statements != null){
-					for(Statement statement : finallyBlock.statements){
-						buffer.append(CR);
-						statement.generateJavascript(scope, indent, buffer);
-					}
-				}
+		this.tryBlock.generateStatement(scope, indent, output);
+	
+		//catches
+		if (this.catchBlocks != null)
+			for (int i = 0; i < this.catchBlocks.length; i++) {
+					output.append('\n');
+					printIndent(indent, output).append("catch ("); //$NON-NLS-1$
+					this.catchArguments[i].generateJavascript(scope, 0, output).append(")\n"); //$NON-NLS-1$
+					this.catchBlocks[i].generateStatement(scope, indent, output);
 			}
-			buffer.append(CR).append(RBRACE);
+		//finally
+		if (this.finallyBlock != null) {
+			output.append('\n');
+			printIndent(indent, output).append("finally\n"); //$NON-NLS-1$
+			this.finallyBlock.generateStatement(scope, indent, output);
 		}
+		return output;
 	}
 }

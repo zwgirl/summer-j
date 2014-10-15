@@ -739,12 +739,8 @@ public class FieldReference extends Reference implements InvocationSite {
 		}
 		return null;
 	}
-
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		receiver.generateJavascript(scope, indent, buffer);
-		buffer.append(Javascript.DOT);
-		buffer.append(this.token);
-		
+	
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		return this.receiver.printExpression(0, output).append('.').append(this.token);
 	}
 }

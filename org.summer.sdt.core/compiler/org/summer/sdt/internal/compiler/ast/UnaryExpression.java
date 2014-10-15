@@ -317,25 +317,10 @@ public class UnaryExpression extends OperatorExpression {
 		}
 		visitor.endVisit(this, blockScope);
 	}
+	
+	public StringBuffer generateExpressionNoParenthesis(Scope scope, int indent, StringBuffer output) {
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		switch ((this.bits & OperatorMASK) >> OperatorSHIFT) {
-			case NOT :
-				buffer.append(Javascript.NOT);
-				this.expression.generateJavascript(scope, indent, buffer);
-				break;
-			case TWIDDLE :
-				buffer.append(Javascript.TWIDDLE);
-				this.expression.generateJavascript(scope, indent, buffer);
-				break;
-			case MINUS :
-				buffer.append(Javascript.MINUS);
-				this.expression.generateJavascript(scope, indent, buffer);
-				break;
-			case PLUS :
-				buffer.append(Javascript.PLUS);
-				this.expression.generateJavascript(scope, indent, buffer);
-		}
+		output.append(operatorToString()).append(' ');
+		return this.expression.generateExpression(scope, 0, output);
 	}
 }

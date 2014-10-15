@@ -100,14 +100,9 @@ public class BreakStatement extends BranchStatement {
 		visitor.endVisit(this, blockscope);
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		indent(indent, buffer);
-		buffer.append(Javascript.BREAK);
-		if(label !=null ){
-			buffer.append(label);
-		}
-		
-		buffer.append(Javascript.SEMICOLON);
+	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output) {
+		printIndent(tab, output).append(Javascript.BREAK); 
+		if (this.label != null) output.append(Javascript.WHITESPACE).append(this.label);
+		return output.append(';');
 	}
 }

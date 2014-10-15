@@ -157,18 +157,20 @@ public class Block extends Statement {
 			this.statements[this.statements.length - 1].branchChainTo(label);
 		}
 	}
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(Javascript.LBRACE);
-		buffer.append(Javascript.CR);
-		if(this.statements != null){
-			for(Statement statement : this.statements){
-				buffer.append(Javascript.CR);
-				statement.generateJavascript(scope, indent, buffer);
-			}
+
+	public StringBuffer generateBody(Scope scope, int indent, StringBuffer output) {
+		if (this.statements == null) return output;
+		for (int i = 0; i < this.statements.length; i++) {
+			this.statements[i].generateStatement(scope, indent + 1, output);
+			output.append('\n');
 		}
-		buffer.append(Javascript.CR);
-		buffer.append(Javascript.RBRACE);
-		
+		return output;
+	}
+	
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		printIndent(indent, output);
+		output.append("{\n"); //$NON-NLS-1$
+		generateBody(scope, indent, output);
+		return printIndent(indent, output).append('}');
 	}
 }

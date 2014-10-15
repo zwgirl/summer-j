@@ -1083,22 +1083,27 @@ public class MessageSend extends Expression implements Invocation {
 	public InferenceContext18 freshInferenceContext(Scope scope) {
 		return new InferenceContext18(scope, this.arguments, this);
 	}
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		if(this.receiver != null){
-			this.receiver.generateJavascript(scope, indent, buffer);
-			buffer.append(Javascript.DOT);
+	
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output){
+		
+		if (!this.receiver.isImplicitThis()) this.receiver.printExpression(0, output).append('.');
+		if (this.typeArguments != null) {
+			output.append('<');
+			int max = this.typeArguments.length - 1;
+			for (int j = 0; j < max; j++) {
+				this.typeArguments[j].print(0, output);
+				output.append(", ");//$NON-NLS-1$
+			}
+			this.typeArguments[max].print(0, output);
+			output.append('>');
 		}
-		buffer.append(this.selector);
-		buffer.append(Javascript.LPAREN);
-		if(arguments != null){
-			for(int i = 0, length = this.arguments.length; i < length; i++){
-				if(i >= 1){
-					buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE);
-				}
-				arguments[i].generateJavascript(scope, indent, buffer);
+		output.append(this.selector).append('(') ;
+		if (this.arguments != null) {
+			for (int i = 0; i < this.arguments.length ; i ++) {
+				if (i > 0) output.append(", "); //$NON-NLS-1$
+				this.arguments[i].printExpression(0, output);
 			}
 		}
-		buffer.append(Javascript.RPAREN);
+		return output.append(')');
 	}
 }

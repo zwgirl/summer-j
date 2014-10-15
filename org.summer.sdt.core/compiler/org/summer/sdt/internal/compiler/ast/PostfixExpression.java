@@ -72,16 +72,7 @@ public class PostfixExpression extends CompoundAssignment {
 		visitor.endVisit(this, scope);
 	}
 	
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		lhs.generateJavascript(scope, indent, buffer);
-		switch (this.operator) {
-		case PLUS :
-			buffer.append(Javascript.PLUS_PLUS);
-			break;
-		case MINUS :
-			buffer.append(Javascript.MINUS_MINUS);
-			break;
-		}
+	public StringBuffer generateExpressionNoParenthesis(Scope scope, int indent, StringBuffer output) {
+		return this.lhs.generateExpression(scope, indent, output).append(' ').append(operatorToString());
 	}
 }

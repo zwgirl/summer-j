@@ -23,6 +23,7 @@ import org.summer.sdt.internal.compiler.lookup.ElementValuePair;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 /**
@@ -263,5 +264,16 @@ public class MemberValuePair extends ASTNode {
 			}
 		}
 		visitor.endVisit(this, scope);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.summer.sdt.internal.compiler.ast.ASTNode#print(int, java.lang.StringBuffer)
+	 */
+	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
+		output
+			.append(this.name)
+			.append(" = "); //$NON-NLS-1$
+		this.value.print(0, output);
+		return output;
 	}
 }

@@ -815,15 +815,12 @@ public class ConditionalExpression extends OperatorExpression {
 		}
 		visitor.endVisit(this, scope);
 	}
+	
+	public StringBuffer generateExpressionNoParenthesis(Scope scope, int indent, StringBuffer output) {
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		condition.generateJavascript(scope, indent, buffer);
-		buffer.append(Javascript.WHITESPACE).append(Javascript.QUESTION).append(Javascript.WHITESPACE);
-		valueIfTrue.generateJavascript(scope, indent, buffer);
-		buffer.append(Javascript.WHITESPACE).append(Javascript.COLON).append(Javascript.WHITESPACE);
-		valueIfFalse.generateJavascript(scope, indent, buffer);
-		
+		this.condition.generateExpression(scope, indent, output).append(" ? "); //$NON-NLS-1$
+		this.valueIfTrue.generateExpression(scope, 0, output).append(" : "); //$NON-NLS-1$
+		return this.valueIfFalse.generateExpression(scope, 0, output);
 	}
 }
 

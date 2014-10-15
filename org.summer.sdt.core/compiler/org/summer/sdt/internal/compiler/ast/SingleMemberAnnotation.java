@@ -83,10 +83,11 @@ public class SingleMemberAnnotation extends Annotation {
 		}
 		visitor.endVisit(this, scope);
 	}
-
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+	
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		super.generateExpression(scope, indent, output);
+		output.append('(');
+		this.memberValue.generateExpression(scope, indent, output);
+		return output.append(')');
 	}
 }

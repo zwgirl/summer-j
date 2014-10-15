@@ -13,13 +13,18 @@ public class ParenthesizedExpression extends Expression {
 
 	@Override
 	public StringBuffer printExpression(int indent, StringBuffer output) {
-		// TODO Auto-generated method stub
-		return null;
+		output.append("(");
+		expression.printExpression(indent, output);
+		output.append(")");
+		return output;
 	}
 
 	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+	public StringBuffer generateExpression(Scope scope, int indent,
+			StringBuffer output) {
+		output.append("(");
+		expression.generateExpression(scope, indent, output);
+		output.append(")");
+		return output;
 	}
 }

@@ -29,6 +29,7 @@ import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
@@ -241,5 +242,27 @@ public class Argument extends LocalDeclaration {
 				this.type.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
+	}
+	
+	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
+
+		printIndent(indent, output);
+		generateModifiers(this.modifiers, output);
+		if (this.annotations != null) {
+			generateAnnotations(this.annotations, output);
+			output.append(' ');
+		}
+
+//		if (this.type == null) {
+//			output.append("<no type> "); //$NON-NLS-1$
+//		} else {
+//			this.type.print(0, output).append(' ');
+//		}
+		return output.append(this.name);
+	}
+
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+
+		return generateJavascript(scope, indent, output).append(';');
 	}
 }

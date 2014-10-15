@@ -224,10 +224,9 @@ public class CompoundAssignment extends Assignment implements OperatorIds {
 		visitor.endVisit(this, scope);
 	}
 	
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		lhs.generateJavascript(scope, indent, buffer);
-		buffer.append(Javascript.WHITESPACE).append(operatorToString()).append(Javascript.WHITESPACE);
-		expression.generateJavascript(scope, indent, buffer);
+	public StringBuffer generateExpressionNoParenthesis(Scope scope, int indent, StringBuffer output) {
+
+		this.lhs.generateExpression(scope, indent, output).append(' ').append(operatorToString()).append(' ');
+		return this.expression.generateExpression(scope, 0, output) ;
 	}
 }

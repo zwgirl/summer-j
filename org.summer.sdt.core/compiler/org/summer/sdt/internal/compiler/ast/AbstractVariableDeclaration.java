@@ -144,4 +144,41 @@ public abstract class AbstractVariableDeclaration extends Statement implements I
 	public void setFieldIndex(int depth) {
 		// do nothing by default
 	}
+	
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		generateAsExpression(scope, indent, output);
+		switch(getKind()) {
+			case ENUM_CONSTANT:
+				return output.append(',');
+			default:
+				return output.append(';');
+		}
+	}
+
+	public StringBuffer generateAsExpression(Scope scope, int indent, StringBuffer output) {
+		printIndent(indent, output);
+		generateModifiers(this.modifiers, output);
+		if (this.annotations != null) {
+			generateAnnotations(this.annotations, output);
+			output.append(' ');
+		}
+
+		if (this.type != null) {
+			this.type.print(0, output).append(' ');
+		}
+		output.append(this.name);
+		switch(getKind()) {
+			case ENUM_CONSTANT:
+				if (this.initialization != null) {
+					this.initialization.generateExpression(scope, indent, output);
+				}
+				break;
+			default:
+				if (this.initialization != null) {
+					output.append(" = "); //$NON-NLS-1$
+					this.initialization.generateExpression(scope, indent, output);
+				}
+		}
+		return output;
+	}
 }

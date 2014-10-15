@@ -221,9 +221,11 @@ public class SynchronizedStatement extends SubRoutineStatement {
 		visitor.endVisit(this, blockScope);
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		printIndent(indent, output);
+		output.append("synchronized ("); //$NON-NLS-1$
+		this.expression.generateExpression(scope, 0, output).append(')');
+		output.append('\n');
+		return this.block.generateStatement(scope, indent + 1, output);
 	}
 }

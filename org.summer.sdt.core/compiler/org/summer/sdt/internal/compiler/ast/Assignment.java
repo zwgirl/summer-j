@@ -277,11 +277,24 @@ public class Assignment extends Expression {
 	public boolean statementExpression() {
 		return true;
 	}
-
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		lhs.generateJavascript(scope, indent, buffer);
-		buffer.append(Javascript.WHITESPACE).append(Javascript.EQUAL).append(Javascript.WHITESPACE);
-		expression.generateJavascript(scope, indent, buffer);
+	
+	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
+		//no () when used as a statement
+		printIndent(indent, output);
+		return generateExpression(scope, indent, output);
+	}
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		//subclass redefine printExpressionNoParenthesis()
+		output.append('(');
+		return generateExpressionNoParenthesis(scope, 0, output).append(')');
+	}
+	public StringBuffer generateExpressionNoParenthesis(Scope scope, int indent, StringBuffer output) {
+		this.lhs.generateExpression(scope, indent, output).append(" = "); //$NON-NLS-1$
+		return this.expression.generateExpression(scope, 0, output);
+	}
+	
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		//no () when used as a statement
+		return generateJavascript(scope, indent, output).append(';');
 	}
 }

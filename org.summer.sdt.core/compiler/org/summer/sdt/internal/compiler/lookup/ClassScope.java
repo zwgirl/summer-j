@@ -36,6 +36,8 @@ import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.summer.sdt.internal.compiler.ast.Element;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
+import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
+import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.StringLiteral;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
@@ -218,6 +220,8 @@ public class ClassScope extends Scope {
 	void buildFieldsAndMethods() {
 		buildFields();
 		buildMethods();
+		
+		buildPropertyAccessores();
 
 		SourceTypeBinding sourceType = this.referenceContext.binding;
 		if (!sourceType.isPrivate() && sourceType.superclass instanceof SourceTypeBinding && sourceType.superclass.isPrivate())
@@ -229,6 +233,27 @@ public class ClassScope extends Scope {
 		ReferenceBinding[] memberTypes = sourceType.memberTypes;
 		for (int i = 0, length = memberTypes.length; i < length; i++)
 			 ((SourceTypeBinding) memberTypes[i]).scope.buildFieldsAndMethods();
+	}
+
+	private void buildPropertyAccessores() {
+		FieldDeclaration[] fields = this.referenceContext.fields;
+		if(fields == null){
+			return;
+		}
+		for (int i = 0, length = fields.length; i < length; i++) {
+			if(fields[i] instanceof PropertyDeclaration){
+				PropertyDeclaration prop = (PropertyDeclaration) fields[i];
+				MethodDeclaration[] methods = prop.accessors;
+				if(methods == null){
+					continue;
+				}
+				
+				for(MethodDeclaration method : methods){
+					MethodScope scope = new MethodScope(this, method, prop.isStatic());
+					scope.createMethod(method);
+				}
+			}
+		}
 	}
 
 	private LocalTypeBinding buildLocalType(SourceTypeBinding enclosingType, PackageBinding packageBinding) {

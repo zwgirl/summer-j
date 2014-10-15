@@ -954,13 +954,4 @@ public class EqualExpression extends BinaryExpression {
 		}
 		visitor.endVisit(this, scope);
 	}
-	
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		left.generateJavascript(scope, indent, buffer);
-		buffer.append(Javascript.WHITESPACE);
-		buffer.append(Javascript.EQUAL_EQUAL);
-		buffer.append(Javascript.WHITESPACE);
-		right.generateJavascript(scope, indent, buffer);
-	}
 }

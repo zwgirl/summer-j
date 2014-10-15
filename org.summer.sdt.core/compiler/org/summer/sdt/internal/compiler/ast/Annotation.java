@@ -1173,4 +1173,10 @@ public abstract class Annotation extends Expression {
 	public void setPersistibleAnnotation(ContainerAnnotation container) {
 		this.persistibleAnnotation = container; // will be a legitimate container for the first of the repeating ones and null for the followers.
 	}
+	
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		output.append('@');
+		this.type.generateExpression(scope, 0, output);
+		return output;
+	}
 }

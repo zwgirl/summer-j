@@ -1162,16 +1162,12 @@ public class QualifiedNameReference extends NameReference {
 		}
 		return null;
 	}
-
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		boolean dotSet = false;
-		for(char[] segment : tokens){
-			if(dotSet){
-				buffer.append(Javascript.DOT);
-			}
-			buffer.append(segment);
-			dotSet = true;
+	
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		for (int i = 0; i < this.tokens.length; i++) {
+			if (i > 0) output.append('.');
+			output.append(this.tokens[i]);
 		}
+		return output;
 	}
 }

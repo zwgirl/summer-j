@@ -255,9 +255,22 @@ public class ArrayInitializer extends Expression {
 		visitor.endVisit(this, scope);
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+
+		output.append('[');
+		if (this.expressions != null) {
+			int j = 20 ;
+			for (int i = 0 ; i < this.expressions.length ; i++) {
+				if (i > 0) output.append(", "); //$NON-NLS-1$
+				this.expressions[i].generateExpression(scope, 0, output);
+				j -- ;
+				if (j == 0) {
+					output.append('\n');
+					printIndent(indent+1, output);
+					j = 20;
+				}
+			}
+		}
+		return output.append(']');
 	}
 }

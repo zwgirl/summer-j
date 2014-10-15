@@ -964,4 +964,10 @@ public class Javadoc extends ASTNode {
 		}
 		visitor.endVisit(this, scope);
 	}
+	@Override
+	public StringBuffer generateJavascript(Scope scope, int indent,
+			StringBuffer output) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

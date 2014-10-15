@@ -27,6 +27,7 @@ import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.SyntheticMethodBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
@@ -384,6 +385,13 @@ public class Clinit extends AbstractMethodDeclaration {
 				this.classLiteralSyntheticField = sourceType.addSyntheticFieldForClassLiteral(sourceType, this.scope);
 			}
 		}
+	}
+	
+	public StringBuffer generateJavascript(Scope scope, int tab, StringBuffer output) {
+
+		printIndent(tab, output).append("<clinit>()"); //$NON-NLS-1$
+		generateBody(scope, tab + 1, output);
+		return output;
 	}
 
 }

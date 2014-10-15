@@ -60,10 +60,9 @@ public class EmptyStatement extends Statement {
 		visitor.visit(this, scope);
 		visitor.endVisit(this, scope);
 	}
-
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(Javascript.SEMICOLON);
+	
+	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output) {
+		return printIndent(tab, output).append(Javascript.SEMICOLON);
 	}
 }
 

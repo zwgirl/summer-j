@@ -330,17 +330,17 @@ public class LocalDeclaration extends AbstractVariableDeclaration {
 		visitor.endVisit(this, scope);
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(Javascript.VAR).append(Javascript.WHITESPACE);
-		
-		buffer.append(this.name);
-		
-		if(this.initialization != null){
-			buffer.append(Javascript.WHITESPACE).append(Javascript.EQUAL).append(Javascript.WHITESPACE);
-			this.initialization.generateJavascript(scope, indent, buffer);
-		}
-		buffer.append(Javascript.SEMICOLON);
-	}
+//	@Override
+//	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+//		buffer.append(Javascript.VAR).append(Javascript.WHITESPACE);
+//		
+//		buffer.append(this.name);
+//		
+//		if(this.initialization != null){
+//			buffer.append(Javascript.WHITESPACE).append(Javascript.EQUAL).append(Javascript.WHITESPACE);
+//			this.initialization.generateJavascript(scope, indent, buffer);
+//		}
+//		buffer.append(Javascript.SEMICOLON);
+//	}
 
 }

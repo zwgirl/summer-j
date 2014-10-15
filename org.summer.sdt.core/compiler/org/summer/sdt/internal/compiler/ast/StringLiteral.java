@@ -121,10 +121,42 @@ public class StringLiteral extends Literal {
 		visitor.visit(this, scope);
 		visitor.endVisit(this, scope);
 	}
+	
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(Javascript.DOUBLE_QUOTE).append(source).append(Javascript.DOUBLE_QUOTE);
-		
+		// handle some special char.....
+		output.append('\"');
+		for (int i = 0; i < this.source.length; i++) {
+			switch (this.source[i]) {
+				case '\b' :
+					output.append("\\b"); //$NON-NLS-1$
+					break;
+				case '\t' :
+					output.append("\\t"); //$NON-NLS-1$
+					break;
+				case '\n' :
+					output.append("\\n"); //$NON-NLS-1$
+					break;
+				case '\f' :
+					output.append("\\f"); //$NON-NLS-1$
+					break;
+				case '\r' :
+					output.append("\\r"); //$NON-NLS-1$
+					break;
+				case '\"' :
+					output.append("\\\""); //$NON-NLS-1$
+					break;
+				case '\'' :
+					output.append("\\'"); //$NON-NLS-1$
+					break;
+				case '\\' : //take care not to display the escape as a potential real char
+					output.append("\\\\"); //$NON-NLS-1$
+					break;
+				default :
+					output.append(this.source[i]);
+			}
+		}
+		output.append('\"');
+		return output;
 	}
 }

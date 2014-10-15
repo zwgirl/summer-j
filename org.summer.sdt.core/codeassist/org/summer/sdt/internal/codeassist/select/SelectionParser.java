@@ -57,6 +57,7 @@ import org.summer.sdt.internal.compiler.ast.TypeReference;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.ICompilationUnit;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.parser.CommitRollbackParser;
 import org.summer.sdt.internal.compiler.parser.JavadocParser;
@@ -910,6 +911,11 @@ public class SelectionParser extends AssistParser {
 				public StringBuffer printExpression(int indent, StringBuffer output) {
 					return output;
 				}
+				@Override
+				public StringBuffer generateExpression(Scope scope, int indent,
+						StringBuffer output) {
+					return output;
+				}
 			});
 		}
 		this.assistNode = constructorCall;
@@ -957,6 +963,11 @@ public class SelectionParser extends AssistParser {
 					return null;
 				}
 				public StringBuffer printExpression(int indent, StringBuffer output) {
+					return output;
+				}
+				@Override
+				public StringBuffer generateExpression(Scope scope, int indent,
+						StringBuffer output) {
 					return output;
 				}
 			});

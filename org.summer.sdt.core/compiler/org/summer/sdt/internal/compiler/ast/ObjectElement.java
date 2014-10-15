@@ -39,9 +39,10 @@ public class ObjectElement extends Element {
 	}
 
 	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+	public StringBuffer generateExpression(Scope scope, int indent,
+			StringBuffer output) {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 
 }

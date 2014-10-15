@@ -73,8 +73,9 @@ public abstract class BranchStatement extends Statement {
 	}
 	
 	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
+	public StringBuffer generateStatement(Scope scope, int indent,
+			StringBuffer output) {
 		// TODO Auto-generated method stub
-		
+		return super.generateJavascript(scope, indent, output);
 	}
 }

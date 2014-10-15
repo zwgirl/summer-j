@@ -185,6 +185,13 @@ public class PropertyDeclaration extends FieldDeclaration {
 			if (this.binding.constant() == null)
 				this.binding.setConstant(Constant.NotAConstant);
 		}
+		
+		if(this.accessors != null){
+			for(MethodDeclaration method : this.accessors){
+//				classScope.
+//				method.resolve(classScope);
+			}
+		}
 	}
 
 	@Override

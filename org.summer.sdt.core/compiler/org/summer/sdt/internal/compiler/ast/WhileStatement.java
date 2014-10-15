@@ -291,16 +291,21 @@ public class WhileStatement extends Statement {
 		}
 		visitor.endVisit(this, blockScope);
 	}
+	
+	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output) {
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		indent(indent, buffer);
-		buffer.append(Javascript.WHILE).append(Javascript.LPAREN);
-		if(condition != null){
-			condition.generateJavascript(scope, indent, buffer);
+		printIndent(tab, output).append("while ("); //$NON-NLS-1$
+		this.condition.generateExpression(scope, 0, output).append(')');
+		if (this.action == null)
+			output.append(';');
+		else {
+			output.append("\n");
+			if(this.action instanceof Block){
+				this.action.generateStatement(scope, tab, output);
+			} else{
+				this.action.generateStatement(scope, tab + 1, output);
+			}
 		}
-		buffer.append(Javascript.RPAREN);
-		action.generateJavascript(scope, indent, buffer);
-		
+		return output;
 	}
 }

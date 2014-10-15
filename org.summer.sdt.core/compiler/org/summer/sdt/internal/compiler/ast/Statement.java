@@ -300,15 +300,11 @@ public abstract class Statement extends ASTNode {
 	
 	public abstract void generateCode(BlockScope currentScope, CodeStream codeStream);
 	
-	//cym add
-	public abstract void generateJavascript(Scope scope, int indent, StringBuffer buffer);
-	protected StringBuffer indent(int indent, StringBuffer buffer){
-		for(int i =0; i<indent; i++){
-			buffer.append(Javascript.WHITESPACE);
-		}
-		
-		return buffer;
+	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
+		return generateStatement(scope, indent, output);
 	}
+	
+	public abstract StringBuffer generateStatement(Scope scope, int indent, StringBuffer output);
 	
 	public boolean isBoxingCompatible(TypeBinding expressionType, TypeBinding targetType, Expression expression, Scope scope) {
 		if (scope.isBoxingCompatibleWith(expressionType, targetType))

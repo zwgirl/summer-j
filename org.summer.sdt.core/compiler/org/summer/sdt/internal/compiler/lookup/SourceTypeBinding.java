@@ -53,6 +53,7 @@ import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
+import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeParameter;
 import org.summer.sdt.internal.compiler.ast.TypeReference;
@@ -1773,6 +1774,21 @@ public class SourceTypeBinding extends ReferenceBinding {
 							field.tagBits &= ~TagBits.AnnotationNullMASK;
 					}
 				}
+				
+				//cym add 
+				//to resolve accessor of propertyDeclaration
+				if(fieldDecl instanceof PropertyDeclaration){
+					PropertyDeclaration prop = (PropertyDeclaration) fieldDecl;
+					if(prop.accessors != null){
+						for(MethodDeclaration method : prop.accessors){
+							if(method.binding == null){
+								continue;
+							}
+							resolveTypesFor(method.binding);
+						}
+					}
+				}
+				// cym end
 			} finally {
 			    initializationScope.initializedField = previousField;
 			}

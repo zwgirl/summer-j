@@ -132,9 +132,11 @@ public class SingleTypeReference extends TypeReference {
 		visitor.endVisit(this, scope);
 	}
 
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		// TODO Auto-generated method stub
-		
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output){
+		if (this.annotations != null && this.annotations[0] != null) {
+			generateAnnotations(this.annotations[0], output);
+			output.append(' ');
+		}
+		return output.append(this.token);
 	}
 }

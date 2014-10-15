@@ -123,9 +123,4 @@ public class FloatLiteral extends NumberLiteral {
 		visitor.visit(this, scope);
 		visitor.endVisit(this, scope);
 	}
-
-	@Override
-	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-		buffer.append(this.source);
-	}
 }
