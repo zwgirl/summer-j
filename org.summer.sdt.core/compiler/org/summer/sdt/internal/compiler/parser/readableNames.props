@@ -359,6 +359,7 @@ TypeParameterHeader=TypeParameter
 TypeParameterList1=TypeParameterList1
 TypeParameterList=TypeParameterList
 TypeParameters=TypeParameters
+UnannotatableName=UnannotatableQualifiedName
 UnaryExpression=Expression
 UnaryExpressionNotPlusMinus=Expression
 UnaryExpressionNotPlusMinus_NotName=Expression
