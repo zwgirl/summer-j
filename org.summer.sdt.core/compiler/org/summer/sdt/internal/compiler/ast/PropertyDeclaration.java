@@ -199,4 +199,35 @@ public class PropertyDeclaration extends FieldDeclaration {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		if (this.javadoc != null) {
+			this.javadoc.generateJavascript(scope, indent, output);
+		}
+		
+		printIndent(indent, output);
+		output.append("Object.defineProperty(");
+		if(this.isStatic()){
+			output.append(binding.declaringClass.sourceName);
+		} else {
+			output.append(binding.declaringClass.sourceName).append("prototype");
+		}
+		
+		output.append(", ").append(this.name).append(", ").append('{').append("\n");
+		if(this.accessors != null){
+			for(MethodDeclaration method : this.accessors){
+				printIndent(indent + 1, output);
+				output.append("get : ").append("function( ) {").append("\n");
+				
+				output.append("\n");
+				printIndent(indent + 1, output);
+				output.append("}");
+			}
+		}
+		
+		output.append("\n");
+		printIndent(indent + 1, output).append("}");
+		
+		return output;
+	}
 }

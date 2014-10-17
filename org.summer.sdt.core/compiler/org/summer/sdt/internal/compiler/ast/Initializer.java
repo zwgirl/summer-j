@@ -18,6 +18,7 @@ import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.parser.Parser;
 
 public class Initializer extends FieldDeclaration {
@@ -134,5 +135,28 @@ public class Initializer extends FieldDeclaration {
 			if (this.block != null) this.block.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
+	}
+	
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+
+		if (this.modifiers != 0) {
+			printIndent(indent, output);
+			printModifiers(this.modifiers, output);
+			if (this.annotations != null) {
+				generateAnnotations(this.annotations, output);
+				output.append(' ');
+			}
+			output.append("{\n"); //$NON-NLS-1$
+			if (this.block != null) {
+				this.block.generateBody(scope, indent, output);
+			}
+			printIndent(indent, output).append('}');
+			return output;
+		} else if (this.block != null) {
+			this.block.generateStatement(scope, indent, output);
+		} else {
+			printIndent(indent, output).append("{}"); //$NON-NLS-1$
+		}
+		return output;
 	}
 }
