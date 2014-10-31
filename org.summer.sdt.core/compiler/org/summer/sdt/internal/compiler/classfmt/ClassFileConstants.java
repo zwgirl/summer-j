@@ -29,7 +29,9 @@ public interface ClassFileConstants {
 	int AccStatic       = 0x0008;
 	int AccFinal        = 0x0010;
 	int AccSynchronized = 0x0020;
+	int AccRef = AccSynchronized;
 	int AccVolatile     = 0x0040;
+	int AccOut = AccVolatile;
 	int AccBridge       = 0x0040;
 	int AccTransient    = 0x0080;
 	int AccVarargs      = 0x0080;
@@ -46,9 +48,6 @@ public interface ClassFileConstants {
 	 * by a language specification, so all compilers for the language must emit it.
 	 */
 	int AccMandated     = 0x8000;
-	
-	int AccExport       = 0x10000;   //add summer
-
 	
 	/**
 	 * Other VM flags.

@@ -188,8 +188,7 @@ public class PropertyDeclaration extends FieldDeclaration {
 		
 		if(this.accessors != null){
 			for(MethodDeclaration method : this.accessors){
-//				classScope.
-//				method.resolve(classScope);
+				method.resolve(classScope);
 			}
 		}
 	}
@@ -201,6 +200,7 @@ public class PropertyDeclaration extends FieldDeclaration {
 	}
 	
 	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		output.append("\n");
 		if (this.javadoc != null) {
 			this.javadoc.generateJavascript(scope, indent, output);
 		}
@@ -210,23 +210,36 @@ public class PropertyDeclaration extends FieldDeclaration {
 		if(this.isStatic()){
 			output.append(binding.declaringClass.sourceName);
 		} else {
-			output.append(binding.declaringClass.sourceName).append("prototype");
+			output.append(binding.declaringClass.sourceName).append(".prototype");
 		}
 		
 		output.append(", ").append(this.name).append(", ").append('{').append("\n");
 		if(this.accessors != null){
+			boolean comma = false;
 			for(MethodDeclaration method : this.accessors){
-				printIndent(indent + 1, output);
-				output.append("get : ").append("function( ) {").append("\n");
+				if(comma){
+					output.append(", ");
+				}
 				
 				output.append("\n");
 				printIndent(indent + 1, output);
+				output.append("get : ").append("function( ) {").append("\n");
+				if(method.statements != null){
+					for(int i = 0, length = method.statements.length; i < length; i++){
+						output.append("\n");
+						method.statements[i].generateStatement(scope, indent + 2, output);
+					}
+				}
+				output.append("\n");
+				printIndent(indent + 1, output);
 				output.append("}");
+				
+				comma = true;
 			}
 		}
 		
 		output.append("\n");
-		printIndent(indent + 1, output).append("}");
+		printIndent(indent, output).append("});");
 		
 		return output;
 	}

@@ -285,8 +285,8 @@ public class Assignment extends Expression {
 	}
 	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		//subclass redefine printExpressionNoParenthesis()
-		output.append('(');
-		return generateExpressionNoParenthesis(scope, 0, output).append(')');
+//		output.append('(');
+		return generateExpressionNoParenthesis(scope, 0, output); //.append(')');
 	}
 	public StringBuffer generateExpressionNoParenthesis(Scope scope, int indent, StringBuffer output) {
 		this.lhs.generateExpression(scope, indent, output).append(" = "); //$NON-NLS-1$

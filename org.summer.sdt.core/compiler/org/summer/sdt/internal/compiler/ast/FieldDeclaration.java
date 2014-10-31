@@ -22,6 +22,7 @@ import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_
 
 import java.util.List;
 
+import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.compiler.IProblem;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ast.TypeReference.AnnotationCollector;
@@ -44,6 +45,7 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.problem.ProblemReporter;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 import org.summer.sdt.internal.compiler.util.Util;
@@ -276,7 +278,11 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 						this.initialization.computeConversion(initializationScope, fieldType, initializationType);
 					}
 				} else if ((initializationType = this.initialization.resolveType(initializationScope)) != null) {
-	
+					//cym add 2014-10-26 TODO
+					if(this.getKind() == ENUM_CONSTANT){
+						return;
+					}
+					
 					if (TypeBinding.notEquals(fieldType, initializationType)) // must call before computeConversion() and typeMismatchError()
 						initializationScope.compilationUnitScope().recordTypeConversion(fieldType, initializationType);
 					if (this.initialization.isConstantValueOfTypeAssignableToType(initializationType, fieldType)
@@ -354,26 +360,69 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		}
 		visitor.endVisit(this, scope);
 	}
-
-//	@Override
-//	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-//		buffer.append(Javascript.OBJECT).append(Javascript.DEFINEPROPERTY).append(Javascript.LPAREN);
-//		if(isStatic()){
-//			buffer.append(scope.enclosingClassScope().referenceContext.name);
-//		} else {
-//			buffer.append(scope.enclosingClassScope().referenceContext.name).append(Javascript.DOT).append(Javascript.PROTOTYPE);
-//		}
-//		buffer.append(Javascript.COMMA).append(Javascript.WHITESPACE).append(this.name).append(Javascript.COMMA);
-//		buffer.append(Javascript.LBRACE).append(Javascript.CR);
-//		indent(indent + 1 , buffer);
-//		//TODO
-//		buffer.append(Javascript.RBRACE).append(Javascript.RPAREN).append(Javascript.SEMICOLON);
-//	}
 	
 	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
 		if (this.javadoc != null) {
 			this.javadoc.generateJavascript(scope, indent, output);
 		}
-		return super.generateStatement(scope, indent, output);
+		printIndent(indent, output);
+		if(isStatic()){
+			output.append(this.binding.declaringClass.sourceName).append(".");
+		} else{
+			output.append("this.");
+		}
+		output.append(this.name);
+		if (this.initialization != null) {
+			output.append(" = "); //$NON-NLS-1$
+			this.initialization.generateExpression(scope, indent, output);
+		} else {
+			output.append(" = "); //$NON-NLS-1$
+			if(this.binding != null){
+				switch(this.binding.type.id){
+				case TypeIds.T_boolean:
+				case TypeIds.T_JavaLangBoolean:
+					output.append("false");
+					break;
+				case TypeIds.T_byte:
+				case TypeIds.T_JavaLangByte:
+					output.append("0");
+					break;
+				case TypeIds.T_char:
+				case TypeIds.T_JavaLangCharacter:
+					output.append("0");
+					break;
+				case TypeIds.T_short:
+				case TypeIds.T_JavaLangShort:
+					output.append("0");
+					break;
+				case TypeIds.T_double:
+				case TypeIds.T_JavaLangDouble:
+					output.append("0");
+					break;
+				case TypeIds.T_float:
+				case TypeIds.T_JavaLangFloat:
+					output.append("0");
+					break;
+				case TypeIds.T_int:
+				case TypeIds.T_JavaLangInteger:
+					output.append("0");
+					break;
+				case TypeIds.T_long:
+				case TypeIds.T_JavaLangLong:
+					output.append("0");
+					break;
+				case TypeIds.T_JavaLangObject:
+					output.append("null");
+					break;
+				case TypeIds.T_JavaLangString:
+					output.append("null");
+					break;
+				default:
+					output.append("null");
+				}
+			}
+		}
+		output.append(";");
+		return output;
 	}
 }

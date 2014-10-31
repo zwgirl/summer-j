@@ -197,15 +197,50 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 				}
 			}
 			
-			//cym add
-			try {
-				writeJavascriptFile(result, compilationUnit);
-			} catch (CoreException e) {
-				Util.log(e, "JavaBuilder handling CoreException"); //$NON-NLS-1$
-				if (e.getStatus().getCode() == IResourceStatus.CASE_VARIANT_EXISTS)
-					createProblemFor(compilationUnit.resource, null, Messages.bind(Messages.build_classFileCollision, e.getMessage()), JavaCore.ERROR);
-				else
-					createProblemFor(compilationUnit.resource, null, Messages.build_inconsistentClassFile, JavaCore.ERROR);
+			//cym add 2014-10-18
+			JavascriptFile[] jsFiles = result.getJavascriptFiles();
+			length = jsFiles.length;
+			for (int i = 0; i < length; i++) {
+				JavascriptFile jsFile = jsFiles[i];
+	
+				char[][] compoundName = jsFile.getCompoundName();
+				char[] typeName = compoundName[compoundName.length - 1];
+	
+					String qualifiedTypeName = new String(jsFile.fileName()); // the qualified type name "p1/p2/A"
+					if (this.newState.isDuplicateLocator(qualifiedTypeName, typeLocator)) {
+						if (duplicateTypeNames == null)
+							duplicateTypeNames = new ArrayList();
+						duplicateTypeNames.add(compoundName);
+						if (mainType == null) {
+							try {
+								mainTypeName = compilationUnit.initialTypeName; // slash separated qualified name "p1/p1/A"
+								mainType = this.javaBuilder.javaProject.findType(mainTypeName.replace('/', '.'));
+							} catch (JavaModelException e) {
+								// ignore
+							}
+						}
+						IType type;
+						if (qualifiedTypeName.equals(mainTypeName)) {
+							type = mainType;
+						} else {
+							String simpleName = qualifiedTypeName.substring(qualifiedTypeName.lastIndexOf('/')+1);
+							type = mainType == null ? null : mainType.getCompilationUnit().getType(simpleName);
+						}
+						createProblemFor(compilationUnit.resource, type, Messages.bind(Messages.build_duplicateClassFile, new String(typeName)), JavaCore.ERROR);
+						continue;
+					}
+					this.newState.recordLocatorForType(qualifiedTypeName, typeLocator);
+					if (result.checkSecondaryTypes && !qualifiedTypeName.equals(compilationUnit.initialTypeName))
+						acceptSecondaryType(jsFile);
+				try {
+					definedTypeNames.add(writeJavascriptFile(jsFile, compilationUnit));
+				} catch (CoreException e) {
+					Util.log(e, "JavaBuilder handling CoreException"); //$NON-NLS-1$
+					if (e.getStatus().getCode() == IResourceStatus.CASE_VARIANT_EXISTS)
+						createProblemFor(compilationUnit.resource, null, Messages.bind(Messages.build_classFileCollision, e.getMessage()), JavaCore.ERROR);
+					else
+						createProblemFor(compilationUnit.resource, null, Messages.build_inconsistentClassFile, JavaCore.ERROR);
+				}
 			}
 			
 			if (result.hasAnnotations && this.filesWithAnnotations != null) // only initialized if an annotation processor is attached
@@ -217,10 +252,13 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 		}
 	}
 	
-	//cym add
-	protected void writeJavascriptFile(CompilationResult result, SourceFile compilationUnit) throws CoreException{
-		
-		String fileName = new String(compilationUnit.getFileName()); // the qualified type name "p1/p2/A"
+	protected void acceptSecondaryType(JavascriptFile jsFile) {
+		// noop
+	}
+	
+	//cym add 2014-10-18
+	protected char[] writeJavascriptFile(JavascriptFile jsFile, SourceFile compilationUnit) throws CoreException {
+		String fileName = new String(jsFile.fileName()); // the qualified type name "p1/p2/A"
 		IPath filePath = new Path(fileName);
 		IContainer outputFolder = compilationUnit.sourceLocation.binaryFolder;
 		IContainer container = outputFolder;
@@ -229,15 +267,17 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 			filePath = new Path(filePath.lastSegment());
 		}
 	
-		IFile file = container.getFile(filePath.addFileExtension("js"));
-		writeJavascriptFileContents(result.javascriptFile, file, fileName);
+		IFile file = container.getFile(filePath.addFileExtension(SuffixConstants.EXTENSION_js));
+		writeJavascriptFileContents(jsFile, file, fileName, compilationUnit);
+		// answer the name of the class file as in Y or Y$M
+		return filePath.lastSegment().toCharArray();
 	}
 	
-	protected void writeJavascriptFileContents(JavascriptFile jsFile, IFile file, String qualifiedFileName) throws CoreException {
+	//cym add 2014-10-18
+	protected void writeJavascriptFileContents(JavascriptFile jsFile, IFile file, String qualifiedFileName, SourceFile compilationUnit) throws CoreException {
 	//	InputStream input = new SequenceInputStream(
 	//			new ByteArrayInputStream(classFile.header, 0, classFile.headerOffset),
 	//			new ByteArrayInputStream(classFile.contents, 0, classFile.contentsOffset));
-		@SuppressWarnings("deprecation")
 		InputStream input = new StringBufferInputStream(jsFile.content.toString());
 		if (file.exists()) {
 			// Deal with shared output folders... last one wins... no collision cases detected

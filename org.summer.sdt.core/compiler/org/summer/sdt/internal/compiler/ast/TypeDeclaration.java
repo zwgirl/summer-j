@@ -17,6 +17,11 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.summer.sdt.core.compiler.CategorizedProblem;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.compiler.IProblem;
@@ -32,6 +37,7 @@ import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
 import org.summer.sdt.internal.compiler.javascript.Javascript;
+import org.summer.sdt.internal.compiler.javascript.JavascriptFile;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -59,9 +65,8 @@ import org.summer.sdt.internal.compiler.problem.AbortMethod;
 import org.summer.sdt.internal.compiler.problem.AbortType;
 import org.summer.sdt.internal.compiler.problem.ProblemReporter;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
+import org.summer.sdt.internal.compiler.util.ObjectVector;
 import org.summer.sdt.internal.compiler.util.Util;
-
-import static org.summer.sdt.internal.compiler.javascript.Javascript.*;
 
 public class TypeDeclaration extends Statement implements ProblemSeverities, ReferenceContext {
 	// Type decl kinds
@@ -628,6 +633,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 	}
 	
+
+	
 	/**
 	 * Bytecode generation for a local inner type (API as a normal statement code gen)
 	 */
@@ -674,6 +681,10 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	 */
 	public void generateCode(CompilationUnitScope unitScope) {
 		generateCode((ClassFile) null);
+	}
+	
+	public void generateJavascript(CompilationUnitScope unitScope) {
+		generateJavascript(unitScope, (JavascriptFile) null);
 	}
 	
 	public boolean hasErrors() {
@@ -933,6 +944,26 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					PropertyDeclaration prop = (PropertyDeclaration) fieldDeclaration;
 					if(prop.accessors != null){
 						for(MethodDeclaration method : prop.accessors){
+							method.parseStatements(parser, unit);
+						}
+					}
+				}
+				
+				//cym 2014-10-23 
+				if(fieldDeclaration instanceof IndexerDeclaration){
+					IndexerDeclaration indexer = (IndexerDeclaration) fieldDeclaration;
+					if(indexer.accessors != null){
+						for(MethodDeclaration method : indexer.accessors){
+							method.parseStatements(parser, unit);
+						}
+					}
+				}
+				
+				//cym 2014-10-23 
+				if(fieldDeclaration instanceof EventDeclaration){
+					EventDeclaration event = (EventDeclaration) fieldDeclaration;
+					if(event.accessors != null){
+						for(MethodDeclaration method : event.accessors){
 							method.parseStatements(parser, unit);
 						}
 					}
@@ -1589,86 +1620,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		return (this.bits & ASTNode.IsSecondaryType) != 0;
 	}
 
-//	@Override
-//	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-//		buffer.append(CR);
-//		if(this.methods != null){
-//			for(AbstractMethodDeclaration method : methods){
-//				if(method instanceof ConstructorDeclaration){
-//					buffer.append(CR);
-//					buffer.append(FUNCTION).append(WHITESPACE).append(this.name).append(LPAREN);
-//					if(method.arguments != null){
-//						boolean commaSet = false;
-//						for(Argument arg : method.arguments){
-//							if(commaSet){
-//								buffer.append(COMMA).append(WHITESPACE);
-//							}
-//							
-//							buffer.append(arg.name);
-//						}
-//					}
-//					buffer.append(RPAREN);
-//				} else {
-//					buffer.append(CR);
-//					if(method.isStatic()){
-//						buffer.append(this.name).append(DOT).append(method.selector).append(EQUAL).append(WHITESPACE);
-//					} else{
-//						buffer.append(this.name).append(DOT).append(PROTOTYPE).append(DOT).append(method.selector).append(WHITESPACE).append(EQUAL).append(WHITESPACE);
-//					}
-//					buffer.append(FUNCTION).append(LPAREN);
-//					if(method.arguments != null){
-//						boolean commaSet = false;
-//						for(Argument arg : method.arguments){
-//							if(commaSet){
-//								buffer.append(COMMA).append(WHITESPACE);
-//							}
-//							
-//							buffer.append(arg.name);
-//						}
-//					}
-//					buffer.append(RPAREN);
-//				}
-//				
-//				buffer.append(LBRACE);
-//				
-//				generateMothodBody(method, scope, indent, buffer);
-//				buffer.append(Javascript.CR);
-//				buffer.append(RBRACE);
-//			}
-//		}
-//		
-//		if(this.fields != null){
-//			for(FieldDeclaration field : this.fields){
-//				if(field instanceof Initializer){
-//					continue;
-//				}
-//				buffer.append(CR);
-//				buffer.append(OBJECT).append(DOT).append(DEFINEPROPERTY).append(LPAREN);
-//				if(field.isStatic()){
-//					buffer.append(this.name);
-//				} else {
-//					buffer.append(this.name).append(DOT).append(PROTOTYPE);
-//				}
-//				buffer.append(COMMA).append(WHITESPACE);
-//				buffer.append(field.name).append(COMMA).append(WHITESPACE);
-//				buffer.append(LBRACE);
-//				
-//				buffer.append(RBRACE).append(RPAREN).append(SEMICOLON);
-//			}
-//		}
-//		
-//	}
-//
-//	private void generateMothodBody(AbstractMethodDeclaration method, Scope scope, int indent, StringBuffer buffer) {
-//		if(method.statements != null) {
-//			for(Statement statement : method.statements){
-//				buffer.append(Javascript.CR);
-//				statement.generateJavascript(scope, indent, buffer);
-//			}
-//		}
-//	}
-	
-	
 	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
 		if (this.javadoc != null) {
 			this.javadoc.print(indent, output);
@@ -1772,6 +1723,415 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	
 	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output) {
 		return generateJavascript(scope, tab, output);
+	}
+	
+	
+	/**
+	 * Generic bytecode generation for type
+	 */
+	public void generateJavascript(CompilationUnitScope unitScope, JavascriptFile enclosingClassFile) {
+//		if ((this.bits & ASTNode.HasBeenGenerated) != 0)
+//			return;
+//		this.bits |= ASTNode.HasBeenGenerated;
+		if (this.ignoreFurtherInvestigation) {
+			if (this.binding == null)
+				return;
+			JavascriptFile.createProblemType(
+				this,
+				this.scope.referenceCompilationUnit().compilationResult);
+			return;
+		}
+		try {
+			// create the result for a compiled type
+			JavascriptFile classFile = JavascriptFile.getNewInstance(this.binding);
+//			JavascriptFile.initialize(this.binding, enclosingClassFile, false);
+//			if (this.binding.isMemberType()) {
+//				classFile.recordInnerClasses(this.binding);
+//			} else if (this.binding.isLocalType()) {
+//				enclosingClassFile.recordInnerClasses(this.binding);
+//				classFile.recordInnerClasses(this.binding);
+//			}
+//			TypeVariableBinding[] typeVariables = this.binding.typeVariables();
+//			for (int i = 0, max = typeVariables.length; i < max; i++) {
+//				TypeVariableBinding typeVariableBinding = typeVariables[i];
+//				if ((typeVariableBinding.tagBits & TagBits.ContainsNestedTypeReferences) != 0) {
+//					Util.recordNestedType(classFile, typeVariableBinding);
+//				}
+//			}
+//	
+//			// generate all fields
+//			classFile.addFieldInfos();
+//	
+//			if (this.memberTypes != null) {
+//				for (int i = 0, max = this.memberTypes.length; i < max; i++) {
+//					TypeDeclaration memberType = this.memberTypes[i];
+//					classFile.recordInnerClasses(memberType.binding);
+//					memberType.generateCode(this.scope, classFile);
+//				}
+//			}
+//			// generate all methods
+//			classFile.setForMethodInfos();
+//			if (this.methods != null) {
+//				for (int i = 0, max = this.methods.length; i < max; i++) {
+//					this.methods[i].generateCode(this.scope, classFile);
+//				}
+//			}
+//			// generate all synthetic and abstract methods
+//			classFile.addSpecialMethods();
+//	
+//			if (this.ignoreFurtherInvestigation) { // trigger problem type generation for code gen errors
+//				throw new AbortType(this.scope.referenceCompilationUnit().compilationResult, null);
+//			}
+//	
+//			// finalize the compiled type result
+//			classFile.addAttributes();
+			
+			StringBuffer output = classFile.content;
+			
+			generateAMDHeader(unitScope.referenceContext, 0, output);
+			
+			generateModuleBody(1, output);
+			
+			generateExportObject(1, output);
+			
+			output.append(Javascript.CR);
+			output.append(Javascript.RBRACE).append(Javascript.RPAREN).append(Javascript.SEMICOLON);
+			
+			this.scope.referenceCompilationUnit().compilationResult.record(
+				this.binding.constantPoolName(),
+				classFile);
+		} catch (AbortType e) {
+			if (this.binding == null)
+				return;
+			JavascriptFile.createProblemType(
+				this,
+				this.scope.referenceCompilationUnit().compilationResult);
+		}
+	}
+	
+	private void generateExportObject(int indent, StringBuffer output) {
+		output.append(Javascript.CR);
+		printIndent(indent, output).append(Javascript.RETURN).append(Javascript.WHITESPACE);
+		output.append(this.name).append(Javascript.SEMICOLON);
+	}
+
+	private void generateModuleBody(int indent, StringBuffer output){
+		
+		output.append("\n");
+		printIndent(indent, output).append("function ").append(this.name).append("(");
+
+		if(this.methods != null){
+			List<ConstructorDeclaration> constructors = new ArrayList<ConstructorDeclaration>();
+			Map<char[], ObjectVector> methodTable = new HashMap<char[], ObjectVector>();
+			for(AbstractMethodDeclaration method : this.methods){
+				if(method instanceof Clinit){
+					continue;
+				}
+				if(method.isConstructor()){
+					constructors.add((ConstructorDeclaration) method);
+				} else {
+					ObjectVector methods = (ObjectVector) methodTable.get(method.selector);
+					if(methods == null){
+						methods = new ObjectVector();
+						methodTable.put(method.selector, methods);
+					}
+					methods.add(method);
+				}
+			}
+			
+			if(constructors.size() > 1){
+				output.append("){");
+				output.append("\n");
+				printIndent(indent + 1, output).append("var args = Array.prototype.slice.call(arguments);");
+				output.append("\n");
+				printIndent(indent + 1, output).append("return ").append(this.name).append(".__f[args[0]].apply(this, args.slice(1, args.length));");
+				output.append("\n");
+				printIndent(indent, output).append("}");
+					
+				output.append("\n");
+				printIndent(indent, output).append(this.name).append(".__f").append(" = {");
+				boolean comma = false;
+				for(ConstructorDeclaration constructor : constructors){
+					if(comma){
+						output.append(", ");
+					}
+					output.append("\n");
+					printIndent(indent + 1, output);
+					output.append(getMethodIndex(constructor)).append(" : ").append("function(");
+					generateConstructor(constructor, initializerScope, indent, output);
+					comma = true;
+				}
+				output.append("\n");
+				printIndent(indent, output).append("};");
+			} else if(constructors.size() == 1){
+				ConstructorDeclaration constructor = constructors.get(0);
+				generateConstructor(constructor, initializerScope, indent, output);
+			}
+			
+			//generate static fields
+			generateFields(scope, indent, output, false);
+			
+			generateProperties(initializerScope, indent, output);
+			
+			//generate method
+			
+			for(char[] name : methodTable.keySet()){
+				ObjectVector methods = (ObjectVector) methodTable.get(name);
+				if(methods.size == 1){
+					output.append("\n");
+					MethodDeclaration method = (MethodDeclaration) methods.elementAt(0);
+					if(method.isStatic()){
+						printIndent(indent, output).append(this.name).append(".").append(method.selector).append(" = function(");
+					} else {
+						printIndent(indent, output).append(this.name).append(".prototype.").append(method.selector).append(" = function(");
+					}
+					generateMethod(method, initializerScope, indent, output);
+				} else {
+					List<MethodDeclaration> staticMethods = new ArrayList<MethodDeclaration>();
+					List<MethodDeclaration> instanceMethods = new ArrayList<MethodDeclaration>();
+					for(int i = 0, size = methods.size; i<size; i++){
+						MethodDeclaration method = (MethodDeclaration) methods.elementAt(i);
+						if(method.isStatic()){
+							staticMethods.add(method);
+						} else {
+							instanceMethods.add(method);
+						}
+					}
+					if(staticMethods.size() > 1){
+						output.append("\n");
+						printIndent(indent, output).append(this.name).append(".").append(name).append(" = function() {");
+						output.append("\n");
+						printIndent(indent + 1, output).append("var args = Array.prototype.slice.call(arguments);");
+						output.append("\n");
+						printIndent(indent + 1, output).append("return ").append(this.name).append(".").append(name).append(".__f[args[0]].apply(this, args.slice(1, args.length));");
+						output.append("\n");
+						printIndent(indent, output).append("}");
+						
+						output.append("\n");
+						printIndent(indent, output).append(this.name).append(".").append(name).append(".__f").append(" = {");
+						boolean comma = false;
+						for(MethodDeclaration method : staticMethods){
+							if(comma){
+								output.append(", ");
+							}
+							output.append("\n");
+							printIndent(indent + 1, output);
+							output.append(getMethodIndex(method)).append(" : ").append("function(");
+							generateMethod(method, initializerScope, indent + 2, output);
+							comma = true;
+						}
+						output.append("\n");
+						printIndent(indent, output).append("};");
+						
+						continue;
+		
+					} else if(staticMethods.size() ==1){
+						printIndent(indent, output).append(this.name).append(".").append(name).append(" = function(");
+						generateMethod(staticMethods.get(0), initializerScope, indent, output);
+						continue;
+					}
+					
+					if(instanceMethods.size() > 1){
+						output.append("\n");
+						printIndent(indent, output).append(this.name).append(".prototype.").append(name).append(" = function() {");
+						output.append("\n");
+						printIndent(indent + 1, output).append("var args = Array.prototype.slice.call(arguments);");
+						output.append("\n");
+						printIndent(indent + 1, output).append("return ").append(this.name).append(".prototype.").append(name).append(".__f[args[0]].apply(this, args.slice(1, args.length));");
+						output.append("\n");
+						printIndent(indent, output).append("}");
+						
+						output.append("\n");
+						printIndent(indent, output).append(this.name).append(".").append(name).append(".__f").append(" = {");
+						boolean comma = false;
+						for(MethodDeclaration method : instanceMethods){
+							if(comma){
+								output.append(", ");
+							}
+							output.append("\n");
+							printIndent(indent + 1, output);
+							output.append(getMethodIndex(method)).append(" : ").append("function(");
+							generateMethod(method, initializerScope, indent + 2, output);
+							comma = true;
+						}
+						output.append("\n");
+						printIndent(indent, output).append("};");
+		
+					} else if(staticMethods.size() ==1){
+						printIndent(indent, output).append(this.name).append(".prototype.").append(name).append(" = function(");
+						generateMethod(staticMethods.get(0), initializerScope, indent, output);
+					}
+				}
+			}
+		}
+		
+		if(this.memberTypes != null){
+			for(TypeDeclaration member : this.memberTypes){
+				member.generateJavascript(scope, indent , output);
+			}
+		}
+		
+		//type information
+		output.append("\n");
+		printIndent(indent, output).append(this.name).append(".prototype.Type = new Type(");
+		if(this.binding.superclass != null){
+			output.append(this.binding.superclass.sourceName).append(", ");
+		} else{
+			output.append(" ").append(", ");
+		}
+		output.append("\"").append(CharOperation.concatWith(this.binding.compoundName, '.')).append("\"");
+		output.append(", [");
+		if(this.binding.superInterfaces != null){
+			boolean comma = false;
+			for(ReferenceBinding binding : this.binding.superInterfaces){
+				if(comma){
+					output.append(", ");
+				}
+				output.append(binding.sourceName);
+			}
+		}
+		output.append("])");
+		output.append(";");
+	}
+	
+	private int getMethodIndex(AbstractMethodDeclaration method){
+		for(int i = 0, length = this.methods.length; i < length; i++){
+			if(this.methods[i] == method){
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+	
+	private void generateProperties(Scope scope, int indent, StringBuffer output){
+		if(this.fields != null){
+			for(int i = 0, length = this.fields.length; i < length; i++){
+				if(!(this.fields[i] instanceof PropertyDeclaration)){
+					continue;
+				}
+				this.fields[i].generateStatement(initializerScope, indent, output);
+			}
+		}
+	}
+	
+	private void generateFields(Scope scope, int indent, StringBuffer output, boolean instance){
+		if(this.fields != null){
+			for(int i = 0, length = this.fields.length; i < length; i++){
+				if(this.fields[i] instanceof PropertyDeclaration 
+						|| this.fields[i] instanceof IndexerDeclaration
+						|| this.fields[i] instanceof EventDeclaration){
+					continue;
+				}
+				if(instance && !this.fields[i].isStatic()){
+					output.append("\n");
+					this.fields[i].generateStatement(initializerScope, indent, output);
+				} else if(!instance && this.fields[i].isStatic()){
+					output.append("\n");
+					this.fields[i].generateStatement(initializerScope, indent, output);
+				}
+			}
+		}
+	}
+	
+	private void generateConstructor(ConstructorDeclaration constructor, Scope scope, int indent, StringBuffer output){
+		if(constructor.arguments != null){
+			for(int i=0, length = constructor.arguments.length; i < length; i++){
+				if(i > 0){
+					output.append(", ");
+				}
+				output.append(constructor.arguments[i].name);
+			}
+		}
+		output.append(") {");
+		
+		if(constructor.constructorCall != null){
+			output.append("\n");
+			printIndent(indent + 1, output);
+			ExplicitConstructorCall cstrCall = constructor.constructorCall;
+			output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
+			if(cstrCall.arguments != null){
+				for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
+					output.append(", ");
+					cstrCall.arguments[j].generateExpression(initializerScope, indent, output);
+				}
+			}
+			output.append(");");
+		}
+		
+		generateFields(scope, indent + 1, output, true);
+		
+		if(constructor.statements != null){
+			for(int i=0, length = constructor.statements.length; i < length; i++){
+				output.append("\n");
+				printIndent(indent + 1, output);
+				constructor.statements[i].generateStatement(initializerScope, indent, output);
+			}
+		}
+		
+		output.append("\n");
+		printIndent(indent, output).append("}");
+	}
+	
+	private void generateMethod(MethodDeclaration method, Scope scope, int indent, StringBuffer output){
+		if(method.arguments != null){
+			for(int j = 0, length1 = method.arguments.length; j < length1; j++){
+				if(j > 0)
+					output.append(", ");
+				output.append(method.arguments[j].name);
+			}
+		}
+		output.append(") {");
+		
+		if(method.statements != null){
+			for(int j = 0, length = method.statements.length; j < length; j++){
+				output.append("\n");
+				method.statements[j].generateStatement(initializerScope, indent + 1, output);
+			}
+		}
+		
+		output.append("\n");
+		printIndent(indent, output).append("}");
+	}
+	
+	private void generateAMDHeader(CompilationUnitDeclaration unit, int indent, StringBuffer output) {
+		printIndent(indent, output);
+		output.append(Javascript.DEFINE).append(Javascript.LPAREN).append(Javascript.DOUBLE_QUOTE).append(Javascript.DOUBLE_QUOTE);
+		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+		output.append(Javascript.LBRACKET);
+		
+		boolean commaSet = false;
+		if(unit.imports != null){
+			for(ImportReference imp : unit.imports){
+				if(commaSet){
+					output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+				}
+				output.append(Javascript.DOUBLE_QUOTE);
+				for (int i = 0; i < imp.tokens.length; i++) {
+					if (i > 0) output.append('.');
+					output.append(imp.tokens[i]);
+				}
+				output.append(Javascript.DOUBLE_QUOTE);
+				
+				commaSet = true;
+			}
+		}
+
+		output.append(Javascript.RBRACKET);
+		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);;
+		output.append(Javascript.FUNCTION).append(Javascript.LPAREN);
+		
+		if(unit.imports != null){
+			commaSet = false;
+			for(ImportReference imp : unit.imports){
+				if(commaSet){
+					output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+				}
+				output.append(imp.tokens[imp.tokens.length - 1]);
+				commaSet = true;
+			}
+		}
+		output.append(Javascript.RPAREN).append(Javascript.LBRACE);
 	}
 
 }

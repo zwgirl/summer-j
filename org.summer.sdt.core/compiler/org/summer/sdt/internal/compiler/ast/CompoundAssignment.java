@@ -156,7 +156,8 @@ public class CompoundAssignment extends Assignment implements OperatorIds {
 			}
 		}
 
-		if (restrainUsageToNumericTypes() && !lhsType.isNumericType()) {
+//		if (restrainUsageToNumericTypes() && !lhsType.isNumericType()) {
+		if (restrainUsageToNumericTypes() && !lhsType.isNumericType() && !lhsType.isEnum()) {   //cym 2014-10-24
 			scope.problemReporter().operatorOnlyValidOnNumericType(this, lhsType, expressionType);
 			return null;
 		}

@@ -1115,7 +1115,7 @@ public class JavaModelManager implements ISaveParticipant, IContentTypeChangeLis
 	 * Table from WorkingCopyOwner to a table of ICompilationUnit (working copy handle) to PerWorkingCopyInfo.
 	 * NOTE: this object itself is used as a lock to synchronize creation/removal of per working copy infos
 	 */
-	protected Map perWorkingCopyInfos = new HashMap(5);
+	protected Map<WorkingCopyOwner, Map<ICompilationUnit, PerWorkingCopyInfo>> perWorkingCopyInfos = new HashMap(5);
 
 	/**
 	 * A weak set of the known search scopes.
@@ -2354,7 +2354,7 @@ public class JavaModelManager implements ISaveParticipant, IContentTypeChangeLis
 	 * If recordUsage, increment the per-working copy info's use count.
 	 * Returns null if it doesn't exist and not create.
 	 */
-	public PerWorkingCopyInfo getPerWorkingCopyInfo(CompilationUnit workingCopy,boolean create, boolean recordUsage, IProblemRequestor problemRequestor) {
+	public PerWorkingCopyInfo getPerWorkingCopyInfo(CompilationUnit workingCopy, boolean create, boolean recordUsage, IProblemRequestor problemRequestor) {
 		synchronized(this.perWorkingCopyInfos) { // use the perWorkingCopyInfo collection as its own lock
 			WorkingCopyOwner owner = workingCopy.owner;
 			Map workingCopyToInfos = (Map)this.perWorkingCopyInfos.get(owner);

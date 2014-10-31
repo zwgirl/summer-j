@@ -32,7 +32,11 @@ import org.summer.sdt.internal.compiler.ClassFile;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.Argument;
+import org.summer.sdt.internal.compiler.ast.EventDeclaration;
+import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
+import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
+import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.ConstantPool;
@@ -1193,6 +1197,46 @@ public class MethodBinding extends Binding {
 				if (this == methods[i].binding)
 					return methods[i];
 		}
+		
+		//cym add
+		FieldDeclaration[] fields = sourceType.scope != null ? sourceType.scope.referenceContext.fields : null;
+		if (fields != null) {
+			for (int i = fields.length; --i >= 0;) {
+				if(fields[i] instanceof PropertyDeclaration){
+					PropertyDeclaration prop = (PropertyDeclaration) fields[i];
+					if(prop.accessors != null){
+						for (int j = prop.accessors.length; --j >= 0;)
+							if (this == prop.accessors[j].binding)
+								return prop.accessors[j];
+					}
+					
+					continue;
+				}
+			
+				if(fields[i] instanceof EventDeclaration){
+					EventDeclaration event = (EventDeclaration) fields[i];
+					if(event.accessors != null){
+						for (int j = event.accessors.length; --j >= 0;)
+							if (this == event.accessors[j].binding)
+								return event.accessors[j];
+					}
+					
+					continue;
+				}
+				
+				if(fields[i] instanceof IndexerDeclaration){
+					IndexerDeclaration indexer = (IndexerDeclaration) fields[i];
+					if(indexer.accessors != null){
+						for (int j = indexer.accessors.length; --j >= 0;)
+							if (this == indexer.accessors[j].binding)
+								return indexer.accessors[j];
+					}
+					
+					continue;
+				}
+			}
+		}
+		//cym add end
 		return null;
 	}
 	public LambdaExpression sourceLambda() {

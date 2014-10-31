@@ -1827,6 +1827,15 @@ public class BinaryExpression extends OperatorExpression {
 				rightTypeID = scope.environment().computeBoxingType(rightType).id;
 			}
 		}
+		
+		//cym add 2014-10-26
+		if (rightType.isEnum()) {
+			rightTypeID = TypeIds.T_int;
+		}
+		if (leftType.isEnum()) {
+			leftTypeID = TypeIds.T_int;
+		}
+		
 		if (leftTypeID > 15
 			|| rightTypeID > 15) { // must convert String + Object || Object + String
 			if (leftTypeID == TypeIds.T_JavaLangString) {

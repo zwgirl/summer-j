@@ -1231,7 +1231,7 @@ public class TryStatement extends SubRoutineStatement {
 		int length = this.resources.length;
 		printIndent(indent, output).append("try" + (length == 0 ? "\n" : " (")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		for (int i = 0; i < length; i++) {
-			this.resources[i].generateAsExpression(scope, 0, output);
+			this.resources[i].generateExpression(scope, 0, output);
 			if (i != length - 1) {
 				output.append(";\n"); //$NON-NLS-1$
 				printIndent(indent + 2, output);

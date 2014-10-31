@@ -260,77 +260,77 @@ public abstract class HierarchyBuilder {
 			}
 		}
 	}
-/**
- * Create an ICompilationUnit info from the given compilation unit on disk.
- */
-protected ICompilationUnit createCompilationUnitFromPath(Openable handle, IFile file) {
-	final char[] elementName = handle.getElementName().toCharArray();
-	return new ResourceCompilationUnit(file, file.getLocationURI()) {
-		public char[] getFileName() {
-			return elementName;
-		}
-	};
-}
 	/**
- * Creates the type info from the given class file on disk and
- * adds it to the given list of infos.
- */
-protected IBinaryType createInfoFromClassFile(Openable handle, IResource file) {
-	IBinaryType info = null;
-	try {
-		info = Util.newClassFileReader(file);
-	} catch (org.summer.sdt.internal.compiler.classfmt.ClassFormatException e) {
-		if (TypeHierarchy.DEBUG) {
-			e.printStackTrace();
-		}
-		return null;
-	} catch (java.io.IOException e) {
-		if (TypeHierarchy.DEBUG) {
-			e.printStackTrace();
-		}
-		return null;
-	} catch (CoreException e) {
-		if (TypeHierarchy.DEBUG) {
-			e.printStackTrace();
-		}
-		return null;
+	 * Create an ICompilationUnit info from the given compilation unit on disk.
+	 */
+	protected ICompilationUnit createCompilationUnitFromPath(Openable handle, IFile file) {
+		final char[] elementName = handle.getElementName().toCharArray();
+		return new ResourceCompilationUnit(file, file.getLocationURI()) {
+			public char[] getFileName() {
+				return elementName;
+			}
+		};
 	}
-	this.infoToHandle.put(info, handle);
-	return info;
-}
-	/**
- * Create a type info from the given class file in a jar and adds it to the given list of infos.
- */
-protected IBinaryType createInfoFromClassFileInJar(Openable classFile) {
-	PackageFragment pkg = (PackageFragment) classFile.getParent();
-	String classFilePath = Util.concatWith(pkg.names, classFile.getElementName(), '/');
-	IBinaryType info = null;
-	java.util.zip.ZipFile zipFile = null;
-	try {
-		zipFile = ((JarPackageFragmentRoot)pkg.getParent()).getJar();
-		info = org.summer.sdt.internal.compiler.classfmt.ClassFileReader.read(
-			zipFile,
-			classFilePath);
-	} catch (org.summer.sdt.internal.compiler.classfmt.ClassFormatException e) {
-		if (TypeHierarchy.DEBUG) {
-			e.printStackTrace();
+		/**
+	 * Creates the type info from the given class file on disk and
+	 * adds it to the given list of infos.
+	 */
+	protected IBinaryType createInfoFromClassFile(Openable handle, IResource file) {
+		IBinaryType info = null;
+		try {
+			info = Util.newClassFileReader(file);
+		} catch (org.summer.sdt.internal.compiler.classfmt.ClassFormatException e) {
+			if (TypeHierarchy.DEBUG) {
+				e.printStackTrace();
+			}
+			return null;
+		} catch (java.io.IOException e) {
+			if (TypeHierarchy.DEBUG) {
+				e.printStackTrace();
+			}
+			return null;
+		} catch (CoreException e) {
+			if (TypeHierarchy.DEBUG) {
+				e.printStackTrace();
+			}
+			return null;
 		}
-		return null;
-	} catch (java.io.IOException e) {
-		if (TypeHierarchy.DEBUG) {
-			e.printStackTrace();
-		}
-		return null;
-	} catch (CoreException e) {
-		if (TypeHierarchy.DEBUG) {
-			e.printStackTrace();
-		}
-		return null;
-	} finally {
-		JavaModelManager.getJavaModelManager().closeZipFile(zipFile);
+		this.infoToHandle.put(info, handle);
+		return info;
 	}
-	this.infoToHandle.put(info, classFile);
-	return info;
-}
+		/**
+	 * Create a type info from the given class file in a jar and adds it to the given list of infos.
+	 */
+	protected IBinaryType createInfoFromClassFileInJar(Openable classFile) {
+		PackageFragment pkg = (PackageFragment) classFile.getParent();
+		String classFilePath = Util.concatWith(pkg.names, classFile.getElementName(), '/');
+		IBinaryType info = null;
+		java.util.zip.ZipFile zipFile = null;
+		try {
+			zipFile = ((JarPackageFragmentRoot)pkg.getParent()).getJar();
+			info = org.summer.sdt.internal.compiler.classfmt.ClassFileReader.read(
+				zipFile,
+				classFilePath);
+		} catch (org.summer.sdt.internal.compiler.classfmt.ClassFormatException e) {
+			if (TypeHierarchy.DEBUG) {
+				e.printStackTrace();
+			}
+			return null;
+		} catch (java.io.IOException e) {
+			if (TypeHierarchy.DEBUG) {
+				e.printStackTrace();
+			}
+			return null;
+		} catch (CoreException e) {
+			if (TypeHierarchy.DEBUG) {
+				e.printStackTrace();
+			}
+			return null;
+		} finally {
+			JavaModelManager.getJavaModelManager().closeZipFile(zipFile);
+		}
+		this.infoToHandle.put(info, classFile);
+		return info;
+	}
 
 }

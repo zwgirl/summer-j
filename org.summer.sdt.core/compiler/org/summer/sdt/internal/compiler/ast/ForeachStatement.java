@@ -581,7 +581,7 @@ public class ForeachStatement extends Statement {
 	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
 
 		printIndent(indent, output).append("for ("); //$NON-NLS-1$
-		this.elementVariable.generateAsExpression(scope, 0, output);
+		this.elementVariable.generateExpression(scope, 0, output);
 		output.append(" : ");//$NON-NLS-1$
 		if (this.collection != null) {
 			this.collection.print(0, output).append(") "); //$NON-NLS-1$

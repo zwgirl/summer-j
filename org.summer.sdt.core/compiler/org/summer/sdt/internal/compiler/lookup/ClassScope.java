@@ -35,7 +35,9 @@ import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.summer.sdt.internal.compiler.ast.Element;
+import org.summer.sdt.internal.compiler.ast.EventDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
+import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
@@ -247,9 +249,38 @@ public class ClassScope extends Scope {
 				if(methods == null){
 					continue;
 				}
+	
 				
 				for(MethodDeclaration method : methods){
 					MethodScope scope = new MethodScope(this, method, prop.isStatic());
+					scope.createMethod(method);
+				}
+			}
+			
+			if(fields[i] instanceof IndexerDeclaration){
+				IndexerDeclaration indexer = (IndexerDeclaration) fields[i];
+				MethodDeclaration[] methods = indexer.accessors;
+				if(methods == null){
+					continue;
+				}
+	
+				
+				for(MethodDeclaration method : methods){
+					MethodScope scope = new MethodScope(this, method, indexer.isStatic());
+					scope.createMethod(method);
+				}
+			}
+			
+			if(fields[i] instanceof EventDeclaration){
+				EventDeclaration event = (EventDeclaration) fields[i];
+				MethodDeclaration[] methods = event.accessors;
+				if(methods == null){
+					continue;
+				}
+	
+				
+				for(MethodDeclaration method : methods){
+					MethodScope scope = new MethodScope(this, method, event.isStatic());
 					scope.createMethod(method);
 				}
 			}
@@ -763,6 +794,73 @@ public class ClassScope extends Scope {
 	*
 	* Note : A scope is accessible by : fieldBinding.declaringClass.scope
 	*/
+//	private void checkAndSetModifiersForField(FieldBinding fieldBinding, FieldDeclaration fieldDecl) {
+//		int modifiers = fieldBinding.modifiers;
+//		final ReferenceBinding declaringClass = fieldBinding.declaringClass;
+//		if ((modifiers & ExtraCompilerModifiers.AccAlternateModifierProblem) != 0)
+//			problemReporter().duplicateModifierForField(declaringClass, fieldDecl);
+//
+//		if (declaringClass.isInterface()) {
+//			final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
+//			// set the modifiers
+//			modifiers |= IMPLICIT_MODIFIERS;
+//
+//			// and then check that they are the only ones
+//			if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != IMPLICIT_MODIFIERS) {
+//				if ((declaringClass.modifiers  & ClassFileConstants.AccAnnotation) != 0)
+//					problemReporter().illegalModifierForAnnotationField(fieldDecl);
+//				else
+//					problemReporter().illegalModifierForInterfaceField(fieldDecl);
+//			}
+//			fieldBinding.modifiers = modifiers;
+//			return;
+//		} else if (fieldDecl.getKind() == AbstractVariableDeclaration.ENUM_CONSTANT) {
+//			// check that they are not modifiers in source
+//			if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != 0)
+//				problemReporter().illegalModifierForEnumConstant(declaringClass, fieldDecl);
+//
+//			// set the modifiers
+//			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=267670. Force all enumerators to be marked
+//			// as used locally. We are unable to track the usage of these reliably as they could be used
+//			// in non obvious ways via the synthesized methods values() and valueOf(String) or by using 
+//			// Enum.valueOf(Class<T>, String).
+//			final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccEnum | ExtraCompilerModifiers.AccLocallyUsed;
+//			fieldBinding.modifiers|= IMPLICIT_MODIFIERS;
+//			return;
+//		}
+//
+//		// after this point, tests on the 16 bits reserved.
+//		int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
+//		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccTransient | ClassFileConstants.AccVolatile);
+//		if ((realModifiers & UNEXPECTED_MODIFIERS) != 0) {
+//			problemReporter().illegalModifierForField(declaringClass, fieldDecl);
+//			modifiers &= ~ExtraCompilerModifiers.AccJustFlag | ~UNEXPECTED_MODIFIERS;
+//		}
+//
+//		int accessorBits = realModifiers & (ClassFileConstants.AccPublic | ClassFileConstants.AccProtected | ClassFileConstants.AccPrivate);
+//		if ((accessorBits & (accessorBits - 1)) > 1) {
+//			problemReporter().illegalVisibilityModifierCombinationForField(declaringClass, fieldDecl);
+//
+//			// need to keep the less restrictive so disable Protected/Private as necessary
+//			if ((accessorBits & ClassFileConstants.AccPublic) != 0) {
+//				if ((accessorBits & ClassFileConstants.AccProtected) != 0)
+//					modifiers &= ~ClassFileConstants.AccProtected;
+//				if ((accessorBits & ClassFileConstants.AccPrivate) != 0)
+//					modifiers &= ~ClassFileConstants.AccPrivate;
+//			} else if ((accessorBits & ClassFileConstants.AccProtected) != 0 && (accessorBits & ClassFileConstants.AccPrivate) != 0) {
+//				modifiers &= ~ClassFileConstants.AccPrivate;
+//			}
+//		}
+//
+//		if ((realModifiers & (ClassFileConstants.AccFinal | ClassFileConstants.AccVolatile)) == (ClassFileConstants.AccFinal | ClassFileConstants.AccVolatile))
+//			problemReporter().illegalModifierCombinationFinalVolatileForField(declaringClass, fieldDecl);
+//
+//		if (fieldDecl.initialization == null && (modifiers & ClassFileConstants.AccFinal) != 0)
+//			modifiers |= ExtraCompilerModifiers.AccBlankFinal;
+//		fieldBinding.modifiers = modifiers;
+//	}
+	
+	//cym modified 2014-10-25
 	private void checkAndSetModifiersForField(FieldBinding fieldBinding, FieldDeclaration fieldDecl) {
 		int modifiers = fieldBinding.modifiers;
 		final ReferenceBinding declaringClass = fieldBinding.declaringClass;
@@ -770,19 +868,80 @@ public class ClassScope extends Scope {
 			problemReporter().duplicateModifierForField(declaringClass, fieldDecl);
 
 		if (declaringClass.isInterface()) {
-			final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
-			// set the modifiers
-			modifiers |= IMPLICIT_MODIFIERS;
-
-			// and then check that they are the only ones
-			if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != IMPLICIT_MODIFIERS) {
-				if ((declaringClass.modifiers  & ClassFileConstants.AccAnnotation) != 0)
-					problemReporter().illegalModifierForAnnotationField(fieldDecl);
-				else
-					problemReporter().illegalModifierForInterfaceField(fieldDecl);
+			//cym modified 2014-10-25
+//			if(fieldDecl instanceof PropertyDeclaration){
+//				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic;
+//				// set the modifiers
+//				modifiers |= IMPLICIT_MODIFIERS;
+//	
+//				// and then check that they are the only ones
+//				if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != IMPLICIT_MODIFIERS) {
+//					if ((declaringClass.modifiers  & ClassFileConstants.AccAnnotation) != 0)
+//						problemReporter().illegalModifierForAnnotationField(fieldDecl);
+//					else
+//						problemReporter().illegalModifierForInterfaceField(fieldDecl);
+//				}
+//				fieldBinding.modifiers = modifiers;
+//				return;
+//			}else if(fieldDecl instanceof IndexerDeclaration){
+//				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic;
+//				// set the modifiers
+//				modifiers |= IMPLICIT_MODIFIERS;
+//	
+//				// and then check that they are the only ones
+//				if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != IMPLICIT_MODIFIERS) {
+//					if ((declaringClass.modifiers  & ClassFileConstants.AccAnnotation) != 0)
+//						problemReporter().illegalModifierForAnnotationField(fieldDecl);
+//					else
+//						problemReporter().illegalModifierForInterfaceField(fieldDecl);
+//				}
+//				fieldBinding.modifiers = modifiers;
+//				return;
+//			} else if(fieldDecl instanceof EventDeclaration){
+//				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic;
+//				// set the modifiers
+//				modifiers |= IMPLICIT_MODIFIERS;
+//	
+//				// and then check that they are the only ones
+//				if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != IMPLICIT_MODIFIERS) {
+//					if ((declaringClass.modifiers  & ClassFileConstants.AccAnnotation) != 0)
+//						problemReporter().illegalModifierForAnnotationField(fieldDecl);
+//					else
+//						problemReporter().illegalModifierForInterfaceField(fieldDecl);
+//				}
+//				fieldBinding.modifiers = modifiers;
+//				return;
+//			} else{
+//				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
+//				// set the modifiers
+//				modifiers |= IMPLICIT_MODIFIERS;
+//	
+//				// and then check that they are the only ones
+//				if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != IMPLICIT_MODIFIERS) {
+//					if ((declaringClass.modifiers  & ClassFileConstants.AccAnnotation) != 0)
+//						problemReporter().illegalModifierForAnnotationField(fieldDecl);
+//					else
+//						problemReporter().illegalModifierForInterfaceField(fieldDecl);
+//				}
+//				fieldBinding.modifiers = modifiers;
+//				return;
+//			}
+			
+			if(!(fieldDecl instanceof PropertyDeclaration || fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof EventDeclaration)){
+				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
+				// set the modifiers
+				modifiers |= IMPLICIT_MODIFIERS;
+	
+				// and then check that they are the only ones
+				if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != IMPLICIT_MODIFIERS) {
+					if ((declaringClass.modifiers  & ClassFileConstants.AccAnnotation) != 0)
+						problemReporter().illegalModifierForAnnotationField(fieldDecl);
+					else
+						problemReporter().illegalModifierForInterfaceField(fieldDecl);
+				}
+				fieldBinding.modifiers = modifiers;
+				return;
 			}
-			fieldBinding.modifiers = modifiers;
-			return;
 		} else if (fieldDecl.getKind() == AbstractVariableDeclaration.ENUM_CONSTANT) {
 			// check that they are not modifiers in source
 			if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != 0)
@@ -800,7 +959,9 @@ public class ClassScope extends Scope {
 
 		// after this point, tests on the 16 bits reserved.
 		int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
-		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccTransient | ClassFileConstants.AccVolatile);
+		//cym modified 2014-10-26
+//		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccTransient | ClassFileConstants.AccVolatile);
+		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccTransient | ClassFileConstants.AccVolatile  | ClassFileConstants.AccAbstract );
 		if ((realModifiers & UNEXPECTED_MODIFIERS) != 0) {
 			problemReporter().illegalModifierForField(declaringClass, fieldDecl);
 			modifiers &= ~ExtraCompilerModifiers.AccJustFlag | ~UNEXPECTED_MODIFIERS;

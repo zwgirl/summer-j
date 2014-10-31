@@ -444,7 +444,7 @@ public class ForStatement extends Statement {
 			for (int i = 0; i < this.initializations.length; i++) {
 				//nice only with expressions
 				if (i > 0) output.append(", "); //$NON-NLS-1$
-				this.initializations[i].generateJavascript(scope, 0, output);
+				this.initializations[i].generateExpression(scope, 0, output);
 			}
 		}
 		output.append("; "); //$NON-NLS-1$

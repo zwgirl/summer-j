@@ -70,6 +70,7 @@ public class CompilationResult {
 	public int lineSeparatorPositions[];
 	public RecoveryScannerData recoveryScannerData;
 	public Map<char[], ClassFile> compiledTypes = new Hashtable(11);
+	public Map<char[], JavascriptFile> compiledJsTypes = new Hashtable(11);  //cym add 2014-10-18
 	public int unitIndex, totalUnitsKnown;
 	public boolean hasBeenAccepted = false;
 	public char[] fileName;
@@ -192,6 +193,12 @@ public class CompilationResult {
 		return classFiles;
 	}
 	
+	
+	public JavascriptFile[] getJavascriptFiles() {
+		JavascriptFile[] jsFiles = new JavascriptFile[this.compiledJsTypes.size()];
+		this.compiledJsTypes.values().toArray(jsFiles);
+		return jsFiles;
+	}
 	/**
 	 * Answer the initial compilation unit corresponding to the present compilation result
 	 */
@@ -414,6 +421,17 @@ public class CompilationResult {
 		this.compiledTypes.put(typeName, classFile);
 	}
 	
+	//cym add 2014-10-18
+	/**
+	 * For now, remember the compiled type using its compound name.
+	 */
+	public void record(char[] typeName, JavascriptFile jsFile) {
+//	    SourceTypeBinding sourceType = jsFile.referenceBinding;
+//	    if (!sourceType.isLocalType() && sourceType.isHierarchyInconsistent()) {
+//	        this.hasInconsistentToplevelHierarchies = true;
+//	    }
+		this.compiledJsTypes.put(typeName, jsFile);
+	}
 	
 	/**
 	 * For now, remember the javascript file.

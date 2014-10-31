@@ -146,7 +146,7 @@ public abstract class AbstractVariableDeclaration extends Statement implements I
 	}
 	
 	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
-		generateAsExpression(scope, indent, output);
+		generateExpression(scope, indent, output);
 		switch(getKind()) {
 			case ENUM_CONSTANT:
 				return output.append(',');
@@ -155,17 +155,18 @@ public abstract class AbstractVariableDeclaration extends Statement implements I
 		}
 	}
 
-	public StringBuffer generateAsExpression(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		generateModifiers(this.modifiers, output);
-		if (this.annotations != null) {
-			generateAnnotations(this.annotations, output);
-			output.append(' ');
-		}
-
-		if (this.type != null) {
-			this.type.print(0, output).append(' ');
-		}
+//		generateModifiers(this.modifiers, output);
+//		if (this.annotations != null) {
+//			generateAnnotations(this.annotations, output);
+//			output.append(' ');
+//		}
+//
+//		if (this.type != null) {
+//			this.type.print(0, output).append(' ');
+//		}
+		output.append("var ");
 		output.append(this.name);
 		switch(getKind()) {
 			case ENUM_CONSTANT:

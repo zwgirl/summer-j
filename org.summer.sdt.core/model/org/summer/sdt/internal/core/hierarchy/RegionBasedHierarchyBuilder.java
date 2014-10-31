@@ -39,64 +39,64 @@ public class RegionBasedHierarchyBuilder extends HierarchyBuilder {
 		super(hierarchy);
 	}
 
-public void build(boolean computeSubtypes) {
-
-	JavaModelManager manager = JavaModelManager.getJavaModelManager();
-	try {
-		// optimize access to zip files while building hierarchy
-		manager.cacheZipFiles(this);
-
-		if (this.hierarchy.focusType == null || computeSubtypes) {
-			IProgressMonitor typeInRegionMonitor =
-				this.hierarchy.progressMonitor == null ?
-					null :
-					new SubProgressMonitor(this.hierarchy.progressMonitor, 30);
-			HashMap allOpenablesInRegion = determineOpenablesInRegion(typeInRegionMonitor);
-			this.hierarchy.initialize(allOpenablesInRegion.size());
-			IProgressMonitor buildMonitor =
-				this.hierarchy.progressMonitor == null ?
-					null :
-					new SubProgressMonitor(this.hierarchy.progressMonitor, 70);
-			createTypeHierarchyBasedOnRegion(allOpenablesInRegion, buildMonitor);
-			((RegionBasedTypeHierarchy)this.hierarchy).pruneDeadBranches();
-		} else {
-			this.hierarchy.initialize(1);
-			buildSupertypes();
-		}
-	} finally {
-		manager.flushZipFiles(this);
-	}
-}
-/**
- * Configure this type hierarchy that is based on a region.
- */
-private void createTypeHierarchyBasedOnRegion(HashMap allOpenablesInRegion, IProgressMonitor monitor) {
-
-	try {
-		int size = allOpenablesInRegion.size();
-		if (monitor != null) monitor.beginTask("", size * 2/* 1 for build binding, 1 for connect hierarchy*/); //$NON-NLS-1$
-		this.infoToHandle = new HashMap(size);
-		Iterator javaProjects = allOpenablesInRegion.entrySet().iterator();
-		while (javaProjects.hasNext()) {
-			Map.Entry entry = (Map.Entry) javaProjects.next();
-			JavaProject project = (JavaProject) entry.getKey();
-			ArrayList allOpenables = (ArrayList) entry.getValue();
-			Openable[] openables = new Openable[allOpenables.size()];
-			allOpenables.toArray(openables);
-
-			try {
-				// resolve
-				SearchableEnvironment searchableEnvironment = project.newSearchableNameEnvironment(this.hierarchy.workingCopies);
-				this.nameLookup = searchableEnvironment.nameLookup;
-				this.hierarchyResolver.resolve(openables, null, monitor);
-			} catch (JavaModelException e) {
-				// project doesn't exit: ignore
+	public void build(boolean computeSubtypes) {
+	
+		JavaModelManager manager = JavaModelManager.getJavaModelManager();
+		try {
+			// optimize access to zip files while building hierarchy
+			manager.cacheZipFiles(this);
+	
+			if (this.hierarchy.focusType == null || computeSubtypes) {
+				IProgressMonitor typeInRegionMonitor =
+					this.hierarchy.progressMonitor == null ?
+						null :
+						new SubProgressMonitor(this.hierarchy.progressMonitor, 30);
+				HashMap allOpenablesInRegion = determineOpenablesInRegion(typeInRegionMonitor);
+				this.hierarchy.initialize(allOpenablesInRegion.size());
+				IProgressMonitor buildMonitor =
+					this.hierarchy.progressMonitor == null ?
+						null :
+						new SubProgressMonitor(this.hierarchy.progressMonitor, 70);
+				createTypeHierarchyBasedOnRegion(allOpenablesInRegion, buildMonitor);
+				((RegionBasedTypeHierarchy)this.hierarchy).pruneDeadBranches();
+			} else {
+				this.hierarchy.initialize(1);
+				buildSupertypes();
 			}
+		} finally {
+			manager.flushZipFiles(this);
 		}
-	} finally {
-		if (monitor != null) monitor.done();
 	}
-}
+	/**
+	 * Configure this type hierarchy that is based on a region.
+	 */
+	private void createTypeHierarchyBasedOnRegion(HashMap allOpenablesInRegion, IProgressMonitor monitor) {
+	
+		try {
+			int size = allOpenablesInRegion.size();
+			if (monitor != null) monitor.beginTask("", size * 2/* 1 for build binding, 1 for connect hierarchy*/); //$NON-NLS-1$
+			this.infoToHandle = new HashMap(size);
+			Iterator javaProjects = allOpenablesInRegion.entrySet().iterator();
+			while (javaProjects.hasNext()) {
+				Map.Entry entry = (Map.Entry) javaProjects.next();
+				JavaProject project = (JavaProject) entry.getKey();
+				ArrayList allOpenables = (ArrayList) entry.getValue();
+				Openable[] openables = new Openable[allOpenables.size()];
+				allOpenables.toArray(openables);
+	
+				try {
+					// resolve
+					SearchableEnvironment searchableEnvironment = project.newSearchableNameEnvironment(this.hierarchy.workingCopies);
+					this.nameLookup = searchableEnvironment.nameLookup;
+					this.hierarchyResolver.resolve(openables, null, monitor);
+				} catch (JavaModelException e) {
+					// project doesn't exit: ignore
+				}
+			}
+		} finally {
+			if (monitor != null) monitor.done();
+		}
+	}
 
 	/**
 	 * Returns all of the openables defined in the region of this type hierarchy.

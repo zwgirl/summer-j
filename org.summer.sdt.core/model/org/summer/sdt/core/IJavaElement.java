@@ -130,13 +130,6 @@ public interface IJavaElement extends IAdaptable {
 	 * @since 3.4
 	 */
 	int ANNOTATION = 16;
-	
-	/**
-	 * Constant representing an module.
-	 * A Java element with this type can be safely cast to {@link IModule}.
-	 * @since 3.4
-	 */
-	int MODULE = 17;
 
 	/**
 	 * Returns whether this Java element exists in the model.

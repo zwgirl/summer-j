@@ -61,6 +61,7 @@ public class CompilationUnitChange extends TextFileChange {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public Object getModifiedElement(){
 		return fCUnit;
 	}
@@ -77,6 +78,7 @@ public class CompilationUnitChange extends TextFileChange {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	protected IDocument acquireDocument(IProgressMonitor pm) throws CoreException {
 		pm.beginTask("", 2); //$NON-NLS-1$
 		fCUnit.becomeWorkingCopy(new SubProgressMonitor(pm, 1));
@@ -86,6 +88,7 @@ public class CompilationUnitChange extends TextFileChange {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	protected void releaseDocument(IDocument document, IProgressMonitor pm) throws CoreException {
 		boolean isModified= isDocumentModified();
 		super.releaseDocument(document, pm);
@@ -109,6 +112,7 @@ public class CompilationUnitChange extends TextFileChange {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	protected Change createUndoChange(UndoEdit edit, ContentStamp stampToRestore) {
 		try {
 			return new UndoCompilationUnitChange(getName(), fCUnit, edit, stampToRestore, getSaveMode());
@@ -121,7 +125,8 @@ public class CompilationUnitChange extends TextFileChange {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Object getAdapter(Class adapter) {
+	@Override
+	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
 		if (ICompilationUnit.class.equals(adapter))
 			return fCUnit;
 		return super.getAdapter(adapter);
@@ -139,6 +144,7 @@ public class CompilationUnitChange extends TextFileChange {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public ChangeDescriptor getDescriptor() {
 		return fDescriptor;
 	}

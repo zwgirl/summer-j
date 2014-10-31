@@ -23,7 +23,7 @@ import org.summer.sdt.internal.compiler.env.AccessRuleSet;
 public class PathCollector extends IndexQueryRequestor {
 
 	/* a set of resource paths */
-	public HashSet paths = new HashSet(5);
+	public HashSet<String> paths = new HashSet(5);
 
 	/* (non-Javadoc)
 	 * @see IndexQueryRequestor#acceptIndexMatch(String, SearchPattern, SearchParticipant, AccessRuleSet)

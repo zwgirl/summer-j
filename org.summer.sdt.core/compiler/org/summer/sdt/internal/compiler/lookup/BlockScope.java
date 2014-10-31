@@ -191,6 +191,21 @@ public class BlockScope extends Scope {
 		return s;
 	}
 	
+//	private void checkAndSetModifiersForVariable(LocalVariableBinding varBinding) {
+//		int modifiers = varBinding.modifiers;
+//		if ((modifiers & ExtraCompilerModifiers.AccAlternateModifierProblem) != 0 && varBinding.declaration != null){
+//			problemReporter().duplicateModifierForVariable(varBinding.declaration, this instanceof MethodScope);
+//		}
+//		int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
+//	
+//		int unexpectedModifiers = ~ClassFileConstants.AccFinal;
+//		if ((realModifiers & unexpectedModifiers) != 0 && varBinding.declaration != null){
+//			problemReporter().illegalModifierForVariable(varBinding.declaration, this instanceof MethodScope);
+//		}
+//		varBinding.modifiers = modifiers;
+//	}
+	
+	//cym modified 2014-10-26
 	private void checkAndSetModifiersForVariable(LocalVariableBinding varBinding) {
 		int modifiers = varBinding.modifiers;
 		if ((modifiers & ExtraCompilerModifiers.AccAlternateModifierProblem) != 0 && varBinding.declaration != null){
@@ -198,7 +213,7 @@ public class BlockScope extends Scope {
 		}
 		int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
 	
-		int unexpectedModifiers = ~ClassFileConstants.AccFinal;
+		int unexpectedModifiers = ~(ClassFileConstants.AccFinal | ClassFileConstants.AccRef | ClassFileConstants.AccOut);
 		if ((realModifiers & unexpectedModifiers) != 0 && varBinding.declaration != null){
 			problemReporter().illegalModifierForVariable(varBinding.declaration, this instanceof MethodScope);
 		}

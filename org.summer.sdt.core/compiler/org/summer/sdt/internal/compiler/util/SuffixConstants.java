@@ -15,6 +15,9 @@ public interface SuffixConstants {
 	public final static String EXTENSION_CLASS = "CLASS"; //$NON-NLS-1$
 	public final static String EXTENSION_java = "java"; //$NON-NLS-1$
 	public final static String EXTENSION_JAVA = "JAVA"; //$NON-NLS-1$
+	
+	public final static String EXTENSION_js = "js"; //$NON-NLS-1$
+	public final static String EXTENSION_JS = "JS"; //$NON-NLS-1$
 
 	public final static String SUFFIX_STRING_class = "." + EXTENSION_class; //$NON-NLS-1$
 	public final static String SUFFIX_STRING_CLASS = "." + EXTENSION_CLASS; //$NON-NLS-1$

@@ -1681,12 +1681,14 @@ class ASTConverter {
 			} else {
 				enumConstantDeclaration.setSourceRange(declarationSourceStart, declarationSourceEnd - declarationSourceStart + 1);
 			}
-			final org.summer.sdt.internal.compiler.ast.Expression[] arguments = ((org.summer.sdt.internal.compiler.ast.AllocationExpression) initialization).arguments;
-			if (arguments != null) {
-				for (int i = 0, max = arguments.length; i < max; i++) {
-					enumConstantDeclaration.arguments().add(convert(arguments[i]));
-				}
-			}
+			
+			//cym 2014-10-25
+//			final org.summer.sdt.internal.compiler.ast.Expression[] arguments = ((org.summer.sdt.internal.compiler.ast.AllocationExpression) initialization).arguments;
+//			if (arguments != null) {
+//				for (int i = 0, max = arguments.length; i < max; i++) {
+//					enumConstantDeclaration.arguments().add(convert(arguments[i]));
+//				}
+//			}
 		} else {
 			enumConstantDeclaration.setSourceRange(declarationSourceStart, declarationSourceEnd - declarationSourceStart + 1);
 		}

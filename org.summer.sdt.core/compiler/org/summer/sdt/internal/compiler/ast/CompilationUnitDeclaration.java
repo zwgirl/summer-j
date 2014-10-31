@@ -376,6 +376,31 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		}
 	}
 	
+	//cym add
+	/**
+	 * javascript generation
+	 */
+	public void generateJavascript() {
+		if (this.ignoreFurtherInvestigation) {
+			if (this.types != null) {
+				for (int i = 0, count = this.types.length; i < count; i++) {
+					this.types[i].ignoreFurtherInvestigation = true;
+					// propagate the flag to request problem type creation
+					this.types[i].generateJavascript(this.scope);
+				}
+			}
+			return;
+		}
+		try {
+			if (this.types != null) {
+				for (int i = 0, count = this.types.length; i < count; i++)
+					this.types[i].generateJavascript(this.scope);
+			}
+		} catch (AbortCompilationUnit e) {
+			// ignore
+		}
+	}
+	
 //	public StringBuffer print(int indent, StringBuffer output) {
 //		if (this.currentPackage != null) {
 //			printIndent(indent, output).append("package "); //$NON-NLS-1$
@@ -399,7 +424,7 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 //		return output;
 //	}
 	
-	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output){
+	public StringBuffer generateJavascript(CompilationUnitDeclaration unit, int indent, StringBuffer output){
 		generateAMDHeader(indent, output);
 		
 		if (this.ignoreFurtherInvestigation) {
@@ -430,17 +455,6 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		output.append(Javascript.RBRACE).append(Javascript.RPAREN).append(Javascript.SEMICOLON);
 		
 		return output;
-	}
-	
-	//cym add
-	/**
-	 * javascript generation
-	 */
-	public void generateJavascript() {
-		compilationResult.javascriptFile = new JavascriptFile();
-		StringBuffer buffer = compilationResult.javascriptFile.content;
-		
-		generateJavascript(this.scope, 0, buffer);
 	}
 	
 	private void generateExportObject(int indent, StringBuffer output, TypeDeclaration type) {
@@ -1143,5 +1157,12 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		} catch (AbortCompilationUnit e) {
 			// ignore
 		}
+	}
+
+	@Override
+	public StringBuffer generateJavascript(Scope scope, int indent,
+			StringBuffer output) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

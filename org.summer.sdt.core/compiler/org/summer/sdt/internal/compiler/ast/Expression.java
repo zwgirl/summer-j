@@ -1256,7 +1256,7 @@ public abstract class Expression extends Statement {
 		return printExpression(indent, output);
 	}
 	
-	public abstract StringBuffer generateExpression(Scope scope, int indent, StringBuffer output);
+//	public abstract StringBuffer generateExpression(Scope scope, int indent, StringBuffer output);
 	
 	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
 		return print(indent, output).append(";"); //$NON-NLS-1$

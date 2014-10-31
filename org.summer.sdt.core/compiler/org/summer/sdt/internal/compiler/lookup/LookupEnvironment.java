@@ -53,7 +53,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 	/**
 	 * Map from typeBinding -> accessRestriction rule
 	 */
-	private Map accessRestrictions;
+	private Map<TypeBinding, AccessRestriction> accessRestrictions;
 	ImportBinding[] defaultImports;
 	public PackageBinding defaultPackage;
 	HashtableOfPackage knownPackages;

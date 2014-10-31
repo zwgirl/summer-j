@@ -123,4 +123,9 @@ public class DoubleLiteral extends NumberLiteral {
 		visitor.visit(this, scope);
 		visitor.endVisit(this, scope);
 	}
+	
+	@Override
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		return output.append(value);
+	}
 }
