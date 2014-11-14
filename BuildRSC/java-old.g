@@ -42,15 +42,13 @@ $Terminals
 
 	Identifier
 
-	abstract add as assert boolean break byte case catch char class 
-	continue const default do double else enum event extends false final finally float
-	for get goto if implements import instanceof int is
-	interface long module native new null out package private
-	protected public ref remove return short static set strictfp super switch
+	abstract assert boolean break byte case catch char class 
+	continue const default do double else enum extends false final finally float
+	for goto if implements import instanceof int
+	interface long native new null package private
+	protected public return short static strictfp super switch
 	synchronized this throw throws transient true try void
 	volatile while
-	--export 
-	function
 
 	IntegerLiteral
 	LongLiteral
@@ -58,8 +56,6 @@ $Terminals
 	DoubleLiteral
 	CharacterLiteral
 	StringLiteral
-	
-	PCDATA
 
 	PLUS_PLUS
 	MINUS_MINUS
@@ -115,8 +111,6 @@ $Terminals
 	BeginIntersectionCast
 	BeginTypeArguments
 	ElidedSemicolonAndRightBrace
-	CLOSE_TAG
-	CLOSE_ELEMENT
 --	AT308
 --	AT308DOTDOTDOT
 
@@ -174,8 +168,6 @@ $Alias
 	'='    ::= EQUAL
 	'@'	   ::= AT
 	'...'  ::= ELLIPSIS
-	'/>' ::= CLOSE_TAG
-	'</' ::= CLOSE_ELEMENT
 --	'@308' ::= AT308
 --	'@308...' ::= AT308DOTDOTDOT
 	
@@ -221,8 +213,8 @@ Goal ::= '?' AnnotationTypeMemberDeclaration
 Goal ::= '->' ParenthesizedLambdaParameterList
 Goal ::= '(' ParenthesizedCastNameAndBounds
 Goal ::= '<' ReferenceExpressionTypeArgumentsAndTrunk
----- JSR 308 Reconnaissance mission.  //cym comment
---Goal ::= '@' TypeAnnotations
+-- JSR 308 Reconnaissance mission.
+--Goal ::= '@' '@' TypeAnnotations  --cym modified
 --/:$readableName Goal:/
 
 Literal -> IntegerLiteral
@@ -317,115 +309,18 @@ ClassType -> ClassOrInterfaceType
 --------------------------------------------------------------
 Name ::= SimpleName
 /.$putCase consumeZeroTypeAnnotations(); $break ./
---Name -> TypeAnnotations SimpleName
---/:$compliance 1.8:/
 Name -> QualifiedName
 /:$readableName Name:/
 /:$recovery_template Identifier:/
 
-SimpleName -> 'add'  --cym add 2014-10-09
-SimpleName -> 'remove'  --cym add 2014-10-09
-SimpleName -> 'get'  --cym add 2014-10-09
-SimpleName -> 'set'  --cym add 2014-10-09
 SimpleName -> 'Identifier'
 /:$readableName SimpleName:/
 
-UnannotatableName -> SimpleName
-UnannotatableName ::= UnannotatableName '.' SimpleName
-/.$putCase consumeUnannotatableQualifiedName(); $break ./
-/:$readableName UnannotatableQualifiedName:/
-
 QualifiedName ::= Name '.' SimpleName 
 /.$putCase consumeQualifiedName(false); $break ./
---QualifiedName ::= Name '.' TypeAnnotations SimpleName 
---/.$putCase consumeQualifiedName(true); $break ./
---/:$compliance 1.8:/
-/:$readableName QualifiedName:/
---------------------------------------------------------------
---Name ::= SimpleName   
-----Name -> SimpleName --cym add
---/.$putCase consumeZeroTypeAnnotations(); $break ./
-----Name -> TypeAnnotations SimpleName   --cym comment
-----/:$compliance 1.8:/
---Name -> QualifiedName
---/:$readableName Name:/
---/:$recovery_template Identifier:/
-
---SimpleName -> 'Identifier'
---/:$readableName SimpleName:/
-
---UnannotatableName -> SimpleName   --cym comment
---UnannotatableName ::= UnannotatableName '.' SimpleName
---/.$putCase consumeUnannotatableQualifiedName(); $break ./
---/:$readableName UnannotatableQualifiedName:/
-
---QualifiedName ::= Name '.' SimpleName 
---/.$putCase consumeQualifiedName(false); $break ./
---/:$readableName QualifiedName:/   --cym added
---QualifiedName ::= Name '.' TypeAnnotations SimpleName   --cym comment
---/.$putCase consumeQualifiedName(true); $break ./
---/:$compliance 1.8:/
---/:$readableName QualifiedName:/
-
---TypeAnnotationsopt ::= $empty
---/.$putCase consumeZeroTypeAnnotations(); $break ./
---TypeAnnotationsopt -> TypeAnnotations
---/:$compliance 1.8:/
---/:$readableName TypeAnnotationsopt:/
-
----- Production name hardcoded in parser. Must be ::= and not -> 
---TypeAnnotations ::= TypeAnnotations0
---/:$readableName TypeAnnotations:/
-
---TypeAnnotations0 -> TypeAnnotation
---/:$compliance 1.8:/
---TypeAnnotations0 ::= TypeAnnotations0 TypeAnnotation
---/. $putCase consumeOneMoreTypeAnnotation(); $break ./
---/:$compliance 1.8:/
---/:$readableName TypeAnnotations:/
-
---TypeAnnotation ::= NormalTypeAnnotation
---/. $putCase consumeTypeAnnotation(); $break ./
---/:$compliance 1.8:/
---TypeAnnotation ::= MarkerTypeAnnotation
---/. $putCase consumeTypeAnnotation(); $break ./
---/:$compliance 1.8:/
---TypeAnnotation ::= SingleMemberTypeAnnotation
---/. $putCase consumeTypeAnnotation(); $break ./
---/:$compliance 1.8:/
---/:$readableName TypeAnnotation:/
-
---TypeAnnotationName ::= @308 UnannotatableName
---/.$putCase consumeAnnotationName() ; $break ./
---/:$readableName AnnotationName:/
---/:$compliance 1.8:/
---/:$recovery_template @ Identifier:/
---NormalTypeAnnotation ::= TypeAnnotationName '(' MemberValuePairsopt ')'
---/.$putCase consumeNormalAnnotation(true) ; $break ./
---/:$readableName NormalAnnotation:/
---/:$compliance 1.8:/
---MarkerTypeAnnotation ::= TypeAnnotationName
---/.$putCase consumeMarkerAnnotation(true) ; $break ./
---/:$readableName MarkerAnnotation:/
---/:$compliance 1.8:/
---SingleMemberTypeAnnotation ::= TypeAnnotationName '(' SingleMemberAnnotationMemberValue ')'
---/.$putCase consumeSingleMemberAnnotation(true) ; $break ./
---/:$readableName SingleMemberAnnotation:/
---/:$compliance 1.8:/
-
---RejectTypeAnnotations ::= $empty
---/.$putCase consumeNonTypeUseName(); $break ./
---/:$readableName RejectTypeAnnotations:/
-
---PushZeroTypeAnnotations ::= $empty   --cym comment
---/.$putCase consumeZeroTypeAnnotations(); $break ./
---/:$readableName ZeroTypeAnnotations:/
 
 VariableDeclaratorIdOrThis ::= 'this'
 /.$putCase consumeExplicitThisParameter(false); $break ./
-/:$compliance 1.8:/
-VariableDeclaratorIdOrThis ::= UnannotatableName '.' 'this'
-/.$putCase consumeExplicitThisParameter(true); $break ./
 /:$compliance 1.8:/
 VariableDeclaratorIdOrThis ::= VariableDeclaratorId
 /.$putCase consumeVariableDeclaratorIdParameter(); $break ./
@@ -437,121 +332,21 @@ CompilationUnit ::= EnterCompilationUnit InternalCompilationUnit
 
 InternalCompilationUnit ::= PackageDeclaration
 /.$putCase consumeInternalCompilationUnit(); $break ./
-InternalCompilationUnit ::= PackageDeclaration ImportDeclarations ReduceImports 
+InternalCompilationUnit ::= PackageDeclaration ImportDeclarations ReduceImports
 /.$putCase consumeInternalCompilationUnit(); $break ./
-
---InternalCompilationUnit ::= PackageDeclaration ImportDeclarations ReduceImports  ModuleDeclaration
---/.$putCase consumeInternalCompilationUnitWithModule(); $break ./
-InternalCompilationUnit ::= PackageDeclaration ImportDeclarations ReduceImports  TypeDeclarations
+InternalCompilationUnit ::= PackageDeclaration ImportDeclarations ReduceImports TypeDeclarations
 /.$putCase consumeInternalCompilationUnitWithTypes(); $break ./
---InternalCompilationUnit ::= PackageDeclaration  ModuleDeclaration
---/.$putCase consumeInternalCompilationUnitWithModule(); $break ./
-InternalCompilationUnit ::= PackageDeclaration  TypeDeclarations
+InternalCompilationUnit ::= PackageDeclaration TypeDeclarations
 /.$putCase consumeInternalCompilationUnitWithTypes(); $break ./
 InternalCompilationUnit ::= ImportDeclarations ReduceImports
 /.$putCase consumeInternalCompilationUnit(); $break ./
---InternalCompilationUnit ::=  ModuleDeclaration
---/.$putCase consumeInternalCompilationUnitWithModule(); $break ./
-InternalCompilationUnit ::=  TypeDeclarations
+InternalCompilationUnit ::= TypeDeclarations
 /.$putCase consumeInternalCompilationUnitWithTypes(); $break ./
---InternalCompilationUnit ::= ImportDeclarations ReduceImports  ModuleDeclaration
---/.$putCase consumeInternalCompilationUnitWithModule(); $break ./
-InternalCompilationUnit ::= ImportDeclarations ReduceImports  TypeDeclarations
+InternalCompilationUnit ::= ImportDeclarations ReduceImports TypeDeclarations
 /.$putCase consumeInternalCompilationUnitWithTypes(); $break ./
 InternalCompilationUnit ::= $empty
 /.$putCase consumeEmptyInternalCompilationUnit(); $break ./
 /:$readableName CompilationUnit:/
-
------------------------------------------------
--- xaml declaration
------------------------------------------------
-Element -> ObjectElement
-Element -> AttributeElement
-Element -> PCDATAElement
-/:$readableName ElementDeclaration:/
-
-ElementListopt ::= $empty
-/.$putCase consumeElementListopt(); $break ./
-ElementListopt -> ElementList
-/:$readableName ElementListopt:/
-
-ElementList -> Element
-ElementList ::= ElementList Element
-/.$putCase consumeElementList(); $break ./
-/:$readableName ElementList:/
-
-PCDATAElement ::= PCDATA
-/.$putCase consumePCDATAElement(); $break ./
-/:$readableName PCDATAElement:/
-
-ObjectElement ::=  ElementTag  EnterPCADATATag '/>' 
-/.$putCase consumeEmptyObjectElement(); $break ./
-ObjectElement ::=  ElementTag AttributeList  EnterPCADATATag '/>'
-/.$putCase consumeObjectElementNoChild(); $break ./
-ObjectElement ::= ElementTag AttributeListopt EnterPCADATATag '>' 
-    	ElementListopt
-	 '</' SimpleName EnterPCADATATag '>' 
-/.$putCase consumeObjectElement(); $break ./
-/:$readableName ObjectElement:/
-
---RootObjectElement ::= $empty
---/.$putCase consumeEmptyRootObjectElement(); $break ./
-
-RootObjectElement ::= ElementTag AttributeListopt EnterPCADATATag '>' 
-    	ElementListopt
-	 '</' SimpleName '>' 
-/.$putCase consumeRootObjectElement(); $break ./
-/:$readableName RootObjectElement:/
-
-EnterPCADATATag ::= $empty
-/.$putCase consumeEnterPCADATATag(); $break ./
-/:$readableName EnterPCADATATag:/
-
-AttributeListopt ::= $empty
-/.$putCase consumeAttributeListopt(); $break ./
-AttributeListopt -> AttributeList
-/:$readableName AttributeListopt:/
-
-AttributeElementTag ::= $empty
-/.$putCase consumeAttributeElementTag(); $break ./
-/:$readableName AttributeElementTag:/
-
-ElementTag ::= '<' SimpleName
-/.$putCase consumeElementTag(); $break ./
-/:$readableName ElementTag:/
-
-AttributeElement ::= '<' SimpleName '.' SimpleName AttributeElementTag EnterPCADATATag '>'
-       ElementListopt
-    '</' SimpleName '.' SimpleName EnterPCADATATag '>'
-/.$putCase consumeAttributeElement(); $break ./
-/:$readableName AttributeElement:/
-
-AttributeList ::= Attribute
-AttributeList ::= AttributeList Attribute
-/.$putCase consumeAttributeAttributeList(); $break ./
-/:$readableName AttributeList:/
-
-Attribute ::= GeneralAttribute
-Attribute ::= AttachAttribute
-/:$readableName Attribute:/
-
-AttachAttribute ::= SimpleName '.' SimpleName '=' PropertyExpression
-/.$putCase consumeAttachAttribute(); $break ./
-/:$readableName AttachAttribute:/
-
-GeneralAttribute ::= SimpleName '=' PropertyExpression
-/.$putCase consumeGeneralAttribute(); $break ./
-/:$readableName GeneralAttribute:/
-
-PropertyExpression ::= StringLiteral
-PropertyExpression ::= MarkupExtenson
-
-MarkupExtenson ::= '{' SimpleName AttributeList '}'
-/.$putCase consumeMarkupExtenson(); $break ./
-/:$readableName MarkupExtenson:/
-----------------------------------------------
--- xaml end
------------------------------------------------
 
 ReduceImports ::= $empty
 /.$putCase consumeReduceImports(); $break ./
@@ -579,7 +374,7 @@ Header1 -> ConstructorHeader
 /:$readableName Header1:/
 
 Header2 -> Header
---Header2 -> EnumConstantHeader  --cym 2014-10-24
+Header2 -> EnumConstantHeader
 /:$readableName Header2:/
 
 CatchHeader ::= 'catch' '(' CatchFormalParameter ')' '{'
@@ -602,16 +397,11 @@ PackageDeclaration ::= PackageDeclarationName ';'
 
 PackageDeclarationName ::= Modifiers 'package' PushRealModifiers Name 
 /.$putCase consumePackageDeclarationNameWithModifiers(); $break ./
-
-PackageDeclarationName ::= Modifiers 'module' PushRealModifiers Name   --cym 2014-10-16
-/.$putCase consumeModuleDeclarationNameWithModifiers(); $break ./
 /:$readableName PackageDeclarationName:/
 /:$compliance 1.5:/
 
 PackageDeclarationName ::= PackageComment 'package' Name 
 /.$putCase consumePackageDeclarationName(); $break ./
-PackageDeclarationName ::= PackageComment 'module' Name    --cym 2014-10-16
-/.$putCase consumeModuleDeclarationName(); $break ./
 /:$readableName PackageDeclarationName:/
 
 PackageComment ::= $empty
@@ -655,7 +445,6 @@ TypeDeclaration ::= ';'
 -----------------------------------------------
 TypeDeclaration -> EnumDeclaration
 TypeDeclaration -> AnnotationTypeDeclaration
-TypeDeclaration -> FunctionType  --cym add 2014-10-11
 /:$readableName TypeDeclaration:/
 
 --18.7 Only in the LALR(1) Grammar
@@ -672,39 +461,13 @@ Modifier -> 'static'
 Modifier -> 'abstract'
 Modifier -> 'final'
 Modifier -> 'native'
---Modifier -> 'synchronized'
+Modifier -> 'synchronized'
 Modifier -> 'transient'
---Modifier -> 'volatile'
---Modifier -> 'strictfp
-Modifier -> 'ref'
-Modifier -> 'out'
+Modifier -> 'volatile'
+Modifier -> 'strictfp'
 Modifier ::= Annotation
 /.$putCase consumeAnnotationAsModifier(); $break ./
 /:$readableName Modifier:/
-
---FunctionType 2014-10-11
-FunctionType ::= Modifiersopt 'function' Type 'add' TypeParameters '(' FormalParameterListopt ')' ';'
-/.$putCase consumeFunctionTypeWithTypeParameters(); $break ./
-FunctionType ::= Modifiersopt 'function' Type 'remove' TypeParameters '(' FormalParameterListopt ')' ';' 
-/.$putCase consumeFunctionTypeWithTypeParameters(); $break ./
-FunctionType ::= Modifiersopt 'function' Type 'get' TypeParameters '(' FormalParameterListopt ')' ';'
-/.$putCase consumeFunctionTypeWithTypeParameters(); $break ./
-FunctionType ::= Modifiersopt 'function' Type 'set' TypeParameters '(' FormalParameterListopt ')' ';' 
-/.$putCase consumeFunctionTypeWithTypeParameters(); $break ./
-FunctionType ::= Modifiersopt 'function' Type 'Identifier' TypeParameters '(' FormalParameterListopt ')' ';'  
-/.$putCase consumeFunctionTypeWithTypeParameters(); $break ./
-
-FunctionType ::= Modifiersopt 'function' Type 'add' '(' FormalParameterListopt ')' ';'
-/.$putCase consumeFunctionType(); $break ./
-FunctionType ::= Modifiersopt 'function' Type 'remove' '(' FormalParameterListopt ')' ';'
-/.$putCase consumeFunctionType(); $break ./
-FunctionType ::= Modifiersopt 'function' Type 'get' '(' FormalParameterListopt ')' ';'
-/.$putCase consumeFunctionType(); $break ./
-FunctionType ::= Modifiersopt 'function' Type 'set' '(' FormalParameterListopt ')' ';'
-/.$putCase consumeFunctionType(); $break ./
-FunctionType ::= Modifiersopt 'function' Type 'Identifier' '(' FormalParameterListopt ')' ';'
-/.$putCase consumeFunctionType(); $break ./ 
-/:$readableName FunctionType:/
 
 --18.8 Productions from 8: Class Declarations
 --ClassModifier ::=
@@ -729,11 +492,7 @@ ClassHeaderName ::= ClassHeaderName1 TypeParameters
 
 ClassHeaderName -> ClassHeaderName1
 /:$readableName ClassHeaderName:/
- 
-ClassHeaderName1 ::= Modifiersopt 'class' 'add'   --cym 2014-10-13
-ClassHeaderName1 ::= Modifiersopt 'class' 'remove'   --cym 2014-10-13
-ClassHeaderName1 ::= Modifiersopt 'class' 'get'   --cym 2014-10-13
-ClassHeaderName1 ::= Modifiersopt 'class' 'set'   --cym 2014-10-13
+
 ClassHeaderName1 ::= Modifiersopt 'class' 'Identifier'
 /.$putCase consumeClassHeaderName1(); $break ./
 /:$readableName ClassHeaderName:/
@@ -767,7 +526,6 @@ ClassBodyDeclarations ::= ClassBodyDeclarations ClassBodyDeclaration
 ClassBodyDeclaration -> ClassMemberDeclaration
 ClassBodyDeclaration -> StaticInitializer
 ClassBodyDeclaration -> ConstructorDeclaration
-
 --1.1 feature
 ClassBodyDeclaration ::= Diet NestedMethod CreateInitializer Block
 /.$putCase consumeClassBodyDeclaration(); $break ./
@@ -785,201 +543,6 @@ CreateInitializer ::= $empty
 /.$putCase consumeCreateInitializer(); $break./
 /:$readableName CreateInitializer:/
 
---cym add
-ClassMemberDeclaration -> PropertyDeclaration
-PropertyDeclaration ::= Modifiersopt Type 'Identifier' PropertyHeader '{'
-		AccessorDeclaration
-	'}'
-/.$putCase consumePropertyDeclaration(); $break./
-/:$readableName PropertyDeclaration:/
-
-PropertyHeader ::=  $empty
-/.$putCase consumePropertyHeader(); $break./
-/:$readableName PropertyHeader:/
-
-AccessorDeclaration ::= $empty
-/.$putCase consumeEmptyAccessor(); $break./
-AccessorDeclaration ::= SetAccessorDeclaration GetAccessorDeclarationopt
-AccessorDeclaration ::= GetAccessorDeclaration SetAccessorDeclarationopt
-/:$readableName AccessorDeclaration:/
-
-SetAccessorDeclarationopt ::= $empty
-SetAccessorDeclarationopt ::= SetAccessorDeclaration
-/.$putCase consumeAccessoropt(); $break./
-/:$readableName SetAccessorDeclarationopt:/
-
-SetAccessorDeclaration ::= SetterMethodHeader MethodBody 
-/.$putCase  consumeMethodDeclaration(true, false);  $break./
-SetAccessorDeclaration ::= SetterMethodHeader ';' 
-/.$putCase  consumeMethodDeclaration(false, false);  $break./
-/:$readableName SetAccessorDeclaration:/
-
-SetterMethodHeader ::= 'set'
-/.$putCase consumeAccessorMethodName(MethodDeclaration.SETTER); $break./
-/:$readableName SetterMethodHeader:/
-
-GetAccessorDeclarationopt ::= $empty
-GetAccessorDeclarationopt ::= GetAccessorDeclaration
-/.$putCase consumeAccessoropt(); $break./
-/:$readableName GetAccessorDeclarationopt:/
-
-GetAccessorDeclaration ::= GetterMethodHeader MethodBody 
-/.$putCase  consumeMethodDeclaration(true, false);  $break./
-GetAccessorDeclaration ::= GetterMethodHeader ';' 
-/.$putCase  consumeMethodDeclaration(false, false);  $break./
-/:$readableName GetAccessorDeclaration:/
-
-GetterMethodHeader ::= 'get'
-/.$putCase consumeAccessorMethodName(MethodDeclaration.GETTER); $break./
-/:$readableName GetterMethodHeader:/
-
-ClassMemberDeclaration -> EventDeclaration
-EventDeclaration ::= EventHeader '{' EventAccessorDeclaration '}'
-/.$putCase consumeEventDeclaration(); $break./
-
-EventDeclaration ::= EventHeader ';'
-/.$putCase consumeEventDeclarationNoAccessor(); $break./
-/:$readableName EventDeclaration:/
-
-EventHeader ::= Modifiersopt 'event' Type 'Identifier'
-/.$putCase consumeEventHeader(); $break./
-/:$readableName EventHeader:/
-
-EventAccessorDeclaration ::= $empty
-/.$putCase consumeEmptyAccessor(); $break./
-EventAccessorDeclaration ::= AddAccessorDeclaration RemoveAccessorDeclarationopt
-EventAccessorDeclaration ::= RemoveAccessorDeclaration AddAccessorDeclarationopt
-/:$readableName EventAccessorDeclaration:/
-
-AddAccessorDeclarationopt ::= $empty
-AddAccessorDeclarationopt ::= AddAccessorDeclaration
-/.$putCase consumeAccessoropt(); $break./
-/:$readableName AddAccessorDeclarationopt:/
-
-AddAccessorDeclaration ::= AddMethodHeader MethodBody 
-/.$putCase consumeMethodDeclaration(true, false); $break./
-/:$readableName AddAccessorDeclaration:/
-
-AddMethodHeader ::= 'add'
-/.$putCase consumeAccessorMethodName(MethodDeclaration.ADD); $break./
-/:$readableName AddMethodHeader:/
-
-RemoveAccessorDeclarationopt ::= $empty
-RemoveAccessorDeclarationopt ::= RemoveAccessorDeclaration
-/.$putCase consumeAccessoropt(); $break./
-/:$readableName RemoveAccessorDeclarationopt:/
-
-RemoveAccessorDeclaration ::= RemoveMethodHeader MethodBody
-/.$putCase consumeMethodDeclaration(true, false); $break./
-/:$readableName RemoveAccessorDeclaration:/
-
-RemoveMethodHeader ::= 'remove'
-/.$putCase consumeAccessorMethodName(MethodDeclaration.REMOVE); $break./
-/:$readableName RemoveMethodHeader:/
-
-ClassMemberDeclaration -> IndexerDeclaration
-IndexerDeclaration ::= IndexerHeader FormalParameter  ']'  '{' AccessorDeclaration '}'
-/.$putCase consumeIndexerDeclaration(); $break./
-IndexerDeclaration ::= IndexerHeader FormalParameter  ']'  ';'
-/.$putCase consumeIndexerDeclarationNoAccessor(); $break./
-/:$readableName IndexerDeclaration:/
-
-IndexerHeader ::= Modifiersopt Type 'this' '['
-/.$putCase consumeIndexerHeader(); $break./
-
---ClassMemberDeclaration -> PropertyDeclaration
---PropertyDeclaration ::= Modifiersopt Type 'Identifier' PropertyHeader '{'
---		AccessorDeclaration
---	'}'
---/.$putCase consumePropertyDeclaration(); $break./
---/:$readableName PropertyDeclaration:/
---
---PropertyHeader ::=  $empty
---/.$putCase consumePropertyHeader(); $break./
---/:$readableName PropertyHeader:/
---
---AccessorDeclaration ::= $empty
---/.$putCase consumeEmptyAccessor(); $break./
---AccessorDeclaration ::= SetAccessorDeclaration GetAccessorDeclarationopt
---AccessorDeclaration ::= GetAccessorDeclaration SetAccessorDeclarationopt
---/:$readableName AccessorDeclaration:/
---
---SetAccessorDeclarationopt ::= $empty
---SetAccessorDeclarationopt ::= SetAccessorDeclaration
---/.$putCase consumeAccessoropt(); $break./
---/:$readableName SetAccessorDeclarationopt:/
---
---SetAccessorDeclaration ::= 'set' Block
---/.$putCase consumeAccessorDeclaration(PropertyDeclaration.SETTER); $break./
---/:$recovery_template set { }:/
---SetAccessorDeclaration ::= 'set' ';' 
-----/.$putCase consumeAccessorDeclaration(Accessor.SET); $break./
---/:$readableName SetAccessorDeclaration:/
---
---GetAccessorDeclarationopt ::= $empty
---GetAccessorDeclarationopt ::= GetAccessorDeclaration
---/.$putCase consumeAccessoropt(); $break./
---/:$readableName GetAccessorDeclarationopt:/
---
---GetAccessorDeclaration ::= get Block
---/.$putCase consumeAccessorDeclaration(PropertyDeclaration.GETTER); $break./
---/:$recovery_template set { }:/
---GetAccessorDeclaration ::= get ';' 
-----/.$putCase consumeAccessorDeclaration(PropertyDeclaration.GET); $break./
---/:$readableName GetAccessorDeclaration:/
---
---ClassMemberDeclaration -> EventDeclaration
---EventDeclaration ::= EventHeader '{' EventAccessorDeclaration '}'
---/.$putCase consumeEventDeclaration(); $break./
---
---EventDeclaration ::= EventHeader ';'
---/.$putCase consumeEventDeclarationNoAccessor(); $break./
---/:$readableName EventDeclaration:/
---
---EventHeader ::= Modifiersopt 'event' Type 'Identifier'
---/.$putCase consumeEventHeader(); $break./
---/:$readableName EventHeader:/
---
---EventAccessorDeclaration ::= $empty
---/.$putCase consumeEmptyAccessor(); $break./
---EventAccessorDeclaration ::= AddAccessorDeclaration RemoveAccessorDeclarationopt
---EventAccessorDeclaration ::= RemoveAccessorDeclaration AddAccessorDeclarationopt
---/:$readableName EventAccessorDeclaration:/
---
---AddAccessorDeclarationopt ::= $empty
---AddAccessorDeclarationopt ::= AddAccessorDeclaration
---/.$putCase consumeAccessoropt(); $break./
---/:$readableName AddAccessorDeclarationopt:/
---
---AddAccessorDeclaration ::= 'add' Block 
---/.$putCase consumeAccessorDeclaration(EventDeclaration.ADD); $break./
---/:$readableName AddAccessorDeclaration:/
---/:$recovery_template add { }:/
---
---RemoveAccessorDeclarationopt ::= $empty
---RemoveAccessorDeclarationopt ::= RemoveAccessorDeclaration
---/.$putCase consumeAccessoropt(); $break./
---/:$readableName RemoveAccessorDeclarationopt:/
---
---RemoveAccessorDeclaration ::= 'remove' Block
---/.$putCase consumeAccessorDeclaration(EventDeclaration.REMOVE); $break./
---/:$readableName RemoveAccessorDeclaration:/
---/:$recovery_template remove { }:/
---
---ClassMemberDeclaration -> IndexerDeclaration
---IndexerDeclaration ::= IndexerHeader FormalParameter  ']'  '{' AccessorDeclaration '}'
---/.$putCase consumeIndexerDeclaration(); $break./
---IndexerDeclaration ::= IndexerHeader FormalParameter  ']'  ';'
---/.$putCase consumeIndexerDeclarationNoAccessor(); $break./
---/:$readableName IndexerDeclaration:/
---
---IndexerHeader ::= Modifiersopt Type 'this' '['
---/.$putCase consumeIndexerHeader(); $break./
-
---cym add end
-
-ClassMemberDeclaration -> RootObjectElement
-
 ClassMemberDeclaration -> FieldDeclaration
 ClassMemberDeclaration -> MethodDeclaration
 --1.1 feature
@@ -989,7 +552,6 @@ ClassMemberDeclaration -> InterfaceDeclaration
 -- 1.5 feature
 ClassMemberDeclaration -> EnumDeclaration
 ClassMemberDeclaration -> AnnotationTypeDeclaration
-ClassMemberDeclaration -> FunctionType
 /:$readableName ClassMemberDeclaration:/
 
 -- Empty declarations are not valid Java ClassMemberDeclarations.
@@ -1047,10 +609,6 @@ RestoreDiet ::= $empty
 /.$putCase consumeRestoreDiet(); $break ./
 /:$readableName RestoreDiet:/
 
-VariableDeclaratorId ::= 'add' Dimsopt  --cym add 2014-10-09
-VariableDeclaratorId ::= 'remove' Dimsopt  --cym add 2014-10-09
-VariableDeclaratorId ::= 'get' Dimsopt  --cym add 2014-10-09
-VariableDeclaratorId ::= 'set' Dimsopt  --cym add 2014-10-09
 VariableDeclaratorId ::= 'Identifier' Dimsopt
 /:$readableName VariableDeclaratorId:/
 /:$recovery_template Identifier:/
@@ -1096,49 +654,14 @@ DefaultMethodHeader ::= DefaultMethodHeaderName FormalParameterListopt MethodHea
 /.$putCase consumeMethodHeader(); $break ./
 /:$readableName MethodDeclaration:/
 
---MethodHeaderName ::= Modifiersopt TypeParameters Type 'Identifier' '('
-MethodHeaderName ::= Modifiersopt Type 'add' TypeParameters '('  --cym 2014-10-09
+MethodHeaderName ::= Modifiersopt TypeParameters Type 'Identifier' '('
 /.$putCase consumeMethodHeaderNameWithTypeParameters(false); $break ./
-MethodHeaderName ::= Modifiersopt Type 'remove' TypeParameters '('  --cym 2014-10-09
-/.$putCase consumeMethodHeaderNameWithTypeParameters(false); $break ./
-MethodHeaderName ::= Modifiersopt Type 'get' TypeParameters '('  --cym 2014-10-09
-/.$putCase consumeMethodHeaderNameWithTypeParameters(false); $break ./
-MethodHeaderName ::= Modifiersopt Type 'set' TypeParameters '('  --cym 2014-10-09
-/.$putCase consumeMethodHeaderNameWithTypeParameters(false); $break ./
-MethodHeaderName ::= Modifiersopt Type 'Identifier' TypeParameters '('  --cym 2014-09-29
-/.$putCase consumeMethodHeaderNameWithTypeParameters(false); $break ./
-
-MethodHeaderName ::= Modifiersopt Type 'add' '(' --cym 2014-10-09
+MethodHeaderName ::= Modifiersopt Type 'Identifier' '('
 /.$putCase consumeMethodHeaderName(false); $break ./
-MethodHeaderName ::= Modifiersopt Type 'remove' '(' --cym 2014-10-09
-/.$putCase consumeMethodHeaderName(false); $break ./
-MethodHeaderName ::= Modifiersopt Type 'get' '(' --cym 2014-10-09
-/.$putCase consumeMethodHeaderName(false); $break ./
-MethodHeaderName ::= Modifiersopt Type 'set' '(' --cym 2014-10-09
-/.$putCase consumeMethodHeaderName(false); $break ./
-MethodHeaderName ::= Modifiersopt Type 'Identifier' '(' 
-/.$putCase consumeMethodHeaderName(false); $break ./ 
 /:$readableName MethodHeaderName:/
 
-DefaultMethodHeaderName ::= ModifiersWithDefault TypeParameters Type 'add' '('  --cym 2014-10-09
-/.$putCase consumeMethodHeaderNameWithTypeParameters(false); $break ./
-DefaultMethodHeaderName ::= ModifiersWithDefault TypeParameters Type 'remove' '('  --cym 2014-10-09
-/.$putCase consumeMethodHeaderNameWithTypeParameters(false); $break ./
-DefaultMethodHeaderName ::= ModifiersWithDefault TypeParameters Type 'get' '('  --cym 2014-10-09
-/.$putCase consumeMethodHeaderNameWithTypeParameters(false); $break ./
-DefaultMethodHeaderName ::= ModifiersWithDefault TypeParameters Type 'set' '('  --cym 2014-10-09
-/.$putCase consumeMethodHeaderNameWithTypeParameters(false); $break ./
 DefaultMethodHeaderName ::= ModifiersWithDefault TypeParameters Type 'Identifier' '('
 /.$putCase consumeMethodHeaderNameWithTypeParameters(false); $break ./
-
-DefaultMethodHeaderName ::= ModifiersWithDefault Type 'add' '('  --cym 2014-10-09
-/.$putCase consumeMethodHeaderName(false); $break ./
-DefaultMethodHeaderName ::= ModifiersWithDefault Type 'remove' '('  --cym 2014-10-09
-/.$putCase consumeMethodHeaderName(false); $break ./
-DefaultMethodHeaderName ::= ModifiersWithDefault Type 'get' '('  --cym 2014-10-09
-/.$putCase consumeMethodHeaderName(false); $break ./
-DefaultMethodHeaderName ::= ModifiersWithDefault Type 'set' '('  --cym 2014-10-09
-/.$putCase consumeMethodHeaderName(false); $break ./
 DefaultMethodHeaderName ::= ModifiersWithDefault Type 'Identifier' '('
 /.$putCase consumeMethodHeaderName(false); $break ./
 /:$readableName MethodHeaderName:/
@@ -1165,13 +688,8 @@ ConstructorHeader ::= ConstructorHeaderName FormalParameterListopt MethodHeaderR
 /.$putCase consumeConstructorHeader(); $break ./
 /:$readableName ConstructorDeclaration:/
 
---ConstructorHeaderName ::= Modifiersopt TypeParameters 'Identifier' '('
---ConstructorHeaderName ::= Modifiersopt 'Identifier' TypeParameters '('  --cym 2014-09-29
---/.$putCase consumeConstructorHeaderNameWithTypeParameters(); $break ./
-ConstructorHeaderName ::= Modifiersopt 'add' '('   --cym 2014-10-13
-ConstructorHeaderName ::= Modifiersopt 'remove' '('  --cym 2014-10-13
-ConstructorHeaderName ::= Modifiersopt 'get' '('  --cym 2014-10-13
-ConstructorHeaderName ::= Modifiersopt 'set' '('  --cym 2014-10-13
+ConstructorHeaderName ::= Modifiersopt TypeParameters 'Identifier' '('
+/.$putCase consumeConstructorHeaderNameWithTypeParameters(); $break ./
 ConstructorHeaderName ::= Modifiersopt 'Identifier' '('
 /.$putCase consumeConstructorHeaderName(); $break ./
 /:$readableName ConstructorHeaderName:/
@@ -1184,11 +702,10 @@ FormalParameterList ::= FormalParameterList ',' FormalParameter
 --1.1 feature
 FormalParameter ::= Modifiersopt Type VariableDeclaratorIdOrThis
 /.$putCase consumeFormalParameter(false); $break ./
-FormalParameter ::= Modifiersopt Type '...' VariableDeclaratorIdOrThis
-/.$putCase consumeFormalParameter(true); $break ./
-/:$compliance 1.5:/
-
---FormalParameter ::= Modifiersopt Type @308... TypeAnnotations '...' VariableDeclaratorIdOrThis   --cym comment
+--FormalParameter ::= Modifiersopt Type PushZeroTypeAnnotations '...' VariableDeclaratorIdOrThis
+--/.$putCase consumeFormalParameter(true); $break ./
+--/:$compliance 1.5:/
+--FormalParameter ::= Modifiersopt Type @308... TypeAnnotations '...' VariableDeclaratorIdOrThis
 --/.$putCase consumeFormalParameter(true); $break ./
 --/:$readableName FormalParameter:/
 --/:$compliance 1.8:/
@@ -1258,47 +775,41 @@ ConstructorDeclaration ::= ConstructorHeader ';'
 ExplicitConstructorInvocation ::= 'this' '(' ArgumentListopt ')' ';'
 /.$putCase consumeExplicitConstructorInvocation(0, THIS_CALL); $break ./
 
---ExplicitConstructorInvocation ::= OnlyTypeArguments 'this' '(' ArgumentListopt ')' ';'
-ExplicitConstructorInvocation ::=  'this' OnlyTypeArguments '(' ArgumentListopt ')' ';'  --cym 2014-09-29
+ExplicitConstructorInvocation ::= OnlyTypeArguments 'this' '(' ArgumentListopt ')' ';'
 /.$putCase consumeExplicitConstructorInvocationWithTypeArguments(0,THIS_CALL); $break ./
 
 ExplicitConstructorInvocation ::= 'super' '(' ArgumentListopt ')' ';'
 /.$putCase consumeExplicitConstructorInvocation(0,SUPER_CALL); $break ./
 
---ExplicitConstructorInvocation ::= OnlyTypeArguments 'super' '(' ArgumentListopt ')' ';'
-ExplicitConstructorInvocation ::= 'super' OnlyTypeArguments '(' ArgumentListopt ')' ';'  --cym 2014-09-29
+ExplicitConstructorInvocation ::= OnlyTypeArguments 'super' '(' ArgumentListopt ')' ';'
 /.$putCase consumeExplicitConstructorInvocationWithTypeArguments(0,SUPER_CALL); $break ./
 
 --1.1 feature
 ExplicitConstructorInvocation ::= Primary '.' 'super' '(' ArgumentListopt ')' ';'
 /.$putCase consumeExplicitConstructorInvocation(1, SUPER_CALL); $break ./
 
---ExplicitConstructorInvocation ::= Primary '.' OnlyTypeArguments 'super' '(' ArgumentListopt ')' ';'
-ExplicitConstructorInvocation ::= Primary '.' 'super' OnlyTypeArguments '(' ArgumentListopt ')' ';'  --cym 2014-09-29
+ExplicitConstructorInvocation ::= Primary '.' OnlyTypeArguments 'super' '(' ArgumentListopt ')' ';'
 /.$putCase consumeExplicitConstructorInvocationWithTypeArguments(1, SUPER_CALL); $break ./
 
 --1.1 feature
 ExplicitConstructorInvocation ::= Name '.' 'super' '(' ArgumentListopt ')' ';'
 /.$putCase consumeExplicitConstructorInvocation(2, SUPER_CALL); $break ./
 
---ExplicitConstructorInvocation ::= Name '.' OnlyTypeArguments 'super' '(' ArgumentListopt ')' ';'
-ExplicitConstructorInvocation ::= Name '.' 'super' OnlyTypeArguments '(' ArgumentListopt ')' ';'  --cym 2014-09-29
+ExplicitConstructorInvocation ::= Name '.' OnlyTypeArguments 'super' '(' ArgumentListopt ')' ';'
 /.$putCase consumeExplicitConstructorInvocationWithTypeArguments(2, SUPER_CALL); $break ./
 
 --1.1 feature
 ExplicitConstructorInvocation ::= Primary '.' 'this' '(' ArgumentListopt ')' ';'
 /.$putCase consumeExplicitConstructorInvocation(1, THIS_CALL); $break ./
 
---ExplicitConstructorInvocation ::= Primary '.' OnlyTypeArguments 'this' '(' ArgumentListopt ')' ';'
-ExplicitConstructorInvocation ::= Primary '.' 'this' OnlyTypeArguments '(' ArgumentListopt ')' ';'  --cym 2014-09-29
+ExplicitConstructorInvocation ::= Primary '.' OnlyTypeArguments 'this' '(' ArgumentListopt ')' ';'
 /.$putCase consumeExplicitConstructorInvocationWithTypeArguments(1, THIS_CALL); $break ./
 
 --1.1 feature
 ExplicitConstructorInvocation ::= Name '.' 'this' '(' ArgumentListopt ')' ';'
 /.$putCase consumeExplicitConstructorInvocation(2, THIS_CALL); $break ./
 
---ExplicitConstructorInvocation ::= Name '.' OnlyTypeArguments 'this' '(' ArgumentListopt ')' ';'
-ExplicitConstructorInvocation ::= Name '.' 'this' OnlyTypeArguments '(' ArgumentListopt ')' ';'  --cym 2014-09-29
+ExplicitConstructorInvocation ::= Name '.' OnlyTypeArguments 'this' '(' ArgumentListopt ')' ';'
 /.$putCase consumeExplicitConstructorInvocationWithTypeArguments(2, THIS_CALL); $break ./
 /:$readableName ExplicitConstructorInvocation:/
 
@@ -1326,10 +837,6 @@ InterfaceHeaderName ::= InterfaceHeaderName1 TypeParameters
 InterfaceHeaderName -> InterfaceHeaderName1
 /:$readableName InterfaceHeaderName:/
 
-InterfaceHeaderName1 ::= Modifiersopt interface 'add'  --cym 2014-10-13
-InterfaceHeaderName1 ::= Modifiersopt interface 'remove'  --cym 2014-10-13
-InterfaceHeaderName1 ::= Modifiersopt interface 'get'  --cym 2014-10-13
-InterfaceHeaderName1 ::= Modifiersopt interface 'set'  --cym 2014-10-13
 InterfaceHeaderName1 ::= Modifiersopt interface Identifier
 /.$putCase consumeInterfaceHeaderName1(); $break ./
 /:$readableName InterfaceHeaderName:/
@@ -1351,8 +858,7 @@ InterfaceMemberDeclaration ::= ';'
 /.$putCase consumeEmptyTypeDeclaration(); $break ./
 /:$readableName InterfaceMemberDeclaration:/
 
-InterfaceMemberDeclaration -> PropertyDeclaration  --cym add 2014-10-24
-InterfaceMemberDeclaration -> IndexerDeclaration  --cym add 2014-10-24
+
 InterfaceMemberDeclaration -> ConstantDeclaration
 InterfaceMemberDeclaration ::= DefaultMethodHeader MethodBody
 /:$compliance 1.8:/
@@ -1432,26 +938,8 @@ BlockStatementopt0 -> $empty
 BlockStatementopt0 -> BlockStatement
 /:$readableName BlockStatementopt0:/
 
---BlockStatement -> MethodDeclaration   --cym add
-
 BlockStatement -> LocalVariableDeclarationStatement
 BlockStatement -> Statement
-
---cym add 
-BlockStatement -> FunctionDeclaration
-/:$readableName FunctionDeclaration:/
-
-FunctionDeclaration -> FunctionHeaderName  BlockStatementsopt '}' 
-/.$putCase consumeFunctionDeclaration(); $break ./
-/:$readableName FunctionDeclaration:/
-
-FunctionHeaderName ::= 'function' Type 'Identifier' TypeParameters '(' FormalParameterListopt ')' NestedMethod '{'
-/.$putCase consumeFunctionHeaderNameWithTypeParameters(); $break ./
-FunctionHeaderName ::= 'function' Type 'Identifier' '(' FormalParameterListopt ')' NestedMethod '{'
-/.$putCase consumeFunctionHeaderName(); $break ./
-/:$readableName FunctionHeaderName:/
-
---cym add end
 --1.1 feature
 BlockStatement -> ClassDeclaration
 BlockStatement ::= InterfaceDeclaration
@@ -1541,10 +1029,6 @@ LabeledStatementNoShortIf ::= Label ':' StatementNoShortIf
 /.$putCase consumeStatementLabel() ; $break ./
 /:$readableName LabeledStatement:/
 
-Label ::= 'add'   --cym 2014-10-13
-Label ::= 'remove'   --cym 2014-10-13
-Label ::= 'get'   --cym 2014-10-13
-Label ::= 'set'   --cym 2014-10-13
 Label ::= 'Identifier'
 /.$putCase consumeLabel() ; $break ./
 /:$readableName Label:/
@@ -1656,10 +1140,6 @@ AssertStatement ::= 'assert' Expression ':' Expression ';'
 BreakStatement ::= 'break' ';'
 /.$putCase consumeStatementBreak() ; $break ./
 
-BreakStatement ::= 'break' 'add' ';'   --cym 2014-10-13
-BreakStatement ::= 'break' 'remove' ';'   --cym 2014-10-13
-BreakStatement ::= 'break' 'get' ';'   --cym 2014-10-13
-BreakStatement ::= 'break' 'set' ';'   --cym 2014-10-13
 BreakStatement ::= 'break' Identifier ';'
 /.$putCase consumeStatementBreakWithLabel() ; $break ./
 /:$readableName BreakStatement:/
@@ -1667,10 +1147,6 @@ BreakStatement ::= 'break' Identifier ';'
 ContinueStatement ::= 'continue' ';'
 /.$putCase consumeStatementContinue() ; $break ./
 
-ContinueStatement ::= 'continue' 'add' ';'   --cym 2014-10-13
-ContinueStatement ::= 'continue' 'remove' ';'   --cym 2014-10-13
-ContinueStatement ::= 'continue' 'get' ';'   --cym 2014-10-13
-ContinueStatement ::= 'continue' 'set' ';'   --cym 2014-10-13
 ContinueStatement ::= 'continue' Identifier ';'
 /.$putCase consumeStatementContinueWithLabel() ; $break ./
 /:$readableName ContinueStatement:/
@@ -1818,15 +1294,6 @@ PrimaryNoNewArray -> ArrayAccess
 -----------------------------------------------------------------------
 
 PrimaryNoNewArray -> LambdaExpression
---cym add
-PrimaryNoNewArray -> FunctionExpression
-
-FunctionExpression ::= 'function' Type PushLPAREN FormalParameterListopt PushRPAREN MethodBody
-/.$putCase consumeFunctionExpression(); $break ./
-/:$readableName FunctionExpression:/
-/:$compliance 1.8:/
---cym add end
-
 PrimaryNoNewArray -> ReferenceExpression
 /:$readableName Expression:/
 
@@ -1966,70 +1433,6 @@ ClassInstanceCreationExpression ::= ClassInstanceCreationExpressionName 'new' On
 /.$putCase consumeClassInstanceCreationExpressionQualifiedWithTypeArguments() ; $break ./
 /:$readableName ClassInstanceCreationExpression:/
 
---cym add 2014-10-29
---MemberInitializer
---ClassInstanceCreationExpression ::= 'new' ClassType   ObjectOrCollectionInitializer
---/.$putCase consumeClassInstanceCreationExpressionWithInitializer() ; $break ./
-
---ObjectOrCollectionInitializer ::= ObjectInitializer
---/.$putCase consumeObjectOrCollectionInitializer() ; $break ./
---ObjectOrCollectionInitializer ::= CollectionInitializer
---/.$putCase consumeObjectOrCollectionInitializer() ; $break ./
---/:$readableName ObjectOrCollectionInitializer:/
-
---ObjectInitializer ::= { $empty }
---/.$putCase consumeEmptyObjectInitializer() ; $break ./
---ObjectInitializer ::= { MemberInitializerList , }
---/.$putCase consumeObjectInitializer() ; $break ./
---/:$readableName ObjectInitializer:/
-
---MemberInitializerList ::= MemberInitializer
-----/.$putCase consumeMemberInitializerList() ; $break ./
-
---MemberInitializerList ::= MemberInitializerList  ,  MemberInitializer
---/.$putCase consumeMemberInitializerList() ; $break ./
---/:$readableName MemberInitializerList:/
-
---MemberInitializer ::= Identifier '=' InitializerValue
---/.$putCase consumeMemberInitializer() ; $break ./
---/:$readableName MemberInitializer:/
-
---InitializerValue -> Expression
-----/.$putCase consumeInitializerValue() ; $break ./
---/:$readableName InitializerValue:/
-
---InitializerValue -> ObjectOrCollectionInitializer
-----/.$putCase consumeObjectOrCollectionInitializer() ; $break ./
---/:$readableName ObjectOrCollectionInitializer:/
-
---CollectionInitializer ::= { ElementInitializerList }
---/.$putCase consumeCollectionInitializer() ; $break ./
-
---CollectionInitializer ::= { ElementInitializerList , }
---/.$putCase consumeCollectionInitializerWithEndComma() ; $break ./
---/:$readableName CollectionInitializer:/
-
---ElementInitializerList ::= ElementInitializer
-----/.$putCase consumeElementInitializerList() ; $break ./
-
---ElementInitializerList ::= ElementInitializerList , ElementInitializer
---/.$putCase consumeElementInitializerList() ; $break ./
---/:$readableName ElementInitializerList:/
-
-----ElementInitializer ::= non-assignment-expression
---ElementInitializer ::= {   ExpressionList   }
---/.$putCase consumeElementInitializer() ; $break ./
---/:$readableName ElementInitializer:/
-
---ExpressionList ::= Expression
-----/.$putCase consumeExpressionList() ; $break ./
-
---ExpressionList ::= ExpressionList  ,  Expression
---/.$putCase consumeExpressionList() ; $break ./
---/:$readableName ExpressionList:/
---cym add end 2014-10-29
-
-
 EnterInstanceCreationArgumentList ::= $empty
 /.$putCase consumeEnterInstanceCreationArgumentList(); $break ./
 /:$readableName EnterInstanceCreationArgumentList:/
@@ -2058,23 +1461,10 @@ QualifiedEnterAnonymousClassBody ::= $empty
 /.$putCase consumeEnterAnonymousClassBody(true); $break ./
 /:$readableName EnterAnonymousClassBody:/
 
---ArgumentList ::= Expression
---ArgumentList ::= ArgumentList ',' Expression
---/.$putCase consumeArgumentList(); $break ./
---/:$readableName ArgumentList:/
-
---cyk modified
-ArgumentList ::= Argument   --cym 2014-10-13
-ArgumentList ::= ArgumentList ',' Argument  --cym 2014-10-13
+ArgumentList ::= Expression
+ArgumentList ::= ArgumentList ',' Expression
 /.$putCase consumeArgumentList(); $break ./
 /:$readableName ArgumentList:/
-Argument ::= Expression
-Argument ::= 'ref' Expression
-/.$putCase consumeArgument(); $break ./
-Argument ::= 'out' Expression
-/.$putCase consumeArgument(); $break ./
-/:$readableName Argument:/
--- cym modified end
 
 ArrayCreationHeader ::= 'new' PrimitiveType DimWithOrWithOutExprs
 /.$putCase consumeArrayCreationHeader(); $break ./
@@ -2118,17 +1508,9 @@ OneDimLoop ::= '[' ']'
 /. $putCase consumeOneDimLoop(false); $break ./
 
 
-FieldAccess ::= Primary '.' 'add'   --cym 2014-10-13
-FieldAccess ::= Primary '.' 'remove'  --cym 2014-10-13
-FieldAccess ::= Primary '.' 'get'  --cym 2014-10-13
-FieldAccess ::= Primary '.' 'set'  --cym 2014-10-13
 FieldAccess ::= Primary '.' 'Identifier'
 /.$putCase consumeFieldAccess(false); $break ./
 
-FieldAccess ::= 'super' '.' 'add'   --cym 2014-10-13
-FieldAccess ::= 'super' '.' 'remove'   --cym 2014-10-13
-FieldAccess ::= 'super' '.' 'get'   --cym 2014-10-13
-FieldAccess ::= 'super' '.' 'set'   --cym 2014-10-13
 FieldAccess ::= 'super' '.' 'Identifier'
 /.$putCase consumeFieldAccess(true); $break ./
 /:$readableName FieldAccess:/
@@ -2136,45 +1518,18 @@ FieldAccess ::= 'super' '.' 'Identifier'
 MethodInvocation ::= Name '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationName(); $break ./
 
-MethodInvocation ::= Name '.' OnlyTypeArguments 'add' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= Name '.' OnlyTypeArguments 'remove' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= Name '.' OnlyTypeArguments 'get' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= Name '.' OnlyTypeArguments 'set' '(' ArgumentListopt ')'  --cym 2014-10-13
 MethodInvocation ::= Name '.' OnlyTypeArguments 'Identifier' '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationNameWithTypeArguments(); $break ./
 
-MethodInvocation ::= MethodInvocation '(' ArgumentListopt ')' --cym add 2014-10-27
-/.$putCase consumeMethodInvocationName(); $break ./   --cym add 2014-10-27
-
-MethodInvocation ::= ArrayAccess '(' ArgumentListopt ')'  --cym add 2014-10-27
---MethodInvocation ::= FunctionExpression  '(' ArgumentListopt ')'   --cym add 2014-10-27
-MethodInvocation ::= LambdaExpression  '(' ArgumentListopt ')'   --cym add 2014-10-27
-
-MethodInvocation ::= Primary '.' OnlyTypeArguments 'add' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= Primary '.' OnlyTypeArguments 'remove' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= Primary '.' OnlyTypeArguments 'get' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= Primary '.' OnlyTypeArguments 'set' '(' ArgumentListopt ')'  --cym 2014-10-13
 MethodInvocation ::= Primary '.' OnlyTypeArguments 'Identifier' '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationPrimaryWithTypeArguments(); $break ./
 
-MethodInvocation ::= Primary '.' 'add' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= Primary '.' 'remove' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= Primary '.' 'get' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= Primary '.' 'set' '(' ArgumentListopt ')'  --cym 2014-10-13
 MethodInvocation ::= Primary '.' 'Identifier' '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationPrimary(); $break ./
 
-MethodInvocation ::= 'super' '.' OnlyTypeArguments 'add' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= 'super' '.' OnlyTypeArguments 'remove' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= 'super' '.' OnlyTypeArguments 'get' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= 'super' '.' OnlyTypeArguments 'set' '(' ArgumentListopt ')'  --cym 2014-10-13
 MethodInvocation ::= 'super' '.' OnlyTypeArguments 'Identifier' '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationSuperWithTypeArguments(); $break ./
 
-MethodInvocation ::= 'super' '.' 'add' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= 'super' '.' 'remove' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= 'super' '.' 'get' '(' ArgumentListopt ')'  --cym 2014-10-13
-MethodInvocation ::= 'super' '.' 'set' '(' ArgumentListopt ')'  --cym 2014-10-13
 MethodInvocation ::= 'super' '.' 'Identifier' '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationSuper(); $break ./
 /:$readableName MethodInvocation:/
@@ -2439,7 +1794,6 @@ ConstantExpression -> Expression
 
 ClassBodyDeclarationsopt ::= $empty
 /.$putCase consumeEmptyClassBodyDeclarationsopt(); $break ./
---ClassBodyDeclarationsopt ::= NestedType RootObjectElement ClassBodyDeclarations   --cym 2014-10-13
 ClassBodyDeclarationsopt ::= NestedType ClassBodyDeclarations
 /.$putCase consumeClassBodyDeclarationsopt(); $break ./
 /:$readableName ClassBodyDeclarations:/
@@ -2510,107 +1864,68 @@ Catchesopt -> Catches
 -----------------------------------------------
 -- 1.5 features : enum type
 -----------------------------------------------
---EnumDeclaration ::= EnumHeader EnumBody
---/. $putCase consumeEnumDeclaration(); $break ./
---/:$readableName EnumDeclaration:/
-
---EnumHeader ::= EnumHeaderName ClassHeaderImplementsopt
---/. $putCase consumeEnumHeader(); $break ./
---/:$readableName EnumHeader:/
-
---EnumHeaderName ::= Modifiersopt 'enum' Identifier
---/. $putCase consumeEnumHeaderName(); $break ./
---/:$compliance 1.5:/
---EnumHeaderName ::= Modifiersopt 'enum' Identifier TypeParameters
---/. $putCase consumeEnumHeaderNameWithTypeParameters(); $break ./
---/:$readableName EnumHeaderName:/
---/:$compliance 1.5:/
-
---EnumBody ::= '{' EnumBodyDeclarationsopt '}'
---/. $putCase consumeEnumBodyNoConstants(); $break ./
---EnumBody ::= '{' ',' EnumBodyDeclarationsopt '}'
---/. $putCase consumeEnumBodyNoConstants(); $break ./
---EnumBody ::= '{' EnumConstants ',' EnumBodyDeclarationsopt '}'
---/. $putCase consumeEnumBodyWithConstants(); $break ./
---EnumBody ::= '{' EnumConstants EnumBodyDeclarationsopt '}'
---/. $putCase consumeEnumBodyWithConstants(); $break ./
---/:$readableName EnumBody:/
-
---EnumConstants -> EnumConstant
---EnumConstants ::= EnumConstants ',' EnumConstant
---/.$putCase consumeEnumConstants(); $break ./
---/:$readableName EnumConstants:/
-
---EnumConstantHeaderName ::= Modifiersopt Identifier
---/.$putCase consumeEnumConstantHeaderName(); $break ./
---/:$readableName EnumConstantHeaderName:/
-
---EnumConstantHeader ::= EnumConstantHeaderName ForceNoDiet Argumentsopt RestoreDiet
---/.$putCase consumeEnumConstantHeader(); $break ./
---/:$readableName EnumConstantHeader:/
-
---EnumConstant ::= EnumConstantHeader ForceNoDiet ClassBody RestoreDiet
---/.$putCase consumeEnumConstantWithClassBody(); $break ./
---EnumConstant ::= EnumConstantHeader
---/.$putCase consumeEnumConstantNoClassBody(); $break ./
---/:$readableName EnumConstant:/
-
---Arguments ::= '(' ArgumentListopt ')'
---/.$putCase consumeArguments(); $break ./
---/:$readableName Arguments:/
-
---Argumentsopt ::= $empty
---/.$putCase consumeEmptyArguments(); $break ./
---Argumentsopt -> Arguments
---/:$readableName Argumentsopt:/
-
---EnumDeclarations ::= ';' ClassBodyDeclarationsopt
---/.$putCase consumeEnumDeclarations(); $break ./
---/:$readableName EnumDeclarations:/
-
---EnumBodyDeclarationsopt ::= $empty
---/.$putCase consumeEmptyEnumDeclarations(); $break ./
---EnumBodyDeclarationsopt -> EnumDeclarations
---/:$readableName EnumBodyDeclarationsopt:/
-
-
 EnumDeclaration ::= EnumHeader EnumBody
 /. $putCase consumeEnumDeclaration(); $break ./
 /:$readableName EnumDeclaration:/
 
-EnumHeader ::= EnumHeaderName --ClassHeaderImplementsopt
+EnumHeader ::= EnumHeaderName ClassHeaderImplementsopt
 /. $putCase consumeEnumHeader(); $break ./
 /:$readableName EnumHeader:/
 
 EnumHeaderName ::= Modifiersopt 'enum' Identifier
 /. $putCase consumeEnumHeaderName(); $break ./
 /:$compliance 1.5:/
+EnumHeaderName ::= Modifiersopt 'enum' Identifier TypeParameters
+/. $putCase consumeEnumHeaderNameWithTypeParameters(); $break ./
 /:$readableName EnumHeaderName:/
+/:$compliance 1.5:/
 
-EnumBody ::= '{'  '}'
-/. $putCase consumeEnumBodyNoMembers(); $break ./
-EnumBody ::= '{' EnumMemberDeclarations ',' '}'
-/. $putCase consumeEnumBodyWithMembers(); $break ./
-EnumBody ::= '{' EnumMemberDeclarations  '}'
-/. $putCase consumeEnumBodyWithMembers(); $break ./
+EnumBody ::= '{' EnumBodyDeclarationsopt '}'
+/. $putCase consumeEnumBodyNoConstants(); $break ./
+EnumBody ::= '{' ',' EnumBodyDeclarationsopt '}'
+/. $putCase consumeEnumBodyNoConstants(); $break ./
+EnumBody ::= '{' EnumConstants ',' EnumBodyDeclarationsopt '}'
+/. $putCase consumeEnumBodyWithConstants(); $break ./
+EnumBody ::= '{' EnumConstants EnumBodyDeclarationsopt '}'
+/. $putCase consumeEnumBodyWithConstants(); $break ./
 /:$readableName EnumBody:/
 
-EnumMemberDeclarations ::= EnumConstant
-EnumMemberDeclarations ::= EnumMemberDeclarations ',' EnumConstant
-/.$putCase consumeEnumMemberDeclarations(); $break ./
-/:$readableName EnumMemberDeclarations:/
+EnumConstants -> EnumConstant
+EnumConstants ::= EnumConstants ',' EnumConstant
+/.$putCase consumeEnumConstants(); $break ./
+/:$readableName EnumConstants:/
 
 EnumConstantHeaderName ::= Modifiersopt Identifier
 /.$putCase consumeEnumConstantHeaderName(); $break ./
 /:$readableName EnumConstantHeaderName:/
 
-EnumConstant ::= EnumConstantHeaderName
+EnumConstantHeader ::= EnumConstantHeaderName ForceNoDiet Argumentsopt RestoreDiet
 /.$putCase consumeEnumConstantHeader(); $break ./
 /:$readableName EnumConstantHeader:/
 
-EnumConstant ::= EnumConstantHeaderName '='  IntegerLiteral
-/.$putCase consumeEnumConstantWithInitializer(); $break ./
-/:$readableName EnumConstantHeader:/
+EnumConstant ::= EnumConstantHeader ForceNoDiet ClassBody RestoreDiet
+/.$putCase consumeEnumConstantWithClassBody(); $break ./
+EnumConstant ::= EnumConstantHeader
+/.$putCase consumeEnumConstantNoClassBody(); $break ./
+/:$readableName EnumConstant:/
+
+Arguments ::= '(' ArgumentListopt ')'
+/.$putCase consumeArguments(); $break ./
+/:$readableName Arguments:/
+
+Argumentsopt ::= $empty
+/.$putCase consumeEmptyArguments(); $break ./
+Argumentsopt -> Arguments
+/:$readableName Argumentsopt:/
+
+EnumDeclarations ::= ';' ClassBodyDeclarationsopt
+/.$putCase consumeEnumDeclarations(); $break ./
+/:$readableName EnumDeclarations:/
+
+EnumBodyDeclarationsopt ::= $empty
+/.$putCase consumeEmptyEnumDeclarations(); $break ./
+EnumBodyDeclarationsopt -> EnumDeclarations
+/:$readableName EnumBodyDeclarationsopt:/
 
 -----------------------------------------------
 -- 1.5 features : enhanced for statement
@@ -3074,8 +2389,7 @@ AnnotationTypeMemberDeclarations ::= AnnotationTypeMemberDeclarations Annotation
 /:$readableName AnnotationTypeMemberDeclarations:/
 /:$compliance 1.5:/
 
---AnnotationMethodHeaderName ::= Modifiersopt TypeParameters Type 'Identifier' '('
-AnnotationMethodHeaderName ::= Modifiersopt Type 'Identifier' TypeParameters '('  --cym 2014-09-29
+AnnotationMethodHeaderName ::= Modifiersopt TypeParameters Type 'Identifier' '('
 /.$putCase consumeMethodHeaderNameWithTypeParameters(true); $break ./
 AnnotationMethodHeaderName ::= Modifiersopt Type 'Identifier' '('
 /.$putCase consumeMethodHeaderName(true); $break ./
@@ -3218,32 +2532,15 @@ SingleMemberAnnotation ::= AnnotationName '(' SingleMemberAnnotationMemberValue 
 -----------------------------------
 -- 1.5 features : recovery rules --
 -----------------------------------
---RecoveryMethodHeaderName ::= Modifiersopt TypeParameters Type 'Identifier' '('
-RecoveryMethodHeaderName ::= Modifiersopt Type 'add' TypeParameters '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= Modifiersopt Type 'remove' TypeParameters '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= Modifiersopt Type 'get' TypeParameters '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= Modifiersopt Type 'set' TypeParameters '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= Modifiersopt Type 'Identifier' TypeParameters '('  --cym 2014-09-29
+RecoveryMethodHeaderName ::= Modifiersopt TypeParameters Type 'Identifier' '('
 /.$putCase consumeRecoveryMethodHeaderNameWithTypeParameters(); $break ./
 /:$compliance 1.5:/
-RecoveryMethodHeaderName ::= Modifiersopt Type 'add' '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= Modifiersopt Type 'remove' '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= Modifiersopt Type 'get' '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= Modifiersopt Type 'set' '('  --cym 2014-10-13
 RecoveryMethodHeaderName ::= Modifiersopt Type 'Identifier' '('
 /.$putCase consumeRecoveryMethodHeaderName(); $break ./
 /:$readableName MethodHeaderName:/
-RecoveryMethodHeaderName ::= ModifiersWithDefault TypeParameters Type 'add' '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= ModifiersWithDefault TypeParameters Type 'remove' '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= ModifiersWithDefault TypeParameters Type 'get' '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= ModifiersWithDefault TypeParameters Type 'set' '('  --cym 2014-10-13
 RecoveryMethodHeaderName ::= ModifiersWithDefault TypeParameters Type 'Identifier' '('
 /.$putCase consumeRecoveryMethodHeaderNameWithTypeParameters(); $break ./
 /:$compliance 1.5:/
-RecoveryMethodHeaderName ::= ModifiersWithDefault Type 'add' '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= ModifiersWithDefault Type 'remove' '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= ModifiersWithDefault Type 'get' '('  --cym 2014-10-13
-RecoveryMethodHeaderName ::= ModifiersWithDefault Type 'set' '('  --cym 2014-10-13
 RecoveryMethodHeaderName ::= ModifiersWithDefault Type 'Identifier' '('
 /.$putCase consumeRecoveryMethodHeaderName(); $break ./
 /:$readableName MethodHeaderName:/
@@ -3311,8 +2608,6 @@ EQUAL ::=    '='
 AT ::=    '@'
 --AT308 ::= '@'
 --AT308DOTDOTDOT ::= '@'
-CLOSE_TAG ::= '/>'
-CLOSE_ELEMENT ::= '</'
 ELLIPSIS ::=    '...'    
 ARROW ::= '->'
 COLON_COLON ::= '::'
