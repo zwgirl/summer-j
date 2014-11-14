@@ -21,8 +21,11 @@ import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.summer.sdt.internal.compiler.ast.Annotation;
 import org.summer.sdt.internal.compiler.ast.Block;
+import org.summer.sdt.internal.compiler.ast.EventDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
+import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.Initializer;
+import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.Statement;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
@@ -50,6 +53,16 @@ public class RecoveredType extends RecoveredStatement implements TerminalTokens 
 	public int memberTypeCount;
 	public RecoveredField[] fields;
 	public int fieldCount;
+	
+	public RecoveredEvent[] events;
+	public int eventCount;
+	
+	public RecoveredIndexer[] indexers;
+	public int indexerCount;
+	
+	public RecoveredProperty[] properties;
+	public int propertyCount;
+	
 	public RecoveredMethod[] methods;
 	public int methodCount;
 
@@ -184,6 +197,183 @@ public class RecoveredType extends RecoveredStatement implements TerminalTokens 
 				return this;
 		}
 		this.fields[this.fieldCount++] = element;
+	
+		if(this.pendingAnnotationCount > 0) {
+			element.attach(
+					this.pendingAnnotations,
+					this.pendingAnnotationCount,
+					this.pendingModifiers,
+					this.pendingModifersSourceStart);
+		}
+		resetPendingModifiers();
+	
+		/* consider that if the opening brace was not found, it is there */
+		if (!this.foundOpeningBrace){
+			this.foundOpeningBrace = true;
+			this.bracketBalance++;
+		}
+		/* if field not finished, then field becomes current */
+		if (fieldDeclaration.declarationSourceEnd == 0) return element;
+		return this;
+	}
+	
+	public RecoveredElement add(EventDeclaration eventDeclaration, int bracketBalanceValue) {
+		this.pendingTypeParameters = null;
+	
+		/* do not consider a field starting passed the type end (if set)
+		it must be belonging to an enclosing type */
+		if (this.typeDeclaration.declarationSourceEnd != 0
+			&& eventDeclaration.declarationSourceStart > this.typeDeclaration.declarationSourceEnd) {
+	
+			resetPendingModifiers();
+	
+			return this.parent.add(eventDeclaration, bracketBalanceValue);
+		}
+		if (this.events == null) {
+			this.events = new RecoveredEvent[5];
+			this.eventCount = 0;
+		} else {
+			if (this.eventCount == this.events.length) {
+				System.arraycopy(
+					this.events,
+					0,
+					(this.events = new RecoveredEvent[2 * this.eventCount]),
+					0,
+					this.eventCount);
+			}
+		}
+		RecoveredEvent element;
+		switch (eventDeclaration.getKind()) {
+			case AbstractVariableDeclaration.FIELD:
+			case AbstractVariableDeclaration.ENUM_CONSTANT:
+				element = new RecoveredEvent(eventDeclaration, this, bracketBalanceValue);
+				break;
+			case AbstractVariableDeclaration.INITIALIZER:
+				element = new RecoveredEvent(eventDeclaration, this, bracketBalanceValue);
+				break;
+			default:
+				// never happens, as field is always identified
+				return this;
+		}
+		this.events[this.eventCount++] = element;
+	
+		if(this.pendingAnnotationCount > 0) {
+			element.attach(
+					this.pendingAnnotations,
+					this.pendingAnnotationCount,
+					this.pendingModifiers,
+					this.pendingModifersSourceStart);
+		}
+		resetPendingModifiers();
+	
+		/* consider that if the opening brace was not found, it is there */
+		if (!this.foundOpeningBrace){
+			this.foundOpeningBrace = true;
+			this.bracketBalance++;
+		}
+		/* if field not finished, then field becomes current */
+		if (eventDeclaration.declarationSourceEnd == 0) return element;
+		return this;
+	}
+	
+	public RecoveredElement add(IndexerDeclaration indexerDeclaration, int bracketBalanceValue) {
+		this.pendingTypeParameters = null;
+	
+		/* do not consider a field starting passed the type end (if set)
+		it must be belonging to an enclosing type */
+		if (this.typeDeclaration.declarationSourceEnd != 0
+			&& indexerDeclaration.declarationSourceStart > this.typeDeclaration.declarationSourceEnd) {
+	
+			resetPendingModifiers();
+	
+			return this.parent.add(indexerDeclaration, bracketBalanceValue);
+		}
+		if (this.indexers == null) {
+			this.indexers = new RecoveredIndexer[5];
+			this.indexerCount = 0;
+		} else {
+			if (this.indexerCount == this.indexers.length) {
+				System.arraycopy(
+					this.indexers,
+					0,
+					(this.indexers = new RecoveredIndexer[2 * this.indexerCount]),
+					0,
+					this.indexerCount);
+			}
+		}
+		RecoveredIndexer element;
+		switch (indexerDeclaration.getKind()) {
+			case AbstractVariableDeclaration.FIELD:
+			case AbstractVariableDeclaration.ENUM_CONSTANT:
+				element = new RecoveredIndexer(indexerDeclaration, this, bracketBalanceValue);
+				break;
+			case AbstractVariableDeclaration.INITIALIZER:
+				element = new RecoveredIndexer(indexerDeclaration, this, bracketBalanceValue);
+				break;
+			default:
+				// never happens, as field is always identified
+				return this;
+		}
+		this.indexers[this.indexerCount++] = element;
+	
+		if(this.pendingAnnotationCount > 0) {
+			element.attach(
+					this.pendingAnnotations,
+					this.pendingAnnotationCount,
+					this.pendingModifiers,
+					this.pendingModifersSourceStart);
+		}
+		resetPendingModifiers();
+	
+		/* consider that if the opening brace was not found, it is there */
+		if (!this.foundOpeningBrace){
+			this.foundOpeningBrace = true;
+			this.bracketBalance++;
+		}
+		/* if field not finished, then field becomes current */
+		if (indexerDeclaration.declarationSourceEnd == 0) return element;
+		return this;
+	}
+	
+	public RecoveredElement add(PropertyDeclaration fieldDeclaration, int bracketBalanceValue) {
+		this.pendingTypeParameters = null;
+	
+		/* do not consider a field starting passed the type end (if set)
+		it must be belonging to an enclosing type */
+		if (this.typeDeclaration.declarationSourceEnd != 0
+			&& fieldDeclaration.declarationSourceStart > this.typeDeclaration.declarationSourceEnd) {
+	
+			resetPendingModifiers();
+	
+			return this.parent.add(fieldDeclaration, bracketBalanceValue);
+		}
+		if (this.properties == null) {
+			this.properties = new RecoveredProperty[5];
+			this.propertyCount = 0;
+		} else {
+			if (this.fieldCount == this.properties.length) {
+				System.arraycopy(
+					this.properties,
+					0,
+					(this.properties = new RecoveredProperty[2 * this.propertyCount]),
+					0,
+					this.propertyCount);
+			}
+		}
+		RecoveredProperty element;
+//		switch (fieldDeclaration.getKind()) {
+//			case AbstractVariableDeclaration.FIELD:
+//			case AbstractVariableDeclaration.ENUM_CONSTANT:
+//				element = new RecoveredProperty(fieldDeclaration, this, bracketBalanceValue);
+//				break;
+//			case AbstractVariableDeclaration.INITIALIZER:
+				element = new RecoveredProperty(fieldDeclaration, this, bracketBalanceValue);
+//				break;
+//			default:
+//				// never happens, as field is always identified
+//				return this;
+//		}
+		this.properties[this.propertyCount++] = element;
 	
 		if(this.pendingAnnotationCount > 0) {
 			element.attach(

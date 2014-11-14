@@ -17,9 +17,12 @@ package org.summer.sdt.internal.compiler.parser;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.Block;
+import org.summer.sdt.internal.compiler.ast.EventDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
+import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
+import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.Statement;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.util.Util;
@@ -78,6 +81,40 @@ public class RecoveredElement {
 		this.updateSourceEndIfNecessary(previousAvailableLineEnd(fieldDeclaration.declarationSourceStart - 1));
 		return this.parent.add(fieldDeclaration, bracketBalanceValue);
 	}
+	/*
+	 * Record a event declaration
+	 */
+	public RecoveredElement add(EventDeclaration eventDeclaration, int bracketBalanceValue) {
+	
+		/* default behavior is to delegate recording to parent if any */
+		resetPendingModifiers();
+		if (this.parent == null) return this; // ignore
+		this.updateSourceEndIfNecessary(previousAvailableLineEnd(eventDeclaration.declarationSourceStart - 1));
+		return this.parent.add(eventDeclaration, bracketBalanceValue);
+	}
+	/*
+	 * Record a indexer declaration
+	 */
+	public RecoveredElement add(IndexerDeclaration indexerDeclaration, int bracketBalanceValue) {
+	
+		/* default behavior is to delegate recording to parent if any */
+		resetPendingModifiers();
+		if (this.parent == null) return this; // ignore
+		this.updateSourceEndIfNecessary(previousAvailableLineEnd(indexerDeclaration.declarationSourceStart - 1));
+		return this.parent.add(indexerDeclaration, bracketBalanceValue);
+	}
+	/*
+	 * Record a property declaration
+	 */
+	public RecoveredElement add(PropertyDeclaration propertyDeclaration, int bracketBalanceValue) {
+	
+		/* default behavior is to delegate recording to parent if any */
+		resetPendingModifiers();
+		if (this.parent == null) return this; // ignore
+		this.updateSourceEndIfNecessary(previousAvailableLineEnd(propertyDeclaration.declarationSourceStart - 1));
+		return this.parent.add(propertyDeclaration, bracketBalanceValue);
+	}
+	
 	/*
 	 *	Record an import reference
 	 */

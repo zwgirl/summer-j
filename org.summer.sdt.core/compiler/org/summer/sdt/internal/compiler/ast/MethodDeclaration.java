@@ -50,7 +50,17 @@ public class MethodDeclaration extends AbstractMethodDeclaration {
 
 	public TypeReference returnType;
 	public TypeParameter[] typeParameters;
+	
+	//cym 2014-11-03
+	public int accessorType;   
 
+	//cym 2014-11-03
+	public static final int SETTER = 1;
+	public static final int GETTER = 2;
+	public static final int ADD = 4;
+	public static final int REMOVE = 8;
+	public static final char[] VALUE = "value".toCharArray();
+	
 	/**
 	 * MethodDeclaration constructor comment.
 	 */

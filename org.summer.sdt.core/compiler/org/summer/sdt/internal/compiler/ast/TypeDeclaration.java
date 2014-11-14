@@ -926,6 +926,20 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				this.bits |= (abstractMethodDeclaration.bits & ASTNode.HasSyntaxErrors);
 			}
 		}
+		
+		//cym 2014-10-13 
+		if (this.properties != null) {
+			int length = this.properties.length;
+			for (int i = 0; i < length; i++) {
+				PropertyDeclaration prop = properties[i];
+				if(prop.setter != null){
+					prop.setter.parseStatements(parser, unit);
+				}
+				if(prop.getter != null){
+					prop.getter.parseStatements(parser, unit);
+				}
+			}
+		}
 	
 		//initializers
 		if (this.fields != null) {
@@ -937,36 +951,25 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						((Initializer) fieldDeclaration).parseStatements(parser, this, unit);
 						this.bits |= (fieldDeclaration.bits & ASTNode.HasSyntaxErrors);
 						break;
-				}
-				
-				//cym 2014-10-13 
-				if(fieldDeclaration instanceof PropertyDeclaration){
-					PropertyDeclaration prop = (PropertyDeclaration) fieldDeclaration;
-					if(prop.accessors != null){
-						for(MethodDeclaration method : prop.accessors){
-							method.parseStatements(parser, unit);
+					case AbstractVariableDeclaration.FIELD:
+						if(fieldDeclaration instanceof PropertyDeclaration){
+							PropertyDeclaration prop = (PropertyDeclaration) this.fields[i];
+							if(prop.setter != null){
+								prop.setter.parseStatements(parser, unit);
+							}
+							if(prop.getter != null){
+								prop.getter.parseStatements(parser, unit);
+							}
+						} else if(fieldDeclaration instanceof IndexerDeclaration){
+							IndexerDeclaration prop = (IndexerDeclaration) this.fields[i];
+							if(prop.setter != null){
+								prop.setter.parseStatements(parser, unit);
+							}
+							if(prop.getter != null){
+								prop.getter.parseStatements(parser, unit);
+							}
 						}
-					}
-				}
-				
-				//cym 2014-10-23 
-				if(fieldDeclaration instanceof IndexerDeclaration){
-					IndexerDeclaration indexer = (IndexerDeclaration) fieldDeclaration;
-					if(indexer.accessors != null){
-						for(MethodDeclaration method : indexer.accessors){
-							method.parseStatements(parser, unit);
-						}
-					}
-				}
-				
-				//cym 2014-10-23 
-				if(fieldDeclaration instanceof EventDeclaration){
-					EventDeclaration event = (EventDeclaration) fieldDeclaration;
-					if(event.accessors != null){
-						for(MethodDeclaration method : event.accessors){
-							method.parseStatements(parser, unit);
-						}
-					}
+						break;
 				}
 			}
 		}
@@ -1086,9 +1089,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		try {
 			
 			//cym add
-			if (this.element != null) {
-				this.element.resolve(this.scope);
-			}
+//			if (this.element != null) {
+//				this.element.resolve(this.scope);
+//			}
 			
 			boolean old = this.staticInitializerScope.insideTypeAnnotation;
 			try {
@@ -1289,6 +1292,51 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					}
 					break;
 			}
+			
+			//check property  cym add 2014-11-03
+			if (this.fields != null) {
+				for (int i = 0, count = this.fields.length; i < count; i++) {
+					if(fields[i] instanceof PropertyDeclaration){
+						PropertyDeclaration property = (PropertyDeclaration) this.fields[i];
+						if(property.getter != null){
+							property.getter.resolve(this.scope);
+						} 
+						if(property.setter != null){
+							property.setter.resolve(this.scope);
+						}
+					} else if(fields[i] instanceof IndexerDeclaration){
+						IndexerDeclaration indexer = (IndexerDeclaration) this.fields[i];
+						if(indexer.getter != null){
+							indexer.getter.resolve(this.scope);
+						} 
+						if(indexer.setter != null){
+							indexer.setter.resolve(this.scope);
+						}
+					}  else if(fields[i] instanceof EventDeclaration){
+						EventDeclaration event = (EventDeclaration) this.fields[i];
+						if(event.add != null){
+							event.add.resolve(this.scope);
+						} 
+						if(event.remove != null){
+							event.remove.resolve(this.scope);
+						}
+					}
+				}
+			}
+			
+			
+//			//check property  cym add 2014-11-03
+//			if (this.properties != null) {
+//				for (int i = 0, count = this.properties.length; i < count; i++) {
+//					PropertyDeclaration property = this.properties[i];
+//					if(property.getter != null){
+//						property.getter.resolve(this.scope);
+//					} 
+//					if(property.setter != null){
+//						property.setter.resolve(this.scope);
+//					}
+//				}
+//			}
 	
 			int missingAbstractMethodslength = this.missingAbstractMethods == null ? 0 : this.missingAbstractMethods.length;
 			int methodsLength = this.methods == null ? 0 : this.methods.length;
@@ -2005,24 +2053,24 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	}
 	
 	private void generateProperties(Scope scope, int indent, StringBuffer output){
-		if(this.fields != null){
-			for(int i = 0, length = this.fields.length; i < length; i++){
-				if(!(this.fields[i] instanceof PropertyDeclaration)){
-					continue;
-				}
-				this.fields[i].generateStatement(initializerScope, indent, output);
-			}
-		}
+//		if(this.fields != null){
+//			for(int i = 0, length = this.fields.length; i < length; i++){
+//				if(!(this.fields[i] instanceof PropertyDeclaration)){
+//					continue;
+//				}
+//				this.fields[i].generateStatement(initializerScope, indent, output);
+//			}
+//		}
 	}
 	
 	private void generateFields(Scope scope, int indent, StringBuffer output, boolean instance){
 		if(this.fields != null){
 			for(int i = 0, length = this.fields.length; i < length; i++){
-				if(this.fields[i] instanceof PropertyDeclaration 
-						|| this.fields[i] instanceof IndexerDeclaration
-						|| this.fields[i] instanceof EventDeclaration){
-					continue;
-				}
+//				if(this.fields[i] instanceof PropertyDeclaration 
+//						|| this.fields[i] instanceof IndexerDeclaration
+//						|| this.fields[i] instanceof EventDeclaration){
+//					continue;
+//				}
 				if(instance && !this.fields[i].isStatic()){
 					output.append("\n");
 					this.fields[i].generateStatement(initializerScope, indent, output);

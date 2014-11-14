@@ -30,18 +30,14 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.summer.sdt.core.compiler.CharOperation;
-import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
-import org.summer.sdt.internal.compiler.ast.Element;
 import org.summer.sdt.internal.compiler.ast.EventDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
-import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
-import org.summer.sdt.internal.compiler.ast.StringLiteral;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeParameter;
 import org.summer.sdt.internal.compiler.ast.TypeReference;
@@ -120,44 +116,7 @@ public class ClassScope extends Scope {
 		anonymousType.verifyMethods(environment().methodVerifier());
 	}
 	
-	void buildXAML(){
-		if(this.referenceContext.element == null){
-			return;
-		}
-		
-		final SourceTypeBinding sourceType = this.referenceContext.binding;
-		final HashtableOfObject namedElements = new HashtableOfObject(0);
-		ASTVisitor visitor = new ASTVisitor() {
-			@Override
-			public boolean visit(Element node, ClassScope scope) {
-				if(node.name != null){
-					StringLiteral str = (StringLiteral) node.name.expression;
-					char[] name = str.source();
-					if (namedElements.containsKey(name)) {
-						Element previous = (Element) namedElements.get(name);
-						if(previous != null){
-							problemReporter().duplicateNamedElementInType(sourceType, previous.name.field);
-						}
-						
-						namedElements.put(name, null); // ensure that the duplicate field is found & removed
-						problemReporter().duplicateNamedElementInType(sourceType, node.name.field);
-					} else {
-						namedElements.put(name, node);
-					}
-				}
-				return true;
-			}
-		};
-		
-		this.referenceContext.element.traverse(visitor, this);
-		FieldBinding[] elementBindings = new FieldBinding[namedElements.size()];
-		for(int i = 0, length = namedElements.size(); i < length; i++ ){
-			elementBindings[i] = new FieldBinding(namedElements.keyTable[i], null, ClassFileConstants.AccPublic | ClassFileConstants.AccFinal | ExtraCompilerModifiers.AccUnresolved, sourceType, null);
-		}
-	}
-
 	void buildFields() {
-		buildXAML();
 		SourceTypeBinding sourceType = this.referenceContext.binding;
 		if (sourceType.areFieldsInitialized()) return;
 		if (this.referenceContext.fields == null) {
@@ -186,7 +145,16 @@ public class ClassScope extends Scope {
 				// We used to report an error for initializers declared inside interfaces, but
 				// now this error reporting is moved into the parser itself. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=212713
 			} else {
-				FieldBinding fieldBinding = new FieldBinding(field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
+				FieldBinding fieldBinding;
+				if(field instanceof PropertyDeclaration){
+					fieldBinding = new PropertyBinding((PropertyDeclaration) field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
+				} else if(field instanceof IndexerDeclaration){
+					fieldBinding = new IndexerBinding((IndexerDeclaration) field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
+				} else if(field instanceof EventDeclaration){
+					fieldBinding = new EventBinding((EventDeclaration) field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
+				} else {
+					fieldBinding = new FieldBinding(field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
+				}
 				fieldBinding.id = count;
 				// field's type will be resolved when needed for top level types
 				checkAndSetModifiersForField(fieldBinding, field);
@@ -209,7 +177,44 @@ public class ClassScope extends Scope {
 					knownFieldNames.put(field.name, fieldBinding);
 					// remember that we have seen a field with this name
 					fieldBindings[count++] = fieldBinding;
+					
+					
+					if (field instanceof PropertyDeclaration) {
+						PropertyDeclaration property = (PropertyDeclaration) field;
+						if(property.setter != null){
+							MethodScope scope = new MethodScope(this, property.setter, property.isStatic());
+							scope.createMethod(property.setter);
+						}
+						
+						if(property.getter != null){
+							MethodScope scope = new MethodScope(this, property.getter, property.isStatic());
+							scope.createMethod(property.getter);
+						}
+					} else if (field instanceof IndexerDeclaration) {
+						IndexerDeclaration indexer = (IndexerDeclaration) field;
+						if(indexer.setter != null){
+							MethodScope scope = new MethodScope(this, indexer.setter, indexer.isStatic());
+							scope.createMethod(indexer.setter);
+						}
+						
+						if(indexer.getter != null){
+							MethodScope scope = new MethodScope(this, indexer.getter, indexer.isStatic());
+							scope.createMethod(indexer.getter);
+						}
+					} else if (field instanceof EventDeclaration) {
+						EventDeclaration event = (EventDeclaration) field;
+						if(event.add != null){
+							MethodScope scope = new MethodScope(this, event.add, event.isStatic());
+							scope.createMethod(event.add);
+						}
+						
+						if(event.remove != null){
+							MethodScope scope = new MethodScope(this, event.remove, event.isStatic());
+							scope.createMethod(event.remove);
+						}
+					}
 				}
+	
 			}
 		}
 		// remove duplicate fields
@@ -222,8 +227,6 @@ public class ClassScope extends Scope {
 	void buildFieldsAndMethods() {
 		buildFields();
 		buildMethods();
-		
-		buildPropertyAccessores();
 
 		SourceTypeBinding sourceType = this.referenceContext.binding;
 		if (!sourceType.isPrivate() && sourceType.superclass instanceof SourceTypeBinding && sourceType.superclass.isPrivate())
@@ -235,56 +238,6 @@ public class ClassScope extends Scope {
 		ReferenceBinding[] memberTypes = sourceType.memberTypes;
 		for (int i = 0, length = memberTypes.length; i < length; i++)
 			 ((SourceTypeBinding) memberTypes[i]).scope.buildFieldsAndMethods();
-	}
-
-	private void buildPropertyAccessores() {
-		FieldDeclaration[] fields = this.referenceContext.fields;
-		if(fields == null){
-			return;
-		}
-		for (int i = 0, length = fields.length; i < length; i++) {
-			if(fields[i] instanceof PropertyDeclaration){
-				PropertyDeclaration prop = (PropertyDeclaration) fields[i];
-				MethodDeclaration[] methods = prop.accessors;
-				if(methods == null){
-					continue;
-				}
-	
-				
-				for(MethodDeclaration method : methods){
-					MethodScope scope = new MethodScope(this, method, prop.isStatic());
-					scope.createMethod(method);
-				}
-			}
-			
-			if(fields[i] instanceof IndexerDeclaration){
-				IndexerDeclaration indexer = (IndexerDeclaration) fields[i];
-				MethodDeclaration[] methods = indexer.accessors;
-				if(methods == null){
-					continue;
-				}
-	
-				
-				for(MethodDeclaration method : methods){
-					MethodScope scope = new MethodScope(this, method, indexer.isStatic());
-					scope.createMethod(method);
-				}
-			}
-			
-			if(fields[i] instanceof EventDeclaration){
-				EventDeclaration event = (EventDeclaration) fields[i];
-				MethodDeclaration[] methods = event.accessors;
-				if(methods == null){
-					continue;
-				}
-	
-				
-				for(MethodDeclaration method : methods){
-					MethodScope scope = new MethodScope(this, method, event.isStatic());
-					scope.createMethod(method);
-				}
-			}
-		}
 	}
 
 	private LocalTypeBinding buildLocalType(SourceTypeBinding enclosingType, PackageBinding packageBinding) {
@@ -927,7 +880,7 @@ public class ClassScope extends Scope {
 //				return;
 //			}
 			
-			if(!(fieldDecl instanceof PropertyDeclaration || fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof EventDeclaration)){
+			if(!(/*fieldDecl instanceof PropertyDeclaration ||*/ fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof EventDeclaration)){
 				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
 				// set the modifiers
 				modifiers |= IMPLICIT_MODIFIERS;

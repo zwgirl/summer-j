@@ -33,6 +33,9 @@ public class Block extends Statement {
 	// the number of explicit declaration , used to create scope
 	public BlockScope scope;
 	public boolean lambdaBody;
+	
+	//cym add 2014-11-02
+	public int accessorType = -1;
 
 	public Block(int explicitDeclarations, boolean lambdaBody) {
 		this.explicitDeclarations = explicitDeclarations;

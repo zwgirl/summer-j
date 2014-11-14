@@ -1,5 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
 /**
@@ -8,10 +9,10 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
  * 
  *         using by XAML
  */
-public class MarkupExtension extends Expression {
+public class MarkupExtension extends Element {
 	public TypeReference type;
-	public Attribute[] properties;
-
+	public AllocationExpression allocation;
+	
 	public MarkupExtension() {
 	}
 
@@ -21,7 +22,7 @@ public class MarkupExtension extends Expression {
 	}
 	
 	protected void printProperties(int indent, StringBuffer output){
-		for(Attribute attribute : properties){
+		for(Attribute attribute : this.attributes){
 			output.append(" ");
 			attribute.print(indent, output);
 		}
@@ -38,7 +39,24 @@ public class MarkupExtension extends Expression {
 	public StringBuffer generateExpression(Scope scope, int indent,
 			StringBuffer output) {
 		// TODO Auto-generated method stub
-		return null;
+		return output;
+	}
+
+	@Override
+	protected void printTagName(int indent, StringBuffer output) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void resolve(BlockScope scope) {
+		this.type.resolve(scope);
+//		for(Attribute attr : this.attributes){
+//			attr.resolve(scope);
+//		}
+		if(allocation != null){
+			allocation.resolve(scope);
+		}
 	}
 
 }

@@ -1197,48 +1197,49 @@ public class MethodBinding extends Binding {
 				if (this == methods[i].binding)
 					return methods[i];
 		}
-		
-		//cym add
-		FieldDeclaration[] fields = sourceType.scope != null ? sourceType.scope.referenceContext.fields : null;
-		if (fields != null) {
-			for (int i = fields.length; --i >= 0;) {
-				if(fields[i] instanceof PropertyDeclaration){
-					PropertyDeclaration prop = (PropertyDeclaration) fields[i];
-					if(prop.accessors != null){
-						for (int j = prop.accessors.length; --j >= 0;)
-							if (this == prop.accessors[j].binding)
-								return prop.accessors[j];
-					}
-					
-					continue;
-				}
-			
-				if(fields[i] instanceof EventDeclaration){
-					EventDeclaration event = (EventDeclaration) fields[i];
-					if(event.accessors != null){
-						for (int j = event.accessors.length; --j >= 0;)
-							if (this == event.accessors[j].binding)
-								return event.accessors[j];
-					}
-					
-					continue;
-				}
-				
-				if(fields[i] instanceof IndexerDeclaration){
-					IndexerDeclaration indexer = (IndexerDeclaration) fields[i];
-					if(indexer.accessors != null){
-						for (int j = indexer.accessors.length; --j >= 0;)
-							if (this == indexer.accessors[j].binding)
-								return indexer.accessors[j];
-					}
-					
-					continue;
-				}
-			}
-		}
-		//cym add end
 		return null;
 	}
+	
+	public AbstractMethodDeclaration sourceMethod2() {
+		if (isSynthetic()) {
+			return null;
+		}
+		SourceTypeBinding sourceType;
+		try {
+			sourceType = (SourceTypeBinding) this.declaringClass;
+		} catch (ClassCastException e) {
+			return null;
+		}
+		
+		FieldDeclaration[] fields = sourceType.scope != null ? sourceType.scope.referenceContext.fields : null;
+		if (fields != null) {
+			for (int i = fields.length; --i >= 0;){
+				if(fields[i] instanceof PropertyDeclaration){
+					PropertyDeclaration prop = (PropertyDeclaration) fields[i];
+					if (prop.setter != null && prop.setter.binding == this)
+						return prop.setter;
+					if (prop.getter != null && prop.getter.binding == this)
+					return prop.getter;
+				} else if(fields[i] instanceof IndexerDeclaration){
+					IndexerDeclaration indexer = (IndexerDeclaration) fields[i];
+					if (indexer.setter != null && indexer.setter.binding == this)
+						return indexer.setter;
+					if (indexer.getter != null && indexer.getter.binding == this)
+					return indexer.getter;
+				} else if(fields[i] instanceof EventDeclaration){
+					EventDeclaration event = (EventDeclaration) fields[i];
+					if (event.add != null && event.add.binding == this)
+						return event.add;
+					if (event.remove != null && event.remove.binding == this)
+					return event.remove;
+				}
+
+			}
+		}
+		
+		return null;
+	}
+	
 	public LambdaExpression sourceLambda() {
 		return null;
 	}

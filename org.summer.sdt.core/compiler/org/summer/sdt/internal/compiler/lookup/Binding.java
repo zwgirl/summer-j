@@ -60,9 +60,13 @@ public abstract class Binding {
 	public static final ElementValuePair[] NO_ELEMENT_VALUE_PAIRS = new ElementValuePair[0];
 	public static final char[][] NO_PARAMETER_NAMES = new char[0][];
 	
+	public static final PropertyBinding[] NO_PROPERTIES = new PropertyBinding[0];   //cym add 2014-11-03
+	
 	public static final FieldBinding[] UNINITIALIZED_FIELDS = new FieldBinding[0];
 	public static final MethodBinding[] UNINITIALIZED_METHODS = new MethodBinding[0];
 	public static final ReferenceBinding[] UNINITIALIZED_REFERENCE_TYPES = new ReferenceBinding[0];
+	
+	public static final PropertyBinding[] UNINITIALIZED_PROPERTIES = new PropertyBinding[0];   //cym ad 2014-11-03
 
 	static final InferenceVariable[] NO_INFERENCE_VARIABLES = new InferenceVariable[0];
 	static final TypeBound[] NO_TYPE_BOUNDS = new TypeBound[0];

@@ -85,6 +85,15 @@ abstract public class ReferenceBinding extends TypeBinding {
 			return ReferenceBinding.compare(n1, n2, n1.length, n2.length);
 		}
 	};
+	
+	private static final Comparator<PropertyBinding> PROPERTY_COMPARATOR = new Comparator<PropertyBinding>() {
+		public int compare(PropertyBinding o1, PropertyBinding o2) {
+			char[] n1 = o1.name;
+			char[] n2 = o2.name;
+			return ReferenceBinding.compare(n1, n2, n1.length, n2.length);
+		}
+	};
+	
 	private static final Comparator<MethodBinding> METHOD_COMPARATOR = new Comparator<MethodBinding>() {
 		public int compare(MethodBinding o1, MethodBinding o2) {
 			MethodBinding m1 = o1;
@@ -206,6 +215,13 @@ abstract public class ReferenceBinding extends TypeBinding {
 	 */
 	public static void sortFields(FieldBinding[] sortedFields, int left, int right) {
 		Arrays.sort(sortedFields, left, right, FIELD_COMPARATOR);
+	}
+	
+	/**
+	 * Sort the field array using a quicksort
+	 */
+	public static void sortProperties(PropertyBinding[] sortedProperties, int left, int right) {
+		Arrays.sort(sortedProperties, left, right, PROPERTY_COMPARATOR);
 	}
 	
 	/**

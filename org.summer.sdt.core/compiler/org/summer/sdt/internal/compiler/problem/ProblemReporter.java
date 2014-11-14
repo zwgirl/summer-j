@@ -87,6 +87,7 @@ import org.summer.sdt.internal.compiler.ast.ArrayInitializer;
 import org.summer.sdt.internal.compiler.ast.ArrayQualifiedTypeReference;
 import org.summer.sdt.internal.compiler.ast.ArrayReference;
 import org.summer.sdt.internal.compiler.ast.ArrayTypeReference;
+import org.summer.sdt.internal.compiler.ast.AsExpression;
 import org.summer.sdt.internal.compiler.ast.Assignment;
 import org.summer.sdt.internal.compiler.ast.BinaryExpression;
 import org.summer.sdt.internal.compiler.ast.Block;
@@ -109,6 +110,7 @@ import org.summer.sdt.internal.compiler.ast.FunctionalExpression;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 import org.summer.sdt.internal.compiler.ast.Initializer;
 import org.summer.sdt.internal.compiler.ast.InstanceOfExpression;
+import org.summer.sdt.internal.compiler.ast.IsExpression;
 import org.summer.sdt.internal.compiler.ast.LabeledStatement;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.Literal;
@@ -121,6 +123,7 @@ import org.summer.sdt.internal.compiler.ast.NullAnnotationMatching;
 import org.summer.sdt.internal.compiler.ast.NullLiteral;
 import org.summer.sdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.summer.sdt.internal.compiler.ast.ParameterizedSingleTypeReference;
+import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.QualifiedNameReference;
 import org.summer.sdt.internal.compiler.ast.QualifiedTypeReference;
@@ -6633,6 +6636,40 @@ public class ProblemReporter extends ProblemHandler {
 			expression.sourceStart,
 			expression.sourceEnd);
 	}
+	
+	public void notCompatibleTypesError(IsExpression expression, TypeBinding leftType, TypeBinding rightType) {
+		String leftName = new String(leftType.readableName());
+		String rightName = new String(rightType.readableName());
+		String leftShortName = new String(leftType.shortReadableName());
+		String rightShortName = new String(rightType.shortReadableName());
+		if (leftShortName.equals(rightShortName)){
+			leftShortName = leftName;
+			rightShortName = rightName;
+		}
+		this.handle(
+			IProblem.IncompatibleTypesInConditionalOperator,
+			new String[] {leftName, rightName },
+			new String[] {leftShortName, rightShortName },
+			expression.sourceStart,
+			expression.sourceEnd);
+	}
+	
+	public void notCompatibleTypesError(AsExpression expression, TypeBinding leftType, TypeBinding rightType) {
+		String leftName = new String(leftType.readableName());
+		String rightName = new String(rightType.readableName());
+		String leftShortName = new String(leftType.shortReadableName());
+		String rightShortName = new String(rightType.shortReadableName());
+		if (leftShortName.equals(rightShortName)){
+			leftShortName = leftName;
+			rightShortName = rightName;
+		}
+		this.handle(
+			IProblem.IncompatibleTypesInConditionalOperator,
+			new String[] {leftName, rightName },
+			new String[] {leftShortName, rightShortName },
+			expression.sourceStart,
+			expression.sourceEnd);
+	}
 	public void notCompatibleTypesErrorInForeach(Expression expression, TypeBinding leftType, TypeBinding rightType) {
 		String leftName = new String(leftType.readableName());
 		String rightName = new String(rightType.readableName());
@@ -7742,6 +7779,22 @@ public class ProblemReporter extends ProblemHandler {
 			expression.sourceStart,
 			expression.sourceEnd);
 	}
+	public void typeAsError(AsExpression expression, TypeBinding leftType, TypeBinding rightType) {
+		String leftName = new String(leftType.readableName());
+		String rightName = new String(rightType.readableName());
+		String leftShortName = new String(leftType.shortReadableName());
+		String rightShortName = new String(rightType.shortReadableName());
+		if (leftShortName.equals(rightShortName)){
+			leftShortName = leftName;
+			rightShortName = rightName;
+		}
+		this.handle(
+			IProblem.IllegalCast,
+			new String[] { rightName, leftName },
+			new String[] { rightShortName, leftShortName },
+			expression.sourceStart,
+			expression.sourceEnd);
+	}
 	public void typeCollidesWithEnclosingType(TypeDeclaration typeDecl) {
 		String[] arguments = new String[] {new String(typeDecl.name)};
 		this.handle(
@@ -8132,6 +8185,20 @@ public class ProblemReporter extends ProblemHandler {
 			castExpression.sourceStart,
 			castExpression.sourceEnd);
 	}
+	public void unnecessaryAs(AsExpression asExpression) {
+		if (asExpression.expression instanceof FunctionalExpression)
+			return;
+		int severity = computeSeverity(IProblem.UnnecessaryCast);
+		if (severity == ProblemSeverities.Ignore) return;
+		TypeBinding castedExpressionType = asExpression.expression.resolvedType;
+		this.handle(
+			IProblem.UnnecessaryCast,
+			new String[]{ new String(castedExpressionType.readableName()), new String(asExpression.type.resolvedType.readableName())},
+			new String[]{ new String(castedExpressionType.shortReadableName()), new String(asExpression.type.resolvedType.shortReadableName())},
+			severity,
+			asExpression.sourceStart,
+			asExpression.sourceEnd);
+	}
 	public void unnecessaryElse(ASTNode location) {
 		this.handle(
 			IProblem.UnnecessaryElse,
@@ -8160,6 +8227,21 @@ public class ProblemReporter extends ProblemHandler {
 			instanceofExpression.sourceStart,
 			instanceofExpression.sourceEnd);
 	}
+	
+	public void unnecessaryIs(IsExpression isExpression, TypeBinding checkType) {
+		int severity = computeSeverity(IProblem.UnnecessaryInstanceof);
+		if (severity == ProblemSeverities.Ignore) return;
+		TypeBinding expressionType = isExpression.expression.resolvedType;
+		this.handle(
+			IProblem.UnnecessaryInstanceof,
+			new String[]{ new String(expressionType.readableName()), new String(checkType.readableName())},
+			new String[]{ new String(expressionType.shortReadableName()), new String(checkType.shortReadableName())},
+			severity,
+			isExpression.sourceStart,
+			isExpression.sourceEnd);
+	}
+	
+	
 	public void unnecessaryNLSTags(int sourceStart, int sourceEnd) {
 		this.handle(
 			IProblem.UnnecessaryNLSTag,
@@ -8297,6 +8379,26 @@ public class ProblemReporter extends ProblemHandler {
 			castExpression.sourceStart,
 			castExpression.sourceEnd);
 	}
+	public void unsafeCast(AsExpression asExpression, Scope scope) {
+		if (this.options.sourceLevel < ClassFileConstants.JDK1_5) return; // https://bugs.eclipse.org/bugs/show_bug.cgi?id=305259
+		int severity = computeSeverity(IProblem.UnsafeGenericCast);
+		if (severity == ProblemSeverities.Ignore) return;
+		TypeBinding castedExpressionType = asExpression.expression.resolvedType;
+		TypeBinding castExpressionResolvedType = asExpression.resolvedType;
+		this.handle(
+			IProblem.UnsafeGenericCast,
+			new String[]{
+				new String(castedExpressionType.readableName()),
+				new String(castExpressionResolvedType.readableName())
+			},
+			new String[]{
+				new String(castedExpressionType.shortReadableName()),
+				new String(castExpressionResolvedType.shortReadableName())
+			},
+			severity,
+			asExpression.sourceStart,
+			asExpression.sourceEnd);
+	}
 	public void unsafeNullnessCast(CastExpression castExpression, Scope scope) {
 		TypeBinding castedExpressionType = castExpression.expression.resolvedType;
 		TypeBinding castExpressionResolvedType = castExpression.resolvedType;
@@ -8312,6 +8414,22 @@ public class ProblemReporter extends ProblemHandler {
 			},
 			castExpression.sourceStart,
 			castExpression.sourceEnd);
+	}
+	public void unsafeNullnessAs(AsExpression asExpression, Scope scope) {
+		TypeBinding castedExpressionType = asExpression.expression.resolvedType;
+		TypeBinding castExpressionResolvedType = asExpression.resolvedType;
+		this.handle(
+			IProblem.UnsafeNullnessCast,
+			new String[]{
+				new String(castedExpressionType.nullAnnotatedReadableName(this.options, false)),
+				new String(castExpressionResolvedType.nullAnnotatedReadableName(this.options, false))
+			},
+			new String[]{
+				new String(castedExpressionType.nullAnnotatedReadableName(this.options, true)),
+				new String(castExpressionResolvedType.nullAnnotatedReadableName(this.options, true))
+			},
+			asExpression.sourceStart,
+			asExpression.sourceEnd);
 	}
 	public void unsafeGenericArrayForVarargs(TypeBinding leafComponentType, ASTNode location) {
 		int severity = computeSeverity(IProblem.UnsafeGenericArrayForVarargs);
@@ -8917,7 +9035,27 @@ public class ProblemReporter extends ProblemHandler {
 			varDecl.sourceStart,
 			varDecl.sourceEnd);
 	}
+	
+	public void variableTypeCannotBeVoid(PropertyDeclaration varDecl) {
+		String[] arguments = new String[] {new String(varDecl.name)};
+		this.handle(
+			IProblem.VariableTypeCannotBeVoid,
+			arguments,
+			arguments,
+			varDecl.sourceStart,
+			varDecl.sourceEnd);
+	}
+	
 	public void variableTypeCannotBeVoidArray(AbstractVariableDeclaration varDecl) {
+		this.handle(
+			IProblem.CannotAllocateVoidArray,
+			NoArgument,
+			NoArgument,
+			varDecl.type.sourceStart,
+			varDecl.type.sourceEnd);
+	}
+	
+	public void variableTypeCannotBeVoidArray(PropertyDeclaration varDecl) {
 		this.handle(
 			IProblem.CannotAllocateVoidArray,
 			NoArgument,

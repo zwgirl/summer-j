@@ -16,7 +16,6 @@ import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.*;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.*;
-
 import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.lookup.*;
 import org.summer.sdt.internal.compiler.parser.*;
@@ -316,8 +315,63 @@ public abstract class Engine implements ITypeRequestor {
 			int length = fields.length;
 			for (int i = 0; i < length; i++) {
 				FieldDeclaration field = fields[i];
+				
+				if(field instanceof PropertyDeclaration){
+					PropertyDeclaration property = (PropertyDeclaration) field;
+					MethodDeclaration getter = property.getter;
+					if (getter != null){
+						if (getter.bodyStart <= position + 1 && getter.declarationSourceEnd >= position) {
+							getParser().parseBlockStatements(getter, unit);
+							return getter;
+						}
+					}
+					MethodDeclaration setter = property.setter;
+					if (setter != null){
+						if (setter.bodyStart <= position + 1 && setter.declarationSourceEnd >= position) {
+							getParser().parseBlockStatements(setter, unit);
+							return setter;
+						}
+					}
+					continue;
+				} else if(field instanceof IndexerDeclaration){
+					IndexerDeclaration indexer = (IndexerDeclaration) field;
+					MethodDeclaration getter = indexer.getter;
+					if (getter != null){
+						if (getter.bodyStart <= position + 1 && getter.declarationSourceEnd >= position) {
+							getParser().parseBlockStatements(getter, unit);
+							return getter;
+						}
+					}
+					MethodDeclaration setter = indexer.setter;
+					if (setter != null){
+						if (setter.bodyStart <= position + 1 && setter.declarationSourceEnd >= position) {
+							getParser().parseBlockStatements(setter, unit);
+							return setter;
+						}
+					}
+					continue;
+				} else if(field instanceof EventDeclaration){
+					EventDeclaration event = (EventDeclaration) field;
+					MethodDeclaration getter = event.add;
+					if (getter != null){
+						if (getter.bodyStart <= position + 1 && getter.declarationSourceEnd >= position) {
+							getParser().parseBlockStatements(getter, unit);
+							return getter;
+						}
+					}
+					MethodDeclaration setter = event.remove;
+					if (setter != null){
+						if (setter.bodyStart <= position + 1 && setter.declarationSourceEnd >= position) {
+							getParser().parseBlockStatements(setter, unit);
+							return setter;
+						}
+					}
+					continue;
+				}
+				
 				if (field.sourceStart > position)
 					continue;
+				
 				if (field.declarationSourceEnd >= position) {
 					if (field instanceof Initializer) {
 						getParser().parseBlockStatements((Initializer)field, type, unit);
@@ -326,20 +380,36 @@ public abstract class Engine implements ITypeRequestor {
 				}
 			}
 		}
-//		//XAML
-//		Element element = type.element;
-//		if(element != null){
-//			if(element.sourceStart > position && element.sourceEnd < position){
-//				return parserElement(element);
-//			}
-//		}
+		
+		//Property
+		PropertyDeclaration[] properties = type.properties;
+		if (properties != null) {
+			int length = properties.length;
+			for (int i = 0; i < length; i++) {
+				PropertyDeclaration property = properties[i];
+				MethodDeclaration getter = property.getter;
+				if (getter != null){
+					if (getter.bodyStart <= position + 1 && getter.declarationSourceEnd >= position) {
+						getParser().parseBlockStatements(getter, unit);
+						return getter;
+					}
+				}
+				MethodDeclaration setter = property.setter;
+				if (setter != null){
+					if (setter.bodyStart <= position + 1 && setter.declarationSourceEnd >= position) {
+						getParser().parseBlockStatements(setter, unit);
+						return setter;
+					}
+				}
+			}
+		}
 		return null;
 	}
 	
 //	private ASTNode parserElement(Element element, int position){
-//		ASTNode result = element;
+//		ASTNode result = null;
 //		for(Attribute attr : element.attributes){
-//			if(attr.sourceStart > position){
+//			if(attr.sourceStart > position || attr.sourceEnd < position){
 //				continue;
 //			}
 //			if(attr.sourceEnd >= position){
@@ -348,8 +418,13 @@ public abstract class Engine implements ITypeRequestor {
 //		}
 //		
 //		for(Element child : element.children){
-//			parserElement(element);
+//			result = parserElement(element, position);
+//			if(result != null){
+//				return result;
+//			}
 //		}
+//		
+//		return result;
 //	}
 
 	protected void reset(boolean resetLookupEnvironment) {

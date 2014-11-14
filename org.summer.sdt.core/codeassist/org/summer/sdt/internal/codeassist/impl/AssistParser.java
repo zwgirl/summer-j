@@ -35,6 +35,7 @@ import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
 import org.summer.sdt.internal.compiler.ast.MessageSend;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.NameReference;
+import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.Statement;
 import org.summer.sdt.internal.compiler.ast.SuperReference;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
@@ -165,6 +166,11 @@ public abstract class AssistParser extends Parser {
 	public int bodyEnd(Initializer initializer){
 		return initializer.declarationSourceEnd;
 	}
+	
+	public int bodyEnd(PropertyDeclaration property){
+		return property.bodyEnd;
+	}
+	
 	/*
 	 * Build initial recovery state.
 	 * Recovery state is inferred from the current state of the parser (reduced node stack).
@@ -371,17 +377,7 @@ public abstract class AssistParser extends Parser {
 		super.consumeClassHeader();
 		pushOnElementStack(K_TYPE_DELIMITER);
 	}
-	
-	//cym add 2014-9-29
-	protected void consumeModuleHeader() {
-		super.consumeModuleHeader();
-		pushOnElementStack(K_METHOD_DELIMITER);
-	}
-	//cym add 2014-9-29
-	protected void consumeModuleDeclaration(){
-		popElement(K_METHOD_DELIMITER);
-		super.consumeModuleDeclaration();
-	}
+
 	protected void consumeConstructorBody() {
 		super.consumeConstructorBody();
 		popElement(K_METHOD_DELIMITER);
@@ -771,6 +767,118 @@ public abstract class AssistParser extends Parser {
 			this.restartRecovery = true; // used to avoid branching back into the regular automaton
 		}
 	}
+	
+	//cym add 2014-11-01
+	protected void consumeModuleDeclarationName() {
+		// PackageDeclarationName ::= 'module' Name
+		/* build an ImportRef build from the last name
+		stored in the identifier stack. */
+	
+		int index;
+	
+		/* no need to take action if not inside assist identifiers */
+		if ((index = indexOfAssistIdentifier()) < 0) {
+			super.consumePackageDeclarationName();
+			return;
+		}
+		/* retrieve identifiers subset and whole positions, the assist node positions
+			should include the entire replaced source. */
+		int length = this.identifierLengthStack[this.identifierLengthPtr];
+		char[][] subset = identifierSubSet(index+1); // include the assistIdentifier
+		this.identifierLengthPtr--;
+		this.identifierPtr -= length;
+		long[] positions = new long[length];
+		System.arraycopy(
+			this.identifierPositionStack,
+			this.identifierPtr + 1,
+			positions,
+			0,
+			length);
+	
+		/* build specific assist node on package statement */
+		ImportReference reference = createAssistPackageReference(subset, positions);
+		this.assistNode = reference;
+		this.lastCheckPoint = reference.sourceEnd + 1;
+		this.compilationUnit.currentPackage = reference;
+	
+		if (this.currentToken == TokenNameSEMICOLON){
+			reference.declarationSourceEnd = this.scanner.currentPosition - 1;
+		} else {
+			reference.declarationSourceEnd = (int) positions[length-1];
+		}
+		//endPosition is just before the ;
+		reference.declarationSourceStart = this.intStack[this.intPtr--];
+		// flush comments defined prior to import statements
+		reference.declarationSourceEnd = flushCommentsDefinedPriorTo(reference.declarationSourceEnd);
+	
+		// recovery
+		if (this.currentElement != null){
+			this.lastCheckPoint = reference.declarationSourceEnd+1;
+			this.restartRecovery = true; // used to avoid branching back into the regular automaton
+		}
+	}
+	
+	//cym add 2014-11-01
+	protected void consumeModuleDeclarationNameWithModifiers() {
+		// PackageDeclarationName ::= Modifiers 'module' PushRealModifiers Name
+		/* build an ImportRef build from the last name
+		stored in the identifier stack. */
+	
+		int index;
+	
+		/* no need to take action if not inside assist identifiers */
+		if ((index = indexOfAssistIdentifier()) < 0) {
+			super.consumePackageDeclarationNameWithModifiers();
+			return;
+		}
+		/* retrieve identifiers subset and whole positions, the assist node positions
+			should include the entire replaced source. */
+		int length = this.identifierLengthStack[this.identifierLengthPtr];
+		char[][] subset = identifierSubSet(index+1); // include the assistIdentifier
+		this.identifierLengthPtr--;
+		this.identifierPtr -= length;
+		long[] positions = new long[length];
+		System.arraycopy(
+			this.identifierPositionStack,
+			this.identifierPtr + 1,
+			positions,
+			0,
+			length);
+	
+		this.intPtr--; // we don't need the modifiers start
+		this.intPtr--; // we don't need the package modifiers
+		ImportReference reference = createAssistPackageReference(subset, positions);
+		// consume annotations
+		if ((length = this.expressionLengthStack[this.expressionLengthPtr--]) != 0) {
+			System.arraycopy(
+				this.expressionStack,
+				(this.expressionPtr -= length) + 1,
+				reference.annotations = new Annotation[length],
+				0,
+				length);
+		}
+		/* build specific assist node on package statement */
+		this.assistNode = reference;
+		this.lastCheckPoint = reference.sourceEnd + 1;
+		this.compilationUnit.currentPackage = reference;
+	
+		if (this.currentToken == TokenNameSEMICOLON){
+			reference.declarationSourceEnd = this.scanner.currentPosition - 1;
+		} else {
+			reference.declarationSourceEnd = (int) positions[length-1];
+		}
+		//endPosition is just before the ;
+		reference.declarationSourceStart = this.intStack[this.intPtr--];
+		// flush comments defined prior to import statements
+		reference.declarationSourceEnd = flushCommentsDefinedPriorTo(reference.declarationSourceEnd);
+	
+		// recovery
+		if (this.currentElement != null){
+			this.lastCheckPoint = reference.declarationSourceEnd+1;
+			this.restartRecovery = true; // used to avoid branching back into the regular automaton
+		}
+	}
+	
 	protected void consumeRestoreDiet() {
 		super.consumeRestoreDiet();
 		// if we are not in a method (i.e. we were not in a local variable initializer)

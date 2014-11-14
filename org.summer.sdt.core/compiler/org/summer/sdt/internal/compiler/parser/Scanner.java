@@ -177,6 +177,9 @@ public class Scanner implements TerminalTokens {
 
 	// generic support
 	public boolean returnOnlyGreater = false;
+	
+	//cym 2014-11-04
+	public boolean PCDATA = false;
 
 	/*static*/ {
 		for (int i = 0; i < 6; i++) {
@@ -1162,7 +1165,63 @@ public class Scanner implements TerminalTokens {
 		this.lookBack[1] = token;
 		return token;
 	}
+	
+	//cym add 2014-11-04
+	protected void pcdata() throws InvalidInputException{
+		try {
+			while (true) {
+				if (this.currentPosition >= this.eofPosition) {
+					throw new InvalidInputException(UNTERMINATED_STRING);
+				}
+			
+				int temp = this.currentPosition;
+				try {
+					if (((this.currentCharacter = this.source[this.currentPosition++]) == '\\')
+						&& (this.source[this.currentPosition] == 'u')) {
+						getNextUnicodeChar();
+						if (this.currentCharacter == '<') {
+							this.currentPosition = temp;
+							this.withoutUnicodePtr--;
+							return;
+						}
+					} //-------------end unicode traitement--------------
+					else {
+						if (this.currentCharacter == '<') {
+							this.currentPosition = temp;
+							return;
+						}
+						this.unicodeAsBackSlash = false;
+						if (this.withoutUnicodePtr != 0)
+							unicodeStore();
+					}
+				} catch (IndexOutOfBoundsException e) {
+					this.unicodeAsBackSlash = false;
+					this.currentPosition = temp;
+					return;
+				} catch(InvalidInputException e) {
+					this.unicodeAsBackSlash = false;
+					this.currentPosition = temp;
+					return;
+				}
+			}
+		} finally{
+			this.PCDATA = false;
+		}
+
+	}
+	
 	protected int getNextToken0() throws InvalidInputException {
+//		if(this.PCDATA){
+//			if(getNextChar('<')){
+//				this.PCDATA = false;
+//			} else{
+//				this.startPosition = this.currentPosition;
+//				pcdata();
+//				System.out.println("PCADAT : " + new String(this.getCurrentIdentifierSource()));
+//				return TokenNamePCDATA;
+//			}
+//		}
+		
 		this.wasAcr = false;
 		if (this.diet) {
 			jumpOverMethodBody();

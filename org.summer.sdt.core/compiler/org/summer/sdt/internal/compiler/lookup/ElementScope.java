@@ -1,6 +1,5 @@
 package org.summer.sdt.internal.compiler.lookup;
 
-import org.summer.sdt.internal.compiler.ast.Element;
 import org.summer.sdt.internal.compiler.problem.ProblemReporter;
 
 public class ElementScope extends BlockScope {

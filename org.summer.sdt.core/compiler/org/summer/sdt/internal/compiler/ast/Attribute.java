@@ -1,5 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 
@@ -11,7 +12,7 @@ import org.summer.sdt.internal.compiler.lookup.BlockScope;
  */
 public abstract class Attribute extends Expression{
 	public FieldReference field;
-	public Expression expression;
+	public Expression value;
 	
 	public final static char[] NAME = "name".toCharArray();
 	
@@ -29,7 +30,7 @@ public abstract class Attribute extends Expression{
 	public StringBuffer printStatement(int indent, StringBuffer output) {
 		printPropertyName(indent, output);
 		output.append(" = ");
-		expression.printExpression(indent, output);
+		value.printExpression(indent, output);
 		return output;
 	}
 	
@@ -85,5 +86,24 @@ public abstract class Attribute extends Expression{
 //			}
 //		}
 //		return fieldBinding;
+	}
+	
+	/**
+	 * Every expression is responsible for generating its implicit conversion when necessary.
+	 *
+	 * @param currentScope org.summer.sdt.internal.compiler.lookup.BlockScope
+	 * @param codeStream org.summer.sdt.internal.compiler.codegen.CodeStream
+	 * @param valueRequired boolean
+	 */
+	public void generateCode(BlockScope currentScope, CodeStream codeStream, boolean valueRequired) {
+//		if (this.constant != Constant.NotAConstant) {
+//			// generate a constant expression
+//			int pc = codeStream.position;
+//			codeStream.generateConstant(this.constant, this.implicitConversion);
+//			codeStream.recordPositionsFrom(pc, this.sourceStart);
+//		} else {
+//			// actual non-constant code generation
+//			throw new ShouldNotImplement(Messages.ast_missingCode);
+//		}
 	}
 }

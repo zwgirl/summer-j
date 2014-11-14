@@ -12,8 +12,11 @@ package org.summer.sdt.internal.compiler.parser.diagnose;
 
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.summer.sdt.internal.compiler.ast.EventDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
+import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.Initializer;
+import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
 
@@ -165,7 +168,26 @@ public class RangeUtil {
 						} else {
 							result.addInterval(initializer.bodyStart, initializer.bodyEnd);
 						}
+					} else if(fields[i] instanceof PropertyDeclaration){
+						PropertyDeclaration property = (PropertyDeclaration) fields[i];
+						result.addInterval(property.bodyStart, property.bodyEnd);
+					} else if(fields[i] instanceof IndexerDeclaration){
+						IndexerDeclaration indexer = (IndexerDeclaration) fields[i];
+						result.addInterval(indexer.bodyStart, indexer.bodyEnd);
+					} else if(fields[i] instanceof EventDeclaration){
+						EventDeclaration indexer = (EventDeclaration) fields[i];
+						result.addInterval(indexer.bodyStart, indexer.bodyEnd);
 					}
+				}
+			}
+			
+			//PropertyDeclaration
+			PropertyDeclaration[] properties = types[j].properties;
+			if (properties != null) {
+				int length = properties.length;
+				for (int i = 0; i < length; i++) {
+					PropertyDeclaration property = properties[i];
+					result.addInterval(property.bodyStart, property.bodyEnd);
 				}
 			}
 		}

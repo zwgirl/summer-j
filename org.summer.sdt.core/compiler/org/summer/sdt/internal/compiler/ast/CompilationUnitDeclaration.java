@@ -493,9 +493,9 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 					continue;
 				}
 				
-				if(field instanceof PropertyDeclaration){
-					PropertyDeclaration prop = (PropertyDeclaration) field;
-				}
+//				if(field instanceof PropertyDeclaration){
+//					PropertyDeclaration prop = (PropertyDeclaration) field;
+//				}
 				output.append(Javascript.CR);
 				if(field.isFinal())
 					printIndent(indent, output).append(Javascript.CONST);

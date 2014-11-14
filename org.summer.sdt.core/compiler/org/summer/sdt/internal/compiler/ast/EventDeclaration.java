@@ -25,9 +25,12 @@ import org.summer.sdt.internal.compiler.util.Util;
  *
  */
 public class EventDeclaration extends FieldDeclaration {
-	public char[] name;
-	public MethodDeclaration[] accessors;
-
+	public int bodyStart;
+	public int bodyEnd;
+	
+	public MethodDeclaration add;
+	public MethodDeclaration remove;
+	
 	public EventDeclaration(char[] name, int s, int e) {
 		super(name, s, e);
 	}
@@ -187,11 +190,11 @@ public class EventDeclaration extends FieldDeclaration {
 				this.binding.setConstant(Constant.NotAConstant);
 		}
 		
-		if(this.accessors != null){
-			for(MethodDeclaration method : this.accessors){
-				method.resolve(classScope);
-			}
-		}
+//		if(this.accessors != null){
+//			for(MethodDeclaration method : this.accessors){
+//				method.resolve(classScope);
+//			}
+//		}
 	}
 
 	@Override

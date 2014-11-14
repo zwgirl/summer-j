@@ -73,9 +73,6 @@ public abstract class Scope {
 	public final static int CLASS_SCOPE = 3;
 	public final static int COMPILATION_UNIT_SCOPE = 4;
 	public final static int METHOD_SCOPE = 2;
-	
-	//cym add
-	public final static int ELEMENT_SCOPE = 5;
 
 	/* Argument Compatibilities */
 	public final static int NOT_COMPATIBLE = -1;

@@ -105,6 +105,9 @@ public abstract class ASTVisitor {
 	public void endVisit(CastExpression castExpression, BlockScope scope) {
 		// do nothing by default
 	}
+	public void endVisit(AsExpression asExpression, BlockScope scope) {
+		// do nothing by default
+	}
 	public void endVisit(CharLiteral charLiteral, BlockScope scope) {
 		// do nothing by default
 	}
@@ -189,6 +192,11 @@ public abstract class ASTVisitor {
 	}
 	public void endVisit(
     		InstanceOfExpression instanceOfExpression,
+    		BlockScope scope) {
+		// do nothing by default
+	}
+	public void endVisit(
+    		IsExpression isExpression,
     		BlockScope scope) {
 		// do nothing by default
 	}
@@ -621,6 +629,9 @@ public abstract class ASTVisitor {
 	public boolean visit(CastExpression castExpression, BlockScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
+	public boolean visit(AsExpression asExpression, BlockScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
 	public boolean visit(CharLiteral charLiteral, BlockScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
@@ -706,6 +717,11 @@ public abstract class ASTVisitor {
 	}
 	public boolean visit(
     		InstanceOfExpression instanceOfExpression,
+    		BlockScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+	public boolean visit(
+    		IsExpression instanceOfExpression,
     		BlockScope scope) {
 		return true; // do nothing by default, keep traversing
 	}

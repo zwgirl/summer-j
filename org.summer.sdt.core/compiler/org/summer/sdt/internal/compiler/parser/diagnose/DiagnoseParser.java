@@ -1238,14 +1238,12 @@ public class DiagnoseParser implements ParserBasicInformation, TerminalTokens, C
 	}
 
 //
-//		   Check whether or not there is a high probability that a
+//		Check whether or not there is a high probability that a
 //	   given string is a misspelling of another.
 //	   Certain singleton symbols (such as ":" and ";") are also
 //	   considered to be misspelling of each other.
 //
 	private int misspell(int sym, int tok) {
-
-
 		//
 		//
 		//

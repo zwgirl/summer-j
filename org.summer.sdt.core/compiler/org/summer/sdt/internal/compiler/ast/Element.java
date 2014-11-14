@@ -22,6 +22,8 @@ import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.VariableBinding;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
+import org.summer.sdt.internal.compiler.problem.ShouldNotImplement;
+import org.summer.sdt.internal.compiler.util.Messages;
 
 /**
  * 
@@ -29,7 +31,7 @@ import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
  * 
  *         using by XAML
  */
-public abstract class Element extends NameReference {
+public abstract class Element extends Expression {
 	public int closeMode;
 	public static final int CLOSE_TAG = 1;   // "/>"
 	public static final int CLOSE_ELEMENT = 2;		 // "</"
@@ -39,7 +41,7 @@ public abstract class Element extends NameReference {
 	
 	public TypeReference type;
 	public Attribute[] attributes = noAttribute;
-	public Attribute name;   //named attribute
+
 	public static final Element[] noChild = new Element[0];
 	public Element[] children = noChild;
 	public int declarationSourceStart;
@@ -47,6 +49,7 @@ public abstract class Element extends NameReference {
 	public int bodyStart;
 	public int bodyEnd; // doesn't include the trailing comment if any.
 	public ElementScope scope;
+	
 
 	public StringBuffer print(int indent, StringBuffer output) {
 		return printStatement(indent, output);
@@ -58,7 +61,7 @@ public abstract class Element extends NameReference {
 		
 		output.append("<");
 		printTagName(indent, output);
-		printProperties(indent, output);
+//		printProperties(indent, output);
 		
 		if(this.closeMode == CLOSE_TAG){
 			return output.append("/>");
@@ -66,7 +69,7 @@ public abstract class Element extends NameReference {
 			output.append(">");
 		}
 		
-		printChildElement(indent, output);
+//		printChildElement(indent, output);
 		
 		output.append("\n");
 		printIndent(indent, output).append("</");
@@ -88,20 +91,20 @@ public abstract class Element extends NameReference {
 	
 	protected abstract void printTagName(int indent, StringBuffer output);
 	
-	protected void printProperties(int indent, StringBuffer output){
-		for(Attribute attribute : attributes){
-			output.append(" ");
-			attribute.print(indent, output);
-		}
-	}
-	
-	public StringBuffer printChildElement(int indent, StringBuffer output) {
-		for(Element element : children){
-			output.append('\n');
-			element.print(indent + 1, output);
-		}
-		return output;
-	}
+//	protected void printProperties(int indent, StringBuffer output){
+//		for(Attribute attribute : attributes){
+//			output.append(" ");
+//			attribute.print(indent, output);
+//		}
+//	}
+//	
+//	public StringBuffer printChildElement(int indent, StringBuffer output) {
+//		for(Element element : children){
+//			output.append('\n');
+//			element.print(indent + 1, output);
+//		}
+//		return output;
+//	}
 	
 	
 	/**
@@ -177,17 +180,17 @@ public abstract class Element extends NameReference {
 		this.constant = Constant.NotAConstant;
 		this.resolvedType = type.resolveType(scope);
 //		resolveType(scope);
-		resolveAttribute(scope);
-		resolveChild(scope);
+//		resolveAttribute(scope);
+//		resolveChild(scope);
 	}
 	
-	public TypeBinding resolveType(BlockScope scope) {
-		this.constant = Constant.NotAConstant;
-		if(this.actualReceiverType != null){
-			return this.actualReceiverType;
-		}
-		return this.actualReceiverType = this.resolvedType; //scope.enclosingSourceType();
-	}
+//	public TypeBinding resolveType(BlockScope scope) {
+//		this.constant = Constant.NotAConstant;
+//		if(this.actualReceiverType != null){
+//			return this.actualReceiverType;
+//		}
+//		return this.actualReceiverType = this.resolvedType; //scope.enclosingSourceType();
+//	}
 	
 	protected void resolveChild(ClassScope scope){
 		for(Element child: children){
@@ -202,57 +205,28 @@ public abstract class Element extends NameReference {
 	}
 
 	@Override
-	public TypeBinding[] genericTypeArguments() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String unboundReferenceErrorName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public char[][] getName() {
-		return noName;
-	}
-
-	@Override
-	public FlowInfo analyseAssignment(BlockScope currentScope,
-			FlowContext flowContext, FlowInfo flowInfo, Assignment assignment,
-			boolean isCompound) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void generateAssignment(BlockScope currentScope,
-			CodeStream codeStream, Assignment assignment, boolean valueRequired) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void generateCompoundAssignment(BlockScope currentScope,
-			CodeStream codeStream, Expression expression, int operator,
-			int assignmentImplicitConversion, boolean valueRequired) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void generatePostIncrement(BlockScope currentScope,
-			CodeStream codeStream, CompoundAssignment postIncrement,
-			boolean valueRequired) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public StringBuffer printExpression(int indent, StringBuffer output) {
 		// TODO Auto-generated method stub
-		return null;
+		return output;
+	}
+	
+	/**
+	 * Every expression is responsible for generating its implicit conversion when necessary.
+	 *
+	 * @param currentScope org.summer.sdt.internal.compiler.lookup.BlockScope
+	 * @param codeStream org.summer.sdt.internal.compiler.codegen.CodeStream
+	 * @param valueRequired boolean
+	 */
+	public void generateCode(BlockScope currentScope, CodeStream codeStream, boolean valueRequired) {
+//		if (this.constant != Constant.NotAConstant) {
+//			// generate a constant expression
+//			int pc = codeStream.position;
+//			codeStream.generateConstant(this.constant, this.implicitConversion);
+//			codeStream.recordPositionsFrom(pc, this.sourceStart);
+//		} else {
+//			// actual non-constant code generation
+//			throw new ShouldNotImplement(Messages.ast_missingCode);
+//		}
 	}
 	
 }
