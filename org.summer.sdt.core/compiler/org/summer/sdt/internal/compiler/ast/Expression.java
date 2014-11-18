@@ -1253,13 +1253,13 @@ public abstract class Expression extends Statement {
 	
 	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		return printExpression(indent, output);
+		return generateExpression(scope, indent, output);
 	}
 	
 //	public abstract StringBuffer generateExpression(Scope scope, int indent, StringBuffer output);
 	
 	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
-		return print(indent, output).append(";"); //$NON-NLS-1$
+		return generateExpression(scope, indent, output).append(";"); //$NON-NLS-1$
 	}
 
 }

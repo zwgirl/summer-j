@@ -578,7 +578,7 @@ public class ForeachStatement extends Statement {
 		visitor.endVisit(this, blockScope);
 	}
 
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 
 		printIndent(indent, output).append("for ("); //$NON-NLS-1$
 		this.elementVariable.generateExpression(scope, 0, output);

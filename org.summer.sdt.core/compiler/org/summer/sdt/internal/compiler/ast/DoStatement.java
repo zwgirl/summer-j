@@ -235,7 +235,7 @@ public class DoStatement extends Statement {
 		visitor.endVisit(this, scope);
 	}
 	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output).append("do"); //$NON-NLS-1$
 		if (this.action == null)
 			output.append(" ;\n"); //$NON-NLS-1$

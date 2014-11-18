@@ -224,7 +224,7 @@ public class AssertStatement extends Statement {
 	}
 
 	@Override
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
 		output.append("assert "); //$NON-NLS-1$
 		this.assertExpression.generateExpression(scope, 0, output);

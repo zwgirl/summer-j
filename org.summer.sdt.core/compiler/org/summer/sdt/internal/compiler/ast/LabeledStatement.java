@@ -148,7 +148,7 @@ public class LabeledStatement extends Statement {
 	}
 
 	@Override
-	public StringBuffer generateStatement(Scope scope, int indent,
+	public StringBuffer generateExpression(Scope scope, int indent,
 			StringBuffer output) {
 
 		printIndent(indent, output).append(this.label).append(": "); //$NON-NLS-1$

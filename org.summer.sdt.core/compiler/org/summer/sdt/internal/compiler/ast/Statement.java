@@ -304,11 +304,12 @@ public abstract class Statement extends ASTNode {
 		return generateStatement(scope, indent, output);
 	}
 	
-	public abstract StringBuffer generateStatement(Scope scope, int indent, StringBuffer output);
-	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output){
-		return generateStatement(scope, indent, output);
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output){
+		printIndent(indent, output);
+		return generateExpression(scope, indent, output);
 	}
+	
+	public abstract StringBuffer generateExpression(Scope scope, int indent, StringBuffer output);
 	
 	public boolean isBoxingCompatible(TypeBinding expressionType, TypeBinding targetType, Expression expression, Scope scope) {
 		if (scope.isBoxingCompatibleWith(expressionType, targetType))

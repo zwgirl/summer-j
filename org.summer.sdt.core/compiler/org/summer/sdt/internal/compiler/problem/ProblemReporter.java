@@ -1808,11 +1808,11 @@ public class ProblemReporter extends ProblemHandler {
 	 * @param type
 	 * @param fieldDecl
 	 */
-	public void duplicateNamedElementInType(SourceTypeBinding type, FieldReference fieldDecl) {
+	public void duplicateNamedElementInType(Element type, FieldReference fieldDecl) {
 		this.handle(
 			IProblem.DuplicateField,
-			new String[] {new String(type.sourceName()), new String(fieldDecl.token)},
-			new String[] {new String(type.shortReadableName()), new String(fieldDecl.token)},
+			new String[] {new String("element"), new String(fieldDecl.token)},
+			new String[] {new String("element"), new String(fieldDecl.token)},
 			fieldDecl.sourceStart,
 			fieldDecl.sourceEnd);
 	}

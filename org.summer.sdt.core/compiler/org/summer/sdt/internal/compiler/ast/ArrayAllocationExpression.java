@@ -248,23 +248,82 @@ public class ArrayAllocationExpression extends Expression {
 	}
 
 	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append(Javascript.NEW).append(Javascript.WHITESPACE); 
-		this.type.print(0, output);
-		for (int i = 0; i < this.dimensions.length; i++) {
-			if (this.annotationsOnDimensions != null && this.annotationsOnDimensions[i] != null) {
-				output.append(Javascript.WHITESPACE);
-//				printAnnotations(this.annotationsOnDimensions[i], output);
-				output.append(' ');
-			}
-			if (this.dimensions[i] == null)
-				output.append("[]"); //$NON-NLS-1$
-			else {
-				output.append('[');
-				this.dimensions[i].generateExpression(scope, 0, output);
-				output.append(']');
-			}
+//		this.type.print(0, output);
+//		for (int i = 0; i < this.dimensions.length; i++) {
+//			if (this.annotationsOnDimensions != null && this.annotationsOnDimensions[i] != null) {
+//				output.append(Javascript.WHITESPACE);
+////				printAnnotations(this.annotationsOnDimensions[i], output);
+//				output.append(' ');
+//			}
+//			if (this.dimensions[i] == null)
+//				output.append("[]"); //$NON-NLS-1$
+//			else {
+//				output.append('[');
+//				this.dimensions[i].generateExpression(scope, 0, output);
+//				output.append(']');
+//			}
+//		}
+//		if (this.initializer != null) this.initializer.generateExpression(scope, 0, output);
+//		return output;
+		
+		if (this.initializer != null) return this.initializer.generateExpression(scope, 0, output);
+		
+		if(this.dimensions.length == 1){
+			output.append("new Array(");
+			this.dimensions[0].generateExpression(scope, 0, output);
+			output.append(")");
+			return output;
 		}
-		if (this.initializer != null) this.initializer.generateExpression(scope, 0, output);
+		generateArray(scope, indent, output, 0);
 		return output;
+	}
+	
+	private void  generateArray(Scope scope, int indent, StringBuffer output, int currentDim){
+		if(currentDim + 1 == this.dimensions.length){
+			if(this.dimensions[currentDim] != null){
+				output.append("new Array(");
+				this.dimensions[currentDim].generateExpression(scope, 0, output);
+				output.append(");");
+			} else {
+				output.append("new Array();");
+			}
+
+			return;
+		}
+		
+		output.append("(function(){").append('\n');
+		printIndent(indent + 1, output);
+		output.append("var result = new Array(");
+		this.dimensions[currentDim].generateExpression(scope, 0, output);
+		output.append(");");
+		
+		output.append('\n');
+		printIndent(indent + 1, output);
+		
+		output.append("for(var i = 0; i < ");
+		this.dimensions[currentDim].generateExpression(scope, 0, output);
+		output.append("; i++) {");
+		
+		output.append('\n');
+		printIndent(indent + 2, output);
+		
+		output.append("result[i] = ");
+		generateArray(scope, indent + 2, output, currentDim + 1);
+		output.append(";");
+
+		output.append('\n');
+		printIndent(indent + 1, output);
+		output.append("}");
+		
+		output.append('\n');
+		printIndent(indent + 1, output);
+		
+		output.append("return result;");
+		
+		output.append('\n');
+		printIndent(indent, output);
+		output.append("})()");
+		
+
 	}
 }

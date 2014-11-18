@@ -103,7 +103,7 @@ public class ContinueStatement extends BranchStatement {
 		visitor.endVisit(this, blockScope);
 	}
 	
-	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
 		printIndent(tab, output).append("continue "); //$NON-NLS-1$
 		if (this.label != null) output.append(this.label);
 		return output.append(';');

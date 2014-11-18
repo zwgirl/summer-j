@@ -2,6 +2,7 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 /**
  * 
@@ -21,7 +22,6 @@ public class ObjectElement extends Element {
 	@Override
 	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -29,6 +29,13 @@ public class ObjectElement extends Element {
 		if(allocation != null){
 			allocation.resolve(scope);
 		}
+	}
+	
+	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
+		if(allocation != null){
+			return allocation.generateExpression(scope, tab, output);
+		}
+		return output;
 	}
 
 }

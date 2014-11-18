@@ -73,7 +73,7 @@ public class FunctionDeclaration extends Statement{
 	}
 
 	@Override
-	public StringBuffer generateStatement(Scope scope, int indent,
+	public StringBuffer generateExpression(Scope scope, int indent,
 			StringBuffer output) {
 		// TODO Auto-generated method stub
 		return null;

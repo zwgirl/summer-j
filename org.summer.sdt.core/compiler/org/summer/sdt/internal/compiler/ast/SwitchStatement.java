@@ -647,7 +647,7 @@ public class SwitchStatement extends Statement {
 		}
 	}
 	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 
 		printIndent(indent, output).append("switch ("); //$NON-NLS-1$
 		this.expression.generateExpression(scope, 0, output).append(") {"); //$NON-NLS-1$

@@ -78,6 +78,7 @@ import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.ImplicitNullAnnotationVerifier;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.MemberTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.MissingTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ParameterizedGenericMethodBinding;
@@ -1085,23 +1086,29 @@ public class MessageSend extends Expression implements Invocation {
 	}
 	
 	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output){
+		if(this.receiver != null){
+			
+		}
 		
-		if (!this.receiver.isImplicitThis()) this.receiver.printExpression(0, output).append('.');
-		if (this.typeArguments != null) {
-			output.append('<');
-			int max = this.typeArguments.length - 1;
-			for (int j = 0; j < max; j++) {
-				this.typeArguments[j].print(0, output);
-				output.append(", ");//$NON-NLS-1$
+		if(this.binding == null){
+			return output;
+		}
+		
+		if(this.binding.isStatic()){
+			if(this.binding.declaringClass instanceof MemberTypeBinding){
+				
 			}
-			this.typeArguments[max].print(0, output);
-			output.append('>');
+			output.append(this.binding.declaringClass.sourceName);
+			output.append(".");
+		} else {
+			if (!this.receiver.isImplicitThis()) this.receiver.generateExpression(scope, 0, output).append('.');
+			else output.append("this.");
 		}
 		output.append(this.selector).append('(') ;
 		if (this.arguments != null) {
 			for (int i = 0; i < this.arguments.length ; i ++) {
 				if (i > 0) output.append(", "); //$NON-NLS-1$
-				this.arguments[i].printExpression(0, output);
+				this.arguments[i].generateExpression(scope, 0, output);
 			}
 		}
 		return output.append(')');

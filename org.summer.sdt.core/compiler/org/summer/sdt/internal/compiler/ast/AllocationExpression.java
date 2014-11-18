@@ -836,16 +836,7 @@ public class AllocationExpression extends Expression implements Invocation {
 		if (this.type != null) { // type null for enum constant initializations
 			output.append(Javascript.NEW).append(Javascript.WHITESPACE); 
 		}
-//		if (this.typeArguments != null) {
-//			output.append('<');
-//			int max = this.typeArguments.length - 1;
-//			for (int j = 0; j < max; j++) {
-//				this.typeArguments[j].print(0, output);
-//				output.append(", ");//$NON-NLS-1$
-//			}
-//			this.typeArguments[max].print(0, output);
-//			output.append('>');
-//		}
+
 		if (this.type != null) { // type null for enum constant initializations
 			this.type.generateExpression(scope, 0, output);
 		}

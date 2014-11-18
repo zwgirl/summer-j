@@ -170,7 +170,7 @@ public class Block extends Statement {
 		return output;
 	}
 	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
 		output.append("{\n"); //$NON-NLS-1$
 		generateBody(scope, indent, output);

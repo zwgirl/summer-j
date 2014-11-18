@@ -4,7 +4,6 @@ import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_
 
 import org.summer.sdt.core.compiler.IProblem;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
@@ -14,10 +13,7 @@ import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.PropertyBinding;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
@@ -33,40 +29,8 @@ import org.summer.sdt.internal.compiler.util.Util;
  */
 public class PropertyDeclaration extends FieldDeclaration {
 	
-//	public PropertyBinding binding;
-//	public Javadoc javadoc;
-	
 	public int bodyStart;
 	public int bodyEnd;
-
-	//allows to retrieve both the "type" part of the declaration (part1)
-	//and also the part that decribe the name and the init and optionally
-	//some other dimension ! ....
-	//public int[] a, b[] = X, c ;
-	//for b that would give for
-	// - part1 : public int[]
-	// - part2 : b[] = X,
-
-//	public int endPart1Position;
-//	public int endPart2Position;
-//	
-//	public int declarationEnd;
-//	/**
-//	 * For local declarations (outside of for statement initialization) and field declarations,
-//	 * the declarationSourceEnd covers multiple locals if any.
-//	 * For local declarations inside for statement initialization, this is not the case.
-//	 */
-//	public int declarationSourceEnd;
-//	public int declarationSourceStart;
-//	public int hiddenVariableDepth; // used to diagnose hiding scenarii
-//	public Expression initialization;
-//	public int modifiers;
-//	public int modifiersSourceStart;
-//	public Annotation[] annotations;
-//
-//	public char[] name;
-//
-//	public TypeReference type;
 	
 	public MethodDeclaration setter;
 	public MethodDeclaration getter;
@@ -301,12 +265,12 @@ public class PropertyDeclaration extends FieldDeclaration {
 		}
 		
 		printIndent(indent, output);
-//		output.append("Object.defineProperty(");
-//		if(this.isStatic()){
-//			output.append(binding.declaringClass.sourceName);
-//		} else {
-//			output.append(binding.declaringClass.sourceName).append(".prototype");
-//		}
+		output.append("Object.defineProperty(");
+		if(this.isStatic()){
+			output.append(binding.declaringClass.sourceName);
+		} else {
+			output.append(binding.declaringClass.sourceName).append(".prototype");
+		}
 		
 		output.append(", ").append(this.name).append(", ").append('{').append("\n");
 		boolean comma = false;

@@ -1,6 +1,7 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 /**
  * 
@@ -28,5 +29,14 @@ public class GeneralAttribute extends Attribute{
 	public void resolve(BlockScope scope) {
 		this.field.resolve(scope);
 		this.value.resolve(scope);
+	}
+
+	@Override
+	public StringBuffer generateExpression(Scope scope, int indent,
+			StringBuffer output) {
+		printIndent(indent, output);
+		output.append("this.").append(field.token).append(" = ");
+		value.generateExpression(scope, indent, output);
+		return output;
 	}
 }

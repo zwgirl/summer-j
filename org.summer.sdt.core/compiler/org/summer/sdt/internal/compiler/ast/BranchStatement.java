@@ -13,7 +13,6 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.internal.compiler.codegen.BranchLabel;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public abstract class BranchStatement extends Statement {
 
@@ -71,11 +70,5 @@ public abstract class BranchStatement extends Statement {
 	public void resolve(BlockScope scope) {
 		// nothing to do during name resolution
 	}
-	
-	@Override
-	public StringBuffer generateStatement(Scope scope, int indent,
-			StringBuffer output) {
-		// TODO Auto-generated method stub
-		return super.generateJavascript(scope, indent, output);
-	}
+
 }

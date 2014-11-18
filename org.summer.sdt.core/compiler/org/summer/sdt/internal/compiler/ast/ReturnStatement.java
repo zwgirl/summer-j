@@ -386,7 +386,7 @@ public class ReturnStatement extends Statement {
 		visitor.endVisit(this, scope);
 	}
 
-	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output){
+	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output){
 		printIndent(tab, output).append("return "); //$NON-NLS-1$
 		if (this.expression != null )
 			this.expression.generateExpression(scope, 0, output) ;

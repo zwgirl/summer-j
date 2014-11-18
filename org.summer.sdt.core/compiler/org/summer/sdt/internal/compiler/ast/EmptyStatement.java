@@ -61,7 +61,7 @@ public class EmptyStatement extends Statement {
 		visitor.endVisit(this, scope);
 	}
 	
-	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
 		return printIndent(tab, output).append(Javascript.SEMICOLON);
 	}
 }

@@ -290,7 +290,7 @@ public class IfStatement extends Statement {
 		visitor.endVisit(this, blockScope);
 	}
 	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output).append("if ("); //$NON-NLS-1$
 		this.condition.generateExpression(scope, 0, output).append(")\n");	//$NON-NLS-1$
 		if(this.thenStatement instanceof Block){

@@ -33,6 +33,7 @@ import org.summer.sdt.internal.compiler.lookup.ImportBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.parser.NLSTag;
@@ -387,14 +388,16 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 					this.types[i].ignoreFurtherInvestigation = true;
 					// propagate the flag to request problem type creation
 					this.types[i].generateJavascript(this.scope);
+					
 				}
 			}
 			return;
 		}
 		try {
 			if (this.types != null) {
-				for (int i = 0, count = this.types.length; i < count; i++)
+				for (int i = 0, count = this.types.length; i < count; i++){
 					this.types[i].generateJavascript(this.scope);
+				}
 			}
 		} catch (AbortCompilationUnit e) {
 			// ignore

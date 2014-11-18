@@ -44,6 +44,7 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
@@ -56,6 +57,7 @@ import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.RawTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
@@ -603,5 +605,32 @@ public class QualifiedAllocationExpression extends AllocationExpression {
 				this.anonymousType.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
+	}
+	
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		printIndent(indent, output);
+		output.append(Javascript.NEW).append(Javascript.WHITESPACE); 
+		
+		if(this.anonymousType != null){
+			output.append("((function() {");
+			anonymousType.generateClassBody(this.anonymousType, indent + 1, output);
+			output.append('\n');
+			printIndent(indent + 1, output).append("return ").append(anonymousType.binding.constantPoolName()).append(";");
+			output.append('\n');
+			printIndent(indent, output);
+			output.append("})())");
+			
+			output.append(Javascript.LPAREN);
+			if (this.arguments != null) {
+				for (int i = 0; i < this.arguments.length; i++) {
+					if (i > 0) output.append(Javascript.COMMA).append(Javascript.WHITESPACE); 
+					this.arguments[i].generateExpression(scope, 0, output);
+				}
+			}
+			return output.append(Javascript.RPAREN);
+			
+		} else {
+			return type.generateExpression(scope, indent, output);
+		}
 	}
 }

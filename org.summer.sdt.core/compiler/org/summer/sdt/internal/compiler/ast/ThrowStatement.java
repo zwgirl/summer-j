@@ -89,7 +89,7 @@ public class ThrowStatement extends Statement {
 		visitor.endVisit(this, blockScope);
 	}
 	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output).append("throw "); //$NON-NLS-1$
 		this.exception.generateExpression(scope, 0, output);
 		return output.append(';');

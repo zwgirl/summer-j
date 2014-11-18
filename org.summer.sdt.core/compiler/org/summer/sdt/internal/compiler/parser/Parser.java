@@ -1807,15 +1807,15 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			arrayAllocation.dimensions = new Expression[length],
 			0,
 			length);
-		Annotation[][] annotationsOnDimensions = getAnnotationsOnDimensions(length);
-		arrayAllocation.annotationsOnDimensions = annotationsOnDimensions;
+//		Annotation[][] annotationsOnDimensions = getAnnotationsOnDimensions(length);
+//		arrayAllocation.annotationsOnDimensions = annotationsOnDimensions;
 	
 		arrayAllocation.type = getTypeReference(0);
 		arrayAllocation.type.bits |= ASTNode.IgnoreRawTypeCheck; // no need to worry about raw type usage
-		if (annotationsOnDimensions != null) {
-			arrayAllocation.bits |= ASTNode.HasTypeAnnotations;
-			arrayAllocation.type.bits |= ASTNode.HasTypeAnnotations;
-		}
+//		if (annotationsOnDimensions != null) {
+//			arrayAllocation.bits |= ASTNode.HasTypeAnnotations;
+//			arrayAllocation.type.bits |= ASTNode.HasTypeAnnotations;
+//		}
 	
 		arrayAllocation.sourceStart = this.intStack[this.intPtr--];
 		if (arrayAllocation.initializer == null) {
@@ -1839,14 +1839,14 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			arrayAllocation.dimensions = new Expression[length],
 			0,
 			length);
-		Annotation[][] annotationsOnDimensions = getAnnotationsOnDimensions(length);
-		arrayAllocation.annotationsOnDimensions = annotationsOnDimensions;
+//		Annotation[][] annotationsOnDimensions = getAnnotationsOnDimensions(length);
+//		arrayAllocation.annotationsOnDimensions = annotationsOnDimensions;
 		arrayAllocation.type = getTypeReference(0);
 		arrayAllocation.type.bits |= ASTNode.IgnoreRawTypeCheck; // no need to worry about raw type usage
-		if (annotationsOnDimensions != null) {
-			arrayAllocation.bits |= ASTNode.HasTypeAnnotations;
-			arrayAllocation.type.bits |= ASTNode.HasTypeAnnotations;
-		}
+//		if (annotationsOnDimensions != null) {
+//			arrayAllocation.bits |= ASTNode.HasTypeAnnotations;
+//			arrayAllocation.type.bits |= ASTNode.HasTypeAnnotations;
+//		}
 		arrayAllocation.sourceStart = this.intStack[this.intPtr--];
 		if (arrayAllocation.initializer == null) {
 			arrayAllocation.sourceEnd = this.endStatementPosition;
@@ -4004,7 +4004,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			for (int i = 0; i < dimensionsCount; i++) {
 				Annotation [] annotations = null;
 				int length;
-				try{   //cym add 2014-10-24
+				try{  
 				if ((length = this.typeAnnotationLengthStack[this.typeAnnotationLengthPtr--]) != 0) {
 					System.arraycopy(
 							this.typeAnnotationStack,
@@ -4026,6 +4026,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		}
 		return dimensionsAnnotations;
 	}
+
 	protected void consumeFormalParameterList() {
 		// FormalParameterList ::= FormalParameterList ',' FormalParameter
 		// TypeElidedFormalParameterList ::= TypeElidedFormalParameterList ',' TypeElidedFormalParameter
@@ -9206,7 +9207,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		if(CharOperation.equals(generalAttr.field.token, Attribute.NAME)){
 			generalAttr.bits |= ASTNode.IsNamedAttribute;
 			if(element.name != null){
-//				problemReporter().duplicateNamedElementInType(type, element.name.field);
+				problemReporter().duplicateNamedElementInType(element, element.name.field);
 			}
 			element.name = generalAttr;
 			StringLiteral str = (StringLiteral) generalAttr.value;
@@ -9335,8 +9336,8 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	protected void consumeEmptyObjectElement(){
 		//ObjectElement ::=  ElementTag '/>'
 		ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr];
-		element.statementEnd = this.endPosition;
-		element.sourceEnd = this.endPosition;
+		element.statementEnd = this.scanner.currentPosition - 1;
+		element.sourceEnd = this.scanner.currentPosition - 1;
 	}
 	
 	protected void consumeObjectElementNoChild(){

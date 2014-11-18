@@ -221,7 +221,7 @@ public class SynchronizedStatement extends SubRoutineStatement {
 		visitor.endVisit(this, blockScope);
 	}
 
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
 		output.append("synchronized ("); //$NON-NLS-1$
 		this.expression.generateExpression(scope, 0, output).append(')');

@@ -1,29 +1,20 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
-import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.VariableBinding;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
-import org.summer.sdt.internal.compiler.problem.ShouldNotImplement;
-import org.summer.sdt.internal.compiler.util.Messages;
 
 /**
  * 

@@ -38,7 +38,9 @@ public class MarkupExtension extends Element {
 	@Override
 	public StringBuffer generateExpression(Scope scope, int indent,
 			StringBuffer output) {
-		// TODO Auto-generated method stub
+		if(allocation != null){
+			return allocation.generateExpression(scope, indent, output);
+		}
 		return output;
 	}
 

@@ -100,7 +100,7 @@ public class BreakStatement extends BranchStatement {
 		visitor.endVisit(this, blockscope);
 	}
 
-	public StringBuffer generateStatement(Scope scope, int tab, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
 		printIndent(tab, output).append(Javascript.BREAK); 
 		if (this.label != null) output.append(Javascript.WHITESPACE).append(this.label);
 		return output.append(';');

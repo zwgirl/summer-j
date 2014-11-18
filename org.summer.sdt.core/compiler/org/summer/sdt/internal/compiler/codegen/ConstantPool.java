@@ -324,6 +324,7 @@ public class ConstantPool implements ClassFileConstants, TypeIds {
 		return this.poolContent;
 	}
 	public int literalIndex(byte[] utf8encoding, char[] stringCharArray) {
+		System.out.println("TTTT : " + utf8encoding);
 		int index;
 		if ((index = this.UTF8Cache.putIfAbsent(stringCharArray, this.currentIndex)) < 0) {
 			// The entry doesn't exit yet
