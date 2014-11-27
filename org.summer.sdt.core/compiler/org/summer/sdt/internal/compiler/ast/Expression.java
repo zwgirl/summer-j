@@ -1258,8 +1258,8 @@ public abstract class Expression extends Statement {
 	
 //	public abstract StringBuffer generateExpression(Scope scope, int indent, StringBuffer output);
 	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
-		return generateExpression(scope, indent, output).append(";"); //$NON-NLS-1$
-	}
+//	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+//		return generateExpression(scope, indent, output).append(";"); //$NON-NLS-1$
+//	}
 
 }

@@ -16,7 +16,6 @@ import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -62,7 +61,7 @@ public class EmptyStatement extends Statement {
 	}
 	
 	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
-		return printIndent(tab, output).append(Javascript.SEMICOLON);
+		return output;
 	}
 }
 

@@ -278,11 +278,6 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 						this.initialization.computeConversion(initializationScope, fieldType, initializationType);
 					}
 				} else if ((initializationType = this.initialization.resolveType(initializationScope)) != null) {
-					//cym add 2014-10-26 TODO
-					if(this.getKind() == ENUM_CONSTANT){
-						return;
-					}
-					
 					if (TypeBinding.notEquals(fieldType, initializationType)) // must call before computeConversion() and typeMismatchError()
 						initializationScope.compilationUnitScope().recordTypeConversion(fieldType, initializationType);
 					if (this.initialization.isConstantValueOfTypeAssignableToType(initializationType, fieldType)
@@ -361,7 +356,7 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		visitor.endVisit(this, scope);
 	}
 	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		if (this.javadoc != null) {
 			this.javadoc.generateJavascript(scope, indent, output);
 		}

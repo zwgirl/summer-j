@@ -1274,32 +1274,25 @@ public class LambdaExpression extends FunctionalExpression implements ReferenceC
 	}
 
 	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
-		return generateExpression(scope, tab, output, false);
-	}
-
-	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output, boolean makeShort) {
-		int parenthesesCount = (this.bits & ASTNode.ParenthesizedMASK) >> ASTNode.ParenthesizedSHIFT;
-		String suffix = ""; //$NON-NLS-1$
-		for(int i = 0; i < parenthesesCount; i++) {
-			output.append('(');
-			suffix += ')';
-		}
-		output.append('(');
+		output.append("function(");
 		if (this.arguments != null) {
 			for (int i = 0; i < this.arguments.length; i++) {
 				if (i > 0) output.append(", "); //$NON-NLS-1$
-				this.arguments[i].print(0, output);
+				this.arguments[i].generateExpression(scope, tab, output);
 			}
 		}
-		output.append(") -> " ); //$NON-NLS-1$
-		if (makeShort) {
-			output.append("{}"); //$NON-NLS-1$
-		} else {
-			if (this.body != null)
-				this.body.print(this.body instanceof Block ? tab : 0, output);
-			else
-				output.append("<@incubator>"); //$NON-NLS-1$
+		
+		output.append(")");
+		
+		if (this.body != null && this.body instanceof Block){
+			return this.body.generateExpression(scope, tab, output);
 		}
-		return output.append(suffix);
+		output.append("{"); //$NON-NLS-1$
+		if (this.body != null){
+			this.body.generateExpression(scope, tab, output);
+		}
+		output.append("}"); //$NON-NLS-1$
+		return output;
 	}
+
 }

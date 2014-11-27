@@ -236,7 +236,7 @@ public class DoStatement extends Statement {
 	}
 	
 	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		printIndent(indent, output).append("do"); //$NON-NLS-1$
+		output.append("do"); //$NON-NLS-1$
 		if (this.action == null)
 			output.append(" ;\n"); //$NON-NLS-1$
 		else {
@@ -245,5 +245,12 @@ public class DoStatement extends Statement {
 		}
 		printIndent(indent, output).append("while ("); //$NON-NLS-1$
 		return this.condition.generateExpression(scope, 0, output).append(");"); //$NON-NLS-1$
+	}
+	
+	@Override
+	public StringBuffer generateStatement(Scope scope, int indent,
+			StringBuffer output) {
+		printIndent(indent, output);
+		return this.generateExpression(scope, indent, output);
 	}
 }

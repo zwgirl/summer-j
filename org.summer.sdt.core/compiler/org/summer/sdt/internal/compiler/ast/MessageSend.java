@@ -96,6 +96,7 @@ import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.VoidTypeBinding;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 import org.summer.sdt.internal.compiler.util.SimpleLookupTable;
 
@@ -1085,6 +1086,20 @@ public class MessageSend extends Expression implements Invocation {
 		return new InferenceContext18(scope, this.arguments, this);
 	}
 	
+	private boolean hasRefOrOutArgument(){
+		if(this.arguments == null || this.arguments.length == 0){
+			return false;
+		}
+		
+		for(Expression arg : this.arguments){
+			if((arg.bits & (ASTNode.IsRefArgument |  ASTNode.IsRefArgument)) != 0){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output){
 		if(this.receiver != null){
 			
@@ -1094,6 +1109,33 @@ public class MessageSend extends Expression implements Invocation {
 			return output;
 		}
 		
+		boolean hasRefOrOutArgument = hasRefOrOutArgument();
+		if(hasRefOrOutArgument){
+			output.append("(function(){");
+			
+			for(Expression arg : this.arguments){
+				if(!this.canRefOrOut(arg)){
+					continue;
+				}
+				
+				SingleNameReference nameRef = (SingleNameReference) arg;
+//				if(nameRef.binding instanceof ){
+//					
+//				}
+				
+				output.append('\n');
+				printIndent(indent + 1, output);
+				
+				output.append("__").append(nameRef.token).append(" = { \"").append(nameRef.token).append("\" : ").append(nameRef.token).append(" };");
+			}
+			
+			if(!(this.binding.returnType instanceof VoidTypeBinding)) {
+				output.append('\n');
+				printIndent(indent + 1, output);
+				output.append("var result = ");
+			}
+		}
+		
 		if(this.binding.isStatic()){
 			if(this.binding.declaringClass instanceof MemberTypeBinding){
 				
@@ -1101,16 +1143,101 @@ public class MessageSend extends Expression implements Invocation {
 			output.append(this.binding.declaringClass.sourceName);
 			output.append(".");
 		} else {
-			if (!this.receiver.isImplicitThis()) this.receiver.generateExpression(scope, 0, output).append('.');
-			else output.append("this.");
-		}
-		output.append(this.selector).append('(') ;
-		if (this.arguments != null) {
-			for (int i = 0; i < this.arguments.length ; i ++) {
-				if (i > 0) output.append(", "); //$NON-NLS-1$
-				this.arguments[i].generateExpression(scope, 0, output);
+			if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0){
+
+			} else {
+				if (this.receiver.isImplicitThis() || this.receiver.isThis()){ 
+					output.append("this.");
+				} else if(this.receiver.isSuper()) {
+					output.append(this.binding.declaringClass.sourceName()).append(".prototype.");
+				} else {
+					this.receiver.generateExpression(scope, 0, output).append('.');
+				}
 			}
 		}
-		return output.append(')');
+		
+		output.append(this.selector);
+		if((this.binding.tagBits & TagBits.AnnotationOverload) != 0){
+			//first to find methoDeclaration
+			AbstractMethodDeclaration method = this.binding.sourceMethod();
+			output.append(Annotation.getOverloadPostfix(method.annotations));
+		}
+		
+		if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0){
+			output.append(".call");
+		}
+		
+		boolean comma = false;
+		output.append('(') ;
+		if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0){
+			if (this.receiver.isImplicitThis() || this.receiver.isThis()){ 
+				output.append("this");
+				comma = true;
+			} else if(this.receiver.isSuper()) {
+				throw new RuntimeException();
+			} else {
+				this.receiver.generateExpression(scope, 0, output);
+				comma = true;
+			}
+		}
+		
+		if (this.arguments != null) {
+			for (int i = 0; i < this.arguments.length ; i ++) {
+				if (comma) output.append(", "); //$NON-NLS-1$
+				
+				if(canRefOrOut(this.arguments[i])){
+					SingleNameReference nameRef = (SingleNameReference) this.arguments[i];	
+					output.append("__").append(nameRef.token);
+				} else{
+					this.arguments[i].generateExpression(scope, 0, output);
+				}
+				comma = true;
+			}
+		}
+		
+		output.append(')');
+		
+		
+		if(hasRefOrOutArgument){
+			output.append(";");
+			for(Expression arg : this.arguments){
+				if(!this.canRefOrOut(arg)){
+					continue;
+				}
+				SingleNameReference nameRef = (SingleNameReference) arg;
+//				if(nameRef.binding instanceof ){
+//					
+//				}
+				
+				hasRefOrOutArgument = true;
+				output.append('\n');
+				printIndent(indent + 1, output);
+				
+				output.append(nameRef.token).append(" = ").append("__").append(nameRef.token).append("[\"").append(nameRef.token).append("\"];");
+				
+			}
+			
+			if(!(this.binding.returnType instanceof VoidTypeBinding)) {
+				output.append('\n');
+				printIndent(indent + 1, output);
+				output.append("return result;");
+			}
+			
+			output.append('\n');
+			printIndent(indent, output);
+			output.append("})()");
+		}
+		return output;
+	}
+	
+	private boolean canRefOrOut(Expression arg){
+		if((arg.bits & (ASTNode.IsRefArgument |  ASTNode.IsRefArgument)) == 0){
+			return false;
+		}
+		if(!(arg instanceof SingleNameReference)){
+			return false;
+		}
+		
+		return true;
 	}
 }

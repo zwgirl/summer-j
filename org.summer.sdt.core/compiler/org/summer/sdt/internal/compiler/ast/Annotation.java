@@ -372,6 +372,11 @@ public abstract class Annotation extends Expression {
 					}
 				}
 				break;
+			//cym add 2014-11-20
+			// overload annotation
+			case TypeIds.T_JavaLangAnnotationOverload :
+				tagBits |= TagBits.AnnotationOverload; // target specified (could be empty)
+				break;
 			// marker annotations
 			case TypeIds.T_JavaLangDeprecated :
 				tagBits |= TagBits.AnnotationDeprecated;
@@ -1178,5 +1183,43 @@ public abstract class Annotation extends Expression {
 		output.append('@');
 		this.type.generateExpression(scope, 0, output);
 		return output;
+	}
+
+	//cym add 2014-11-20
+	private static final char[] EMPTY = new char[0];
+	public static char[] getOverloadPostfix(Annotation[] annotations){
+		Annotation overload = null;
+		if(annotations == null){
+			return EMPTY;
+		}
+		for(Annotation annotation : annotations){
+			if(annotation.resolvedType == null){
+				continue;
+			}
+			if(annotation.resolvedType.id == TypeIds.T_JavaLangAnnotationOverload){
+				overload = annotation;
+				break;
+			}
+		}
+		
+		if(overload == null){
+			return EMPTY;
+		}
+		
+		MemberValuePair[] pairs = overload.memberValuePairs();
+		pairLoop: for (int i = 0, length = pairs.length; i < length; i++) {
+			MemberValuePair pair = pairs[i];
+			if (CharOperation.equals(pair.name, TypeConstants.VALUE)) {
+				Expression value = pair.value;
+	
+					Constant cst = value.constant;
+					if (cst != Constant.NotAConstant && cst.typeID() == T_JavaLangString) {
+						return cst.stringValue().toCharArray();
+					}
+				break pairLoop;
+			}
+		}
+		
+		return EMPTY;
 	}
 }

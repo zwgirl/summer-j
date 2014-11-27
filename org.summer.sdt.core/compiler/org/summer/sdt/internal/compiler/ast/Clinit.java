@@ -27,6 +27,7 @@ import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
+import org.summer.sdt.internal.compiler.lookup.PropertyBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.SyntheticMethodBinding;
@@ -73,6 +74,9 @@ public class Clinit extends AbstractMethodDeclaration {
 			FieldBinding[] fields = this.scope.enclosingSourceType().fields();
 			for (int i = 0, count = fields.length; i < count; i++) {
 				FieldBinding field = fields[i];
+				if(field instanceof PropertyBinding){
+					continue;
+				}
 				if (field.isStatic()) {
 					if (!flowInfo.isDefinitelyAssigned(field)) {
 						if (field.isFinal()) {

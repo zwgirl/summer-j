@@ -579,7 +579,7 @@ Header1 -> ConstructorHeader
 /:$readableName Header1:/
 
 Header2 -> Header
---Header2 -> EnumConstantHeader  --cym 2014-10-24
+Header2 -> EnumConstantHeader  
 /:$readableName Header2:/
 
 CatchHeader ::= 'catch' '(' CatchFormalParameter ')' '{'
@@ -2070,9 +2070,9 @@ ArgumentList ::= ArgumentList ',' Argument  --cym 2014-10-13
 /:$readableName ArgumentList:/
 Argument ::= Expression
 Argument ::= 'ref' Expression
-/.$putCase consumeArgument(); $break ./
+/.$putCase consumeArgument(ASTNode.IsRefArgument); $break ./
 Argument ::= 'out' Expression
-/.$putCase consumeArgument(); $break ./
+/.$putCase consumeArgument(ASTNode.IsOutArgument); $break ./
 /:$readableName Argument:/
 -- cym modified end
 
@@ -2180,6 +2180,8 @@ MethodInvocation ::= 'super' '.' 'Identifier' '(' ArgumentListopt ')'
 /:$readableName MethodInvocation:/
 
 ArrayAccess ::= Name '[' Expression ']'
+/.$putCase consumeArrayAccess(true); $break ./
+ArrayAccess ::= 'super' '[' Expression ']'   --cym 2014-11-24
 /.$putCase consumeArrayAccess(true); $break ./
 ArrayAccess ::= PrimaryNoNewArray '[' Expression ']'
 /.$putCase consumeArrayAccess(false); $break ./
@@ -2510,107 +2512,107 @@ Catchesopt -> Catches
 -----------------------------------------------
 -- 1.5 features : enum type
 -----------------------------------------------
---EnumDeclaration ::= EnumHeader EnumBody
---/. $putCase consumeEnumDeclaration(); $break ./
---/:$readableName EnumDeclaration:/
-
---EnumHeader ::= EnumHeaderName ClassHeaderImplementsopt
---/. $putCase consumeEnumHeader(); $break ./
---/:$readableName EnumHeader:/
-
---EnumHeaderName ::= Modifiersopt 'enum' Identifier
---/. $putCase consumeEnumHeaderName(); $break ./
---/:$compliance 1.5:/
---EnumHeaderName ::= Modifiersopt 'enum' Identifier TypeParameters
---/. $putCase consumeEnumHeaderNameWithTypeParameters(); $break ./
---/:$readableName EnumHeaderName:/
---/:$compliance 1.5:/
-
---EnumBody ::= '{' EnumBodyDeclarationsopt '}'
---/. $putCase consumeEnumBodyNoConstants(); $break ./
---EnumBody ::= '{' ',' EnumBodyDeclarationsopt '}'
---/. $putCase consumeEnumBodyNoConstants(); $break ./
---EnumBody ::= '{' EnumConstants ',' EnumBodyDeclarationsopt '}'
---/. $putCase consumeEnumBodyWithConstants(); $break ./
---EnumBody ::= '{' EnumConstants EnumBodyDeclarationsopt '}'
---/. $putCase consumeEnumBodyWithConstants(); $break ./
---/:$readableName EnumBody:/
-
---EnumConstants -> EnumConstant
---EnumConstants ::= EnumConstants ',' EnumConstant
---/.$putCase consumeEnumConstants(); $break ./
---/:$readableName EnumConstants:/
-
---EnumConstantHeaderName ::= Modifiersopt Identifier
---/.$putCase consumeEnumConstantHeaderName(); $break ./
---/:$readableName EnumConstantHeaderName:/
-
---EnumConstantHeader ::= EnumConstantHeaderName ForceNoDiet Argumentsopt RestoreDiet
---/.$putCase consumeEnumConstantHeader(); $break ./
---/:$readableName EnumConstantHeader:/
-
---EnumConstant ::= EnumConstantHeader ForceNoDiet ClassBody RestoreDiet
---/.$putCase consumeEnumConstantWithClassBody(); $break ./
---EnumConstant ::= EnumConstantHeader
---/.$putCase consumeEnumConstantNoClassBody(); $break ./
---/:$readableName EnumConstant:/
-
---Arguments ::= '(' ArgumentListopt ')'
---/.$putCase consumeArguments(); $break ./
---/:$readableName Arguments:/
-
---Argumentsopt ::= $empty
---/.$putCase consumeEmptyArguments(); $break ./
---Argumentsopt -> Arguments
---/:$readableName Argumentsopt:/
-
---EnumDeclarations ::= ';' ClassBodyDeclarationsopt
---/.$putCase consumeEnumDeclarations(); $break ./
---/:$readableName EnumDeclarations:/
-
---EnumBodyDeclarationsopt ::= $empty
---/.$putCase consumeEmptyEnumDeclarations(); $break ./
---EnumBodyDeclarationsopt -> EnumDeclarations
---/:$readableName EnumBodyDeclarationsopt:/
-
-
 EnumDeclaration ::= EnumHeader EnumBody
 /. $putCase consumeEnumDeclaration(); $break ./
 /:$readableName EnumDeclaration:/
 
-EnumHeader ::= EnumHeaderName --ClassHeaderImplementsopt
+EnumHeader ::= EnumHeaderName ClassHeaderImplementsopt
 /. $putCase consumeEnumHeader(); $break ./
 /:$readableName EnumHeader:/
 
 EnumHeaderName ::= Modifiersopt 'enum' Identifier
 /. $putCase consumeEnumHeaderName(); $break ./
 /:$compliance 1.5:/
+EnumHeaderName ::= Modifiersopt 'enum' Identifier TypeParameters
+/. $putCase consumeEnumHeaderNameWithTypeParameters(); $break ./
 /:$readableName EnumHeaderName:/
+/:$compliance 1.5:/
 
-EnumBody ::= '{'  '}'
-/. $putCase consumeEnumBodyNoMembers(); $break ./
-EnumBody ::= '{' EnumMemberDeclarations ',' '}'
-/. $putCase consumeEnumBodyWithMembers(); $break ./
-EnumBody ::= '{' EnumMemberDeclarations  '}'
-/. $putCase consumeEnumBodyWithMembers(); $break ./
+EnumBody ::= '{' EnumBodyDeclarationsopt '}'
+/. $putCase consumeEnumBodyNoConstants(); $break ./
+EnumBody ::= '{' ',' EnumBodyDeclarationsopt '}'
+/. $putCase consumeEnumBodyNoConstants(); $break ./
+EnumBody ::= '{' EnumConstants ',' EnumBodyDeclarationsopt '}'
+/. $putCase consumeEnumBodyWithConstants(); $break ./
+EnumBody ::= '{' EnumConstants EnumBodyDeclarationsopt '}'
+/. $putCase consumeEnumBodyWithConstants(); $break ./
 /:$readableName EnumBody:/
 
-EnumMemberDeclarations ::= EnumConstant
-EnumMemberDeclarations ::= EnumMemberDeclarations ',' EnumConstant
-/.$putCase consumeEnumMemberDeclarations(); $break ./
-/:$readableName EnumMemberDeclarations:/
+EnumConstants -> EnumConstant
+EnumConstants ::= EnumConstants ',' EnumConstant
+/.$putCase consumeEnumConstants(); $break ./
+/:$readableName EnumConstants:/
 
 EnumConstantHeaderName ::= Modifiersopt Identifier
 /.$putCase consumeEnumConstantHeaderName(); $break ./
 /:$readableName EnumConstantHeaderName:/
 
-EnumConstant ::= EnumConstantHeaderName
+EnumConstantHeader ::= EnumConstantHeaderName ForceNoDiet Argumentsopt RestoreDiet
 /.$putCase consumeEnumConstantHeader(); $break ./
 /:$readableName EnumConstantHeader:/
 
-EnumConstant ::= EnumConstantHeaderName '='  IntegerLiteral
-/.$putCase consumeEnumConstantWithInitializer(); $break ./
-/:$readableName EnumConstantHeader:/
+EnumConstant ::= EnumConstantHeader ForceNoDiet ClassBody RestoreDiet
+/.$putCase consumeEnumConstantWithClassBody(); $break ./
+EnumConstant ::= EnumConstantHeader
+/.$putCase consumeEnumConstantNoClassBody(); $break ./
+/:$readableName EnumConstant:/
+
+Arguments ::= '(' ArgumentListopt ')'
+/.$putCase consumeArguments(); $break ./
+/:$readableName Arguments:/
+
+Argumentsopt ::= $empty
+/.$putCase consumeEmptyArguments(); $break ./
+Argumentsopt -> Arguments
+/:$readableName Argumentsopt:/
+
+EnumDeclarations ::= ';' ClassBodyDeclarationsopt
+/.$putCase consumeEnumDeclarations(); $break ./
+/:$readableName EnumDeclarations:/
+
+EnumBodyDeclarationsopt ::= $empty
+/.$putCase consumeEmptyEnumDeclarations(); $break ./
+EnumBodyDeclarationsopt -> EnumDeclarations
+/:$readableName EnumBodyDeclarationsopt:/
+
+--
+--EnumDeclaration ::= EnumHeader EnumBody
+--/. $putCase consumeEnumDeclaration(); $break ./
+--/:$readableName EnumDeclaration:/
+--
+--EnumHeader ::= EnumHeaderName --ClassHeaderImplementsopt
+--/. $putCase consumeEnumHeader(); $break ./
+--/:$readableName EnumHeader:/
+--
+--EnumHeaderName ::= Modifiersopt 'enum' Identifier
+--/. $putCase consumeEnumHeaderName(); $break ./
+--/:$compliance 1.5:/
+--/:$readableName EnumHeaderName:/
+--
+--EnumBody ::= '{'  '}'
+--/. $putCase consumeEnumBodyNoMembers(); $break ./
+--EnumBody ::= '{' EnumMemberDeclarations ',' '}'
+--/. $putCase consumeEnumBodyWithMembers(); $break ./
+--EnumBody ::= '{' EnumMemberDeclarations  '}'
+--/. $putCase consumeEnumBodyWithMembers(); $break ./
+--/:$readableName EnumBody:/
+--
+--EnumMemberDeclarations ::= EnumConstant
+--EnumMemberDeclarations ::= EnumMemberDeclarations ',' EnumConstant
+--/.$putCase consumeEnumMemberDeclarations(); $break ./
+--/:$readableName EnumMemberDeclarations:/
+--
+--EnumConstantHeaderName ::= Modifiersopt Identifier
+--/.$putCase consumeEnumConstantHeaderName(); $break ./
+--/:$readableName EnumConstantHeaderName:/
+--
+--EnumConstant ::= EnumConstantHeaderName
+--/.$putCase consumeEnumConstantHeader(); $break ./
+--/:$readableName EnumConstantHeader:/
+--
+--EnumConstant ::= EnumConstantHeaderName '='  IntegerLiteral
+--/.$putCase consumeEnumConstantWithInitializer(); $break ./
+--/:$readableName EnumConstantHeader:/
 
 -----------------------------------------------
 -- 1.5 features : enhanced for statement

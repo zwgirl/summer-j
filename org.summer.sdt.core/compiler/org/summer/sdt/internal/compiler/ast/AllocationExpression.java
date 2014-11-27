@@ -833,13 +833,14 @@ public class AllocationExpression extends Expression implements Invocation {
 	}
 	
 	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		if (this.type != null) { // type null for enum constant initializations
-			output.append(Javascript.NEW).append(Javascript.WHITESPACE); 
-		}
+		output.append(Javascript.NEW).append(Javascript.WHITESPACE); 
 
-		if (this.type != null) { // type null for enum constant initializations
+		if (this.type != null) { 
 			this.type.generateExpression(scope, 0, output);
+		} else { // type null for enum constant initializations
+			output.append(this.typeExpected.sourceName()); 
 		}
+		
 		output.append(Javascript.LPAREN);
 		if (this.arguments != null) {
 			for (int i = 0; i < this.arguments.length; i++) {
@@ -847,6 +848,14 @@ public class AllocationExpression extends Expression implements Invocation {
 				this.arguments[i].generateExpression(scope, 0, output);
 			}
 		}
+		
+		if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
+			if(this.arguments != null && this.arguments.length > 0){
+				output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+			}
+			output.append("\"").append(Annotation.getOverloadPostfix(this.binding.sourceMethod().annotations)).append("\"");
+		}
+		
 		return output.append(Javascript.RPAREN);
 	}
 }

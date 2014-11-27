@@ -100,6 +100,7 @@ public class Javascript {
 	public static final Object DEFINEPROPERTY = "defineProperty";
 	public static final Object PROTOTYPE = "prototype";
 	public static final Object NULL = "null";
+	public static final String REQUIRE = "require";
 
 	
 }

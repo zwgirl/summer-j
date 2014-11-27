@@ -121,7 +121,9 @@ public class MethodScope extends BlockScope {
 		int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
 	
 		// check for abnormal modifiers
-		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccStrictfp);
+//		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccStrictfp);
+		//cym 2014-11-24
+		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccStrictfp | ClassFileConstants.AccNative);
 		if (declaringClass.isEnum() && (((ConstructorDeclaration) this.referenceContext).bits & ASTNode.IsDefaultConstructor) == 0) {
 			final int UNEXPECTED_ENUM_CONSTR_MODIFIERS = ~(ClassFileConstants.AccPrivate | ClassFileConstants.AccStrictfp);
 			if ((realModifiers & UNEXPECTED_ENUM_CONSTR_MODIFIERS) != 0) {

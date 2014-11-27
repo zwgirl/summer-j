@@ -44,12 +44,15 @@ import org.summer.sdt.internal.compiler.flow.InitializationFlowContext;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.EventBinding;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.NestedTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.PropertyBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
@@ -222,6 +225,9 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 				FieldBinding[] fields = this.binding.declaringClass.fields();
 				for (int i = 0, count = fields.length; i < count; i++) {
 					FieldBinding field = fields[i];
+					if(field instanceof PropertyBinding || field instanceof IndexerBinding || fields[i] instanceof EventBinding){
+						continue;
+					}
 					if (!field.isStatic() && !flowInfo.isDefinitelyAssigned(field)) {
 						if (field.isFinal()) {
 							this.scope.problemReporter().uninitializedBlankFinalField(
@@ -592,7 +598,8 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 				this.constructorCall.resolve(this.scope);
 			}
 		}
-		if ((this.modifiers & ExtraCompilerModifiers.AccSemicolonBody) != 0) {
+		//cym modified 2014-11-24
+		if ((this.modifiers & ExtraCompilerModifiers.AccSemicolonBody) != 0 && (this.modifiers & ClassFileConstants.AccNative) == 0) {
 			this.scope.problemReporter().methodNeedBody(this);
 		}
 		super.resolveStatements();

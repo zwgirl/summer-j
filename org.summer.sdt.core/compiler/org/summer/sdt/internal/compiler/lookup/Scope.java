@@ -1544,6 +1544,153 @@ public abstract class Scope {
 		}
 		return null;
 	}
+	
+	//cym 2014-11-24
+	// Internal use only - use findMethod()
+	public IndexerBinding findIndexer(ReferenceBinding receiverType, TypeBinding[] argumentTypes, InvocationSite invocationSite, boolean invisibleFieldsOk) {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordTypeReference(receiverType);
+
+		checkArrayField: {
+			TypeBinding leafType;
+			switch (receiverType.kind()) {
+				case Binding.BASE_TYPE :
+					return null;
+				case Binding.WILDCARD_TYPE :
+				case Binding.INTERSECTION_TYPE:
+				case Binding.TYPE_PARAMETER : // capture
+					TypeBinding receiverErasure = receiverType.erasure();
+					if (!receiverErasure.isArrayType())
+						break checkArrayField;
+					leafType = receiverErasure.leafComponentType();
+					break;
+				case Binding.ARRAY_TYPE :
+					leafType = receiverType.leafComponentType();
+					break;
+				default:
+					break checkArrayField;
+			}
+			if (leafType instanceof ReferenceBinding)
+				if (!((ReferenceBinding) leafType).canBeSeenBy(this))
+					return new ProblemIndexerBinding((ReferenceBinding)leafType, IndexerBinding.THIS, ProblemReasons.ReceiverTypeNotVisible);
+//			if (CharOperation.equals(fieldName, TypeConstants.LENGTH)) {
+//				if ((leafType.tagBits & TagBits.HasMissingType) != 0) {
+//					return new ProblemIndexerBinding(ArrayBinding.ArrayLength, null, fieldName, ProblemReasons.NotFound);
+//				}
+//				return ArrayBinding.ArrayLength;
+//			}
+			return null;
+		}
+
+		ReferenceBinding currentType = (ReferenceBinding) receiverType;
+		if (!currentType.canBeSeenBy(this))
+			return new ProblemIndexerBinding(currentType, IndexerBinding.THIS, ProblemReasons.ReceiverTypeNotVisible);
+
+		currentType.initializeForStaticImports();
+		IndexerBinding field = currentType.getExactIndexer(argumentTypes, unitScope);
+		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=316456
+		boolean insideTypeAnnotations = this instanceof MethodScope && ((MethodScope) this).insideTypeAnnotation;
+		if (field != null) {
+			if (invisibleFieldsOk) {
+				return field;
+			}
+			if (invocationSite == null || insideTypeAnnotations
+				? field.canBeSeenBy(getCurrentPackage())
+				: field.canBeSeenBy(currentType, invocationSite, this))
+					return field;
+			return new ProblemIndexerBinding(field /* closest match*/, field.declaringClass, IndexerBinding.THIS, ProblemReasons.NotVisible);
+		}
+		// collect all superinterfaces of receiverType until the field is found in a supertype
+		ReferenceBinding[] interfacesToVisit = null;
+		int nextPosition = 0;
+		IndexerBinding visibleField = null;
+		boolean keepLooking = true;
+		IndexerBinding notVisibleField = null;
+		// we could hold onto the not visible field for extra error reporting
+		while (keepLooking) {
+			ReferenceBinding[] itsInterfaces = currentType.superInterfaces();
+			if (itsInterfaces != null && itsInterfaces != Binding.NO_SUPERINTERFACES) {
+				if (interfacesToVisit == null) {
+					interfacesToVisit = itsInterfaces;
+					nextPosition = interfacesToVisit.length;
+				} else {
+					int itsLength = itsInterfaces.length;
+					if (nextPosition + itsLength >= interfacesToVisit.length)
+						System.arraycopy(interfacesToVisit, 0, interfacesToVisit = new ReferenceBinding[nextPosition + itsLength + 5], 0, nextPosition);
+					nextInterface : for (int a = 0; a < itsLength; a++) {
+						ReferenceBinding next = itsInterfaces[a];
+						for (int b = 0; b < nextPosition; b++)
+							if (TypeBinding.equalsEquals(next, interfacesToVisit[b])) continue nextInterface;
+						interfacesToVisit[nextPosition++] = next;
+					}
+				}
+			}
+			if ((currentType = currentType.superclass()) == null)
+				break;
+
+			unitScope.recordTypeReference(currentType);
+			currentType.initializeForStaticImports();
+			currentType = (ReferenceBinding) currentType.capture(this, invocationSite == null ? 0 : invocationSite.sourceEnd());
+			if ((field = currentType.getExactIndexer(argumentTypes, unitScope)) != null) {
+				if (invisibleFieldsOk) {
+					return field;
+				}
+				keepLooking = false;
+				if (field.canBeSeenBy(receiverType, invocationSite, this)) {
+					if (visibleField == null)
+						visibleField = field;
+					else
+						return new ProblemIndexerBinding(visibleField /* closest match*/, visibleField.declaringClass, IndexerBinding.THIS, ProblemReasons.Ambiguous);
+				} else {
+					if (notVisibleField == null)
+						notVisibleField = field;
+				}
+			}
+		}
+
+		// walk all visible interfaces to find ambiguous references
+		if (interfacesToVisit != null) {
+			ProblemIndexerBinding ambiguous = null;
+			done : for (int i = 0; i < nextPosition; i++) {
+				ReferenceBinding anInterface = interfacesToVisit[i];
+				unitScope.recordTypeReference(anInterface);
+				// no need to capture rcv interface, since member field is going to be static anyway
+				if ((field = anInterface.getExactIndexer(argumentTypes, unitScope)) != null) {
+					if (invisibleFieldsOk) {
+						return field;
+					}
+					if (visibleField == null) {
+						visibleField = field;
+					} else {
+						ambiguous = new ProblemIndexerBinding(visibleField /* closest match*/, visibleField.declaringClass, IndexerBinding.THIS, ProblemReasons.Ambiguous);
+						break done;
+					}
+				} else {
+					ReferenceBinding[] itsInterfaces = anInterface.superInterfaces();
+					if (itsInterfaces != null && itsInterfaces != Binding.NO_SUPERINTERFACES) {
+						int itsLength = itsInterfaces.length;
+						if (nextPosition + itsLength >= interfacesToVisit.length)
+							System.arraycopy(interfacesToVisit, 0, interfacesToVisit = new ReferenceBinding[nextPosition + itsLength + 5], 0, nextPosition);
+						nextInterface : for (int a = 0; a < itsLength; a++) {
+							ReferenceBinding next = itsInterfaces[a];
+							for (int b = 0; b < nextPosition; b++)
+								if (TypeBinding.equalsEquals(next, interfacesToVisit[b])) continue nextInterface;
+							interfacesToVisit[nextPosition++] = next;
+						}
+					}
+				}
+			}
+			if (ambiguous != null)
+				return ambiguous;
+		}
+
+		if (visibleField != null)
+			return visibleField;
+		if (notVisibleField != null) {
+			return new ProblemIndexerBinding(notVisibleField, currentType, IndexerBinding.THIS, ProblemReasons.NotVisible);
+		}
+		return null;
+	}
 
 	// Internal use only
 	public ReferenceBinding findMemberType(char[] typeName, ReferenceBinding enclosingType) {
@@ -2576,6 +2723,26 @@ public abstract class Scope {
 			return new ProblemFieldBinding(
 				receiverType instanceof ReferenceBinding ? (ReferenceBinding) receiverType : null,
 				fieldName,
+				ProblemReasons.NotFound);
+		} catch (AbortCompilation e) {
+			e.updateContext(invocationSite, referenceCompilationUnit().compilationResult);
+			throw e;
+		} finally {
+			env.missingClassFileLocation = null;
+		}
+	}
+	
+	//cym 2014-11-24
+	public IndexerBinding getIndexer(ReferenceBinding receiverType, TypeBinding[] argumentTypes, InvocationSite invocationSite) {
+		LookupEnvironment env = environment();
+		try {
+			env.missingClassFileLocation = invocationSite;
+			IndexerBinding indexer = findIndexer(receiverType, argumentTypes, invocationSite, true /*resolve*/);
+			if (indexer != null) return indexer;
+
+			return new ProblemIndexerBinding(
+				receiverType instanceof ReferenceBinding ? (ReferenceBinding) receiverType : null,
+				IndexerBinding.THIS,
 				ProblemReasons.NotFound);
 		} catch (AbortCompilation e) {
 			e.updateContext(invocationSite, referenceCompilationUnit().compilationResult);

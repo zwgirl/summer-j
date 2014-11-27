@@ -805,6 +805,9 @@ void setSourceStart(int sourceStart);
 	int IllegalVisibilityModifierCombinationForField = FieldRelated + 344;
 	int IllegalModifierCombinationFinalVolatileForField = FieldRelated + 345;
 	int UnexpectedStaticModifierForField = FieldRelated + 346;
+	
+	// property related problem //cym 2014-11-24
+	int IllegalModifierForProperty = FieldRelated + 348;
 
 	/** @deprecated - problem is no longer generated, use {@link #UndefinedType} instead */
 	int FieldTypeNotFound =  FieldRelated + 349 + ProblemReasons.NotFound; // FieldRelated + 350

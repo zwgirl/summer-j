@@ -1089,6 +1089,113 @@ public class SourceTypeBinding extends ReferenceBinding {
 		}
 		return null;
 	}
+	//cym 2014-11-24
+	//NOTE: the return type, arg & exception types of each method of a source type are resolved when needed
+	//searches up the hierarchy as long as no potential (but not exact) match was found.
+	public IndexerBinding getExactIndexer(TypeBinding[] argumentTypes, CompilationUnitScope refScope) {
+		if (!isPrototype())
+			return this.prototype.getExactIndexer(argumentTypes, refScope);
+		
+		// sender from refScope calls recordTypeReference(this)
+		int argCount = argumentTypes.length;
+		boolean foundNothing = true;
+	
+		if ((this.tagBits & TagBits.AreFieldsComplete) != 0) { // have resolved all arg types & return type of the methods
+			long range;
+			if ((range = ReferenceBinding.binarySearch(this.fields)) >= 0) {
+				nextMethod: for (int ifield = (int)range, end = (int)(range >> 32); ifield <= end; ifield++) {
+					if(!(this.fields[ifield] instanceof IndexerBinding)){
+						continue;
+					}
+					IndexerBinding indexer = (IndexerBinding) this.fields[ifield];
+					foundNothing = false; // inner type lookups must know that a method with this name exists
+					if (indexer.parameters.length == argCount) {
+						TypeBinding[] toMatch = indexer.parameters;
+						for (int iarg = 0; iarg < argCount; iarg++)
+							if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
+								continue nextMethod;
+						return indexer;
+					}
+				}
+			}
+		} else {
+			// lazily sort methods
+			if ((this.tagBits & TagBits.AreFieldsSorted) == 0) {
+				int length = this.methods.length;
+				if (length > 1)
+					ReferenceBinding.sortMethods(this.methods, 0, length);
+				this.tagBits |= TagBits.AreFieldsSorted;
+			}
+	
+			long range;
+			if ((range = ReferenceBinding.binarySearch(this.fields)) >= 0) {
+				// check unresolved method
+				int start = (int) range, end = (int) (range >> 32);
+				for (int ifield = start; ifield <= end; ifield++) {
+					if(!(this.fields[ifield] instanceof IndexerBinding)){
+						continue;
+					}
+					IndexerBinding indexer = (IndexerBinding) this.fields[ifield];
+					if (resolveTypeFor((IndexerBinding)indexer) == null || indexer.type == null) {
+						methods();
+						return getExactIndexer(argumentTypes, refScope); // try again since the problem methods have been removed
+					}
+				}
+//				// check dup collisions
+//				boolean isSource15 = this.scope.compilerOptions().sourceLevel >= ClassFileConstants.JDK1_5;
+//				for (int i = start; i <= end; i++) {
+//					if(!(this.fields[i] instanceof IndexerBinding)){
+//						continue;
+//					}
+//					
+//					IndexerBinding indexer = (IndexerBinding) this.fields[i];
+//					for (int j = end; j > i; j--) {
+//						if(!(this.fields[j] instanceof IndexerBinding)){
+//							continue;
+//						}
+//						
+//						IndexerBinding indexer2 = (IndexerBinding) this.fields[j];
+//						boolean paramsMatch = isSource15
+//							? indexer.areParameterErasuresEqual(indexer2)
+//							: indexer.areParametersEqual(indexer2);
+//						if (paramsMatch) {
+//							methods();
+//							return getExactIndexer(argumentTypes, refScope); // try again since the problem methods have been removed
+//						}
+//					}
+//				}
+				nextIndexer: for (int ifield = start; ifield <= end; ifield++) {
+					if(!(this.fields[ifield] instanceof IndexerBinding)){
+						continue;
+					}
+					
+					IndexerBinding indexer = (IndexerBinding) this.fields[ifield];
+					TypeBinding[] toMatch = indexer.parameters;
+					if (toMatch.length == argCount) {
+						for (int iarg = 0; iarg < argCount; iarg++)
+							if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
+								continue nextIndexer;
+						return indexer;
+					}
+				}
+			}
+		}
+	
+		if (foundNothing) {
+			if (isInterface()) {
+				 if (this.superInterfaces.length == 1) {
+					if (refScope != null)
+						refScope.recordTypeReference(this.superInterfaces[0]);
+					return this.superInterfaces[0].getExactIndexer(argumentTypes, refScope);
+				 }
+			} else if (this.superclass != null) {
+				if (refScope != null)
+					refScope.recordTypeReference(this.superclass);
+				return this.superclass.getExactIndexer(argumentTypes, refScope);
+			}
+		}
+		return null;
+	}
 	
 	//NOTE: the return type, arg & exception types of each method of a source type are resolved when needed
 	//searches up the hierarchy as long as no potential (but not exact) match was found.
@@ -2029,6 +2136,53 @@ public class SourceTypeBinding extends ReferenceBinding {
 //							property.tagBits &= ~TagBits.AnnotationNullMASK;
 //					}
 //				}
+				
+				boolean foundArgProblem = false;
+				Argument[] arguments = indexerDecl.arguments;
+				if (arguments != null) {
+					int size = arguments.length;
+					indexer.parameters = Binding.NO_PARAMETERS;
+					TypeBinding[] newParameters = new TypeBinding[size];
+					for (int i = 0; i < size; i++) {
+						Argument arg = arguments[i];
+						if (arg.annotations != null) {
+							indexer.tagBits |= TagBits.HasParameterAnnotations;
+						}
+//						// https://bugs.eclipse.org/bugs/show_bug.cgi?id=322817
+//						boolean deferRawTypeCheck = !reportUnavoidableGenericTypeProblems && !method.isConstructor() && (arg.type.bits & ASTNode.IgnoreRawTypeCheck) == 0;
+						TypeBinding parameterType;
+//						if (deferRawTypeCheck) {
+//							arg.type.bits |= ASTNode.IgnoreRawTypeCheck;
+//						}
+						try {
+							parameterType = arg.type.resolveType(methodScope, true /* check bounds*/);
+						} finally {
+//							if (deferRawTypeCheck) { 
+//								arg.type.bits &= ~ASTNode.IgnoreRawTypeCheck;
+//							}
+						}
+					
+						if (parameterType == null) {
+							foundArgProblem = true;
+						} else if (parameterType == TypeBinding.VOID) {
+							methodScope.problemReporter().argumentTypeCannotBeVoid(indexerDecl, arg);
+							foundArgProblem = true;
+						} else {
+							if ((parameterType.tagBits & TagBits.HasMissingType) != 0) {
+								indexer.tagBits |= TagBits.HasMissingType;
+							}
+							leafType = parameterType.leafComponentType();
+							if (leafType instanceof ReferenceBinding && (((ReferenceBinding) leafType).modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0)
+								indexer.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
+							newParameters[i] = parameterType;
+							arg.binding = new LocalVariableBinding(arg, parameterType, arg.modifiers, methodScope);
+						}
+					}
+					// only assign parameters if no problems are found
+					if (!foundArgProblem) {
+						indexer.parameters = newParameters;
+					}
+				}
 				
 				//cym add 
 				MethodDeclaration setter = ((IndexerDeclaration)fields[f]).setter;

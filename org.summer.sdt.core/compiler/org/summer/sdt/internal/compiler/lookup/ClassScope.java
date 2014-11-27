@@ -141,7 +141,8 @@ public class ClassScope extends Scope {
 		count = 0;
 		for (int i = 0; i < size; i++) {
 			FieldDeclaration field = fields[i];
-			if (field.getKind() == AbstractVariableDeclaration.INITIALIZER) {
+//			if (field.getKind() == AbstractVariableDeclaration.INITIALIZER) {
+			if (field.getKind() == AbstractVariableDeclaration.INITIALIZER ) {  
 				// We used to report an error for initializers declared inside interfaces, but
 				// now this error reporting is moved into the parser itself. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=212713
 			} else {
@@ -159,7 +160,8 @@ public class ClassScope extends Scope {
 				// field's type will be resolved when needed for top level types
 				checkAndSetModifiersForField(fieldBinding, field);
 
-				if (knownFieldNames.containsKey(field.name)) {
+//				if (knownFieldNames.containsKey(field.name)) {
+				if (knownFieldNames.containsKey(field.name) && !(field instanceof IndexerDeclaration)) {   //cym 2014-11-24
 					FieldBinding previousBinding = (FieldBinding) knownFieldNames.get(field.name);
 					if (previousBinding != null) {
 						for (int f = 0; f < i; f++) {
@@ -912,9 +914,9 @@ public class ClassScope extends Scope {
 
 		// after this point, tests on the 16 bits reserved.
 		int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
-		//cym modified 2014-10-26
+		//cym modified 2014-11-24
 //		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccTransient | ClassFileConstants.AccVolatile);
-		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccTransient | ClassFileConstants.AccVolatile  | ClassFileConstants.AccAbstract );
+		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccTransient | ClassFileConstants.AccVolatile  | ClassFileConstants.AccAbstract | ClassFileConstants.AccNative);
 		if ((realModifiers & UNEXPECTED_MODIFIERS) != 0) {
 			problemReporter().illegalModifierForField(declaringClass, fieldDecl);
 			modifiers &= ~ExtraCompilerModifiers.AccJustFlag | ~UNEXPECTED_MODIFIERS;
@@ -937,9 +939,12 @@ public class ClassScope extends Scope {
 
 		if ((realModifiers & (ClassFileConstants.AccFinal | ClassFileConstants.AccVolatile)) == (ClassFileConstants.AccFinal | ClassFileConstants.AccVolatile))
 			problemReporter().illegalModifierCombinationFinalVolatileForField(declaringClass, fieldDecl);
-
-		if (fieldDecl.initialization == null && (modifiers & ClassFileConstants.AccFinal) != 0)
-			modifiers |= ExtraCompilerModifiers.AccBlankFinal;
+		if(fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof PropertyDeclaration || fieldDecl instanceof EventDeclaration){
+			
+		} else {
+			if (fieldDecl.initialization == null && (modifiers & ClassFileConstants.AccFinal) != 0)
+				modifiers |= ExtraCompilerModifiers.AccBlankFinal;
+		}
 		fieldBinding.modifiers = modifiers;
 	}
 

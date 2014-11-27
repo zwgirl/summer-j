@@ -204,9 +204,8 @@ public class EventDeclaration extends FieldDeclaration {
 	}
 
 	@Override
-	public StringBuffer generateJavascript(Scope scope, int indent,
+	public StringBuffer generateExpression(Scope scope, int indent,
 			StringBuffer output) {
-		// TODO Auto-generated method stub
-		return null;
+		return output.append("//TODO event compile implements!");
 	}
 }

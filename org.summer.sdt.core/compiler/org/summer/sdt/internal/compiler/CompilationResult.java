@@ -44,6 +44,7 @@ import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.compiler.IProblem;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.env.ICompilationUnit;
+import org.summer.sdt.internal.compiler.html.HtmlFile;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
 import org.summer.sdt.internal.compiler.javascript.JavascriptFile;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
@@ -70,7 +71,8 @@ public class CompilationResult {
 	public int lineSeparatorPositions[];
 	public RecoveryScannerData recoveryScannerData;
 	public Map<char[], ClassFile> compiledTypes = new Hashtable(11);
-	public Map<char[], JavascriptFile> compiledJsTypes = new Hashtable(11);  //cym add 2014-10-18
+	public Map<char[], JavascriptFile> compiledJsFiles = new Hashtable(11);  //cym add 2014-10-18
+	public Map<char[], HtmlFile> compiledHtmlFiles = new Hashtable(11);  //cym add 2014-11-21
 	public int unitIndex, totalUnitsKnown;
 	public boolean hasBeenAccepted = false;
 	public char[] fileName;
@@ -193,11 +195,17 @@ public class CompilationResult {
 		return classFiles;
 	}
 	
-	
+	//cym 2014-11-21
 	public JavascriptFile[] getJavascriptFiles() {
-		JavascriptFile[] jsFiles = new JavascriptFile[this.compiledJsTypes.size()];
-		this.compiledJsTypes.values().toArray(jsFiles);
+		JavascriptFile[] jsFiles = new JavascriptFile[this.compiledJsFiles.size()];
+		this.compiledJsFiles.values().toArray(jsFiles);
 		return jsFiles;
+	}
+	//cym 2014-11-21
+	public HtmlFile[] getHtmlFiles() {
+		HtmlFile[] htmlFiles = new HtmlFile[this.compiledHtmlFiles.size()];
+		this.compiledHtmlFiles.values().toArray(htmlFiles);
+		return htmlFiles;
 	}
 	/**
 	 * Answer the initial compilation unit corresponding to the present compilation result
@@ -430,7 +438,19 @@ public class CompilationResult {
 //	    if (!sourceType.isLocalType() && sourceType.isHierarchyInconsistent()) {
 //	        this.hasInconsistentToplevelHierarchies = true;
 //	    }
-		this.compiledJsTypes.put(typeName, jsFile);
+		this.compiledJsFiles.put(typeName, jsFile);
+	}
+	
+	//cym add 2014-11-21
+	/**
+	 * For now, remember the compiled type using its compound name.
+	 */
+	public void record(char[] typeName, HtmlFile htmlFile) {
+//	    SourceTypeBinding sourceType = jsFile.referenceBinding;
+//	    if (!sourceType.isLocalType() && sourceType.isHierarchyInconsistent()) {
+//	        this.hasInconsistentToplevelHierarchies = true;
+//	    }
+		this.compiledHtmlFiles.put(typeName, htmlFile);
 	}
 	
 	/**

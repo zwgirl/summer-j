@@ -294,12 +294,11 @@ public class WhileStatement extends Statement {
 	
 	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
 
-		printIndent(tab, output).append("while ("); //$NON-NLS-1$
+		output.append("while ("); //$NON-NLS-1$
 		this.condition.generateExpression(scope, 0, output).append(')');
 		if (this.action == null)
 			output.append(';');
 		else {
-			output.append("\n");
 			if(this.action instanceof Block){
 				this.action.generateStatement(scope, tab, output);
 			} else{
@@ -307,5 +306,12 @@ public class WhileStatement extends Statement {
 			}
 		}
 		return output;
+	}
+	
+	@Override
+	public StringBuffer generateStatement(Scope scope, int indent,
+			StringBuffer output) {
+		printIndent(indent, output);
+		return this.generateExpression(scope, indent, output);
 	}
 }

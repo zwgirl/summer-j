@@ -14,6 +14,7 @@ import org.summer.sdt.internal.compiler.ast.BranchStatement;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class CompletionOnBranchStatementLabel extends BranchStatement {
 	public static final int BREAK = 1;
@@ -47,6 +48,13 @@ public class CompletionOnBranchStatementLabel extends BranchStatement {
 		output.append("<CompleteOnLabel:"); //$NON-NLS-1$
 		output.append(this.label);
 		return output.append(">;"); //$NON-NLS-1$
+	}
+
+	@Override
+	public StringBuffer generateExpression(Scope scope, int indent,
+			StringBuffer output) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

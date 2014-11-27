@@ -306,7 +306,8 @@ public abstract class Statement extends ASTNode {
 	
 	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output){
 		printIndent(indent, output);
-		return generateExpression(scope, indent, output);
+		generateExpression(scope, indent, output);
+		return output.append(";");
 	}
 	
 	public abstract StringBuffer generateExpression(Scope scope, int indent, StringBuffer output);

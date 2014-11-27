@@ -164,16 +164,21 @@ public class Block extends Statement {
 	public StringBuffer generateBody(Scope scope, int indent, StringBuffer output) {
 		if (this.statements == null) return output;
 		for (int i = 0; i < this.statements.length; i++) {
-			this.statements[i].generateStatement(scope, indent + 1, output);
+			this.statements[i].generateStatement(scope, indent, output);
 			output.append('\n');
 		}
 		return output;
 	}
 	
 	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		printIndent(indent, output);
 		output.append("{\n"); //$NON-NLS-1$
-		generateBody(scope, indent, output);
+		generateBody(scope, indent + 1, output);
 		return printIndent(indent, output).append('}');
+	}
+	
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output){
+		printIndent(indent, output);
+		generateExpression(scope, indent, output);
+		return output;
 	}
 }

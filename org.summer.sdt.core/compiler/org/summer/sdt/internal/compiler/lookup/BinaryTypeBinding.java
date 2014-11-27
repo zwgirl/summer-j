@@ -1084,6 +1084,55 @@ public class BinaryTypeBinding extends ReferenceBinding {
 		FieldBinding field = ReferenceBinding.binarySearch(fieldName, this.fields);
 		return needResolve && field != null ? resolveTypeFor(field) : field;
 	}
+	
+	//cym 2014-11-24
+	//NOTE: the type of a field of a binary type is resolved when needed
+	public IndexerBinding getExactIndexer(TypeBinding[] argumentTypes, CompilationUnitScope refScope) {
+
+		if (!isPrototype())
+			return this.prototype.getExactIndexer(argumentTypes, refScope);
+	
+		// lazily sort fields
+		if ((this.tagBits & TagBits.AreFieldsSorted) == 0) {
+			int length = this.fields.length;
+			if (length > 1)
+				ReferenceBinding.sortFields(this.fields, 0, length);
+			this.tagBits |= TagBits.AreFieldsSorted;
+		}
+	
+		int argCount = argumentTypes.length;
+		boolean foundNothing = true;
+		
+		long range;
+		if ((range = ReferenceBinding.binarySearch(this.fields)) >= 0) {
+			nextMethod: for (int ifield = 0, end = (int)(range >> 32); ifield <= end; ifield++) {
+				FieldBinding field = this.fields[ifield];
+				foundNothing = false; // inner type lookups must know that a method with this name exists
+				if (field instanceof IndexerBinding && ((IndexerBinding)field).parameters.length == argCount) {
+					resolveTypesFor((IndexerBinding)field);
+					TypeBinding[] toMatch = ((IndexerBinding)field).parameters;
+					for (int iarg = 0; iarg < argCount; iarg++)
+						if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
+							continue nextMethod;
+					return (IndexerBinding) field;
+				}
+			}
+		}
+		if (foundNothing) {
+			if (isInterface()) {
+				 if (superInterfaces().length == 1) { // ensure superinterfaces are resolved before checking
+					if (refScope != null)
+						refScope.recordTypeReference(this.superInterfaces[0]);
+					return this.superInterfaces[0].getExactIndexer(argumentTypes, refScope);
+				 }
+			} else if (superclass() != null) { // ensure superclass is resolved before checking
+				if (refScope != null)
+					refScope.recordTypeReference(this.superclass);
+				return this.superclass.getExactIndexer(argumentTypes, refScope);
+			}
+		}
+		return null;
+	}
 	/**
 	 *  Rewrite of default memberTypes() to avoid resolving eagerly all member types when one is requested
 	 */
@@ -1396,6 +1445,34 @@ public class BinaryTypeBinding extends ReferenceBinding {
 		field.modifiers &= ~ExtraCompilerModifiers.AccUnresolved;
 		return field;
 	}
+	
+	//cym 2014-11-24
+	private IndexerBinding resolveTypesFor(IndexerBinding indexer) {
+		
+		if (!isPrototype())
+			return this.prototype.resolveTypesFor(indexer);
+		
+		if ((indexer.modifiers & ExtraCompilerModifiers.AccUnresolved) == 0)
+			return indexer;
+	
+		TypeBinding resolvedType = resolveType(indexer.type, this.environment, true /* raw conversion */);
+		indexer.type = resolvedType;
+		if ((resolvedType.tagBits & TagBits.HasMissingType) != 0) {
+			indexer.tagBits |= TagBits.HasMissingType;
+		}
+		
+		for (int i = indexer.parameters.length; --i >= 0;) {
+			resolvedType = resolveType(indexer.parameters[i], this.environment, true /* raw conversion */);
+			indexer.parameters[i] = resolvedType;
+			if ((resolvedType.tagBits & TagBits.HasMissingType) != 0) {
+				indexer.tagBits |= TagBits.HasMissingType;
+			}
+		}
+		
+		indexer.modifiers &= ~ExtraCompilerModifiers.AccUnresolved;
+		return indexer;
+	}
+	
 	MethodBinding resolveTypesFor(MethodBinding method) {
 		
 		if (!isPrototype())

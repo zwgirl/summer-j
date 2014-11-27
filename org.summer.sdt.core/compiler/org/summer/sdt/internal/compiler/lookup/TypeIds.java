@@ -124,6 +124,9 @@ public interface TypeIds {
 	// java 8
 	final int T_JavaLangFunctionalInterface = 77;
 
+	//summer cym 2014-11-20
+	final int T_JavaLangAnnotationOverload = 78;
+	
 	// new in 3.9 to identify known @Inject annotations
 	final int T_JavaxInjectInject = 80;
 	final int T_ComGoogleInjectInject = 81;

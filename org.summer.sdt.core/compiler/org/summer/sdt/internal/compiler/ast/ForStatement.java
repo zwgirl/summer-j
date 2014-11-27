@@ -438,7 +438,7 @@ public class ForStatement extends Statement {
 	
 	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
 
-		printIndent(tab, output).append("for ("); //$NON-NLS-1$
+		output.append("for ("); //$NON-NLS-1$
 		//inits
 		if (this.initializations != null) {
 			for (int i = 0; i < this.initializations.length; i++) {
@@ -463,7 +463,6 @@ public class ForStatement extends Statement {
 		if (this.action == null)
 			output.append(';');
 		else {
-			output.append('\n');
 			if(action instanceof Block){
 				this.action.generateStatement(scope, tab, output);
 			} else {
@@ -471,5 +470,12 @@ public class ForStatement extends Statement {
 			}
 		}
 		return output;
+	}
+	
+	@Override
+	public StringBuffer generateStatement(Scope scope, int indent,
+			StringBuffer output) {
+		printIndent(indent, output);
+		return this.generateExpression(scope, indent, output);
 	}
 }

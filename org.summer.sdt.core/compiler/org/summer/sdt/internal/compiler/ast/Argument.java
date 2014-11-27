@@ -244,25 +244,12 @@ public class Argument extends LocalDeclaration {
 		visitor.endVisit(this, scope);
 	}
 	
-	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
-
-		printIndent(indent, output);
-		generateModifiers(this.modifiers, output);
-		if (this.annotations != null) {
-			generateAnnotations(this.annotations, output);
-			output.append(' ');
+	@Override
+	public StringBuffer generateExpression(Scope scope, int indent,
+			StringBuffer output) {
+		if((this.modifiers & ClassFileConstants.AccSynchronized) != 0 || (this.modifiers & ClassFileConstants.AccVolatile) != 0){
+			return output.append(this.name);
 		}
-
-//		if (this.type == null) {
-//			output.append("<no type> "); //$NON-NLS-1$
-//		} else {
-//			this.type.print(0, output).append(' ');
-//		}
 		return output.append(this.name);
-	}
-
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
-
-		return generateJavascript(scope, indent, output).append(';');
 	}
 }

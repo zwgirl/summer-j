@@ -29,7 +29,9 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.EventBinding;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.InvocationSite;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
@@ -39,6 +41,7 @@ import org.summer.sdt.internal.compiler.lookup.MissingTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemFieldBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.PropertyBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
@@ -115,7 +118,11 @@ public class FieldReference extends Reference implements InvocationSite {
 				flowInfo.markAsDefinitelyAssigned(this.binding);
 			} else {
 				// assigning a final field outside an initializer or constructor or wrong reference
-				currentScope.problemReporter().cannotAssignToFinalField(this.binding, this);
+				if(this.binding instanceof PropertyBinding || this.binding instanceof IndexerBinding || this.binding instanceof EventBinding){
+					
+				} else {
+					currentScope.problemReporter().cannotAssignToFinalField(this.binding, this);
+				}
 			}
 		} else if (this.binding.isNonNull()) {
 			// in a context where it can be assigned?

@@ -2,19 +2,12 @@ package org.summer.sdt.internal.compiler.lookup;
 
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
-import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
+import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.impl.Constant;
 
 public class IndexerBinding extends FieldBinding {
-//	public ReferenceBinding declaringClass;
-//	public int compoundUseFlag = 0; // number or accesses via postIncrement or compoundAssignment
-//	
-//	public int modifiers;
-//	public TypeBinding type;
-//	public char[] name;
-//	protected Constant constant;
-//	public int id; // for flow-analysis (position in flowInfo bit vector)
-//	public long tagBits;
+	public TypeBinding[] parameters;
+	public static final char[] THIS = "this".toCharArray();
 	
 	protected IndexerBinding() {
 		this((char[])null, null, 0, null);
@@ -75,5 +68,10 @@ public class IndexerBinding extends FieldBinding {
 		output.append(" "); //$NON-NLS-1$
 		output.append((this.name != null) ? new String(this.name) : "<no name>"); //$NON-NLS-1$
 		return output.toString();
+	}
+	/* Answer true if the receiver method has varargs
+	*/
+	public boolean isVarargs() {
+		return (this.modifiers & ClassFileConstants.AccVarargs) != 0;
 	}
 }

@@ -131,6 +131,13 @@ public class ClassFileMatchLocator implements IIndexConstants {
 				return true;
 			}
 		}
+		//cym 2014-11-24
+		if ((annotationTagBits & TagBits.AnnotationOverload) != 0) {
+			char[][] compoundName = TypeConstants.JAVA_LANG_OVERLOAD;
+			if (checkAnnotationTypeReference(CharOperation.concatWith(compoundName, '.'), pattern)) {
+				return true;
+			}
+		}
 		if ((annotationTagBits & TagBits.AnnotationSuppressWarnings) != 0) {
 			char[][] compoundName = TypeConstants.JAVA_LANG_SUPPRESSWARNINGS;
 			if (checkAnnotationTypeReference(CharOperation.concatWith(compoundName, '.'), pattern)) {

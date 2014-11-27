@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.summer.sdt.core.ClasspathContainerInitializer;
 import org.summer.sdt.core.compiler.CategorizedProblem;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.compiler.IProblem;
@@ -34,7 +35,10 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.InitializationFlowContext;
 import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
+import org.summer.sdt.internal.compiler.html.HtmlFile;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
+import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.impl.IrritantSet;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
 import org.summer.sdt.internal.compiler.javascript.ImportManager;
 import org.summer.sdt.internal.compiler.javascript.Javascript;
@@ -686,6 +690,95 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		generateCode((ClassFile) null);
 	}
 	
+	public void generateHtml(CompilationUnitScope unitScope){
+		generateHtml(unitScope, null);
+	}
+	
+	/**
+	 * Generic javascript generation for type
+	 */
+	public void generateHtml(CompilationUnitScope unitScope, HtmlFile enclosingClassFile) {
+		if (this.ignoreFurtherInvestigation) {
+			if (this.binding == null)
+				return;
+			
+			HtmlFile.createProblemType(
+				this,
+				this.scope.referenceCompilationUnit().compilationResult);
+			return;
+		}
+		try {
+			MethodDeclaration method = getMainMethod();
+			if(method == null){
+				return;
+			}
+			
+			// create the result for a compiled type
+			HtmlFile htmlFile = HtmlFile.getNewInstance(this.binding);
+			
+			this.importManager = new ImportManager(this);
+			
+			StringBuffer output = htmlFile.content;
+			
+			output.append("<!DOCTYPE HTML>").append('\n');
+			output.append("<html>").append('\n');
+			output.append("<body>").append('\n');
+			output.append("<script>").append('\n');
+			output.append("alert('hello world!');").append('\n');
+			generateMainBody(unitScope, output, 0, method);
+			output.append("\n");
+			output.append("</script>").append('\n');
+			output.append("</body>").append('\n');
+			output.append("</html>").append('\n');
+			
+			this.scope.referenceCompilationUnit().compilationResult.record(
+				this.binding.constantPoolName(),
+				htmlFile);
+		} catch (AbortType e) {
+			if (this.binding == null)
+				return;
+			HtmlFile.createProblemType(
+				this,
+				this.scope.referenceCompilationUnit().compilationResult);
+		}
+	}
+	
+	private void generateMainBody(CompilationUnitScope unitScope, StringBuffer output, int indent, MethodDeclaration method){
+		printIndent(indent + 1, output);
+		generateAMDHeader(unitScope.referenceContext, 0, output, Javascript.REQUIRE);
+		if(method.statements != null){
+			for(int j = 0, length = method.statements.length; j < length; j++){
+				output.append("\n");
+				method.statements[j].generateStatement(scope, indent + 2, output);
+			}
+		}
+		
+		output.append("\n");
+		printIndent(indent + 1, output);
+		output.append("});");
+		
+	}
+	
+	private MethodDeclaration getMainMethod() {
+		if(this.methods == null){
+			return null;
+		}
+		for(AbstractMethodDeclaration method : this.methods){
+			if(!(method instanceof MethodDeclaration)){
+				continue;
+			}
+			
+			if(method.binding == null){
+				continue;
+			}
+			
+			if(method.binding.isMain()){
+				return (MethodDeclaration) method;
+			}
+		}
+		return null;
+	}
+
 	public void generateJavascript(CompilationUnitScope unitScope) {
 		generateJavascript(unitScope, (JavascriptFile) null);
 	}
@@ -1655,7 +1748,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		if (this.javadoc != null) {
 			this.javadoc.print(indent, output);
 		}
-		if ((this.bits & ASTNode.IsAnonymousType) == 0) {
+		if ((this.bits & ASTNode.IsAnonymousType) == 0 && (this.modifiers & ClassFileConstants.AccNative) != 0) {
 			printIndent(indent, output);
 			generateHeader(scope, 0, output);
 		}
@@ -1681,6 +1774,10 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		if (this.fields != null) {
 			for (int fieldI = 0; fieldI < this.fields.length; fieldI++) {
+				if((this.fields[fieldI].modifiers & ClassFileConstants.AccNative) != 0){
+					continue;
+				}
+				
 				if (this.fields[fieldI] != null) {
 					output.append('\n');
 					this.fields[fieldI].generateJavascript(scope, indent + 1, output);
@@ -1689,6 +1786,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		if (this.methods != null) {
 			for (int i = 0; i < this.methods.length; i++) {
+				if((this.methods[i].modifiers & ClassFileConstants.AccNative) != 0){
+					continue;
+				}
 				if (this.methods[i] != null) {
 					output.append('\n');
 					this.methods[i].generateJavascript(scope, indent + 1, output);
@@ -1759,8 +1859,10 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		generateClassBody(this, tab + 1, output);
 		output.append('\n');
 		printIndent(tab + 1, output);
-		output.append("return ").append(this.name).append(";");
-		output.append('\n');
+		if((this.modifiers & ClassFileConstants.AccNative) == 0){   //if native skip 
+			output.append("return ").append(this.name).append(";");
+			output.append('\n');
+		}
 		printIndent(tab, output);
 		output.append("})()");
 		return output;
@@ -1768,7 +1870,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	
 	
 	/**
-	 * Generic bytecode generation for type
+	 * Generic javascript generation for type
 	 */
 	public void generateJavascript(CompilationUnitScope unitScope, JavascriptFile enclosingClassFile) {
 //		if ((this.bits & ASTNode.HasBeenGenerated) != 0)
@@ -1784,7 +1886,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		try {
 			// create the result for a compiled type
-			JavascriptFile classFile = JavascriptFile.getNewInstance(this.binding);
+			JavascriptFile jsFile = JavascriptFile.getNewInstance(this.binding);
 			
 			this.importManager = new ImportManager(this);
 //			JavascriptFile.initialize(this.binding, enclosingClassFile, false);
@@ -1829,9 +1931,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 //			// finalize the compiled type result
 //			classFile.addAttributes();
 			
-			StringBuffer output = classFile.content;
+			StringBuffer output = jsFile.content;
 			
-			generateAMDHeader(unitScope.referenceContext, 0, output);
+			generateAMDHeader(unitScope.referenceContext, 0, output, Javascript.DEFINE);
 			
 			generateClassBody(this, 1, output);
 			
@@ -1842,7 +1944,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			
 			this.scope.referenceCompilationUnit().compilationResult.record(
 				this.binding.constantPoolName(),
-				classFile);
+				jsFile);
 		} catch (AbortType e) {
 			if (this.binding == null)
 				return;
@@ -1855,7 +1957,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	private void generateExportObject(int indent, StringBuffer output) {
 		output.append(Javascript.CR);
 		printIndent(indent, output).append(Javascript.RETURN).append(Javascript.WHITESPACE);
-		output.append(this.name).append(Javascript.SEMICOLON);
+//		if((this.modifiers & ClassFileConstants.AccNative) != 0){
+//			output.append("null;");
+//		} else {
+			output.append(this.name).append(Javascript.SEMICOLON);
+//		}
 	}
 	
 	private char[] getTypeName(){
@@ -1867,23 +1973,28 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 	}
 
-//	public void generateClassBody(int indent, StringBuffer output){
+	
+//	public void generateClassBody(TypeDeclaration type, int indent, StringBuffer output){
 //		
-//		output.append("\n");
-//
-//		printIndent(indent, output).append("function ");
-//		output.append(getTypeName());
-//		output.append("(");
+//		if((this.modifiers & ClassFileConstants.AccNative) == 0){
+//			output.append("\n");
+//	
+//			printIndent(indent, output).append("function ");
+//			output.append(type.getTypeName());
+//			output.append("(");
+//		}
 //		
-//		if(this.methods != null){
+//		if(type.methods != null){
 //			List<ConstructorDeclaration> constructors = new ArrayList<ConstructorDeclaration>();
 //			Map<char[], ObjectVector> methodTable = new HashMap<char[], ObjectVector>();
-//			for(AbstractMethodDeclaration method : this.methods){
-//				if(method instanceof Clinit){
+//			for(AbstractMethodDeclaration method : type.methods){
+//				if(method instanceof Clinit  || (method.modifiers & ClassFileConstants.AccNative) != 0){
 //					continue;
 //				}
 //				if(method.isConstructor()){
-//					constructors.add((ConstructorDeclaration) method);
+//					if((this.modifiers & ClassFileConstants.AccNative) == 0){  //native type no non-native constructor default
+//						constructors.add((ConstructorDeclaration) method);
+//					}
 //				} else {
 //					ObjectVector methods = (ObjectVector) methodTable.get(method.selector);
 //					if(methods == null){
@@ -1894,39 +2005,43 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 //				}
 //			}
 //			
-//			if(constructors.size() > 1){
-//				output.append("){");
-//				output.append("\n");
-//				printIndent(indent + 1, output).append("var args = Array.prototype.slice.call(arguments);");
-//				output.append("\n");
-//				printIndent(indent + 1, output).append("return ").append(this.name).append(".__f[args[0]].apply(this, args.slice(1, args.length));");
-//				output.append("\n");
-//				printIndent(indent, output).append("}");
-//					
-//				output.append("\n");
-//				printIndent(indent, output).append(this.name).append(".__f").append(" = {");
-//				boolean comma = false;
-//				for(ConstructorDeclaration constructor : constructors){
-//					if(comma){
-//						output.append(", ");
+//			if((this.modifiers & ClassFileConstants.AccNative) == 0){
+//				if(constructors.size() > 1){
+//					output.append("){");
+//					output.append("\n");
+//					printIndent(indent + 1, output).append("var args = Array.prototype.slice.call(arguments);");
+//					output.append("\n");
+//					printIndent(indent + 1, output).append("return ").append(type.name).append(".__f[args[0]].apply(this, args.slice(1, args.length));");
+//					output.append("\n");
+//					printIndent(indent, output).append("}");
+//						
+//					output.append("\n");
+//					printIndent(indent, output).append(type.name).append(".__f").append(" = {");
+//					boolean comma = false;
+//					for(ConstructorDeclaration constructor : constructors){
+//						if(comma){
+//							output.append(", ");
+//						}
+//						output.append("\n");
+//						printIndent(indent + 1, output);
+//						output.append(getMethodIndex(constructor)).append(" : ").append("function(");
+//						generateConstructor(constructor, initializerScope, indent, output, type);
+//						comma = true;
 //					}
 //					output.append("\n");
-//					printIndent(indent + 1, output);
-//					output.append(getMethodIndex(constructor)).append(" : ").append("function(");
-//					generateConstructor(constructor, initializerScope, indent, output);
-//					comma = true;
+//					printIndent(indent, output).append("};");
+//				} else if(constructors.size() == 1){
+//					ConstructorDeclaration constructor = constructors.get(0);
+//					generateConstructor(constructor, initializerScope, indent, output, type);
 //				}
-//				output.append("\n");
-//				printIndent(indent, output).append("};");
-//			} else if(constructors.size() == 1){
-//				ConstructorDeclaration constructor = constructors.get(0);
-//				generateConstructor(constructor, initializerScope, indent, output);
 //			}
 //			
 //			//generate static fields
-//			generateFields(scope, indent, output, false);
+//			generateFields(scope, indent, output, false, type);
 //			
-//			generateProperties(initializerScope, indent, output);
+//			generateProperties(initializerScope, indent, output, type);
+//			
+//			generateIndexers(initializerScope, indent, output, type);
 //			
 //			//generate method
 //			
@@ -1936,9 +2051,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 //					output.append("\n");
 //					MethodDeclaration method = (MethodDeclaration) methods.elementAt(0);
 //					if(method.isStatic()){
-//						printIndent(indent, output).append(getTypeName()).append(".").append(method.selector).append(" = function(");
+//						printIndent(indent, output).append(type.getTypeName()).append(".").append(method.selector).append(" = function(");
 //					} else {
-//						printIndent(indent, output).append(getTypeName()).append(".prototype.").append(method.selector).append(" = function(");
+//						printIndent(indent, output).append(type.getTypeName()).append(".prototype.").append(method.selector).append(" = function(");
 //					}
 //					generateMethod(method, initializerScope, indent, output);
 //				} else {
@@ -1981,23 +2096,23 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 //						continue;
 //		
 //					} else if(staticMethods.size() ==1){
-//						printIndent(indent, output).append(getTypeName()).append(".").append(name).append(" = function(");
+//						printIndent(indent, output).append(type.getTypeName()).append(".").append(name).append(" = function(");
 //						generateMethod(staticMethods.get(0), initializerScope, indent, output);
 //						continue;
 //					}
 //					
 //					if(instanceMethods.size() > 1){
 //						output.append("\n");
-//						printIndent(indent, output).append(getTypeName()).append(".prototype.").append(name).append(" = function() {");
+//						printIndent(indent, output).append(type.getTypeName()).append(".prototype.").append(name).append(" = function() {");
 //						output.append("\n");
 //						printIndent(indent + 1, output).append("var args = Array.prototype.slice.call(arguments);");
 //						output.append("\n");
-//						printIndent(indent + 1, output).append("return ").append(getTypeName()).append(".prototype.").append(name).append(".__f[args[0]].apply(this, args.slice(1, args.length));");
+//						printIndent(indent + 1, output).append("return ").append(type.getTypeName()).append(".prototype.").append(name).append(".__f[args[0]].apply(this, args.slice(1, args.length));");
 //						output.append("\n");
 //						printIndent(indent, output).append("}");
 //						
 //						output.append("\n");
-//						printIndent(indent, output).append(getTypeName()).append(".").append(name).append(".__f").append(" = {");
+//						printIndent(indent, output).append(type.getTypeName()).append(".").append(name).append(".__f").append(" = {");
 //						boolean comma = false;
 //						for(MethodDeclaration method : instanceMethods){
 //							if(comma){
@@ -2013,32 +2128,39 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 //						printIndent(indent, output).append("};");
 //		
 //					} else if(staticMethods.size() ==1){
-//						printIndent(indent, output).append(getTypeName()).append(".prototype.").append(name).append(" = function(");
+//						printIndent(indent, output).append(type.getTypeName()).append(".prototype.").append(name).append(" = function(");
 //						generateMethod(staticMethods.get(0), initializerScope, indent, output);
 //					}
 //				}
 //			}
 //		}
 //		
-//		if(this.memberTypes != null){
-//			for(TypeDeclaration member : this.memberTypes){
-//				member.generateJavascript(scope, indent , output);
+//		if(type.memberTypes != null){
+//			for(TypeDeclaration member : type.memberTypes){
+//				output.append('\n');
+//				printIndent(indent, output);
+//				if((member.modifiers | ClassFileConstants.AccStatic) != 0){
+//					output.append(type.getTypeName()).append(".").append(member.getTypeName()).append(" = ");
+//				} else {
+//					output.append(type.getTypeName()).append(".prototype.").append(member.getTypeName()).append(" = ");
+//				}
+//				generateMemberType(initializerScope, indent, output, member);
 //			}
 //		}
 //		
 //		//type information
 //		output.append("\n");
-//		printIndent(indent, output).append(getTypeName()).append(".prototype.Type = new Type(");
-//		if(this.binding.superclass != null){
-//			output.append(this.binding.superclass.constantPoolName()).append(", ");
+//		printIndent(indent, output).append(type.getTypeName()).append(".prototype.Type = new Type(");
+//		if(type.binding.superclass != null){
+//			output.append(type.binding.superclass.constantPoolName()).append(", ");
 //		} else{
 //			output.append(" ").append(", ");
 //		}
-//		output.append("\"").append(this.binding.constantPoolName()).append("\"");
+//		output.append("\"").append(type.binding.constantPoolName()).append("\"");
 //		output.append(", [");
-//		if(this.binding.superInterfaces != null){
+//		if(type.binding.superInterfaces != null){
 //			boolean comma = false;
-//			for(ReferenceBinding binding : this.binding.superInterfaces){
+//			for(ReferenceBinding binding : type.binding.superInterfaces){
 //				if(comma){
 //					output.append(", ");
 //				}
@@ -2049,156 +2171,134 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 //		output.append(";");
 //	}
 	
+//	private static final String EMPTY = "";
+//	private String getOverloadPostfix(AbstractMethodDeclaration method){
+//		Annotation overload = null;
+//		if(method.annotations == null){
+//			return EMPTY;
+//		}
+//		for(Annotation annotation : method.annotations){
+//			if(annotation.resolvedType == null){
+//				continue;
+//			}
+//			if(annotation.resolvedType.id == TypeIds.T_JavaLangAnnotationOverload){
+//				overload = annotation;
+//				break;
+//			}
+//		}
+//		
+//		if(overload == null){
+//			return EMPTY;
+//		}
+//		
+//		MemberValuePair[] pairs = overload.memberValuePairs();
+//		pairLoop: for (int i = 0, length = pairs.length; i < length; i++) {
+//			MemberValuePair pair = pairs[i];
+//			if (CharOperation.equals(pair.name, TypeConstants.VALUE)) {
+//				Expression value = pair.value;
+//	
+//					Constant cst = value.constant;
+//					if (cst != Constant.NotAConstant && cst.typeID() == T_JavaLangString) {
+//						return cst.stringValue();
+//					}
+//				break pairLoop;
+//			}
+//		}
+//		
+//		return EMPTY;
+//	}
+	
 	public void generateClassBody(TypeDeclaration type, int indent, StringBuffer output){
 		
-		output.append("\n");
-
-		printIndent(indent, output).append("function ");
-		output.append(type.getTypeName());
-		output.append("(");
+		if((this.modifiers & ClassFileConstants.AccNative ) == 0 ){
+			output.append("\n");
+	
+			printIndent(indent, output).append("function ");
+			output.append(type.getTypeName());
+			output.append("(");
+		}
 		
 		if(type.methods != null){
 			List<ConstructorDeclaration> constructors = new ArrayList<ConstructorDeclaration>();
-			Map<char[], ObjectVector> methodTable = new HashMap<char[], ObjectVector>();
+			for(AbstractMethodDeclaration method : type.methods){
+				if(method.isConstructor()){
+					if((this.modifiers & ClassFileConstants.AccNative) == 0){  //native type no non-native constructor default
+						constructors.add((ConstructorDeclaration) method);
+					}
+				}
+			}
+			
+			if((this.modifiers & ClassFileConstants.AccNative) == 0){
+				if(constructors.size() > 1){
+					output.append("){");
+					output.append("\n");
+					printIndent(indent + 1, output).append("var args = Array.prototype.slice.call(arguments);");
+					output.append("\n");
+					printIndent(indent + 1, output).append("return ").append(type.name).append(".__f[args[args.length-1]].apply(this, args.slice(0, args.length-1));");
+					output.append("\n");
+					printIndent(indent, output).append("}");
+						
+					output.append("\n");
+					printIndent(indent, output).append(type.name).append(".__f").append(" = {");
+					boolean comma = false;
+					for(ConstructorDeclaration constructor : constructors){
+						if(comma){
+							output.append(", ");
+						}
+						output.append("\n");
+						printIndent(indent + 1, output);
+						output.append("\"").append(Annotation.getOverloadPostfix(constructor.annotations)).append("\"").append(" : ").append("function(");
+						generateConstructor(constructor, initializerScope, indent, output, type);
+						comma = true;
+					}
+					output.append("\n");
+					printIndent(indent, output).append("};");
+				} else if(constructors.size() == 1){
+					ConstructorDeclaration constructor = constructors.get(0);
+					generateConstructor(constructor, initializerScope, indent, output, type);
+				} else if((this.modifiers & ClassFileConstants.AccInterface) != 0){
+					output.append("){};");
+				}
+			}
+		}
+		
+		//generate static fields
+		generateFields(scope, indent, output, false, type);
+		
+		generateProperties(initializerScope, indent, output, type);
+		
+		generateIndexers(initializerScope, indent, output, type);
+		
+		if(type.methods != null){
+			
 			for(AbstractMethodDeclaration method : type.methods){
 				if(method instanceof Clinit){
 					continue;
 				}
 				if(method.isConstructor()){
-					constructors.add((ConstructorDeclaration) method);
+					continue;
+				}
+
+				if((method.modifiers & ClassFileConstants.AccNative) != 0){
+					continue;
+				}
+				
+				if((method.modifiers & ClassFileConstants.AccPrivate) != 0){
+					generatePrivateMethod((MethodDeclaration) method, scope, indent, output);
+					continue;
+				}
+				
+				output.append("\n");
+				if(method.isStatic()){
+					printIndent(indent, output).append(type.getTypeName()).append(".");
 				} else {
-					ObjectVector methods = (ObjectVector) methodTable.get(method.selector);
-					if(methods == null){
-						methods = new ObjectVector();
-						methodTable.put(method.selector, methods);
-					}
-					methods.add(method);
+					printIndent(indent, output).append(type.getTypeName()).append(".prototype.");
 				}
-			}
-			
-			if(constructors.size() > 1){
-				output.append("){");
-				output.append("\n");
-				printIndent(indent + 1, output).append("var args = Array.prototype.slice.call(arguments);");
-				output.append("\n");
-				printIndent(indent + 1, output).append("return ").append(type.name).append(".__f[args[0]].apply(this, args.slice(1, args.length));");
-				output.append("\n");
-				printIndent(indent, output).append("}");
+				
+				output.append(getMethodName(method));
 					
-				output.append("\n");
-				printIndent(indent, output).append(type.name).append(".__f").append(" = {");
-				boolean comma = false;
-				for(ConstructorDeclaration constructor : constructors){
-					if(comma){
-						output.append(", ");
-					}
-					output.append("\n");
-					printIndent(indent + 1, output);
-					output.append(getMethodIndex(constructor)).append(" : ").append("function(");
-					generateConstructor(constructor, initializerScope, indent, output, type);
-					comma = true;
-				}
-				output.append("\n");
-				printIndent(indent, output).append("};");
-			} else if(constructors.size() == 1){
-				ConstructorDeclaration constructor = constructors.get(0);
-				generateConstructor(constructor, initializerScope, indent, output, type);
-			}
-			
-			//generate static fields
-			generateFields(scope, indent, output, false, type);
-			
-			generateProperties(initializerScope, indent, output, type);
-			
-			//generate method
-			
-			for(char[] name : methodTable.keySet()){
-				ObjectVector methods = (ObjectVector) methodTable.get(name);
-				if(methods.size == 1){
-					output.append("\n");
-					MethodDeclaration method = (MethodDeclaration) methods.elementAt(0);
-					if(method.isStatic()){
-						printIndent(indent, output).append(type.getTypeName()).append(".").append(method.selector).append(" = function(");
-					} else {
-						printIndent(indent, output).append(type.getTypeName()).append(".prototype.").append(method.selector).append(" = function(");
-					}
-					generateMethod(method, initializerScope, indent, output);
-				} else {
-					List<MethodDeclaration> staticMethods = new ArrayList<MethodDeclaration>();
-					List<MethodDeclaration> instanceMethods = new ArrayList<MethodDeclaration>();
-					for(int i = 0, size = methods.size; i<size; i++){
-						MethodDeclaration method = (MethodDeclaration) methods.elementAt(i);
-						if(method.isStatic()){
-							staticMethods.add(method);
-						} else {
-							instanceMethods.add(method);
-						}
-					}
-					if(staticMethods.size() > 1){
-						output.append("\n");
-						printIndent(indent, output).append(getTypeName()).append(".").append(name).append(" = function() {");
-						output.append("\n");
-						printIndent(indent + 1, output).append("var args = Array.prototype.slice.call(arguments);");
-						output.append("\n");
-						printIndent(indent + 1, output).append("return ").append(getTypeName()).append(".").append(name).append(".__f[args[0]].apply(this, args.slice(1, args.length));");
-						output.append("\n");
-						printIndent(indent, output).append("}");
-						
-						output.append("\n");
-						printIndent(indent, output).append(getTypeName()).append(".").append(name).append(".__f").append(" = {");
-						boolean comma = false;
-						for(MethodDeclaration method : staticMethods){
-							if(comma){
-								output.append(", ");
-							}
-							output.append("\n");
-							printIndent(indent + 1, output);
-							output.append(getMethodIndex(method)).append(" : ").append("function(");
-							generateMethod(method, initializerScope, indent + 2, output);
-							comma = true;
-						}
-						output.append("\n");
-						printIndent(indent, output).append("};");
-						
-						continue;
-		
-					} else if(staticMethods.size() ==1){
-						printIndent(indent, output).append(type.getTypeName()).append(".").append(name).append(" = function(");
-						generateMethod(staticMethods.get(0), initializerScope, indent, output);
-						continue;
-					}
-					
-					if(instanceMethods.size() > 1){
-						output.append("\n");
-						printIndent(indent, output).append(type.getTypeName()).append(".prototype.").append(name).append(" = function() {");
-						output.append("\n");
-						printIndent(indent + 1, output).append("var args = Array.prototype.slice.call(arguments);");
-						output.append("\n");
-						printIndent(indent + 1, output).append("return ").append(type.getTypeName()).append(".prototype.").append(name).append(".__f[args[0]].apply(this, args.slice(1, args.length));");
-						output.append("\n");
-						printIndent(indent, output).append("}");
-						
-						output.append("\n");
-						printIndent(indent, output).append(type.getTypeName()).append(".").append(name).append(".__f").append(" = {");
-						boolean comma = false;
-						for(MethodDeclaration method : instanceMethods){
-							if(comma){
-								output.append(", ");
-							}
-							output.append("\n");
-							printIndent(indent + 1, output);
-							output.append(getMethodIndex(method)).append(" : ").append("function(");
-							generateMethod(method, initializerScope, indent + 2, output);
-							comma = true;
-						}
-						output.append("\n");
-						printIndent(indent, output).append("};");
-		
-					} else if(staticMethods.size() ==1){
-						printIndent(indent, output).append(type.getTypeName()).append(".prototype.").append(name).append(" = function(");
-						generateMethod(staticMethods.get(0), initializerScope, indent, output);
-					}
-				}
+				output.append(" = function(");
+				generateMethod((MethodDeclaration) method, scope, indent, output);
 			}
 		}
 		
@@ -2238,16 +2338,35 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append(";");
 	}
 	
-	private int getMethodIndex(AbstractMethodDeclaration method){
-		for(int i = 0, length = this.methods.length; i < length; i++){
-			if(this.methods[i] == method){
-				return i;
+	private char[] getMethodName(AbstractMethodDeclaration method){
+		if((method.bits & TagBits.AnnotationOverload) != 0){
+			return CharOperation.concat(method.selector, Annotation.getOverloadPostfix(method.annotations));
+		} else {
+			return method.selector;
+		}
+	}
+
+	private void generatePrivateMethod(MethodDeclaration method,
+			ClassScope scope, int indent, StringBuffer output) {
+		output.append('\n');
+		printIndent(indent, output);
+		if(method.isStatic()){
+			output.append(this.name).append('.').append(getMethodName(method)).append(" = function").append("(");
+		} else{
+			output.append("function ").append(getMethodName(method)).append("(");
+		}
+
+		if(method.arguments != null){
+			for(int j = 0, length1 = method.arguments.length; j < length1; j++){
+				if(j > 0)
+					output.append(", ");
+				output.append(method.arguments[j].name);
 			}
 		}
+		generateMethodBody(method, scope, indent, output);
 		
-		return -1;
 	}
-	
+
 	private void generateMemberType(Scope scope, int indent, StringBuffer output, TypeDeclaration memberType){
 		output.append("(function(){").append('\n');
 		generateClassBody(memberType, indent+1, output);
@@ -2265,9 +2384,28 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				if(!(type.fields[i] instanceof PropertyDeclaration)){
 					continue;
 				}
-				this.fields[i].generateStatement(initializerScope, indent, output);
+				if((this.fields[i].modifiers & ClassFileConstants.AccNative) != 0){
+					continue;
+				}
+				this.fields[i].generateStatement(scope, indent, output);
 			}
 		}
+	}
+	
+	private void generateIndexers(MethodScope initializerScope2, int indent,
+			StringBuffer output, TypeDeclaration type) {
+		if(type.fields != null){
+			for(int i = 0, length = type.fields.length; i < length; i++){
+				if(!(type.fields[i] instanceof IndexerDeclaration)){
+					continue;
+				}
+				if((this.fields[i].modifiers & ClassFileConstants.AccNative) != 0){
+					continue;
+				}
+				this.fields[i].generateStatement(scope, indent, output);
+			}
+		}
+		
 	}
 	
 	private void generateFields(Scope scope, int indent, StringBuffer output, boolean instance, TypeDeclaration type){
@@ -2278,12 +2416,17 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						|| type.fields[i] instanceof EventDeclaration){
 					continue;
 				}
+				
+				if((type.fields[i].modifiers & ClassFileConstants.AccNative) != 0){
+					continue;
+				}
+				
 				if(instance && !type.fields[i].isStatic()){
 					output.append("\n");
-					type.fields[i].generateStatement(initializerScope, indent, output);
+					type.fields[i].generateStatement(scope, indent, output);
 				} else if(!instance && type.fields[i].isStatic()){
 					output.append("\n");
-					type.fields[i].generateStatement(initializerScope, indent, output);
+					type.fields[i].generateStatement(scope, indent, output);
 				}
 			}
 		}
@@ -2304,14 +2447,35 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append("\n");
 			printIndent(indent + 1, output);
 			ExplicitConstructorCall cstrCall = constructor.constructorCall;
-			output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
-			if(cstrCall.arguments != null){
-				for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
-					output.append(", ");
-					cstrCall.arguments[j].generateExpression(initializerScope, indent, output);
+			if(cstrCall.isImplicitSuper() || cstrCall.isSuperAccess()){
+				if(!CharOperation.equals(TypeConstants.JAVA_LANG_OBJECT, cstrCall.binding.declaringClass.compoundName)){
+					output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
+					if(cstrCall.arguments != null){
+						for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
+							output.append(", ");
+							cstrCall.arguments[j].generateExpression(scope, indent, output);
+						}
+					}
+					output.append(");");
 				}
+			} else {   //this()
+				output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
+				if(cstrCall.arguments != null){
+					for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
+						output.append(", ");
+						cstrCall.arguments[j].generateExpression(scope, indent, output);
+					}
+				}
+				output.append(");");
 			}
-			output.append(");");
+//			output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
+//			if(cstrCall.arguments != null){
+//				for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
+//					output.append(", ");
+//					cstrCall.arguments[j].generateExpression(scope, indent, output);
+//				}
+//			}
+//			output.append(");");
 		}
 		
 		generateFields(scope, indent + 1, output, true, type);
@@ -2320,7 +2484,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			for(int i=0, length = constructor.statements.length; i < length; i++){
 				output.append("\n");
 				printIndent(indent + 1, output);
-				constructor.statements[i].generateStatement(initializerScope, indent, output);
+				constructor.statements[i].generateStatement(scope, indent, output);
 			}
 		}
 		
@@ -2336,12 +2500,17 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				output.append(method.arguments[j].name);
 			}
 		}
+		generateMethodBody(method, scope, indent, output);
+	}
+
+	private void generateMethodBody(MethodDeclaration method, Scope scope, int indent,
+			StringBuffer output) {
 		output.append(") {");
 		
 		if(method.statements != null){
 			for(int j = 0, length = method.statements.length; j < length; j++){
 				output.append("\n");
-				method.statements[j].generateStatement(initializerScope, indent + 1, output);
+				method.statements[j].generateStatement(scope, indent + 1, output);
 			}
 		}
 		
@@ -2349,28 +2518,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		printIndent(indent, output).append("}");
 	}
 	
-	private void generateAMDHeader(CompilationUnitDeclaration unit, int indent, StringBuffer output) {
+	private void generateAMDHeader(CompilationUnitDeclaration unit, int indent, StringBuffer output, String function) {
 		printIndent(indent, output);
-		output.append(Javascript.DEFINE).append(Javascript.LPAREN).append(Javascript.DOUBLE_QUOTE).append(Javascript.DOUBLE_QUOTE);
+		output.append(function).append(Javascript.LPAREN).append(Javascript.DOUBLE_QUOTE).append(Javascript.DOUBLE_QUOTE);
 		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
 		output.append(Javascript.LBRACKET);
-		
-//		boolean commaSet = false;
-//		if(unit.imports != null){
-//			for(ImportReference imp : unit.imports){
-//				if(commaSet){
-//					output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
-//				}
-//				output.append(Javascript.DOUBLE_QUOTE);
-//				for (int i = 0; i < imp.tokens.length; i++) {
-//					if (i > 0) output.append('.');
-//					output.append(imp.tokens[i]);
-//				}
-//				output.append(Javascript.DOUBLE_QUOTE);
-//				
-//				commaSet = true;
-//			}
-//		}
 		
 		this.importManager.generateDependency(this.scope, indent, output);
 
@@ -2378,16 +2530,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);;
 		output.append(Javascript.FUNCTION).append(Javascript.LPAREN);
 		
-//		if(unit.imports != null){
-//			commaSet = false;
-//			for(ImportReference imp : unit.imports){
-//				if(commaSet){
-//					output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
-//				}
-//				output.append(imp.tokens[imp.tokens.length - 1]);
-//				commaSet = true;
-//			}
-//		}
 		this.importManager.generateParameters(this.scope, indent, output);
 		output.append(Javascript.RPAREN).append(Javascript.LBRACE);
 	}

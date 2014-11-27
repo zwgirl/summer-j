@@ -580,21 +580,31 @@ public class ForeachStatement extends Statement {
 
 	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 
-		printIndent(indent, output).append("for ("); //$NON-NLS-1$
+		output.append("for ("); //$NON-NLS-1$
 		this.elementVariable.generateExpression(scope, 0, output);
-		output.append(" : ");//$NON-NLS-1$
+		output.append(" in ");//$NON-NLS-1$
 		if (this.collection != null) {
-			this.collection.print(0, output).append(") "); //$NON-NLS-1$
+			this.collection.generateExpression(scope, indent, output).append(") "); //$NON-NLS-1$
 		} else {
 			output.append(')');
 		}
 		//block
 		if (this.action == null) {
 			output.append(';');
-		} else {
+		} else if(this.action instanceof Block){
 			output.append('\n');
-			this.action.generateStatement(scope, indent + 1, output);
+			this.action.generateStatement(scope, indent, output);
+		} else {
+			this.action.generateExpression(scope, indent, output);
+			output.append(';');
 		}
 		return output;
+	}
+	
+	@Override
+	public StringBuffer generateStatement(Scope scope, int indent,
+			StringBuffer output) {
+		printIndent(indent, output);
+		return this.generateExpression(scope, indent, output);
 	}
 }

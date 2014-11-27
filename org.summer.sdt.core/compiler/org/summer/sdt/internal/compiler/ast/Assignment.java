@@ -292,9 +292,4 @@ public class Assignment extends Expression {
 		this.lhs.generateExpression(scope, indent, output).append(" = "); //$NON-NLS-1$
 		return this.expression.generateExpression(scope, 0, output);
 	}
-	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
-		//no () when used as a statement
-		return generateJavascript(scope, indent, output).append(';');
-	}
 }

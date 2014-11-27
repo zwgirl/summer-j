@@ -2751,6 +2751,17 @@ public class ProblemReporter extends ProblemHandler {
 			fieldDecl.sourceStart,
 			fieldDecl.sourceEnd);
 	}
+	//cym 2014-11-24
+	public void illegalModifierForProperty(ReferenceBinding type, PropertyDeclaration propDecl) {
+		String[] arguments = new String[] {new String(propDecl.name)};
+		this.handle(
+			IProblem.IllegalModifierForField,
+			arguments,
+			arguments,
+			propDecl.sourceStart,
+			propDecl.sourceEnd);
+	}
+	
 	public void illegalModifierForInterface(SourceTypeBinding type) {
 		String[] arguments = new String[] {new String(type.sourceName())};
 		this.handle(

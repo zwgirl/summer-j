@@ -1,5 +1,7 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.lookup.Scope;
+
 /**
  * 
  * @author cym
@@ -15,6 +17,12 @@ public class IndexerDeclaration extends FieldDeclaration {
 
 	public IndexerDeclaration(char[] name, int s, int e) {
 		super(name, s, e);
+	}
+	
+	@Override
+	public StringBuffer generateExpression(Scope scope, int indent,
+			StringBuffer output) {
+		return output.append("//TODO implements!");
 	}
 
 }

@@ -157,7 +157,9 @@ public interface TagBits {
 	/** From Java 8 */
 	long AnnotationRepeatable = ASTNode.Bit61L; // Only for annotation types and since these cannot have constructors, we can overload HasNonPrivateConstructor.
 
-
+	/** summer cym 2014-11-20*/
+	long AnnotationOverload = ASTNode.Bit63L;
+	
 	long AllStandardAnnotationsMask =
 				  AnnotationTargetMASK
 				| AnnotationRetentionMASK
@@ -172,7 +174,8 @@ public interface TagBits {
 				| AnnotationNonNull
 				| AnnotationNonNullByDefault
 				| AnnotationNullUnspecifiedByDefault
-				| AnnotationRepeatable;
+				| AnnotationRepeatable
+				| AnnotationOverload;    //cym add 2014-11-20
 	
 	long AnnotationNullMASK = AnnotationNullable | AnnotationNonNull;
 	/** @since 3.10 marks a type that has a nullness annotation directly or on a detail (array dimension/type argument). */

@@ -323,6 +323,11 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 	//XAML
 	public static final int IsNamedAttribute = ASTNode.Bit10;
 	
+	//ref argument
+	public static final int IsRefArgument = ASTNode.Bit15;
+	//out argument
+	public static final int IsOutArgument = ASTNode.Bit16;
+	
 	public static final Argument [] NO_ARGUMENTS = new Argument [0];
 
 	public ASTNode() {

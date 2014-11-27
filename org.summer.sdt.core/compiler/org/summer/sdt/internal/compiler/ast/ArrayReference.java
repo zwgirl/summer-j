@@ -22,6 +22,14 @@ import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
+import org.summer.sdt.internal.compiler.lookup.MissingTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.ProblemFieldBinding;
+import org.summer.sdt.internal.compiler.lookup.ProblemIndexerBinding;
+import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
+import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
@@ -31,6 +39,8 @@ public class ArrayReference extends Reference {
 
 	public Expression receiver;
 	public Expression position;
+	
+	public IndexerBinding binding;
 
 	public ArrayReference(Expression rec, Expression pos) {
 		this.receiver = rec;
@@ -202,19 +212,61 @@ public class ArrayReference extends Reference {
 		}
 		TypeBinding arrayType = this.receiver.resolveType(scope);
 		if (arrayType != null) {
-			this.receiver.computeConversion(scope, arrayType, arrayType);
-			if (arrayType.isArrayType()) {
-				TypeBinding elementType = ((ArrayBinding) arrayType).elementsType();
-				this.resolvedType = ((this.bits & ASTNode.IsStrictlyAssigned) == 0) ? elementType.capture(scope, this.sourceEnd) : elementType;
-			} else {
-				scope.problemReporter().referenceMustBeArrayTypeAt(arrayType, this);
+//			this.receiver.computeConversion(scope, arrayType, arrayType);
+//			if (arrayType.isArrayType()) {
+//				TypeBinding elementType = ((ArrayBinding) arrayType).elementsType();
+//				this.resolvedType = ((this.bits & ASTNode.IsStrictlyAssigned) == 0) ? elementType.capture(scope, this.sourceEnd) : elementType;
+//			} else {
+//				scope.problemReporter().referenceMustBeArrayTypeAt(arrayType, this);
+//			}
+			
+			this.resolvedType = arrayType;
+		}
+//		TypeBinding positionType = this.position.resolveTypeExpecting(scope, TypeBinding.INT);
+//		if (positionType != null) {
+//			this.position.computeConversion(scope, TypeBinding.INT, positionType);
+//		}
+		
+		TypeBinding positionType = this.position.resolveType(scope);
+		
+		//cym 2014-11-24
+		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
+		IndexerBinding indexerBinding = this.binding = scope.getIndexer((ReferenceBinding) this.resolvedType, new TypeBinding[] {positionType}, null);
+		if (!indexerBinding.isValidBinding()) {
+			this.constant = Constant.NotAConstant;
+			if (this.receiver.resolvedType instanceof ProblemReferenceBinding) {
+				// problem already got signaled on receiver, do not report secondary problem
+				return null;
+			}
+			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=245007 avoid secondary errors in case of
+			// missing super type for anonymous classes ... 
+			ReferenceBinding declaringClass = indexerBinding.declaringClass;
+//			boolean avoidSecondary = declaringClass != null &&
+//									 declaringClass.isAnonymousType() &&
+//									 declaringClass.superclass() instanceof MissingTypeBinding;
+//			if (!avoidSecondary) {
+//				scope.problemReporter().invalidField(this, this.actualReceiverType);
+//			}
+			if (indexerBinding instanceof ProblemIndexerBinding) {
+				ProblemIndexerBinding problemFieldBinding = (ProblemIndexerBinding) indexerBinding;
+				IndexerBinding closestMatch = problemFieldBinding.closestMatch;
+				switch(problemFieldBinding.problemId()) {
+					case ProblemReasons.InheritedNameHidesEnclosingName :
+					case ProblemReasons.NotVisible :
+					case ProblemReasons.NonStaticReferenceInConstructorInvocation :
+					case ProblemReasons.NonStaticReferenceInStaticContext :
+						if (closestMatch != null) {
+							indexerBinding = closestMatch;
+						}
+				}
+			}
+			if (!indexerBinding.isValidBinding()) {
+				return null;
 			}
 		}
-		TypeBinding positionType = this.position.resolveTypeExpecting(scope, TypeBinding.INT);
-		if (positionType != null) {
-			this.position.computeConversion(scope, TypeBinding.INT, positionType);
-		}
-		return this.resolvedType;
+		
+		return indexerBinding.type;
+//		return this.resolvedType;
 	}
 	
 	public void traverse(ASTVisitor visitor, BlockScope scope) {

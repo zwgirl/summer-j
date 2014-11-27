@@ -229,36 +229,8 @@ public class PropertyDeclaration extends FieldDeclaration {
 //		}
 		return output;
 	}
-
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		printIndent(indent, output);
-//		generateModifiers(this.modifiers, output);
-//		if (this.annotations != null) {
-//			generateAnnotations(this.annotations, output);
-//			output.append(' ');
-//		}
-//
-//		if (this.type != null) {
-//			this.type.print(0, output).append(' ');
-//		}
-		output.append("var ");
-		output.append(this.name);
-//		switch(getKind()) {
-//			case ENUM_CONSTANT:
-//				if (this.initialization != null) {
-//					this.initialization.generateExpression(scope, indent, output);
-//				}
-//				break;
-//			default:
-//				if (this.initialization != null) {
-//					output.append(" = "); //$NON-NLS-1$
-//					this.initialization.generateExpression(scope, indent, output);
-//				}
-//		}
-		return output;
-	}
 	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append("\n");
 		if (this.javadoc != null) {
 			this.javadoc.generateJavascript(scope, indent, output);
@@ -272,12 +244,11 @@ public class PropertyDeclaration extends FieldDeclaration {
 			output.append(binding.declaringClass.sourceName).append(".prototype");
 		}
 		
-		output.append(", ").append(this.name).append(", ").append('{').append("\n");
+		output.append(", \"").append(this.name).append("\", ").append('{').append("\n");
 		boolean comma = false;
 		if(this.getter != null){
-			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append("get : ").append("function( ) {").append("\n");
+			output.append("get : ").append("function() {");
 			if(this.getter.statements != null){
 				for(int i = 0, length = this.getter.statements.length; i < length; i++){
 					output.append("\n");
@@ -298,7 +269,7 @@ public class PropertyDeclaration extends FieldDeclaration {
 			
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append("set : ").append("function(value ) {").append("\n");
+			output.append("set : ").append("function(value) {");
 			if(this.setter.statements != null){
 				for(int i = 0, length = this.setter.statements.length; i < length; i++){
 					output.append("\n");
@@ -313,7 +284,7 @@ public class PropertyDeclaration extends FieldDeclaration {
 		}
 		
 		output.append("\n");
-		printIndent(indent, output).append("});");
+		printIndent(indent, output).append("})");
 		
 		return output;
 	}

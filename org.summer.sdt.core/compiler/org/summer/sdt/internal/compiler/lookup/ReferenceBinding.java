@@ -149,6 +149,44 @@ abstract public class ReferenceBinding extends TypeBinding {
 		return null;
 	}
 	
+	//cym 2014-11-24
+	/**
+	 * Returns a combined range value representing: (start + (end<<32)), where start is the index of the first matching method
+	 * (remember methods are sorted alphabetically on selectors), and end is the index of last contiguous methods with same
+	 * selector.
+	 * -1 means no method got found
+	 * @param selector
+	 * @param sortedMethods
+	 * @return (start + (end<<32)) or -1 if no method found
+	 */
+	public static long binarySearch(FieldBinding[] sortedFields) {
+		if (sortedFields == null)
+			return -1;
+		int max = sortedFields.length;
+		if (max == 0)
+			return -1;
+		int left = 0, right = max - 1, selectorLength = IndexerBinding.THIS.length;
+		int mid = 0;
+		char[] midSelector;
+		while (left <= right) {
+			mid = left + (right - left) /2;
+			int compare = compare(IndexerBinding.THIS, midSelector = sortedFields[mid].name, selectorLength, midSelector.length);
+			if (compare < 0) {
+				right = mid-1;
+			} else if (compare > 0) {
+				left = mid+1;
+			} else {
+				int start = mid, end = mid;
+				// find first method with same selector
+				while (start > left && CharOperation.equals(sortedFields[start-1].name, IndexerBinding.THIS)){ start--; }
+				// find last method with same selector
+				while (end < right && CharOperation.equals(sortedFields[end+1].name, IndexerBinding.THIS)){ end++; }
+				return start + ((long)end<< 32);
+			}
+		}
+		return -1;
+	}
+	
 	/**
 	 * Returns a combined range value representing: (start + (end<<32)), where start is the index of the first matching method
 	 * (remember methods are sorted alphabetically on selectors), and end is the index of last contiguous methods with same
@@ -722,6 +760,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_INHERITED[3]))
 										this.id = TypeIds.T_JavaLangAnnotationInherited;
 									return;
+								case 'O' :   //cym add 1014-11-20
+									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_OVERLOAD[3]))
+										this.id = TypeIds.T_JavaLangAnnotationOverload;
+									return;
 								case 'R' :
 									switch (typeName.length) {
 										case 9 :
@@ -992,6 +1034,12 @@ abstract public class ReferenceBinding extends TypeBinding {
 	public FieldBinding getField(char[] fieldName, boolean needResolve) {
 		return null;
 	}
+	
+	//cym 2014-11-24
+	public IndexerBinding getExactIndexer(TypeBinding[] argumentTypes, CompilationUnitScope refScope) {
+		return null;
+	}
+	
 	/**
 	 * @see org.summer.sdt.internal.compiler.env.IDependent#getFileName()
 	 */

@@ -1050,23 +1050,14 @@ public class SingleNameReference extends NameReference implements OperatorIds {
 	public char[][] getName() {
 		return new char[][] {this.token};
 	}
-
-//	@Override
-//	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-//		if(this.binding instanceof FieldBinding){
-//			FieldBinding fieldBinding = (FieldBinding) this.binding;
-//			if(fieldBinding.isStatic()){
-//				buffer.append(fieldBinding.declaringClass.shortReadableName());
-//			} else {
-//				buffer.append(Javascript.THIS);
-//			}
-//			buffer.append(Javascript.DOT);
-//		}
-//		buffer.append(this.token);
-//		
-//	}
 	
 	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output){
+		if(this.binding instanceof LocalVariableBinding){
+			LocalVariableBinding local = (LocalVariableBinding) this.binding;
+			if(binding.isParameter() && (local.modifiers & ClassFileConstants.AccSynchronized )!= 0 || (local.modifiers & ClassFileConstants.AccVolatile) !=0){
+				return output.append(this.token).append(".").append(this.token);
+			}
+		}
 		return output.append(this.token);
 	}
 }

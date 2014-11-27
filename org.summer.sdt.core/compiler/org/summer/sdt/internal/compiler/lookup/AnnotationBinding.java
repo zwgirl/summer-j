@@ -57,6 +57,8 @@ public static AnnotationBinding[] addStandardAnnotations(AnnotationBinding[] rec
 		count++;
 	if ((annotationTagBits & TagBits.AnnotationSafeVarargs) != 0)
 		count++;
+	if ((annotationTagBits & TagBits.AnnotationOverload) != 0)  //cym 2014-11-24
+		count++;
 	if (count == 0) {
 		// this is possible if bits were set for null annotations
 		return recordedAnnotations;
@@ -83,6 +85,8 @@ public static AnnotationBinding[] addStandardAnnotations(AnnotationBinding[] rec
 		result[index++] = buildMarkerAnnotationForMemberType(TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_$_POLYMORPHICSIGNATURE, env);
 	if ((annotationTagBits & TagBits.AnnotationSafeVarargs) != 0)
 		result[index++] = buildMarkerAnnotation(TypeConstants.JAVA_LANG_SAFEVARARGS, env);
+	if ((annotationTagBits & TagBits.AnnotationOverload) != 0)   //cym 2014-11-24
+		result[index++] = buildMarkerAnnotation(TypeConstants.JAVA_LANG_OVERLOAD, env);
 	return result;
 }
 

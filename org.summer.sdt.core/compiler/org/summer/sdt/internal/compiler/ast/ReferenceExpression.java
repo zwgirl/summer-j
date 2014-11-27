@@ -851,22 +851,10 @@ public class ReferenceExpression extends FunctionalExpression implements Invocat
 
 	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
 		
-		this.lhs.generateJavascript(scope, 0, output);
-		output.append("::"); //$NON-NLS-1$
-		if (this.typeArguments != null) {
-			output.append('<');
-			int max = this.typeArguments.length - 1;
-			for (int j = 0; j < max; j++) {
-				this.typeArguments[j].generateJavascript(scope, 0, output);
-				output.append(", ");//$NON-NLS-1$
-			}
-			this.typeArguments[max].generateJavascript(scope, 0, output);
-			output.append('>');
-		}
-		if (isConstructorReference())
-			output.append("new"); //$NON-NLS-1$
-		else 
-			output.append(this.selector);
+		this.lhs.generateExpression(scope, tab, output);
+		output.append(".").append(this.selector).append(".bind(");
+		this.lhs.generateExpression(scope, tab, output);
+		output.append(")");
 		
 		return output;
 	}
