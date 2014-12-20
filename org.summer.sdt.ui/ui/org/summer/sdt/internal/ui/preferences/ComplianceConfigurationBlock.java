@@ -631,26 +631,26 @@ public class ComplianceConfigurationBlock extends OptionsConfigurationBlock {
 
 		// compliance must not be smaller than source or target
 		if (JavaModelUtil.isVersionLessThan(compliance, source)) {
-			status.setError(PreferencesMessages.ComplianceConfigurationBlock_src_greater_compliance);
-			return status;
+//			status.setError(PreferencesMessages.ComplianceConfigurationBlock_src_greater_compliance);
+//			return status;
 		}
 
 		if (JavaModelUtil.isVersionLessThan(compliance, target)) {
-			status.setError(PreferencesMessages.ComplianceConfigurationBlock_classfile_greater_compliance);
-			return status;
+//			status.setError(PreferencesMessages.ComplianceConfigurationBlock_classfile_greater_compliance);
+//			return status;
 		}
 
 		if (VERSION_CLDC_1_1.equals(target)) {
-			if (!VERSION_1_3.equals(source) || !JavaModelUtil.isVersionLessThan(compliance, VERSION_1_5)) {
-				status.setError(PreferencesMessages.ComplianceConfigurationBlock_cldc11_requires_source13_compliance_se14);
-				return status;
-			}
+//			if (!VERSION_1_3.equals(source) || !JavaModelUtil.isVersionLessThan(compliance, VERSION_1_5)) {
+//				status.setError(PreferencesMessages.ComplianceConfigurationBlock_cldc11_requires_source13_compliance_se14);
+//				return status;
+//			}
 		}
 
 		// target must not be smaller than source
 		if (!VERSION_1_3.equals(source) && JavaModelUtil.isVersionLessThan(target, source)) {
-			status.setError(PreferencesMessages.ComplianceConfigurationBlock_classfile_greater_source);
-			return status;
+//			status.setError(PreferencesMessages.ComplianceConfigurationBlock_classfile_greater_source);
+//			return status;
 		}
 
 		return status;

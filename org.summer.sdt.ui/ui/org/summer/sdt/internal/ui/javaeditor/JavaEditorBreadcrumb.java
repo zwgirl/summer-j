@@ -421,7 +421,7 @@ public class JavaEditorBreadcrumb extends EditorBreadcrumb {
 		private Runnable fRunnable;
 
 		/*
-		 * @seeorg.eclipse.jdt.core.IElementChangedListener#elementChanged(org.summer.sdt.core.
+		 * @seeorg.summer.sdt.core.IElementChangedListener#elementChanged(org.summer.sdt.core.
 		 * ElementChangedEvent)
 		 */
 		public void elementChanged(ElementChangedEvent event) {

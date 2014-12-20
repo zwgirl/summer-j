@@ -745,10 +745,22 @@ public class JavaElementLabelComposer {
 			}
 		}
 
+//		// post qualification
+//		if (getFlag(flags, JavaElementLabels.F_POST_QUALIFIED)) {
+//			fBuffer.append(JavaElementLabels.CONCAT_STRING);
+//			appendElementLabel(localVariable.getDeclaringMember(), JavaElementLabels.M_PARAMETER_TYPES | JavaElementLabels.M_FULLY_QUALIFIED | JavaElementLabels.T_FULLY_QUALIFIED | (flags & QUALIFIER_FLAGS));
+//		}
+		
+		//cym 2014-12-12
 		// post qualification
 		if (getFlag(flags, JavaElementLabels.F_POST_QUALIFIED)) {
 			fBuffer.append(JavaElementLabels.CONCAT_STRING);
-			appendElementLabel(localVariable.getDeclaringMember(), JavaElementLabels.M_PARAMETER_TYPES | JavaElementLabels.M_FULLY_QUALIFIED | JavaElementLabels.T_FULLY_QUALIFIED | (flags & QUALIFIER_FLAGS));
+			IJavaElement element = localVariable.getParent();
+			if(localVariable.getParent() instanceof ICompilationUnit){
+				appendElementLabel(element, JavaElementLabels.M_PARAMETER_TYPES | JavaElementLabels.M_FULLY_QUALIFIED | JavaElementLabels.T_FULLY_QUALIFIED | (flags & QUALIFIER_FLAGS));
+			} else {
+				appendElementLabel(localVariable.getDeclaringMember(), JavaElementLabels.M_PARAMETER_TYPES | JavaElementLabels.M_FULLY_QUALIFIED | JavaElementLabels.T_FULLY_QUALIFIED | (flags & QUALIFIER_FLAGS));
+			}
 		}
 	}
 
