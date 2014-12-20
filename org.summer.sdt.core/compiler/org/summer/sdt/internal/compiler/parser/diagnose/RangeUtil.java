@@ -130,6 +130,7 @@ public class RangeUtil {
 		}
 	}
 
+	//cym modified 2014-12-04
 	private static void computeDietRange0(TypeDeclaration[] types, RangeResult result) {
 		for (int j = 0; j < types.length; j++) {
 			//members
@@ -178,16 +179,6 @@ public class RangeUtil {
 						EventDeclaration indexer = (EventDeclaration) fields[i];
 						result.addInterval(indexer.bodyStart, indexer.bodyEnd);
 					}
-				}
-			}
-			
-			//PropertyDeclaration
-			PropertyDeclaration[] properties = types[j].properties;
-			if (properties != null) {
-				int length = properties.length;
-				for (int i = 0; i < length; i++) {
-					PropertyDeclaration property = properties[i];
-					result.addInterval(property.bodyStart, property.bodyEnd);
 				}
 			}
 		}

@@ -62,7 +62,8 @@ public class CompilationUnit extends Openable implements ICompilationUnit, org.s
 		this.name = name;
 		this.owner = owner;
 	}
-
+	
+	
 	/*
 	 * @see ICompilationUnit#applyTextEdit(TextEdit, IProgressMonitor)
 	 */
@@ -151,9 +152,9 @@ public class CompilationUnit extends Openable implements ICompilationUnit, org.s
 			compilerOptions,
 			true/*report local declarations*/,
 			!createAST /*optimize string literals only if not creating a DOM AST*/);
-//		parser.reportOnlyOneSyntaxError = !computeProblems;
-//		parser.setMethodsFullRecovery(true);
-//		parser.setStatementsRecovery((reconcileFlags & ICompilationUnit.ENABLE_STATEMENTS_RECOVERY) != 0);
+		parser.reportOnlyOneSyntaxError = !computeProblems;
+		parser.setMethodsFullRecovery(true);
+		parser.setStatementsRecovery((reconcileFlags & ICompilationUnit.ENABLE_STATEMENTS_RECOVERY) != 0);
 	
 		if (!computeProblems && !resolveBindings && !createAST) // disable javadoc parsing if not computing problems, not resolving and not creating ast
 			parser.javadocParser.checkDocComment = false;

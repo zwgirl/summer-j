@@ -29,6 +29,7 @@ import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.LoopingFlowContext;
 import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -184,8 +185,8 @@ public class ForeachStatement extends Statement {
 	/**
 	 * For statement code generation
 	 *
-	 * @param currentScope org.summer.sdt.internal.compiler.lookup.BlockScope
-	 * @param codeStream org.summer.sdt.internal.compiler.codegen.CodeStream
+	 * @param currentScope org.eclipse.jdt.internal.compiler.lookup.BlockScope
+	 * @param codeStream org.eclipse.jdt.internal.compiler.codegen.CodeStream
 	 */
 	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
 
@@ -416,7 +417,9 @@ public class ForeachStatement extends Statement {
 			boolean isTargetJsr14 = this.scope.compilerOptions().targetJDK == ClassFileConstants.JDK1_4;
 			if (collectionType.isArrayType()) { // for(E e : E[])
 				this.kind = ARRAY;
-				this.collectionElementType = ((ArrayBinding) collectionType).elementsType();
+//				this.collectionElementType = ((ArrayBinding) collectionType).elementsType();
+				//cym 2014-12-18
+				this.collectionElementType = ((ParameterizedTypeBinding) collectionType).elementsType();
 				if (!this.collectionElementType.isCompatibleWith(elementType)
 						&& !this.scope.isBoxingCompatibleWith(this.collectionElementType, elementType)) {
 					this.scope.problemReporter().notCompatibleTypesErrorInForeach(this.collection, this.collectionElementType, elementType);
@@ -578,13 +581,18 @@ public class ForeachStatement extends Statement {
 		visitor.endVisit(this, blockScope);
 	}
 
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+	@Override
+	public boolean doesNotCompleteNormally() {
+		return false; // may not be entered at all.
+	}
+
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 
 		output.append("for ("); //$NON-NLS-1$
-		this.elementVariable.generateExpression(scope, 0, output);
+		this.elementVariable.doGenerateExpression(scope, dependency, 0, output);
 		output.append(" in ");//$NON-NLS-1$
 		if (this.collection != null) {
-			this.collection.generateExpression(scope, indent, output).append(") "); //$NON-NLS-1$
+			this.collection.doGenerateExpression(scope, dependency, indent, output).append(") "); //$NON-NLS-1$
 		} else {
 			output.append(')');
 		}
@@ -593,18 +601,17 @@ public class ForeachStatement extends Statement {
 			output.append(';');
 		} else if(this.action instanceof Block){
 			output.append('\n');
-			this.action.generateStatement(scope, indent, output);
+			this.action.generateStatement(scope, dependency, indent, output);
 		} else {
-			this.action.generateExpression(scope, indent, output);
+			this.action.doGenerateExpression(scope, dependency, indent, output);
 			output.append(';');
 		}
 		return output;
 	}
 	
 	@Override
-	public StringBuffer generateStatement(Scope scope, int indent,
-			StringBuffer output) {
+	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		return this.generateExpression(scope, indent, output);
+		return this.generateExpression(scope, dependency, indent, output);
 	}
 }

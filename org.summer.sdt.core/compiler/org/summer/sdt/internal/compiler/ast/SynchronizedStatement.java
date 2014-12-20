@@ -12,17 +12,11 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.BranchLabel;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.flow.InsideSubRoutineFlowContext;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeIds;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class SynchronizedStatement extends SubRoutineStatement {
 
@@ -220,12 +214,20 @@ public class SynchronizedStatement extends SubRoutineStatement {
 		}
 		visitor.endVisit(this, blockScope);
 	}
-
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		printIndent(indent, output);
-		output.append("synchronized ("); //$NON-NLS-1$
-		this.expression.generateExpression(scope, 0, output).append(')');
-		output.append('\n');
-		return this.block.generateStatement(scope, indent + 1, output);
+	
+	@Override
+	public boolean doesNotCompleteNormally() {
+		return this.block.doesNotCompleteNormally();
+	}
+	@Override
+	public boolean completesByContinue() {
+		return this.block.completesByContinue();
+	}
+	
+	@Override
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
+			StringBuffer output) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

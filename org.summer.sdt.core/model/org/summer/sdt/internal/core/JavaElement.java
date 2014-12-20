@@ -14,8 +14,7 @@ import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -30,9 +29,32 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.PlatformObject;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
-import org.summer.sdt.core.*;
+import org.summer.sdt.core.IClassFile;
+import org.summer.sdt.core.IClasspathAttribute;
+import org.summer.sdt.core.IClasspathEntry;
+import org.summer.sdt.core.ICompilationUnit;
+import org.summer.sdt.core.IField;
+import org.summer.sdt.core.IJavaElement;
+import org.summer.sdt.core.IJavaModel;
+import org.summer.sdt.core.IJavaModelStatus;
+import org.summer.sdt.core.IJavaModelStatusConstants;
+import org.summer.sdt.core.IJavaProject;
+import org.summer.sdt.core.IMember;
+import org.summer.sdt.core.IOpenable;
+import org.summer.sdt.core.IPackageFragmentRoot;
+import org.summer.sdt.core.IParent;
+import org.summer.sdt.core.ISourceRange;
+import org.summer.sdt.core.ISourceReference;
+import org.summer.sdt.core.JavaModelException;
+import org.summer.sdt.core.WorkingCopyOwner;
 import org.summer.sdt.core.dom.ASTNode;
 import org.summer.sdt.core.dom.CompilationUnit;
 import org.summer.sdt.internal.compiler.lookup.Binding;
@@ -806,51 +828,39 @@ public abstract class JavaElement extends PlatformObject implements IJavaElement
 		}
 	}
 
-	/*
-	 * We don't use getContentEncoding() on the URL connection, because it might leave open streams behind.
-	 * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=117890
-	 */
 	protected String getURLContents(URL baseLoc, String docUrlValue) throws JavaModelException {
 		InputStream stream = null;
 		JarURLConnection connection2 = null;
+		URL docUrl = null;
+		URLConnection connection = null;
 		try {
-			URL docUrl = new URL(docUrlValue);
-			URLConnection connection = docUrl.openConnection();
-			Class[] parameterTypes = new Class[]{int.class};
-			Integer timeoutVal = new Integer(10000);
-			// set the connect and read timeouts using reflection since these methods are not available in java 1.4
-			Class URLClass = connection.getClass();
-			try {
-				Method connectTimeoutMethod = URLClass.getDeclaredMethod("setConnectTimeout", parameterTypes); //$NON-NLS-1$
-				Method readTimeoutMethod = URLClass.getDeclaredMethod("setReadTimeout", parameterTypes); //$NON-NLS-1$
-				connectTimeoutMethod.invoke(connection, new Object[]{timeoutVal});
-				readTimeoutMethod.invoke(connection, new Object[]{timeoutVal});
-			} catch (SecurityException e) {
-				// ignore
-			} catch (IllegalArgumentException e) {
-				// ignore
-			} catch (NoSuchMethodException e) {
-				// ignore
-			} catch (IllegalAccessException e) {
-				// ignore
-			} catch (InvocationTargetException e) {
-				// ignore
+			redirect: for (int i= 0; i < 5; i++) { // avoid endless redirects...
+				docUrl = new URL(docUrlValue);
+				connection = docUrl.openConnection();
+
+				int timeoutVal = 10000;
+				connection.setConnectTimeout(timeoutVal);
+				connection.setReadTimeout(timeoutVal);
+
+				if (connection instanceof HttpURLConnection) {
+					// HttpURLConnection doesn't redirect from http to https, see https://bugs.eclipse.org/450684
+					HttpURLConnection httpCon = (HttpURLConnection) connection;
+					if (httpCon.getResponseCode() == 301) {
+						docUrlValue = httpCon.getHeaderField("location"); //$NON-NLS-1$
+						if (docUrlValue != null) {
+							continue redirect;
+						}
+					}
+				} else if (connection instanceof JarURLConnection) {
+					connection2 = (JarURLConnection) connection;
+					// https://bugs.eclipse.org/bugs/show_bug.cgi?id=156307
+					connection.setUseCaches(false);
+				}
+				break;
 			}
-			
-			if (connection instanceof JarURLConnection) {
-				connection2 = (JarURLConnection) connection;
-				// https://bugs.eclipse.org/bugs/show_bug.cgi?id=156307
-				connection.setUseCaches(false);
-			}
-			try {
-				stream = new BufferedInputStream(connection.getInputStream());
-			} catch (IllegalArgumentException e) {
-				// https://bugs.eclipse.org/bugs/show_bug.cgi?id=304316
-				return null;
-			} catch (NullPointerException e) {
-				// https://bugs.eclipse.org/bugs/show_bug.cgi?id=304316
-				return null;
-			}
+
+			stream = new BufferedInputStream(connection.getInputStream());
+
 			String encoding = connection.getContentEncoding();
 			byte[] contents = org.summer.sdt.internal.compiler.util.Util.getInputStreamAsByteArray(stream, connection.getContentLength());
 			if (encoding == null) {
@@ -889,6 +899,12 @@ public abstract class JavaElement extends PlatformObject implements IJavaElement
 					return new String(contents);
 				}
 			}
+		} catch (IllegalArgumentException e) {
+			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=304316
+			return null;
+		} catch (NullPointerException e) {
+			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=304316
+			return null;
 		} catch (SocketTimeoutException e) {
 			throw new JavaModelException(new JavaModelStatus(IJavaModelStatusConstants.CANNOT_RETRIEVE_ATTACHED_JAVADOC_TIMEOUT, this));
 		} catch (MalformedURLException e) {
@@ -910,6 +926,9 @@ public abstract class JavaElement extends PlatformObject implements IJavaElement
 			throw new JavaModelException(e, IJavaModelStatusConstants.CANNOT_RETRIEVE_ATTACHED_JAVADOC);
 		} catch (IOException e) {
 			throw new JavaModelException(e, IJavaModelStatusConstants.IO_EXCEPTION);
+		} catch(Exception e) {
+			if (e.getCause() instanceof IllegalArgumentException) return null;
+			throw new JavaModelException(e, IJavaModelStatusConstants.CANNOT_RETRIEVE_ATTACHED_JAVADOC);
 		} finally {
 			if (stream != null) {
 				try {

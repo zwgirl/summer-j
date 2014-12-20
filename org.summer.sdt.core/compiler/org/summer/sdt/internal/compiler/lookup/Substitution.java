@@ -30,4 +30,4 @@ public interface Substitution {
 	 * Returns true for raw substitution
 	 */
 	boolean isRawSubstitution();
-}
+} 

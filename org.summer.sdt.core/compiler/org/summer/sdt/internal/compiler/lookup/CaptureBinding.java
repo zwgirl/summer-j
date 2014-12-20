@@ -10,11 +10,12 @@
  *     Stephan Herrmann - Contribution for
  *								Bug 400874 - [1.8][compiler] Inference infrastructure should evolve to meet JLS8 18.x (Part G of JSR335 spec)
  *								Bug 429384 - [1.8][null] implement conformance rules for null-annotated lower / upper type bounds
- *								Bug 434044 - Java 8 generics thinks single method is ambiguous
+ *								Bug 441797 - [1.8] synchronize type annotations on capture and its wildcard
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.lookup;
 
 import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.Wildcard;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
@@ -27,30 +28,43 @@ public class CaptureBinding extends TypeVariableBinding {
 
 	/* information to compute unique binding key */
 	public ReferenceBinding sourceType;
-	public int position;
+	public int start;
+	public int end;
+	public ASTNode cud; // to facilitate recaptures.
 
-	public CaptureBinding(WildcardBinding wildcard, ReferenceBinding sourceType, int position, int captureID) {
+	public CaptureBinding(WildcardBinding wildcard, ReferenceBinding sourceType, int start, int end, ASTNode cud, int captureID) {
 		super(TypeConstants.WILDCARD_CAPTURE_NAME_PREFIX, null, 0, wildcard.environment);
 		this.wildcard = wildcard;
 		this.modifiers = ClassFileConstants.AccPublic | ExtraCompilerModifiers.AccGenericSignature; // treat capture as public
 		this.fPackage = wildcard.fPackage;
 		this.sourceType = sourceType;
-		this.position = position;
+		this.start = start;
+		this.end = end;
 		this.captureID = captureID;
 		this.tagBits |= TagBits.HasCapturedWildcard;
 		if (wildcard.hasTypeAnnotations()) {
-			setTypeAnnotations(wildcard.getTypeAnnotations(), wildcard.environment.globalOptions.isAnnotationBasedNullAnalysisEnabled);
+			// register an unannoted version before adding the annotated wildcard:
+			CaptureBinding unannotated = (CaptureBinding) clone(null);
+			unannotated.wildcard = (WildcardBinding) this.wildcard.unannotated();
+			this.environment.getUnannotatedType(unannotated);
+			this.id = unannotated.id; // transfer fresh id
+			// now register this annotated type:
+			this.environment.typeSystem.cacheDerivedType(this, unannotated, this);
+			// propagate from wildcard to capture - use super version, because our own method propagates type annotations in the opposite direction:
+			super.setTypeAnnotations(wildcard.getTypeAnnotations(), wildcard.environment.globalOptions.isAnnotationBasedNullAnalysisEnabled);
 			if (wildcard.hasNullTypeAnnotations())
 				this.tagBits |= TagBits.HasNullTypeAnnotation;
 		}
+		this.cud = cud;
 	}
 	
 	// for subclass CaptureBinding18
-	protected CaptureBinding(ReferenceBinding sourceType, char[] sourceName, int position, int captureID, LookupEnvironment environment) {
+	protected CaptureBinding(ReferenceBinding sourceType, char[] sourceName, int start, int end, int captureID, LookupEnvironment environment) {
 		super(sourceName, null, 0, environment);
 		this.modifiers = ClassFileConstants.AccPublic | ExtraCompilerModifiers.AccGenericSignature; // treat capture as public
 		this.sourceType = sourceType;
-		this.position = position;
+		this.start = start;
+		this.end = end;
 		this.captureID = captureID;
 	}
 
@@ -58,10 +72,12 @@ public class CaptureBinding extends TypeVariableBinding {
 		super(prototype);
 		this.wildcard = prototype.wildcard;
 		this.sourceType = prototype.sourceType;
-		this.position = prototype.position;
+		this.start = prototype.start;
+		this.end = prototype.end;
 		this.captureID = prototype.captureID;
 		this.lowerBound = prototype.lowerBound;
 		this.tagBits |= (prototype.tagBits & TagBits.HasCapturedWildcard);
+		this.cud = prototype.cud;
 	}
 	
 	// Captures may get cloned and annotated during type inference.
@@ -82,7 +98,7 @@ public class CaptureBinding extends TypeVariableBinding {
 		}
 		buffer.append(TypeConstants.WILDCARD_CAPTURE);
 		buffer.append(this.wildcard.computeUniqueKey(false/*not a leaf*/));
-		buffer.append(this.position);
+		buffer.append(this.end);
 		buffer.append(';');
 		int length = buffer.length();
 		char[] uniqueKey = new char[length];
@@ -129,7 +145,7 @@ public class CaptureBinding extends TypeVariableBinding {
 			switch (this.wildcard.boundKind) {
 				case Wildcard.EXTENDS :
 					// still need to capture bound supertype as well so as not to expose wildcards to the outside (111208)
-					TypeBinding capturedWildcardBound = originalWildcardBound.capture(scope, this.position);
+					TypeBinding capturedWildcardBound = originalWildcardBound.capture(scope, this.start, this.end);
 					if (originalWildcardBound.isInterface()) {
 						this.setSuperClass(scope.getJavaLangObject());
 						this.setSuperInterfaces(new ReferenceBinding[] { (ReferenceBinding) capturedWildcardBound });
@@ -181,7 +197,7 @@ public class CaptureBinding extends TypeVariableBinding {
 		switch (this.wildcard.boundKind) {
 			case Wildcard.EXTENDS :
 				// still need to capture bound supertype as well so as not to expose wildcards to the outside (111208)
-				TypeBinding capturedWildcardBound = originalWildcardBound.capture(scope, this.position);
+				TypeBinding capturedWildcardBound = originalWildcardBound.capture(scope, this.start, this.end);
 				if (originalWildcardBound.isInterface()) {
 					this.setSuperClass(substitutedVariableSuperclass);
 					// merge wildcard bound into variable superinterfaces using glb
@@ -190,14 +206,8 @@ public class CaptureBinding extends TypeVariableBinding {
 					} else {
 						int length = substitutedVariableInterfaces.length;
 						System.arraycopy(substitutedVariableInterfaces, 0, substitutedVariableInterfaces = new ReferenceBinding[length+1], 1, length);
-						// to properly support glb, perform capture *after* glb, so restart from the original bound:
-						substitutedVariableInterfaces[0] =  (ReferenceBinding) originalWildcardBound;
-						ReferenceBinding[] glb = Scope.greaterLowerBound(substitutedVariableInterfaces);
-						if (glb != null) {
-							for (int i = 0; i < glb.length; i++)
-								glb[i] = (ReferenceBinding) glb[i].capture(scope, this.position);
-						}
-						this.setSuperInterfaces(glb);
+						substitutedVariableInterfaces[0] =  (ReferenceBinding) capturedWildcardBound;
+						this.setSuperInterfaces(Scope.greaterLowerBound(substitutedVariableInterfaces));
 					}
 				} else {
 					// the wildcard bound should be a subtype of variable superclass
@@ -275,6 +285,20 @@ public class CaptureBinding extends TypeVariableBinding {
 		}
 		return super.readableName();
 	}
+	
+	public char[] signableName() {
+		if (this.wildcard != null) {
+			StringBuffer buffer = new StringBuffer(10);
+			buffer
+				.append(TypeConstants.WILDCARD_CAPTURE_SIGNABLE_NAME_SUFFIX)
+				.append(this.wildcard.readableName());
+			int length = buffer.length();
+			char[] name = new char[length];
+			buffer.getChars(0, length, name, 0);
+			return name;
+		}
+		return super.readableName();
+	}
 
 	public char[] shortReadableName() {
 		if (this.wildcard != null) {
@@ -302,7 +326,7 @@ public class CaptureBinding extends TypeVariableBinding {
 			try {
 				if (this.wildcard != null) {
 					nameBuffer.append("of "); //$NON-NLS-1$
-					nameBuffer.append(this.wildcard.nullAnnotatedReadableName(options, shortNames));
+					nameBuffer.append(this.wildcard.withoutToplevelNullAnnotation().nullAnnotatedReadableName(options, shortNames));
 				} else if (this.lowerBound != null) {
 					nameBuffer.append(" super "); //$NON-NLS-1$
 					nameBuffer.append(this.lowerBound.nullAnnotatedReadableName(options, shortNames));
@@ -321,6 +345,62 @@ public class CaptureBinding extends TypeVariableBinding {
 		char[] readableName = new char[nameLength];
 		nameBuffer.getChars(0, nameLength, readableName, 0);
 	    return readableName;
+	}
+
+	@Override
+	public TypeBinding withoutToplevelNullAnnotation() {
+		if (!hasNullTypeAnnotations())
+			return this;
+		if (this.wildcard != null && this.wildcard.hasNullTypeAnnotations()) {
+			WildcardBinding newWildcard = (WildcardBinding) this.wildcard.withoutToplevelNullAnnotation();
+			if (newWildcard != this.wildcard) { //$IDENTITY-COMPARISON$	
+				
+				CaptureBinding newCapture = (CaptureBinding) this.environment.getUnannotatedType(this).clone(null);
+				if (newWildcard.hasTypeAnnotations())
+					newCapture.tagBits |= TagBits.HasTypeAnnotations;
+				newCapture.wildcard = newWildcard;
+				
+				// manually transfer the following two, because we are not in a context where we can call initializeBounds():
+				newCapture.superclass = this.superclass;
+				newCapture.superInterfaces = this.superInterfaces;
+
+				AnnotationBinding[] newAnnotations = this.environment.filterNullTypeAnnotations(this.typeAnnotations);
+				return this.environment.createAnnotatedType(newCapture, newAnnotations);
+			}
+		}
+		return super.withoutToplevelNullAnnotation();
+	}
+
+	@Override
+	TypeBinding substituteInferenceVariable(InferenceVariable var, TypeBinding substituteType) {
+		TypeBinding substitutedWildcard = this.wildcard.substituteInferenceVariable(var, substituteType);
+		if (substitutedWildcard != this.wildcard) {  //$IDENTITY-COMPARISON$
+			CaptureBinding substitute = (CaptureBinding) clone(enclosingType());
+		    substitute.wildcard = (WildcardBinding) substitutedWildcard;
+		    if (this.lowerBound != null)
+		    	substitute.lowerBound = this.lowerBound.substituteInferenceVariable(var, substituteType);
+		    if (this.firstBound != null)
+		    	substitute.firstBound = this.firstBound.substituteInferenceVariable(var, substituteType);
+		    if (this.superclass != null)
+		    	substitute.superclass = (ReferenceBinding) this.superclass.substituteInferenceVariable(var, substituteType);
+		    if (this.superInterfaces != null) {
+		    	int length = this.superInterfaces.length;
+		    	substitute.superInterfaces = new ReferenceBinding[length];
+		    	for (int i = 0; i < length; i++)
+		    		substitute.superInterfaces[i] = (ReferenceBinding) this.superInterfaces[i].substituteInferenceVariable(var, substituteType);
+		    }
+		    return substitute;
+		}
+		return this;
+	}
+	
+	@Override
+	public void setTypeAnnotations(AnnotationBinding[] annotations, boolean evalNullAnnotations) {
+		super.setTypeAnnotations(annotations, evalNullAnnotations);
+		if (annotations != Binding.NO_ANNOTATIONS && this.wildcard != null) {
+			// keep annotations in sync, propagate from capture to its wildcard:
+			this.wildcard = (WildcardBinding) this.wildcard.environment.createAnnotatedType(this.wildcard, annotations);
+		}
 	}
 
 	@Override

@@ -18,9 +18,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.IntersectionCastTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.IntersectionTypeBinding18;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
@@ -127,7 +128,7 @@ public class IntersectionCastTypeReference extends TypeReference {
 			}
 			System.arraycopy(intersectingTypes, 0, intersectingTypes = new ReferenceBinding[typeCount], 0, typeCount);
 		}
-		IntersectionCastTypeBinding intersectionType = (IntersectionCastTypeBinding) scope.environment().createIntersectionCastType(intersectingTypes);
+		IntersectionTypeBinding18 intersectionType = (IntersectionTypeBinding18) scope.environment().createIntersectionType18(intersectingTypes);
 		// check for parameterized interface collisions (when different parameterizations occur)
 		ReferenceBinding itsSuperclass = null;
 		ReferenceBinding[] interfaces = intersectingTypes;
@@ -200,9 +201,9 @@ public class IntersectionCastTypeReference extends TypeReference {
 	}
 
 	@Override
-	public StringBuffer generateExpression(Scope scope, int indent,
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
 			StringBuffer output) {
 		// TODO Auto-generated method stub
-		return null;
+		return output;
 	}
 }

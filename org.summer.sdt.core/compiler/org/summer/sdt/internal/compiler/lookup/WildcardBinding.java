@@ -18,6 +18,9 @@
  *								Bug 427411 - [1.8][generics] JDT reports type mismatch when using method that returns generic type
  *								Bug 428019 - [1.8][compiler] Type inference failure with nested generic invocation.
  *								Bug 435962 - [RC2] StackOverFlowError when building
+ *								Bug 438458 - [1.8][null] clean up handling of null type annotations wrt type variables
+ *								Bug 440759 - [1.8][null] @NonNullByDefault should never affect wildcards and uses of a type variable
+ *								Bug 441693 - [1.8][null] Bogus warning for type argument annotated with @NonNull
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.lookup;
 
@@ -84,7 +87,7 @@ public class WildcardBinding extends ReferenceBinding {
 		} catch (ArrayStoreException ase) {
 			return this.bound;
 		}
-		return new IntersectionCastTypeBinding(allBounds, this.environment);
+		return this.environment.createIntersectionType18(allBounds);
 	}
 
 	public ReferenceBinding actualType() {
@@ -446,7 +449,7 @@ public class WildcardBinding extends ReferenceBinding {
 	}
 
     /* (non-Javadoc)
-     * @see org.summer.sdt.internal.compiler.lookup.TypeBinding#erasure()
+     * @see org.eclipse.jdt.internal.compiler.lookup.TypeBinding#erasure()
      */
     public TypeBinding erasure() {
     	if (this.otherBounds == null) {
@@ -464,7 +467,7 @@ public class WildcardBinding extends ReferenceBinding {
     }
 
     /* (non-Javadoc)
-     * @see org.summer.sdt.internal.compiler.lookup.TypeBinding#signature()
+     * @see org.eclipse.jdt.internal.compiler.lookup.TypeBinding#signature()
      */
     public char[] genericTypeSignature() {
         if (this.genericSignature == null) {
@@ -645,7 +648,7 @@ public class WildcardBinding extends ReferenceBinding {
 	}
 	
     /* (non-Javadoc)
-     * @see org.summer.sdt.internal.compiler.lookup.Binding#readableName()
+     * @see org.eclipse.jdt.internal.compiler.lookup.Binding#readableName()
      */
     public char[] readableName() {
         switch (this.boundKind) {
@@ -723,7 +726,7 @@ public class WildcardBinding extends ReferenceBinding {
 	}
 
     /* (non-Javadoc)
-     * @see org.summer.sdt.internal.compiler.lookup.Binding#shortReadableName()
+     * @see org.eclipse.jdt.internal.compiler.lookup.Binding#shortReadableName()
      */
     public char[] shortReadableName() {
         switch (this.boundKind) {
@@ -764,7 +767,7 @@ public class WildcardBinding extends ReferenceBinding {
     }
 
     /* (non-Javadoc)
-     * @see org.summer.sdt.internal.compiler.lookup.ReferenceBinding#sourceName()
+     * @see org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding#sourceName()
      */
     public char[] sourceName() {
         switch (this.boundKind) {
@@ -778,7 +781,7 @@ public class WildcardBinding extends ReferenceBinding {
     }
 
     /* (non-Javadoc)
-     * @see org.summer.sdt.internal.compiler.lookup.TypeVariableBinding#superclass()
+     * @see org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding#superclass()
      */
     public ReferenceBinding superclass() {
 		if (this.superclass == null) {
@@ -798,7 +801,7 @@ public class WildcardBinding extends ReferenceBinding {
     }
 
     /* (non-Javadoc)
-     * @see org.summer.sdt.internal.compiler.lookup.ReferenceBinding#superInterfaces()
+     * @see org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding#superInterfaces()
      */
     public ReferenceBinding[] superInterfaces() {
         if (this.superInterfaces == null) {
@@ -886,6 +889,14 @@ public class WildcardBinding extends ReferenceBinding {
 	public TypeBinding unannotated() {
 		return this.hasTypeAnnotations() ? this.environment.getUnannotatedType(this) : this;
 	}
+
+	@Override
+	public TypeBinding withoutToplevelNullAnnotation() {
+		if (!hasNullTypeAnnotations())
+			return this;
+		AnnotationBinding[] newAnnotations = this.environment.filterNullTypeAnnotations(getTypeAnnotations());
+		return this.environment.createWildcard(this.genericType, this.rank, this.bound, this.otherBounds, this.boundKind, newAnnotations);			
+	}
 	@Override
 	public TypeBinding uncapture(Scope scope) {
 		if ((this.tagBits & TagBits.HasCapturedWildcard) == 0)
@@ -908,15 +919,26 @@ public class WildcardBinding extends ReferenceBinding {
 	}
 	@Override
 	public boolean mentionsAny(TypeBinding[] parameters, int idx) {
-		if (super.mentionsAny(parameters, idx))
-			return true;
-		if (this.bound != null && 	this.bound.mentionsAny(parameters, -1))
-			return true;
-		if (this.otherBounds != null) {
-			for (int i = 0, length = this.otherBounds.length; i < length; i++)
-				if (this.otherBounds[i].mentionsAny(parameters, -1))
-					return true;
+		if (this.inRecursiveFunction)
+			return false;
+		this.inRecursiveFunction = true;
+		try {
+			if (super.mentionsAny(parameters, idx))
+				return true;
+			if (this.bound != null && 	this.bound.mentionsAny(parameters, -1))
+				return true;
+			if (this.otherBounds != null) {
+				for (int i = 0, length = this.otherBounds.length; i < length; i++)
+					if (this.otherBounds[i].mentionsAny(parameters, -1))
+						return true;
+			}
+		} finally {
+			this.inRecursiveFunction = false;
 		}
+		return false;
+	}
+
+	public boolean acceptsNonNullDefault() {
 		return false;
 	}
 }

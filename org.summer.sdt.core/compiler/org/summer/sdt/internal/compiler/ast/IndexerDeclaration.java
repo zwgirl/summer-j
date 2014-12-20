@@ -1,5 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
 /**
@@ -20,7 +21,7 @@ public class IndexerDeclaration extends FieldDeclaration {
 	}
 	
 	@Override
-	public StringBuffer generateExpression(Scope scope, int indent,
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
 			StringBuffer output) {
 		return output.append("//TODO implements!");
 	}

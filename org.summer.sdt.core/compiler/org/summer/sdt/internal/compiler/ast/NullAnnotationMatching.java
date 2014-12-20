@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
-import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
@@ -82,7 +81,7 @@ public class NullAnnotationMatching {
 	{
 		long lhsTagBits = 0L;
 		boolean hasReported = false;
-		if (currentScope.compilerOptions().sourceLevel < ClassFileConstants.JDK1_8) {
+		if (!currentScope.environment().usesNullTypeAnnotations()) {
 			lhsTagBits = var.tagBits & TagBits.AnnotationNullMASK;
 		} else {
 			if (expression instanceof ConditionalExpression && expression.isPolyExpression()) {
@@ -137,9 +136,9 @@ public class NullAnnotationMatching {
 	 * @return a status object representing the severity of mismatching plus optionally a supertype hint
 	 */
 	public static NullAnnotationMatching analyse(TypeBinding requiredType, TypeBinding providedType, TypeBinding providedSubstitute, int nullStatus, CheckMode mode) {
+		if (!requiredType.enterRecursiveFunction())
+			return NullAnnotationMatching.NULL_ANNOTATIONS_OK;
 		try {
-			if (!requiredType.enterRecursiveFunction())
-				return NullAnnotationMatching.NULL_ANNOTATIONS_OK;
 			int severity = 0;
 			TypeBinding superTypeHint = null;
 			NullAnnotationMatching okStatus = NullAnnotationMatching.NULL_ANNOTATIONS_OK;
@@ -175,18 +174,16 @@ public class NullAnnotationMatching {
 					int dims = requiredType.dimensions();
 					if (requiredType.dimensions() == providedType.dimensions()) {
 						long[] providedDimsTagBits = ((ArrayBinding)providedType).nullTagBitsPerDimension;
-						if (providedDimsTagBits == null) {
-							severity = 1; // required is annotated, provided not, need unchecked conversion
-						} else {
-							for (int i=0; i<=dims; i++) {
-								long requiredBits = validNullTagBits(requiredDimsTagBits[i]);
-								long providedBits = validNullTagBits(providedDimsTagBits[i]);
-								if (i > 0)
-									nullStatus = -1; // don't use beyond the outermost dimension
-								severity = Math.max(severity, computeNullProblemSeverity(requiredBits, providedBits, nullStatus, mode == CheckMode.OVERRIDE));
-								if (severity == 2)
-									return NullAnnotationMatching.NULL_ANNOTATIONS_MISMATCH;
-							}
+						if (providedDimsTagBits == null)
+							providedDimsTagBits = new long[dims+1]; // set to unspec'd at all dimensions
+						for (int i=0; i<=dims; i++) {
+							long requiredBits = validNullTagBits(requiredDimsTagBits[i]);
+							long providedBits = validNullTagBits(providedDimsTagBits[i]);
+							if (i > 0)
+								nullStatus = -1; // don't use beyond the outermost dimension
+							severity = Math.max(severity, computeNullProblemSeverity(requiredBits, providedBits, nullStatus, mode == CheckMode.OVERRIDE && nullStatus == -1));
+							if (severity == 2)
+								return NullAnnotationMatching.NULL_ANNOTATIONS_MISMATCH;
 						}
 					} else if (providedType.id == TypeIds.T_null) {
 						if (dims > 0 && requiredDimsTagBits[0] == TagBits.AnnotationNonNull)
@@ -389,13 +386,25 @@ public class NullAnnotationMatching {
 		return one;
 	}
 
-	private static int computeNullProblemSeverity(long requiredBits, long providedBits, int nullStatus, boolean strict) {
-		if ((requiredBits != 0 || strict) && requiredBits != providedBits) {
+	/**
+	 * Evaluate problem severity from the given details:
+	 * @param requiredBits null tagBits of the required type
+	 * @param providedBits null tagBits of the provided type
+	 * @param nullStatus -1 means: don't use, other values see constants in FlowInfo
+	 * @param overrideDetailChecking true enables strictest mode during override analysis when checking type details (type argument, array content)
+	 * @return see {@link #severity} for interpretation of values
+	 */
+	private static int computeNullProblemSeverity(long requiredBits, long providedBits, int nullStatus, boolean overrideDetailChecking) {
+		// nullStatus: 
+		// overrideDetailChecking: 
+		if ((requiredBits != 0 || overrideDetailChecking) && requiredBits != providedBits) {
 			if (requiredBits == TagBits.AnnotationNonNull && nullStatus == FlowInfo.NON_NULL) {
 				return 0; // OK by flow analysis
 			}
 			if (requiredBits == TagBits.AnnotationNullMASK)
 				return 0; // OK since LHS accepts either
+			if (nullStatus != -1 && !overrideDetailChecking && requiredBits == TagBits.AnnotationNullable)
+				return 0; // when using flow info, everything is compatible to nullable
 			if (providedBits != 0) {
 				return 2; // mismatching annotations
 			} else {

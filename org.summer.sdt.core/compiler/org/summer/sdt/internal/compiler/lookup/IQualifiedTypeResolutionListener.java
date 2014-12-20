@@ -31,3 +31,4 @@ public interface IQualifiedTypeResolutionListener {
 	 */
 	public void recordResolution(QualifiedTypeReference typeReference, TypeBinding resolution);
 }
+ 

@@ -16,4 +16,4 @@ public class SourceTypeCollisionException extends RuntimeException {
 	private static final long serialVersionUID = 4798247636899127380L;
 
 	public ICompilationUnit[] newAnnotationProcessorUnits;
-}
+} 

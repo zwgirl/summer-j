@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import org.summer.sdt.internal.compiler.codegen.BranchLabel;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
@@ -160,25 +161,38 @@ public class Block extends Statement {
 			this.statements[this.statements.length - 1].branchChainTo(label);
 		}
 	}
+	
+	// A block does not complete normally if the last statement which we presume is reachable does not complete normally.
+	@Override
+	public boolean doesNotCompleteNormally() {
+		int length = this.statements == null ? 0 : this.statements.length;
+		return length > 0 && this.statements[length - 1].doesNotCompleteNormally();
+	}
+	
+	@Override
+	public boolean completesByContinue() {
+		int length = this.statements == null ? 0 : this.statements.length;
+		return length > 0 && this.statements[length - 1].completesByContinue();
+	}
 
-	public StringBuffer generateBody(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateBody(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
 		if (this.statements == null) return output;
 		for (int i = 0; i < this.statements.length; i++) {
-			this.statements[i].generateStatement(scope, indent, output);
+			this.statements[i].generateStatement(scope, depsManager, indent, output);
 			output.append('\n');
 		}
 		return output;
 	}
 	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 		output.append("{\n"); //$NON-NLS-1$
-		generateBody(scope, indent + 1, output);
+		generateBody(scope, dependency, indent + 1, output);
 		return printIndent(indent, output).append('}');
 	}
 	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output){
+	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output){
 		printIndent(indent, output);
-		generateExpression(scope, indent, output);
+		generateExpression(scope, dependency, indent, output);
 		return output;
 	}
 }

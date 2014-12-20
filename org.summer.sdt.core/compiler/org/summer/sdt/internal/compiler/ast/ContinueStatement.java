@@ -13,12 +13,9 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.flow.InsideSubRoutineFlowContext;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class ContinueStatement extends BranchStatement {
 
@@ -102,9 +99,17 @@ public class ContinueStatement extends BranchStatement {
 		visitor.visit(this, blockScope);
 		visitor.endVisit(this, blockScope);
 	}
+	@Override
+	public boolean doesNotCompleteNormally() {
+		return true;
+	}
+	@Override
+	public boolean completesByContinue() {
+		return true;
+	}
 	
-	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
-		printIndent(tab, output).append("continue "); //$NON-NLS-1$
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		printIndent(indent, output).append("continue "); //$NON-NLS-1$
 		if (this.label != null) output.append(this.label);
 		return output.append(';');
 	}

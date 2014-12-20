@@ -74,10 +74,6 @@ public interface TagBits {
 	long AreMethodsSorted = ASTNode.Bit15;
 	long AreMethodsComplete = ASTNode.Bit16; // sorted and all resolved
 	
-	//cym add 2014-11-03
-	long ArePropertiesSorted = ASTNode.Bit17;
-	long ArePropertiesComplete = ASTNode.Bit18; // sorted and all resolved
-
 	// test bit to avoid asking a type for a member type (includes inherited member types)
 	long HasNoMemberTypes = ASTNode.Bit17;
 
@@ -190,4 +186,4 @@ public interface TagBits {
 	
 	// set when type binding has a captured wildcard somewhere
 	long HasCapturedWildcard = ASTNode.Bit62L;
-}
+} 

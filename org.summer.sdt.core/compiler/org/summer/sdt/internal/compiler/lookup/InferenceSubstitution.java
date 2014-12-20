@@ -93,5 +93,5 @@ public class InferenceSubstitution extends Scope.Substitutor implements Substitu
 	public boolean isRawSubstitution() {
 		// FIXME Auto-generated method stub
 		return false;
-	}
+	} 
 }

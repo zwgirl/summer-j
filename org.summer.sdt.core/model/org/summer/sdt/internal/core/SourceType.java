@@ -181,6 +181,8 @@ public class SourceType extends NamedMember implements IType {
 	}
 	public boolean equals(Object o) {
 		if (!(o instanceof SourceType)) return false;
+		if (((SourceType) o).isLambda()) 
+			return false;
 		return super.equals(o);
 	}
 	/*

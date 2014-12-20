@@ -19,8 +19,12 @@ import org.summer.sdt.core.ICompilationUnit;
 import org.summer.sdt.core.IJavaElement;
 import org.summer.sdt.core.ITypeRoot;
 import org.summer.sdt.core.JavaModelException;
+import org.summer.sdt.core.Signature;
 import org.summer.sdt.core.WorkingCopyOwner;
 import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.codeassist.complete.CompletionNodeDetector;
+import org.summer.sdt.internal.codeassist.complete.CompletionParser;
+import org.summer.sdt.internal.codeassist.impl.AssistCompilationUnit;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
@@ -61,9 +65,6 @@ import org.summer.sdt.internal.core.CompilationUnitElementInfo;
 import org.summer.sdt.internal.core.JavaElement;
 import org.summer.sdt.internal.core.LocalVariable;
 import org.summer.sdt.internal.core.util.Util;
-import org.summer.sdt.internal.codeassist.complete.CompletionNodeDetector;
-import org.summer.sdt.internal.codeassist.complete.CompletionParser;
-import org.summer.sdt.internal.codeassist.impl.AssistCompilationUnit;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class InternalExtendedCompletionContext {
@@ -261,7 +262,7 @@ public class InternalExtendedCompletionContext {
 		LocalDeclaration local = binding.declaration;
 
 		JavaElement parent = null;
-		ReferenceContext referenceContext = binding.declaringScope.referenceContext();
+		ReferenceContext referenceContext = binding.declaringScope.isLambdaSubscope() ? binding.declaringScope.namedMethodScope().referenceContext() : binding.declaringScope.referenceContext();
 		if (referenceContext instanceof AbstractMethodDeclaration) {
 			AbstractMethodDeclaration methodDeclaration = (AbstractMethodDeclaration) referenceContext;
 			parent = this.getJavaElementOfCompilationUnit(methodDeclaration, methodDeclaration.binding);
@@ -281,7 +282,7 @@ public class InternalExtendedCompletionContext {
 				local.declarationSourceEnd,
 				local.sourceStart,
 				local.sourceEnd,
-				Util.typeSignature(local.type),
+				local.type == null ? Signature.createTypeSignature(binding.type.signableName(), true) : Util.typeSignature(local.type),
 				binding.declaration.annotations,
 				local.modifiers,
 				local.getKind() == AbstractVariableDeclaration.PARAMETER);
@@ -705,7 +706,7 @@ public class InternalExtendedCompletionContext {
 				ReferenceBinding[] superInterfaces = currentType.superInterfaces();
 				if (superInterfaces != null && currentType.isIntersectionType()) {
 					for (int i = 0; i < superInterfaces.length; i++) {
-						superInterfaces[i] = (ReferenceBinding)superInterfaces[i].capture(invocationScope, invocationSite.sourceEnd());
+						superInterfaces[i] = (ReferenceBinding)superInterfaces[i].capture(invocationScope, invocationSite.sourceStart(), invocationSite.sourceEnd());
 					}
 				}
 

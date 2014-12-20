@@ -1,7 +1,12 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Scope;
-
+/**
+ * 
+ * @author cym
+ *
+ */
 public class ParenthesizedExpression extends Expression {
 	/**
 	 * The expression within the parentheses.
@@ -20,10 +25,10 @@ public class ParenthesizedExpression extends Expression {
 	}
 
 	@Override
-	public StringBuffer generateExpression(Scope scope, int indent,
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
 			StringBuffer output) {
 		output.append("(");
-		expression.generateExpression(scope, indent, output);
+		expression.doGenerateExpression(scope, depsManager, indent, output);
 		output.append(")");
 		return output;
 	}

@@ -1045,7 +1045,7 @@ public abstract class AbstractCommentParser implements JavadocTagConstants {
 					break;
 
 				case TerminalTokens.TokenNameabstract:
-				case TerminalTokens.TokenNameassert:
+//				case TerminalTokens.TokenNameassert:  //cym 2014-12-17
 				case TerminalTokens.TokenNameboolean:
 				case TerminalTokens.TokenNamebreak:
 				case TerminalTokens.TokenNamebyte:

@@ -112,7 +112,7 @@ public class CompletionScanner extends Scanner {
 		}
 		return super.getCurrentTokenSourceString();
 	}
-	public int getNextToken0() throws InvalidInputException {
+	protected int getNextToken0() throws InvalidInputException {
 	
 		this.wasAcr = false;
 		this.unicodeCharSize = 0;
@@ -293,10 +293,12 @@ public class CompletionScanner extends Scanner {
 									return TokenNameLEFT_SHIFT_EQUAL;
 								return TokenNameLEFT_SHIFT;
 							}
-							//cym add 2014-9-29
+							
+							//cym add
 							if(getNextChar('/')){
 								return TokenNameCLOSE_ELEMENT;
 							}
+							
 							return TokenNameLESS;
 						}
 					case '>' :
@@ -801,7 +803,7 @@ public class CompletionScanner extends Scanner {
 								break;
 							}
 							
-							//cym add 2014-9-29
+							//cym add
 							if(getNextChar('>')){
 								return TokenNameCLOSE_TAG;
 							}

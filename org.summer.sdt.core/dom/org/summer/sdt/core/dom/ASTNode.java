@@ -895,14 +895,6 @@ public abstract class ASTNode {
 	 * @since 3.10
 	 */
 	public static final int TYPE_METHOD_REFERENCE = 92;
-	
-	//cym add
-	/**
-	 * Node type constant indicating a node of type
-	 * <code>TypeDeclaration</code>.
-	 * @see TypeDeclaration
-	 */
-	public static final int MODULE_DECLARATION = 93;
 
 	/**
 	 * Returns the node class for the corresponding node type.

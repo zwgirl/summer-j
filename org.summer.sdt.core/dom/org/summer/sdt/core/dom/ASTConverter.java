@@ -613,7 +613,7 @@ class ASTConverter {
 
 			start = retrieveStartBlockPosition(methodHeaderEnd, methodDeclaration.bodyStart);
 			if (start == -1) start = methodDeclaration.bodyStart; // use recovery position for body start
-			end = retrieveRightBrace(methodDeclaration.bodyEnd, declarationSourceEnd);
+			end = retrieveRightBrace(methodDeclaration.bodyEnd + 1, declarationSourceEnd);
 			Block block = null;
 			if (start != -1 && end != -1) {
 				/*
@@ -1097,6 +1097,7 @@ class ASTConverter {
 		assignment.setSourceRange(start, end - start + 1);
 		return assignment;
 	}
+
 	
 	//cym add 2014-11-11
 	public Assignment convert(org.summer.sdt.internal.compiler.ast.GeneralAttribute expression) {
@@ -1190,7 +1191,6 @@ class ASTConverter {
 		return nil;
 	}
 	
-
 	/*
 	 * Internal use only
 	 * Used to convert class body declarations
@@ -1420,117 +1420,6 @@ class ASTConverter {
 		return typeLiteral;
 	}
 
-//	public CompilationUnit convert(org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration unit, char[] source) {
-//		try {
-//			if(unit.compilationResult.recoveryScannerData != null) {
-//				RecoveryScanner recoveryScanner = new RecoveryScanner(this.scanner, unit.compilationResult.recoveryScannerData.removeUnused());
-//				this.scanner = recoveryScanner;
-//				this.docParser.scanner = this.scanner;
-//			}
-//			this.compilationUnitSource = source;
-//			this.compilationUnitSourceLength = source.length;
-//			this.scanner.setSource(source, unit.compilationResult);
-//			CompilationUnit compilationUnit = new CompilationUnit(this.ast);
-//			compilationUnit.setStatementsRecoveryData(unit.compilationResult.recoveryScannerData);
-//	
-//			// Parse comments
-//			int[][] comments = unit.comments;
-//			if (comments != null) {
-//				buildCommentsTable(compilationUnit, comments);
-//			}
-//	
-//			// handle the package declaration immediately
-//			// There is no node corresponding to the package declaration
-//			if (this.resolveBindings) {
-//				recordNodes(compilationUnit, unit);
-//			}
-//			if (unit.currentPackage != null) {
-//				PackageDeclaration packageDeclaration = convertPackage(unit);
-//				compilationUnit.setPackage(packageDeclaration);
-//			}
-//			org.summer.sdt.internal.compiler.ast.ImportReference[] imports = unit.imports;
-//			if (imports != null) {
-//				int importLength = imports.length;
-//				for (int i = 0; i < importLength; i++) {
-//					compilationUnit.imports().add(convertImport(imports[i]));
-//				}
-//			}
-//	
-//			org.summer.sdt.internal.compiler.ast.TypeDeclaration[] types = unit.types;
-//			if (types != null) {
-//				int typesLength = types.length;
-//				for (int i = 0; i < typesLength; i++) {
-//					org.summer.sdt.internal.compiler.ast.TypeDeclaration declaration = types[i];
-//					if (CharOperation.equals(declaration.name, TypeConstants.PACKAGE_INFO_NAME)) {
-//						continue;
-//					}
-//					ASTNode type = convert(declaration);
-//					if (type == null) {
-//						compilationUnit.setFlags(compilationUnit.getFlags() | ASTNode.MALFORMED);
-//					} else {
-//						compilationUnit.types().add(type);
-//					}
-//				}
-//			}
-//			compilationUnit.setSourceRange(unit.sourceStart, unit.sourceEnd - unit.sourceStart  + 1);
-//	
-//			int problemLength = unit.compilationResult.problemCount;
-//			if (problemLength != 0) {
-//				CategorizedProblem[] resizedProblems = null;
-//				final CategorizedProblem[] problems = unit.compilationResult.getProblems();
-//				final int realProblemLength=problems.length;
-//				if (realProblemLength == problemLength) {
-//					resizedProblems = problems;
-//				} else {
-//					System.arraycopy(problems, 0, (resizedProblems = new CategorizedProblem[realProblemLength]), 0, realProblemLength);
-//				}
-//				ASTSyntaxErrorPropagator syntaxErrorPropagator = new ASTSyntaxErrorPropagator(resizedProblems);
-//				compilationUnit.accept(syntaxErrorPropagator);
-//				ASTRecoveryPropagator recoveryPropagator =
-//					new ASTRecoveryPropagator(resizedProblems, unit.compilationResult.recoveryScannerData);
-//				compilationUnit.accept(recoveryPropagator);
-//				compilationUnit.setProblems(resizedProblems);
-//			}
-//			if (this.resolveBindings) {
-//				lookupForScopes();
-//			}
-//			compilationUnit.initCommentMapper(this.scanner);
-//			if (SourceRangeVerifier.DEBUG) {
-//				String bugs = new SourceRangeVerifier().process(compilationUnit);
-//				if (bugs != null) {
-//					StringBuffer message = new StringBuffer("Bad AST node structure:");  //$NON-NLS-1$
-//					String lineDelimiter = Util.findLineSeparator(source);
-//					if (lineDelimiter == null) lineDelimiter = System.getProperty("line.separator");//$NON-NLS-1$
-//					message.append(lineDelimiter);
-//					message.append(bugs.replaceAll("\n", lineDelimiter)); //$NON-NLS-1$
-//					message.append(lineDelimiter);
-//					message.append("----------------------------------- SOURCE BEGIN -------------------------------------"); //$NON-NLS-1$
-//					message.append(lineDelimiter);
-//					message.append(source);
-//					message.append(lineDelimiter);
-//					message.append("----------------------------------- SOURCE END -------------------------------------"); //$NON-NLS-1$
-//					Util.log(new IllegalStateException("Bad AST node structure"), message.toString()); //$NON-NLS-1$
-//					if (SourceRangeVerifier.DEBUG_THROW) {
-//						throw new IllegalStateException(message.toString());
-//					}
-//				}
-//			}
-//			return compilationUnit;
-//		} catch(IllegalArgumentException e) {
-//			StringBuffer message = new StringBuffer("Exception occurred during compilation unit conversion:");  //$NON-NLS-1$
-//			String lineDelimiter = Util.findLineSeparator(source);
-//			if (lineDelimiter == null) lineDelimiter = System.getProperty("line.separator");//$NON-NLS-1$
-//			message.append(lineDelimiter);
-//			message.append("----------------------------------- SOURCE BEGIN -------------------------------------"); //$NON-NLS-1$
-//			message.append(lineDelimiter);
-//			message.append(source);
-//			message.append(lineDelimiter);
-//			message.append("----------------------------------- SOURCE END -------------------------------------"); //$NON-NLS-1$
-//			Util.log(e, message.toString());
-//			throw e;
-//		}
-//	}
-	
 	public CompilationUnit convert(org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration unit, char[] source) {
 		try {
 			if(unit.compilationResult.recoveryScannerData != null) {
@@ -1760,7 +1649,7 @@ class ASTConverter {
 				if (anonymousType != null) {
 					AnonymousClassDeclaration anonymousClassDeclaration = new AnonymousClassDeclaration(this.ast);
 					int start = retrieveStartBlockPosition(anonymousType.sourceEnd, anonymousType.bodyEnd);
-					int end = retrieveRightBrace(anonymousType.bodyEnd, declarationSourceEnd);
+					int end = retrieveRightBrace(anonymousType.bodyEnd +1, declarationSourceEnd);
 					if (end == -1) end = anonymousType.bodyEnd;
 					anonymousClassDeclaration.setSourceRange(start, end - start + 1);
 					enumConstantDeclaration.setAnonymousClassDeclaration(anonymousClassDeclaration);
@@ -1774,14 +1663,12 @@ class ASTConverter {
 			} else {
 				enumConstantDeclaration.setSourceRange(declarationSourceStart, declarationSourceEnd - declarationSourceStart + 1);
 			}
-			
-			//cym 2014-10-25
-//			final org.summer.sdt.internal.compiler.ast.Expression[] arguments = ((org.summer.sdt.internal.compiler.ast.AllocationExpression) initialization).arguments;
-//			if (arguments != null) {
-//				for (int i = 0, max = arguments.length; i < max; i++) {
-//					enumConstantDeclaration.arguments().add(convert(arguments[i]));
-//				}
-//			}
+			final org.summer.sdt.internal.compiler.ast.Expression[] arguments = ((org.summer.sdt.internal.compiler.ast.AllocationExpression) initialization).arguments;
+			if (arguments != null) {
+				for (int i = 0, max = arguments.length; i < max; i++) {
+					enumConstantDeclaration.arguments().add(convert(arguments[i]));
+				}
+			}
 		} else {
 			enumConstantDeclaration.setSourceRange(declarationSourceStart, declarationSourceEnd - declarationSourceStart + 1);
 		}
@@ -1996,8 +1883,7 @@ class ASTConverter {
 		}
 		if (expression instanceof org.summer.sdt.internal.compiler.ast.ReferenceExpression) {
 			return convert((org.summer.sdt.internal.compiler.ast.ReferenceExpression) expression);
-		} 
-		
+		}
 		
 		//cym add 2014-11-11
 		if (expression instanceof org.summer.sdt.internal.compiler.ast.GeneralAttribute) {
@@ -3761,7 +3647,6 @@ class ASTConverter {
 			// need to find out if this is an array type of primitive types or not
 			if (isPrimitiveType(name)) {
 				int[] positions = retrieveEndOfElementTypeNamePosition(sourceStart < annotationsEnd ? annotationsEnd : sourceStart, sourceStart + length);
-//				int[] positions = new int[] {sourceStart,sourceStart + length};
 				int end = positions[1];
 				if (end == -1) {
 					end = sourceStart + length - 1;
@@ -3778,7 +3663,6 @@ class ASTConverter {
 				final SimpleName simpleName = new SimpleName(this.ast);
 				simpleName.internalSetIdentifier(new String(name));
 				int[] positions = retrieveEndOfElementTypeNamePosition(sourceStart < annotationsEnd ? annotationsEnd : sourceStart, sourceStart + length);
-//				int[] positions = new int[] {sourceStart,sourceStart + length};
 				int end = positions[1];
 				if (end == -1) {
 					end = sourceStart + length - 1;
@@ -3837,7 +3721,6 @@ class ASTConverter {
 				// we need to search for the starting position of the first brace in order to set the proper length
 				// PR http://dev.eclipse.org/bugs/show_bug.cgi?id=10759
 				int[] positions = retrieveEndOfElementTypeNamePosition(sourceStart < annotationsEnd ? annotationsEnd : sourceStart, sourceStart + length);
-//				int[] positions = new int[] {sourceStart,sourceStart + length};
 				int end = positions[1];
 				if (end == -1) {
 					end = sourceStart + length - 1;
@@ -4834,32 +4717,6 @@ class ASTConverter {
 		return -1;
 
 	}
-	/**
-	 * This method is used to retrieve the end position of the block.
-	 * @return int the dimension found, -1 if none
-	 */
-	protected int retrieveEndBlockPosition(int start, int end) {
-		this.scanner.resetTo(start, end);
-		int count = 0;
-		try {
-			int token;
-			while ((token = this.scanner.getNextToken()) != TerminalTokens.TokenNameEOF) {
-				switch(token) {
-					case TerminalTokens.TokenNameLBRACE://110
-						count++;
-						break;
-					case TerminalTokens.TokenNameRBRACE://95
-						count--;
-						if (count == 0) {
-							return this.scanner.currentPosition - 1;
-						}
-				}
-			}
-		} catch(InvalidInputException e) {
-			// ignore
-		}
-		return -1;
-	}
 
 	protected int retrieveSemiColonPosition(Expression node) {
 		int start = node.getStartPosition();
@@ -5097,7 +4954,7 @@ class ASTConverter {
 		return hasTokens ? Integer.MIN_VALUE : pos;
 	}
 
-	protected int retrieveProperRightBracketPosition(int bracketNumber, int start) {
+	protected int retrieveProperRightBracketPosition(int bracketNumber, int start, int end) {
 		this.scanner.resetTo(start, this.compilationUnitSourceLength);
 		try {
 			int token, count = 0, lParentCount = 0, balance = 0;
@@ -5129,6 +4986,10 @@ class ASTConverter {
 			// ignore
 		}
 		return -1;
+	}
+	
+	protected int retrieveProperRightBracketPosition(int bracketNumber, int start) {
+		return retrieveProperRightBracketPosition(bracketNumber, start, this.compilationUnitSourceLength);
 	}
 
 	/**

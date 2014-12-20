@@ -180,9 +180,9 @@ public interface ISourceElementRequestor {
 	void enterInitializer(int declarationStart, int modifiers);
 
 	void enterMethod(MethodInfo methodInfo);
-	
+
 	void enterType(TypeInfo typeInfo);
-	
+
 	void exitCompilationUnit(int declarationEnd);
 
 	void exitConstructor(int declarationEnd);
@@ -198,5 +198,4 @@ public interface ISourceElementRequestor {
 	void exitMethod(int declarationEnd, Expression defaultValue);
 
 	void exitType(int declarationEnd);
-	
 }

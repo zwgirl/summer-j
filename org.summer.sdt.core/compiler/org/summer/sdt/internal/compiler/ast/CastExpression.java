@@ -21,6 +21,7 @@
  *								Bug 400874 - [1.8][compiler] Inference infrastructure should evolve to meet JLS8 18.x (Part G of JSR335 spec)
  *								Bug 427438 - [1.8][compiler] NPE at org.summer.sdt.internal.compiler.ast.ConditionalExpression.generateCode(ConditionalExpression.java:280)
  *								Bug 430150 - [1.8][null] stricter checking against type variables
+ *								Bug 435805 - [1.8][compiler][null] Java 8 compiler does not recognize declaration style null annotations
  *        Andy Clement (GoPivotal, Inc) aclement@gopivotal.com - Contributions for
  *                          Bug 415541 - [1.8][compiler] Type annotations in the body of static initializer get dropped
  *******************************************************************************/
@@ -35,6 +36,7 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -89,7 +91,7 @@ public class CastExpression extends Expression {
 		if (castedExpressionType == null || rhs.resolvedType.isBaseType()) return;
 		//if (castedExpressionType.id == T_null) return; // tolerate null expression cast
 		if (castedExpressionType.isCompatibleWith(expectedType, scope)) {
-			if (compilerOptions.isAnnotationBasedNullAnalysisEnabled && compilerOptions.sourceLevel >= ClassFileConstants.JDK1_8) {
+			if (scope.environment().usesNullTypeAnnotations()) {
 				// are null annotations compatible, too?
 				if (NullAnnotationMatching.analyse(expectedType, castedExpressionType, -1).isAnyMismatch())
 					return; // already reported unchecked cast (nullness), say no more.
@@ -281,8 +283,11 @@ public class CastExpression extends Expression {
 				public int sourceEnd() { return 0; }
 				public TypeBinding invocationTargetType() { return invocationSite.invocationTargetType(); }
 				public boolean receiverIsImplicitThis() { return invocationSite.receiverIsImplicitThis();}
-				public InferenceContext18 freshInferenceContext(Scope someScope) { return null; /* suppress inference */ }
+				public InferenceContext18 freshInferenceContext(Scope someScope) { return invocationSite.freshInferenceContext(someScope); }
 				public ExpressionContext getExpressionContext() { return invocationSite.getExpressionContext(); }
+				public boolean isQualifiedSuper() { return invocationSite.isQualifiedSuper(); }
+				public boolean checkingPotentialCompatibility() { return false; }
+				public void acceptPotentiallyCompatibleMethods(MethodBinding[] methods) {/* ignore */}
 			};
 			MethodBinding bindingIfNoCast;
 			if (binding.isConstructor()) {
@@ -322,7 +327,8 @@ public class CastExpression extends Expression {
 	
 	public boolean checkUnsafeCast(Scope scope, TypeBinding castType, TypeBinding expressionType, TypeBinding match, boolean isNarrowing) {
 		if (TypeBinding.equalsEquals(match, castType)) {
-			if (!isNarrowing && TypeBinding.equalsEquals(match, this.resolvedType.leafComponentType())) { // do not tag as unnecessary when recursing through upper bounds
+			if (!isNarrowing && TypeBinding.equalsEquals(match, this.resolvedType.leafComponentType()) // do not tag as unnecessary when recursing through upper bounds
+					&& !(expressionType.isParameterizedType() && expressionType.isProvablyDistinct(castType))) {
 				tagAsUnnecessaryCast(scope, castType);
 			}
 			return true;
@@ -457,9 +463,8 @@ public class CastExpression extends Expression {
 		}
 		if (valueRequired) {
 			codeStream.generateImplicitConversion(this.implicitConversion);
-		} else if (needRuntimeCheckcast) {
-			boolean isUnboxing = (this.implicitConversion & TypeIds.UNBOXING) != 0;
-			switch (isUnboxing ? postConversionType(currentScope).id : this.resolvedType.id) {
+		} else if (annotatedCast || needRuntimeCheckcast) {
+			switch (this.resolvedType.id) {
 				case T_long :
 				case T_double :
 					codeStream.pop2();
@@ -580,7 +585,7 @@ public class CastExpression extends Expression {
 					this.bits |= ASTNode.DisableUnnecessaryCastCheck; // disable further secondary diagnosis
 				}
 			}
-			this.resolvedType = castType.capture(scope, this.sourceEnd);
+			this.resolvedType = castType.capture(scope, this.type.sourceStart, this.type.sourceEnd); // make it unique, a cast expression shares source end with the expression.
 			if (exprContainCast) {
 				checkNeedForCastCast(scope, this);
 			}
@@ -639,15 +644,7 @@ public class CastExpression extends Expression {
 		visitor.endVisit(this, blockScope);
 	}
 
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		int parenthesesCount = (this.bits & ASTNode.ParenthesizedMASK) >> ASTNode.ParenthesizedSHIFT;
-		String suffix = ""; //$NON-NLS-1$
-		for(int i = 0; i < parenthesesCount; i++) {
-			output.append('(');
-			suffix += ')';
-		}
-		output.append('(');
-		this.type.print(0, output).append(") "); //$NON-NLS-1$
-		return this.expression.generateExpression(scope, 0, output).append(suffix);
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
+		return this.expression.doGenerateExpression(scope, depsManager, 0, output);
 	}
 }

@@ -13,6 +13,7 @@ package org.summer.sdt.internal.codeassist.complete;
 import org.summer.sdt.internal.compiler.ast.BranchStatement;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -51,7 +52,7 @@ public class CompletionOnBranchStatementLabel extends BranchStatement {
 	}
 
 	@Override
-	public StringBuffer generateExpression(Scope scope, int indent,
+	public StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent,
 			StringBuffer output) {
 		// TODO Auto-generated method stub
 		return null;

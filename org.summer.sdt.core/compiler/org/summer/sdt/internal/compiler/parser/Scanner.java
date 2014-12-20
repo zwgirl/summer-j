@@ -1737,6 +1737,9 @@ public class Scanner implements TerminalTokens {
 									boolean isJavadoc = false, star = false;
 									boolean isUnicode = false;
 									int previous;
+									
+									//cym 2014-12-17
+									boolean isCodeData = false;
 									// consume next character
 									this.unicodeAsBackSlash = false;
 									if (((this.currentCharacter = this.source[this.currentPosition++]) == '\\')
@@ -1748,6 +1751,11 @@ public class Scanner implements TerminalTokens {
 										if (this.withoutUnicodePtr != 0) {
 											unicodeStore();
 										}
+									}
+									
+									//cym 2014-12-17
+									if(this.currentCharacter == '-'){
+										isCodeData = true;
 									}
 	
 									if (this.currentCharacter == '*') {
@@ -1801,6 +1809,8 @@ public class Scanner implements TerminalTokens {
 											case '*':
 												star = true;
 												break;
+//											case '-':   //cym 2014-12-17
+//												mius = true;
 											case '@':
 												if (firstTag == 0 && this.isFirstTag()) {
 													firstTag = previous;
@@ -1825,6 +1835,8 @@ public class Scanner implements TerminalTokens {
 												this.currentPosition++;
 										} //jump over the \\
 									}
+									if(isCodeData) 
+										return TokenNameCODE_DATA;
 									int token = isJavadoc ? TokenNameCOMMENT_JAVADOC : TokenNameCOMMENT_BLOCK;
 									recordComment(token);
 									this.commentTagStarts[this.commentPtr] = firstTag;
@@ -3024,13 +3036,13 @@ public class Scanner implements TerminalTokens {
 		switch (data[index]) {
 			case 'a' :
 				switch(length) {
-					case 3: //add
-					if ((data[++index] == 'd')
-						&& (data[++index] == 'd')) {
-							return TokenNameadd;
-						} else {
-							return TokenNameIdentifier;
-						}
+//					case 3: //add
+//					if ((data[++index] == 'd')
+//						&& (data[++index] == 'd')) {
+//							return TokenNameadd;
+//						} else {
+//							return TokenNameIdentifier;
+//						}
 					case 8: //abstract
 						if ((data[++index] == 'b')
 							&& (data[++index] == 's')
@@ -3043,22 +3055,22 @@ public class Scanner implements TerminalTokens {
 							} else {
 								return TokenNameIdentifier;
 							}
-					case 6: // assert
-						if ((data[++index] == 's')
-							&& (data[++index] == 's')
-							&& (data[++index] == 'e')
-							&& (data[++index] == 'r')
-							&& (data[++index] == 't')) {
-								if (this.sourceLevel >= ClassFileConstants.JDK1_4) {
-									this.containsAssertKeyword = true;
-									return TokenNameassert;
-								} else {
-									this.useAssertAsAnIndentifier = true;
-									return TokenNameIdentifier;
-								}
-							} else {
-								return TokenNameIdentifier;
-							}
+//					case 6: // assert
+//						if ((data[++index] == 's')
+//							&& (data[++index] == 's')
+//							&& (data[++index] == 'e')
+//							&& (data[++index] == 'r')
+//							&& (data[++index] == 't')) {
+//								if (this.sourceLevel >= ClassFileConstants.JDK1_4) {
+//									this.containsAssertKeyword = true;
+//									return TokenNameassert;
+//								} else {
+//									this.useAssertAsAnIndentifier = true;
+//									return TokenNameIdentifier;
+//								}
+//							} else {
+//								return TokenNameIdentifier;
+//							}
 					default:
 						return TokenNameIdentifier;
 				}
@@ -3197,15 +3209,15 @@ public class Scanner implements TerminalTokens {
 							return TokenNameevent;
 						else
 							return TokenNameIdentifier;	
-//					case 6 :
-//						if ((data[++index] == 'x')
-//							&& (data[++index] == 'p')
-//							&& (data[++index] == 'o')
-//							&& (data[++index] == 'r')
-//							&& (data[++index] == 't'))
-//							return TokenNameexport;
-//						else
-//							return TokenNameIdentifier;
+					case 6 :
+						if ((data[++index] == 'x')
+							&& (data[++index] == 'p')
+							&& (data[++index] == 'o')
+							&& (data[++index] == 'r')
+							&& (data[++index] == 't'))
+							return TokenNameexport;
+						else
+							return TokenNameIdentifier;
 					case 7 :
 						if ((data[++index] == 'x')
 							&& (data[++index] == 't')
@@ -3278,12 +3290,12 @@ public class Scanner implements TerminalTokens {
 				}
 			case 'g' :
 				switch (length) {
-					case 3: 
-						if ((data[++index] == 'e')
-							&& (data[++index] == 't')) {
-							return TokenNameget;
-						}else
-							return TokenNameIdentifier;
+//					case 3: 
+//						if ((data[++index] == 'e')
+//							&& (data[++index] == 't')) {
+//							return TokenNameget;
+//						}else
+//							return TokenNameIdentifier;
 					//goto
 					case 4: 
 						if ((data[++index] == 'o')
@@ -3299,8 +3311,11 @@ public class Scanner implements TerminalTokens {
 			case 'i' : //if implements import instanceof int interface
 				switch (length) {
 					case 2 :
-						if (data[++index] == 'f')
+						++index;   //cym 2014-12-17
+						if (data[index] == 'f')
 							return TokenNameif;
+						else if(data[index] == 'n')
+							return TokenNamein;
 						else
 							return TokenNameIdentifier;
 					case 3 :
@@ -3406,14 +3421,14 @@ public class Scanner implements TerminalTokens {
 						return TokenNameIdentifier;
 				}
 				
-			case 'o' : //long
-				if (length == 3) {
-					if ((data[++index] == 'u')
-						&& (data[++index] == 't')) {
-						return TokenNameout;
-					}
-				}
-				return TokenNameIdentifier;
+//			case 'o' : //long
+//				if (length == 3) {
+//					if ((data[++index] == 'u')
+//						&& (data[++index] == 't')) {
+//						return TokenNameout;
+//					}
+//				}
+//				return TokenNameIdentifier;
 	
 			case 'p' : //package private protected public
 				switch (length) {
@@ -3465,12 +3480,12 @@ public class Scanner implements TerminalTokens {
 	
 			case 'r' : //return
 				switch(length){
-					case 3:
-						if ((data[++index] == 'e')
-								&& (data[++index] == 'f')) {
-								return TokenNameref;
-							} else
-								return TokenNameIdentifier;
+//					case 3:
+//						if ((data[++index] == 'e')
+//								&& (data[++index] == 'f')) {
+//								return TokenNameref;
+//							} else
+//								return TokenNameIdentifier;
 					case 6:
 						if (data[++index] == 'e'){
 							if((data[++index] == 't')
@@ -3478,11 +3493,11 @@ public class Scanner implements TerminalTokens {
 									&& (data[++index] == 'r')
 									&& (data[++index] == 'n')) {
 								return TokenNamereturn;
-							} else if((data[index] == 'm')
-								&& (data[++index] == 'o')
-								&& (data[++index] == 'v')
-								&& (data[++index] == 'e')){
-								return TokenNameremove;
+//							} else if((data[index] == 'm')
+//								&& (data[++index] == 'o')
+//								&& (data[++index] == 'v')
+//								&& (data[++index] == 'e')){
+//								return TokenNameremove;
 							} else 
 								return TokenNameIdentifier;
 						} else 
@@ -3493,12 +3508,12 @@ public class Scanner implements TerminalTokens {
 	
 			case 's' : //short static super switch synchronized strictfp
 				switch (length) {
-					case 3 :
-						if ((data[++index] == 'e')
-							&& (data[++index] == 't'))
-							return TokenNameset;
-						else
-							return TokenNameIdentifier;
+//					case 3 :
+//						if ((data[++index] == 'e')
+//							&& (data[++index] == 't'))
+//							return TokenNameset;
+//						else
+//							return TokenNameIdentifier;
 					case 5 :
 						if (data[++index] == 'h')
 							if ((data[++index] == 'o') && (data[++index] == 'r') && (data[++index] == 't'))
@@ -4320,7 +4335,7 @@ public class Scanner implements TerminalTokens {
 	public static boolean isKeyword(int token) {
 		switch(token) {
 			case TerminalTokens.TokenNameabstract:
-			case TerminalTokens.TokenNameassert:
+//			case TerminalTokens.TokenNameassert:  //cym 2014-12-17
 			case TerminalTokens.TokenNamebyte:
 			case TerminalTokens.TokenNamebreak:
 			case TerminalTokens.TokenNameboolean:
@@ -4384,9 +4399,9 @@ public class Scanner implements TerminalTokens {
 		
 		public int getNextToken() throws InvalidInputException {
 			int token = getNextToken0();
-//			if (token == TokenNameAT && atTypeAnnotation()) {
-//				token = TokenNameAT308;
-//			}
+			if (token == TokenNameAT && atTypeAnnotation()) {
+				token = TokenNameAT308;
+			}
 			return token == TokenNameEOF ? TokenNameNotAToken : token; 
 		}
 	}
@@ -4688,7 +4703,7 @@ public class Scanner implements TerminalTokens {
 						return token;
 					//$FALL-THROUGH$
 				case TokenNameabstract:
-				case TokenNameassert:
+//				case TokenNameassert:  //cym 2014-12-17
 				case TokenNameboolean:
 				case TokenNamebreak:
 				case TokenNamebyte:
@@ -4742,7 +4757,7 @@ public class Scanner implements TerminalTokens {
 				case TokenNameLBRACE:
 				case TokenNameAT:
 				case TokenNameBeginLambda:
-//				case TokenNameAT308:
+				case TokenNameAT308:
 					if(getVanguardParser().parse(Goal.BlockStatementoptGoal) == VanguardParser.SUCCESS)
 						return token;
 					break;

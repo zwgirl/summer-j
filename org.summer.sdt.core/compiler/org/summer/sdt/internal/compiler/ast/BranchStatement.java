@@ -10,9 +10,8 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
-import org.summer.sdt.internal.compiler.codegen.BranchLabel;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public abstract class BranchStatement extends Statement {
 
@@ -70,5 +69,4 @@ public abstract class BranchStatement extends Statement {
 	public void resolve(BlockScope scope) {
 		// nothing to do during name resolution
 	}
-
 }

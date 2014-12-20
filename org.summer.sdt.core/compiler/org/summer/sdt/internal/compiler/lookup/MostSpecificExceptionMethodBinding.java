@@ -37,4 +37,4 @@ public class MostSpecificExceptionMethodBinding  extends MethodBinding {
 	public MethodBinding original() {
 		return this.originalMethod.original();
 	}
-}
+} 

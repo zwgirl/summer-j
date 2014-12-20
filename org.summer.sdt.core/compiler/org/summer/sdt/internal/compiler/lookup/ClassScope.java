@@ -19,6 +19,7 @@
  *							Bug 427199 - [1.8][resource] avoid resource leak warnings on Streams that have no resource
  *							Bug 429958 - [1.8][null] evaluate new DefaultLocation attribute of @NonNullByDefault
  *							Bug 434570 - Generic type mismatch for parametrized class annotation attribute with inner class
+ *							Bug 444024 - [1.8][compiler][null] Type mismatch error in annotation generics assignment which happens "sometimes"
  *        Andy Clement (GoPivotal, Inc) aclement@gopivotal.com - Contributions for
  *                          Bug 415821 - [1.8][compiler] CLASS_EXTENDS target type annotation missing for anonymous classes
  *******************************************************************************/
@@ -115,7 +116,7 @@ public class ClassScope extends Scope {
 		anonymousType.faultInTypesForFieldsAndMethods();
 		anonymousType.verifyMethods(environment().methodVerifier());
 	}
-	
+
 	void buildFields() {
 		SourceTypeBinding sourceType = this.referenceContext.binding;
 		if (sourceType.areFieldsInitialized()) return;
@@ -133,6 +134,11 @@ public class ClassScope extends Scope {
 				case AbstractVariableDeclaration.ENUM_CONSTANT:
 					count++;
 			}
+			
+			//cym 2014-12-13
+			if((fields[i].modifiers & ClassFileConstants.AccNative) == 0){
+				this.referenceContext.binding.modifiers &= ~ClassFileConstants.AccCompleteNative;
+			}
 		}
 
 		// iterate the field declarations to create the bindings, lose all duplicates
@@ -141,8 +147,7 @@ public class ClassScope extends Scope {
 		count = 0;
 		for (int i = 0; i < size; i++) {
 			FieldDeclaration field = fields[i];
-//			if (field.getKind() == AbstractVariableDeclaration.INITIALIZER) {
-			if (field.getKind() == AbstractVariableDeclaration.INITIALIZER ) {  
+			if (field.getKind() == AbstractVariableDeclaration.INITIALIZER ) {
 				// We used to report an error for initializers declared inside interfaces, but
 				// now this error reporting is moved into the parser itself. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=212713
 			} else {
@@ -216,7 +221,6 @@ public class ClassScope extends Scope {
 						}
 					}
 				}
-	
 			}
 		}
 		// remove duplicate fields
@@ -395,6 +399,11 @@ public class ClassScope extends Scope {
 					if (methodBinding != null) { // is null if binding could not be created
 						methodBindings[count++] = methodBinding;
 						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
+						
+						//cym 2014-12-13
+						if(!methodBinding.isNative()){
+							this.referenceContext.binding.modifiers &= ~ClassFileConstants.AccCompleteNative;
+						}
 					}
 				}
 			}
@@ -408,6 +417,11 @@ public class ClassScope extends Scope {
 						methodBindings[count++] = methodBinding;
 						hasAbstractMethods = hasAbstractMethods || methodBinding.isAbstract();
 						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
+						
+						//cym 2014-12-13
+						if(!methodBinding.isNative()){
+							this.referenceContext.binding.modifiers &= ~ClassFileConstants.AccCompleteNative;
+						}
 					}
 				}
 			}
@@ -440,6 +454,11 @@ public class ClassScope extends Scope {
 		if (enclosingType == null) {
 			char[][] className = CharOperation.arrayConcat(packageBinding.compoundName, this.referenceContext.name);
 			this.referenceContext.binding = new SourceTypeBinding(className, packageBinding, this);
+			
+			//cym 2014-12-09
+			if(this.referenceContext.element != null){
+				this.referenceContext.element.initializeScope = this.referenceContext.initializerScope;
+			}
 		} else {
 			char[][] className = CharOperation.deepCopy(enclosingType.compoundName);
 			className[className.length - 1] =
@@ -589,7 +608,10 @@ public class ClassScope extends Scope {
 						problemReporter().illegalModifierForLocalInterface(sourceType);
 				*/
 			} else {
-				final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccAbstract | ClassFileConstants.AccInterface | ClassFileConstants.AccStrictfp | ClassFileConstants.AccAnnotation);
+//				final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccAbstract | ClassFileConstants.AccInterface | ClassFileConstants.AccStrictfp | ClassFileConstants.AccAnnotation);
+				//cym 2014-12-15
+				final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccAbstract | ClassFileConstants.AccInterface | ClassFileConstants.AccStrictfp | ClassFileConstants.AccAnnotation
+						| ClassFileConstants.AccNative);
 				if ((realModifiers & UNEXPECTED_MODIFIERS) != 0) {
 					if ((realModifiers & ClassFileConstants.AccAnnotation) != 0)
 						problemReporter().illegalModifierForAnnotationType(sourceType);
@@ -823,66 +845,7 @@ public class ClassScope extends Scope {
 			problemReporter().duplicateModifierForField(declaringClass, fieldDecl);
 
 		if (declaringClass.isInterface()) {
-			//cym modified 2014-10-25
-//			if(fieldDecl instanceof PropertyDeclaration){
-//				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic;
-//				// set the modifiers
-//				modifiers |= IMPLICIT_MODIFIERS;
-//	
-//				// and then check that they are the only ones
-//				if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != IMPLICIT_MODIFIERS) {
-//					if ((declaringClass.modifiers  & ClassFileConstants.AccAnnotation) != 0)
-//						problemReporter().illegalModifierForAnnotationField(fieldDecl);
-//					else
-//						problemReporter().illegalModifierForInterfaceField(fieldDecl);
-//				}
-//				fieldBinding.modifiers = modifiers;
-//				return;
-//			}else if(fieldDecl instanceof IndexerDeclaration){
-//				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic;
-//				// set the modifiers
-//				modifiers |= IMPLICIT_MODIFIERS;
-//	
-//				// and then check that they are the only ones
-//				if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != IMPLICIT_MODIFIERS) {
-//					if ((declaringClass.modifiers  & ClassFileConstants.AccAnnotation) != 0)
-//						problemReporter().illegalModifierForAnnotationField(fieldDecl);
-//					else
-//						problemReporter().illegalModifierForInterfaceField(fieldDecl);
-//				}
-//				fieldBinding.modifiers = modifiers;
-//				return;
-//			} else if(fieldDecl instanceof EventDeclaration){
-//				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic;
-//				// set the modifiers
-//				modifiers |= IMPLICIT_MODIFIERS;
-//	
-//				// and then check that they are the only ones
-//				if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != IMPLICIT_MODIFIERS) {
-//					if ((declaringClass.modifiers  & ClassFileConstants.AccAnnotation) != 0)
-//						problemReporter().illegalModifierForAnnotationField(fieldDecl);
-//					else
-//						problemReporter().illegalModifierForInterfaceField(fieldDecl);
-//				}
-//				fieldBinding.modifiers = modifiers;
-//				return;
-//			} else{
-//				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
-//				// set the modifiers
-//				modifiers |= IMPLICIT_MODIFIERS;
-//	
-//				// and then check that they are the only ones
-//				if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != IMPLICIT_MODIFIERS) {
-//					if ((declaringClass.modifiers  & ClassFileConstants.AccAnnotation) != 0)
-//						problemReporter().illegalModifierForAnnotationField(fieldDecl);
-//					else
-//						problemReporter().illegalModifierForInterfaceField(fieldDecl);
-//				}
-//				fieldBinding.modifiers = modifiers;
-//				return;
-//			}
-			
-			if(!(/*fieldDecl instanceof PropertyDeclaration ||*/ fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof EventDeclaration)){
+			if(!(fieldDecl instanceof PropertyDeclaration || fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof EventDeclaration)){
 				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
 				// set the modifiers
 				modifiers |= IMPLICIT_MODIFIERS;
@@ -916,7 +879,10 @@ public class ClassScope extends Scope {
 		int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
 		//cym modified 2014-11-24
 //		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccTransient | ClassFileConstants.AccVolatile);
-		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccTransient | ClassFileConstants.AccVolatile  | ClassFileConstants.AccAbstract | ClassFileConstants.AccNative);
+		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected 
+				| ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccTransient | ClassFileConstants.AccVolatile  
+				| ClassFileConstants.AccAbstract | ClassFileConstants.AccNative
+				| ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer | ClassFileConstants.AccEvent);
 		if ((realModifiers & UNEXPECTED_MODIFIERS) != 0) {
 			problemReporter().illegalModifierForField(declaringClass, fieldDecl);
 			modifiers &= ~ExtraCompilerModifiers.AccJustFlag | ~UNEXPECTED_MODIFIERS;
@@ -1276,19 +1242,26 @@ public class ClassScope extends Scope {
 
 	void connectTypeHierarchy() {
 		SourceTypeBinding sourceType = this.referenceContext.binding;
-		if ((sourceType.tagBits & TagBits.BeginHierarchyCheck) == 0) {
-			sourceType.tagBits |= TagBits.BeginHierarchyCheck;
-			environment().typesBeingConnected.add(sourceType);
-			boolean noProblems = connectSuperclass();
-			noProblems &= connectSuperInterfaces();
-			environment().typesBeingConnected.remove(sourceType);
-			sourceType.tagBits |= TagBits.EndHierarchyCheck;
-			noProblems &= connectTypeVariables(this.referenceContext.typeParameters, false);
-			sourceType.tagBits |= TagBits.TypeVariablesAreConnected;
-			if (noProblems && sourceType.isHierarchyInconsistent())
-				problemReporter().hierarchyHasProblems(sourceType);
+		CompilationUnitScope compilationUnitScope = compilationUnitScope();
+		boolean wasAlreadyConnecting = compilationUnitScope.connectingHierarchy;
+		compilationUnitScope.connectingHierarchy = true;
+		try {
+			if ((sourceType.tagBits & TagBits.BeginHierarchyCheck) == 0) {
+				sourceType.tagBits |= TagBits.BeginHierarchyCheck;
+				environment().typesBeingConnected.add(sourceType);
+				boolean noProblems = connectSuperclass();
+				noProblems &= connectSuperInterfaces();
+				environment().typesBeingConnected.remove(sourceType);
+				sourceType.tagBits |= TagBits.EndHierarchyCheck;
+				noProblems &= connectTypeVariables(this.referenceContext.typeParameters, false);
+				sourceType.tagBits |= TagBits.TypeVariablesAreConnected;
+				if (noProblems && sourceType.isHierarchyInconsistent())
+					problemReporter().hierarchyHasProblems(sourceType);
+			}
+			connectMemberTypes();
+		} finally {
+			compilationUnitScope.connectingHierarchy = wasAlreadyConnecting;
 		}
-		connectMemberTypes();
 		LookupEnvironment env = environment();
 		try {
 			env.missingClassFileLocation = this.referenceContext;
@@ -1328,16 +1301,23 @@ public class ClassScope extends Scope {
 		if ((sourceType.tagBits & TagBits.BeginHierarchyCheck) != 0)
 			return;
 
-		sourceType.tagBits |= TagBits.BeginHierarchyCheck;
-		environment().typesBeingConnected.add(sourceType);
-		boolean noProblems = connectSuperclass();
-		noProblems &= connectSuperInterfaces();
-		environment().typesBeingConnected.remove(sourceType);
-		sourceType.tagBits |= TagBits.EndHierarchyCheck;
-		noProblems &= connectTypeVariables(this.referenceContext.typeParameters, false);
-		sourceType.tagBits |= TagBits.TypeVariablesAreConnected;
-		if (noProblems && sourceType.isHierarchyInconsistent())
-			problemReporter().hierarchyHasProblems(sourceType);
+		CompilationUnitScope compilationUnitScope = compilationUnitScope();
+		boolean wasAlreadyConnecting = compilationUnitScope.connectingHierarchy;
+		compilationUnitScope.connectingHierarchy = true;
+		try {
+			sourceType.tagBits |= TagBits.BeginHierarchyCheck;
+			environment().typesBeingConnected.add(sourceType);
+			boolean noProblems = connectSuperclass();
+			noProblems &= connectSuperInterfaces();
+			environment().typesBeingConnected.remove(sourceType);
+			sourceType.tagBits |= TagBits.EndHierarchyCheck;
+			noProblems &= connectTypeVariables(this.referenceContext.typeParameters, false);
+			sourceType.tagBits |= TagBits.TypeVariablesAreConnected;
+			if (noProblems && sourceType.isHierarchyInconsistent())
+				problemReporter().hierarchyHasProblems(sourceType);
+		} finally {
+			compilationUnitScope.connectingHierarchy = wasAlreadyConnecting;
+		}
 	}
 
 	public boolean detectHierarchyCycle(TypeBinding superType, TypeReference reference) {
@@ -1390,6 +1370,11 @@ public class ClassScope extends Scope {
 			// force its superclass & superinterfaces to be found... 2 possibilities exist - the source type is included in the hierarchy of:
 			//		- a binary type... this case MUST be caught & reported here
 			//		- another source type... this case is reported against the other source type
+			if (superType.problemId() != ProblemReasons.NotFound && (superType.tagBits & TagBits.HierarchyHasProblems) != 0) { 
+				sourceType.tagBits |= TagBits.HierarchyHasProblems;
+				problemReporter().hierarchyHasProblems(sourceType);
+				return true;
+			}
 			boolean hasCycle = false;
 			ReferenceBinding parentType = superType.superclass();
 			if (parentType != null) {

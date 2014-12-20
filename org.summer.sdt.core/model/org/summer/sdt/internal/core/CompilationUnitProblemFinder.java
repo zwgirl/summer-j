@@ -236,7 +236,6 @@ public class CompilationUnitProblemFinder extends Compiler {
 			// catch this exception so as to not enter the catch(RuntimeException e) below
 			throw e;
 		} catch(RuntimeException e) {
-			e.printStackTrace();
 			// avoid breaking other tools due to internal compiler failure (40334)
 			String lineDelimiter = unitElement.findRecommendedLineSeparator();
 			StringBuffer message = new StringBuffer("Exception occurred during problem detection:");  //$NON-NLS-1$

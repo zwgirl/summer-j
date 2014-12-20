@@ -11,6 +11,9 @@
 package org.summer.sdt.internal.compiler;
 
 import org.summer.sdt.core.compiler.*;
+import org.summer.sdt.internal.compiler.CompilationResult;
+import org.summer.sdt.internal.compiler.DefaultErrorHandlingPolicies;
+import org.summer.sdt.internal.compiler.IProblemFactory;
 import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.*;

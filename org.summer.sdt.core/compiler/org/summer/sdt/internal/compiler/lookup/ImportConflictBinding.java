@@ -14,16 +14,16 @@ import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 
 public class ImportConflictBinding extends ImportBinding {
-public ReferenceBinding conflictingTypeBinding; // must ensure the import is resolved
-
-public ImportConflictBinding(char[][] compoundName, Binding methodBinding, ReferenceBinding conflictingTypeBinding, ImportReference reference) {
-	super(compoundName, false, methodBinding, reference);
-	this.conflictingTypeBinding = conflictingTypeBinding;
-}
-public char[] readableName() {
-	return CharOperation.concatWith(this.compoundName, '.');
-}
-public String toString() {
-	return "method import : " + new String(readableName()); //$NON-NLS-1$
-}
+	public ReferenceBinding conflictingTypeBinding; // must ensure the import is resolved
+	
+	public ImportConflictBinding(char[][] compoundName, Binding methodBinding, ReferenceBinding conflictingTypeBinding, ImportReference reference) {
+		super(compoundName, false, methodBinding, reference);
+		this.conflictingTypeBinding = conflictingTypeBinding;
+	}
+	public char[] readableName() {
+		return CharOperation.concatWith(this.compoundName, '.');
+	}
+	public String toString() {
+		return "method import : " + new String(readableName()); //$NON-NLS-1$
+	}
 }

@@ -15,13 +15,8 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 
 public class SingleTypeReference extends TypeReference {
@@ -61,6 +56,12 @@ public class SingleTypeReference extends TypeReference {
 			if (typeVariable.declaringElement instanceof SourceTypeBinding) {
 				scope.tagAsAccessingEnclosingInstanceStateOf((ReferenceBinding) typeVariable.declaringElement, true /* type variable access */);
 			}
+		} else if (this.resolvedType instanceof LocalTypeBinding) {
+			LocalTypeBinding localType = (LocalTypeBinding) this.resolvedType;
+			MethodScope methodScope = scope.methodScope();
+			if (methodScope != null && !methodScope.isStatic) {
+				methodScope.tagAsAccessingEnclosingInstanceStateOf(localType, false /* ! type variable access */);
+			}
 		}
 
 		if (scope.kind == Scope.CLASS_SCOPE && this.resolvedType.isValidBinding())
@@ -73,6 +74,20 @@ public class SingleTypeReference extends TypeReference {
 		return new char[][] { this.token };
 	}
 
+	@Override
+	public boolean isBaseTypeReference() {
+		return this.token == BYTE    ||
+			   this.token == SHORT   ||
+			   this.token == INT     ||
+			   this.token == LONG    ||
+			   this.token == FLOAT   ||
+			   this.token == DOUBLE  ||
+			   this.token == CHAR    ||
+			   this.token == BOOLEAN ||
+			   this.token == NULL    ||
+			   this.token == VOID;	    
+	}
+	
 	public StringBuffer printExpression(int indent, StringBuffer output){
 		if (this.annotations != null && this.annotations[0] != null) {
 			printAnnotations(this.annotations[0], output);
@@ -132,11 +147,11 @@ public class SingleTypeReference extends TypeReference {
 		visitor.endVisit(this, scope);
 	}
 
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output){
-		if (this.annotations != null && this.annotations[0] != null) {
-			generateAnnotations(this.annotations[0], output);
-			output.append(' ');
-		}
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output){
+//		if (this.annotations != null && this.annotations[0] != null) {
+//			generateAnnotations(this.annotations[0], output);
+//			output.append(' ');
+//		}
 		return output.append(this.token);
 	}
 }

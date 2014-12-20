@@ -11,15 +11,11 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.parser.Parser;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.parser.*;
 
 public class Initializer extends FieldDeclaration {
 
@@ -52,8 +48,8 @@ public class Initializer extends FieldDeclaration {
 	 * Code generation for a non-static initializer:
 	 *    standard block code gen
 	 *
-	 * @param currentScope org.summer.sdt.internal.compiler.lookup.BlockScope
-	 * @param codeStream org.summer.sdt.internal.compiler.codegen.CodeStream
+	 * @param currentScope org.eclipse.jdt.internal.compiler.lookup.BlockScope
+	 * @param codeStream org.eclipse.jdt.internal.compiler.codegen.CodeStream
 	 */
 	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
 
@@ -137,11 +133,11 @@ public class Initializer extends FieldDeclaration {
 		visitor.endVisit(this, scope);
 	}
 	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateStatement(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
 		printIndent(indent, output);
 		output.append("{\n"); //$NON-NLS-1$
 		if (this.block != null) {
-			this.block.generateBody(scope, indent, output);
+			this.block.generateBody(scope, depsManager, indent, output);
 		}
 		printIndent(indent, output).append('}');
 		return output;

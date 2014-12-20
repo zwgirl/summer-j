@@ -100,6 +100,7 @@ public class ClasspathDirectory extends ClasspathLocation {
 		} catch (CoreException e) {
 			return null;
 		} catch (ClassFormatException e) {
+			e.printStackTrace();
 			return null;
 		} catch (IOException e) {
 			return null;
@@ -147,5 +148,4 @@ public class ClasspathDirectory extends ClasspathLocation {
 	public String debugPathString() {
 		return this.binaryFolder.getFullPath().toString();
 	}
-
 }

@@ -23,6 +23,9 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.text.edits.MalformedTreeException;
+import org.eclipse.text.edits.TextEdit;
 import org.summer.sdt.core.*;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.dom.ASTNode;
@@ -41,9 +44,9 @@ import org.summer.sdt.core.util.IMethodInfo;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AnnotationMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.Argument;
-import org.summer.sdt.internal.compiler.ast.UnionTypeReference;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeReference;
+import org.summer.sdt.internal.compiler.ast.UnionTypeReference;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileReader;
 import org.summer.sdt.internal.compiler.classfmt.ClassFormatException;
 import org.summer.sdt.internal.compiler.env.ClassSignature;
@@ -67,9 +70,6 @@ import org.summer.sdt.internal.core.Member;
 import org.summer.sdt.internal.core.MemberValuePair;
 import org.summer.sdt.internal.core.PackageFragment;
 import org.summer.sdt.internal.core.PackageFragmentRoot;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.text.edits.MalformedTreeException;
-import org.eclipse.text.edits.TextEdit;
 
 /**
  * Provides convenient utility methods to other types in this package.
@@ -1459,7 +1459,9 @@ public class Util {
 			return null;
 		switch (typeBinding.kind()) {
 			case Binding.ARRAY_TYPE :
-				typeBinding = ((org.summer.sdt.internal.compiler.lookup.ArrayBinding) typeBinding).leafComponentType();
+				//cym 2014-12-19
+//				typeBinding = ((org.summer.sdt.internal.compiler.lookup.ArrayBinding) typeBinding).leafComponentType();
+				typeBinding = ((org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding) typeBinding).leafComponentType();
 				return getUnresolvedJavaElement(typeBinding, workingCopyOwner, bindingsToNodes);
 			case Binding.BASE_TYPE :
 			case Binding.WILDCARD_TYPE :

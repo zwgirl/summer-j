@@ -16,32 +16,32 @@ import org.summer.sdt.internal.compiler.env.IBinaryTypeAnnotation;
 class MethodInfoWithTypeAnnotations extends MethodInfoWithParameterAnnotations {
 	private TypeAnnotationInfo[] typeAnnotations;
 
-	MethodInfoWithTypeAnnotations(MethodInfo methodInfo, AnnotationInfo[] annotations, AnnotationInfo[][] parameterAnnotations, TypeAnnotationInfo[] typeAnnotations) {
-		super(methodInfo, annotations, parameterAnnotations);
-		this.typeAnnotations = typeAnnotations;
+MethodInfoWithTypeAnnotations(MethodInfo methodInfo, AnnotationInfo[] annotations, AnnotationInfo[][] parameterAnnotations, TypeAnnotationInfo[] typeAnnotations) {
+	super(methodInfo, annotations, parameterAnnotations);
+	this.typeAnnotations = typeAnnotations;
+}
+public IBinaryTypeAnnotation[] getTypeAnnotations() {
+	return this.typeAnnotations;
+}
+
+protected void initialize() {
+	for (int i = 0, l = this.typeAnnotations == null ? 0 : this.typeAnnotations.length; i < l; i++) {
+		this.typeAnnotations[i].initialize();
 	}
-	public IBinaryTypeAnnotation[] getTypeAnnotations() {
-		return this.typeAnnotations;
+	super.initialize();
+}
+protected void reset() {
+	for (int i = 0, l = this.typeAnnotations == null ? 0 : this.typeAnnotations.length; i < l; i++) {
+		this.typeAnnotations[i].reset();
 	}
-	
-	protected void initialize() {
-		for (int i = 0, l = this.typeAnnotations == null ? 0 : this.typeAnnotations.length; i < l; i++) {
-			this.typeAnnotations[i].initialize();
-		}
-		super.initialize();
+	super.reset();
+}
+protected void toStringContent(StringBuffer buffer) {
+	super.toStringContent(buffer);
+	buffer.append("type annotations = \n");//$NON-NLS-1$
+	for (int i = 0, l = this.typeAnnotations == null ? 0 : this.typeAnnotations.length; i < l; i++) {
+		buffer.append(this.typeAnnotations[i].toString());
+		buffer.append('\n');
 	}
-	protected void reset() {
-		for (int i = 0, l = this.typeAnnotations == null ? 0 : this.typeAnnotations.length; i < l; i++) {
-			this.typeAnnotations[i].reset();
-		}
-		super.reset();
-	}
-	protected void toStringContent(StringBuffer buffer) {
-		super.toStringContent(buffer);
-		buffer.append("type annotations = \n");//$NON-NLS-1$
-		for (int i = 0, l = this.typeAnnotations == null ? 0 : this.typeAnnotations.length; i < l; i++) {
-			buffer.append(this.typeAnnotations[i].toString());
-			buffer.append('\n');
-		}
-	}
+}
 }

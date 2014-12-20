@@ -27,46 +27,46 @@ public class HierarchyType implements IGenericType {
 	public char[][] superInterfaceNames;
 	public boolean anonymous;
 
-	public HierarchyType(
-		IType typeHandle,
-		char[] name,
-		int modifiers,
-		char[] superclassName,
-		char[][] superInterfaceNames,
-		boolean anonymous) {
-	
-		this.typeHandle = typeHandle;
-		this.name = name;
-		this.modifiers = modifiers;
-		this.superclassName = superclassName;
-		this.superInterfaceNames = superInterfaceNames;
-		this.anonymous = anonymous;
-	}
-	/**
-	 * @see org.summer.sdt.internal.compiler.env.IDependent#getFileName()
-	 */
-	public char[] getFileName() {
-		return this.typeHandle.getCompilationUnit().getElementName().toCharArray();
-	}
-	
-	/**
-	 * Answer an int whose bits are set according the access constants
-	 * defined by the VM spec.
-	 */
-	public int getModifiers() {
-		return this.modifiers;
-	}
-	/**
-	 * Answer whether the receiver contains the resolved binary form
-	 * or the unresolved source form of the type.
-	 */
-	public boolean isBinaryType() {
-		return false;
-	}
-	/** 
-	 * Answer whether the receiver is an anonymous type
-	 */
-	public boolean isAnonymous() {
-		return this.anonymous;
-	}
+public HierarchyType(
+	IType typeHandle,
+	char[] name,
+	int modifiers,
+	char[] superclassName,
+	char[][] superInterfaceNames,
+	boolean anonymous) {
+
+	this.typeHandle = typeHandle;
+	this.name = name;
+	this.modifiers = modifiers;
+	this.superclassName = superclassName;
+	this.superInterfaceNames = superInterfaceNames;
+	this.anonymous = anonymous;
+}
+/**
+ * @see org.summer.sdt.internal.compiler.env.IDependent#getFileName()
+ */
+public char[] getFileName() {
+	return this.typeHandle.getCompilationUnit().getElementName().toCharArray();
+}
+
+/**
+ * Answer an int whose bits are set according the access constants
+ * defined by the VM spec.
+ */
+public int getModifiers() {
+	return this.modifiers;
+}
+/**
+ * Answer whether the receiver contains the resolved binary form
+ * or the unresolved source form of the type.
+ */
+public boolean isBinaryType() {
+	return false;
+}
+/** 
+ * Answer whether the receiver is an anonymous type
+ */
+public boolean isAnonymous() {
+	return this.anonymous;
+}
 }

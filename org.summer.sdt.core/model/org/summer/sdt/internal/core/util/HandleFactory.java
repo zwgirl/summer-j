@@ -175,6 +175,7 @@ public class HandleFactory {
 		if (newElement != null) return newElement;
 
 		switch(scope.kind) {
+			case Scope.WINDOW_SCOPE:  //cym 2014-12-12
 			case Scope.COMPILATION_UNIT_SCOPE :
 				newElement = unit;
 				break;

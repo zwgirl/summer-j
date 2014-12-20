@@ -88,5 +88,5 @@ public abstract class VariableBinding extends Binding {
 		output.append(" "); //$NON-NLS-1$
 		output.append((this.name != null) ? new String(this.name) : "<no name>"); //$NON-NLS-1$
 		return output.toString();
-	}
+	} 
 }

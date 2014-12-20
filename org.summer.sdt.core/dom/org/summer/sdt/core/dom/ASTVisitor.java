@@ -181,6 +181,7 @@ public abstract class ASTVisitor {
 		// default implementation: do nothing
 	}
 
+
 	/**
 	 * Visits the given type-specific AST node.
 	 * <p>

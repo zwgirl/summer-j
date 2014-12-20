@@ -21,4 +21,4 @@ public class SyntheticFieldBinding extends FieldBinding {
 		this.index = index;
 		this.tagBits |= (TagBits.AnnotationResolved | TagBits.DeprecatedAnnotationResolved);
 	}
-}
+} 

@@ -121,9 +121,9 @@ public class MethodScope extends BlockScope {
 		int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
 	
 		// check for abnormal modifiers
-//		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccStrictfp);
-		//cym 2014-11-24
-		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccStrictfp | ClassFileConstants.AccNative);
+		//cym 2014-12-06 add ClassFileConstants.AccNative
+		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected | ClassFileConstants.AccStrictfp | 
+				ClassFileConstants.AccNative );
 		if (declaringClass.isEnum() && (((ConstructorDeclaration) this.referenceContext).bits & ASTNode.IsDefaultConstructor) == 0) {
 			final int UNEXPECTED_ENUM_CONSTR_MODIFIERS = ~(ClassFileConstants.AccPrivate | ClassFileConstants.AccStrictfp);
 			if ((realModifiers & UNEXPECTED_ENUM_CONSTR_MODIFIERS) != 0) {
@@ -214,7 +214,8 @@ public class MethodScope extends BlockScope {
 	
 		// check for abnormal modifiers
 		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected
-			| ClassFileConstants.AccAbstract | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccSynchronized | ClassFileConstants.AccNative | ClassFileConstants.AccStrictfp);
+			| ClassFileConstants.AccAbstract | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccSynchronized | ClassFileConstants.AccNative | ClassFileConstants.AccStrictfp
+			| ClassFileConstants.AccEvent | ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer);   //cym 2014-12-04
 		if ((realModifiers & UNEXPECTED_MODIFIERS) != 0) {
 			problemReporter().illegalModifierForMethod((AbstractMethodDeclaration) this.referenceContext);
 			modifiers &= ~ExtraCompilerModifiers.AccJustFlag | ~UNEXPECTED_MODIFIERS;
@@ -421,6 +422,14 @@ public class MethodScope extends BlockScope {
 			return null;
 		if (!field.isValidBinding())
 			return field; // answer the error field
+	
+		if (receiverType.isInterface() && invocationSite.isQualifiedSuper())
+			return new ProblemFieldBinding(
+					field, // closest match
+					field.declaringClass,
+					fieldName,
+					ProblemReasons.NoProperEnclosingInstance);
+	
 		if (field.isStatic())
 			return field; // static fields are always accessible
 	

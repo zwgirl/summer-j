@@ -50,6 +50,10 @@
  *								Bug 390889 - [1.8][compiler] Evaluate options to support 1.7- projects against 1.8 JRE.
  *								Bug 430150 - [1.8][null] stricter checking against type variables
  *								Bug 434600 - Incorrect null analysis error reporting on type parameters
+ *								Bug 439516 - [1.8][null] NonNullByDefault wrongly applied to implicit type bound of binary type
+ *								Bug 438467 - [compiler][null] Better error position for "The method _ cannot implement the corresponding method _ due to incompatible nullness constraints"
+ *								Bug 439298 - [null] "Missing code implementation in the compiler" when using @NonNullByDefault in package-info.java
+ *								Bug 435805 - [1.8][compiler][null] Java 8 compiler does not recognize declaration style null annotations
  *      Jesper S Moller <jesper@selskabet.org> -  Contributions for
  *								bug 382701 - [1.8][compiler] Implement semantic analysis of Lambda expressions & Reference expression
  *								bug 382721 - [1.8][compiler] Effectively final variables needs special treatment
@@ -87,7 +91,6 @@ import org.summer.sdt.internal.compiler.ast.ArrayInitializer;
 import org.summer.sdt.internal.compiler.ast.ArrayQualifiedTypeReference;
 import org.summer.sdt.internal.compiler.ast.ArrayReference;
 import org.summer.sdt.internal.compiler.ast.ArrayTypeReference;
-import org.summer.sdt.internal.compiler.ast.AsExpression;
 import org.summer.sdt.internal.compiler.ast.Assignment;
 import org.summer.sdt.internal.compiler.ast.BinaryExpression;
 import org.summer.sdt.internal.compiler.ast.Block;
@@ -99,7 +102,7 @@ import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.summer.sdt.internal.compiler.ast.CompoundAssignment;
 import org.summer.sdt.internal.compiler.ast.ConditionalExpression;
 import org.summer.sdt.internal.compiler.ast.ConstructorDeclaration;
-import org.summer.sdt.internal.compiler.ast.Element;
+import org.summer.sdt.internal.compiler.ast.XAMLElement;
 import org.summer.sdt.internal.compiler.ast.EqualExpression;
 import org.summer.sdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.summer.sdt.internal.compiler.ast.Expression;
@@ -110,7 +113,6 @@ import org.summer.sdt.internal.compiler.ast.FunctionalExpression;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 import org.summer.sdt.internal.compiler.ast.Initializer;
 import org.summer.sdt.internal.compiler.ast.InstanceOfExpression;
-import org.summer.sdt.internal.compiler.ast.IsExpression;
 import org.summer.sdt.internal.compiler.ast.LabeledStatement;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.Literal;
@@ -123,7 +125,6 @@ import org.summer.sdt.internal.compiler.ast.NullAnnotationMatching;
 import org.summer.sdt.internal.compiler.ast.NullLiteral;
 import org.summer.sdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.summer.sdt.internal.compiler.ast.ParameterizedSingleTypeReference;
-import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.QualifiedNameReference;
 import org.summer.sdt.internal.compiler.ast.QualifiedTypeReference;
@@ -151,7 +152,6 @@ import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.CaptureBinding;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.InvocationSite;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
@@ -159,6 +159,7 @@ import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.PackageBinding;
 import org.summer.sdt.internal.compiler.lookup.ParameterizedGenericMethodBinding;
+import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemMethodBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
@@ -224,12 +225,13 @@ public class ProblemReporter extends ProblemHandler {
 			case IProblem.UsingDeprecatedMethod :
 			case IProblem.UsingDeprecatedConstructor :
 			case IProblem.UsingDeprecatedField :
-				return CompilerOptions.UsingDeprecatedAPI; 
-	 
+				return CompilerOptions.UsingDeprecatedAPI;
+	
 			case IProblem.LocalVariableIsNeverUsed :
 				return CompilerOptions.UnusedLocalVariable;
 	
 			case IProblem.ArgumentIsNeverUsed :
+			case IProblem.ExceptionParameterIsNeverUsed:
 				return CompilerOptions.UnusedArgument;
 	
 			case IProblem.NoImplicitStringConversionForCharArrayExpression :
@@ -1563,8 +1565,6 @@ public class ProblemReporter extends ProblemHandler {
 				return ProblemSeverities.Warning;
 			case IProblem.IllegalUseOfUnderscoreAsAnIdentifier:
 				return this.underScoreIsLambdaParameter ? ProblemSeverities.Error : ProblemSeverities.Warning;
-			case IProblem.LambdaShapeComputationError:
-				return ProblemSeverities.InternalError;
 		}
 		int irritant = getIrritant(problemID);
 		if (irritant != 0) {
@@ -1808,7 +1808,7 @@ public class ProblemReporter extends ProblemHandler {
 	 * @param type
 	 * @param fieldDecl
 	 */
-	public void duplicateNamedElementInType(Element type, FieldReference fieldDecl) {
+	public void duplicateNamedElementInType(XAMLElement type, FieldReference fieldDecl) {
 		this.handle(
 			IProblem.DuplicateField,
 			new String[] {new String("element"), new String(fieldDecl.token)},
@@ -2219,13 +2219,13 @@ public class ProblemReporter extends ProblemHandler {
 				nodeSourceEnd(hiddenField, fieldDecl));
 		}
 	}
-	public void fieldsOrThisBeforeConstructorInvocation(ThisReference reference) {
+	public void fieldsOrThisBeforeConstructorInvocation(ASTNode reference) {
 		this.handle(
 			IProblem.ThisSuperDuringConstructorInvocation,
 			NoArgument,
 			NoArgument,
 			reference.sourceStart,
-			reference.sourceEnd);
+			reference instanceof LambdaExpression ? ((LambdaExpression) reference).diagnosticsSourceEnd() : reference.sourceEnd);
 	}
 	public void finallyMustCompleteNormally(Block finallyBlock) {
 		this.handle(
@@ -2751,17 +2751,6 @@ public class ProblemReporter extends ProblemHandler {
 			fieldDecl.sourceStart,
 			fieldDecl.sourceEnd);
 	}
-	//cym 2014-11-24
-	public void illegalModifierForProperty(ReferenceBinding type, PropertyDeclaration propDecl) {
-		String[] arguments = new String[] {new String(propDecl.name)};
-		this.handle(
-			IProblem.IllegalModifierForField,
-			arguments,
-			arguments,
-			propDecl.sourceStart,
-			propDecl.sourceEnd);
-	}
-	
 	public void illegalModifierForInterface(SourceTypeBinding type) {
 		String[] arguments = new String[] {new String(type.sourceName())};
 		this.handle(
@@ -3720,7 +3709,8 @@ public class ProblemReporter extends ProblemHandler {
 					sourceStart,
 					sourceEnd);
 				return;
-			case ProblemReasons.ParameterizedMethodExpectedTypeProblem:
+			case ProblemReasons.InferredApplicableMethodInapplicable:	
+			case ProblemReasons.InvocationTypeInferenceFailure:
 				// FIXME(stephan): construct suitable message (https://bugs.eclipse.org/404675)
 				problemConstructor = (ProblemMethodBinding) targetConstructor;
 				shownConstructor = problemConstructor.closestMatch;
@@ -3734,6 +3724,10 @@ public class ProblemReporter extends ProblemHandler {
 					        (problemConstructor.returnType != null ? String.valueOf(problemConstructor.returnType.shortReadableName()) : "<unknown>")}, //$NON-NLS-1$
 					statement.sourceStart,
 					statement.sourceEnd);
+				return;
+			case ProblemReasons.ContradictoryNullAnnotations:
+				problemConstructor = (ProblemMethodBinding) targetConstructor;
+				contradictoryNullAnnotationsInferred(problemConstructor.closestMatch, statement);
 				return;
 			case ProblemReasons.NoError : // 0
 			default :
@@ -3838,6 +3832,9 @@ public class ProblemReporter extends ProblemHandler {
 			case ProblemReasons.Ambiguous :
 				id = IProblem.AmbiguousField;
 				break;
+			case ProblemReasons.NoProperEnclosingInstance:
+				noSuchEnclosingInstance(fieldRef.actualReceiverType, fieldRef.receiver, false);
+				return;
 			case ProblemReasons.NonStaticReferenceInStaticContext :
 				id = IProblem.NonStaticFieldFromStaticInvocation;
 				break;
@@ -4042,12 +4039,14 @@ public class ProblemReporter extends ProblemHandler {
 				annotation.sourceEnd);
 	}
 	
-	public void invalidMethod(MessageSend messageSend, MethodBinding method) {
+	public void invalidMethod(MessageSend messageSend, MethodBinding method, Scope scope) {
 		if (isRecoveredName(messageSend.selector)) return;
 	
 		int id = IProblem.UndefinedMethod; //default...
 	    MethodBinding shownMethod = method;
 		switch (method.problemId()) {
+			case ProblemReasons.NoSuchMethodOnArray :
+				return; // secondary error.
 			case ProblemReasons.NotFound :
 				if ((method.declaringClass.tagBits & TagBits.HasMissingType) != 0) {
 					this.handle(
@@ -4246,23 +4245,21 @@ public class ProblemReporter extends ProblemHandler {
 					(int) (messageSend.nameSourcePosition >>> 32),
 					(int) messageSend.nameSourcePosition);
 				return;
-			case ProblemReasons.ParameterizedMethodExpectedTypeProblem:
+			case ProblemReasons.InferredApplicableMethodInapplicable:
+			case ProblemReasons.InvocationTypeInferenceFailure:
 				// FIXME(stephan): construct suitable message (https://bugs.eclipse.org/404675)
 				problemMethod = (ProblemMethodBinding) method;
-				InferenceContext18 inferenceContext = problemMethod.inferenceContext;
-				if (inferenceContext != null && inferenceContext.outerContext != null) {
-					// problem relates to a nested inference context, let the outer handle it:
-					inferenceContext.outerContext.addProblemMethod(problemMethod);
-					return;
-				}
 				shownMethod = problemMethod.closestMatch;
+				if (problemMethod.returnType == shownMethod.returnType) //$IDENTITY-COMPARISON$
+					return; // funnily this can happen in a deeply nested call, because the inner lies by stealing its closest match and the outer does not know so. See GRT1_8.testBug430296
+				TypeBinding shownMethodReturnType = shownMethod.returnType.capture(scope, messageSend.sourceStart, messageSend.sourceEnd);
 				this.handle(
 					IProblem.TypeMismatch,
 					new String[] {
-					        String.valueOf(shownMethod.returnType.readableName()),
+					        String.valueOf(shownMethodReturnType.readableName()),
 					        (problemMethod.returnType != null ? String.valueOf(problemMethod.returnType.readableName()) : "<unknown>")}, //$NON-NLS-1$
 					new String[] {
-					        String.valueOf(shownMethod.returnType.shortReadableName()),
+					        String.valueOf(shownMethodReturnType.shortReadableName()),
 					        (problemMethod.returnType != null ? String.valueOf(problemMethod.returnType.shortReadableName()) : "<unknown>")}, //$NON-NLS-1$
 					messageSend.sourceStart,
 					messageSend.sourceEnd);
@@ -4687,6 +4684,10 @@ public class ProblemReporter extends ProblemHandler {
 				last.sourceEnd);
 	}
 	public void isClassPathCorrect(char[][] wellKnownTypeName, CompilationUnitDeclaration compUnitDecl, Object location) {
+		// ProblemReporter is not designed to be reentrant. Just in case, we discovered a build path problem while we are already 
+		// in the midst of reporting some other problem, save and restore reference context thereby mimicking a stack.
+		// See https://bugs.eclipse.org/bugs/show_bug.cgi?id=442755.
+		ReferenceContext savedContext = this.referenceContext;
 		this.referenceContext = compUnitDecl;
 		String[] arguments = new String[] {CharOperation.toString(wellKnownTypeName)};
 		int start = 0, end = 0;
@@ -4701,12 +4702,16 @@ public class ProblemReporter extends ProblemHandler {
 				end = node.sourceEnd();
 			}
 		}
-		this.handle(
-			IProblem.IsClassPathCorrect,
-			arguments,
-			arguments,
-			start,
-			end);
+		try {
+			this.handle(
+					IProblem.IsClassPathCorrect,
+					arguments,
+					arguments,
+					start,
+					end);
+		} finally {
+			this.referenceContext = savedContext;
+		}
 	}
 	private boolean isIdentifier(int token) {
 		return token == TerminalTokens.TokenNameIdentifier;
@@ -4714,7 +4719,7 @@ public class ProblemReporter extends ProblemHandler {
 	private boolean isKeyword(int token) {
 		switch(token) {
 			case TerminalTokens.TokenNameabstract:
-			case TerminalTokens.TokenNameassert:
+//			case TerminalTokens.TokenNameassert:  //cym 2014-12-17
 			case TerminalTokens.TokenNamebyte:
 			case TerminalTokens.TokenNamebreak:
 			case TerminalTokens.TokenNameboolean:
@@ -4723,23 +4728,28 @@ public class ProblemReporter extends ProblemHandler {
 			case TerminalTokens.TokenNamecatch:
 			case TerminalTokens.TokenNameclass:
 			case TerminalTokens.TokenNamecontinue:
+			case TerminalTokens.TokenNameconst:   //cym 2014-12-17
 			case TerminalTokens.TokenNamedo:
 			case TerminalTokens.TokenNamedouble:
 			case TerminalTokens.TokenNamedefault:
-			case TerminalTokens.TokenNameelse:
+			case TerminalTokens.TokenNameelse:			
+			case TerminalTokens.TokenNameexport:   //cym 2014-12-17
 			case TerminalTokens.TokenNameextends:
 			case TerminalTokens.TokenNamefor:
 			case TerminalTokens.TokenNamefinal:
 			case TerminalTokens.TokenNamefloat:
 			case TerminalTokens.TokenNamefalse:
 			case TerminalTokens.TokenNamefinally:
-			case TerminalTokens.TokenNameif:
+			case TerminalTokens.TokenNameif:  
+			case TerminalTokens.TokenNamein:  //cym 2014-12-17
 			case TerminalTokens.TokenNameint:
 			case TerminalTokens.TokenNameimport:
 			case TerminalTokens.TokenNameinterface:
 			case TerminalTokens.TokenNameimplements:
 			case TerminalTokens.TokenNameinstanceof:
+			case TerminalTokens.TokenNamelet:   //cym 2014-12-17
 			case TerminalTokens.TokenNamelong:
+			case TerminalTokens.TokenNamemodule:   //cym 2014-12-17
 			case TerminalTokens.TokenNamenew:
 			case TerminalTokens.TokenNamenull:
 			case TerminalTokens.TokenNamenative:
@@ -6613,7 +6623,7 @@ public class ProblemReporter extends ProblemHandler {
 			new String[] { new String(targetType.readableName())},
 			new String[] { new String(targetType.shortReadableName())},
 			location.sourceStart,
-			location.sourceEnd);
+			location instanceof LambdaExpression ? ((LambdaExpression)location).diagnosticsSourceEnd() : location.sourceEnd);
 	}
 	public void notCompatibleTypesError(EqualExpression expression, TypeBinding leftType, TypeBinding rightType) {
 		String leftName = new String(leftType.readableName());
@@ -6632,40 +6642,6 @@ public class ProblemReporter extends ProblemHandler {
 			expression.sourceEnd);
 	}
 	public void notCompatibleTypesError(InstanceOfExpression expression, TypeBinding leftType, TypeBinding rightType) {
-		String leftName = new String(leftType.readableName());
-		String rightName = new String(rightType.readableName());
-		String leftShortName = new String(leftType.shortReadableName());
-		String rightShortName = new String(rightType.shortReadableName());
-		if (leftShortName.equals(rightShortName)){
-			leftShortName = leftName;
-			rightShortName = rightName;
-		}
-		this.handle(
-			IProblem.IncompatibleTypesInConditionalOperator,
-			new String[] {leftName, rightName },
-			new String[] {leftShortName, rightShortName },
-			expression.sourceStart,
-			expression.sourceEnd);
-	}
-	
-	public void notCompatibleTypesError(IsExpression expression, TypeBinding leftType, TypeBinding rightType) {
-		String leftName = new String(leftType.readableName());
-		String rightName = new String(rightType.readableName());
-		String leftShortName = new String(leftType.shortReadableName());
-		String rightShortName = new String(rightType.shortReadableName());
-		if (leftShortName.equals(rightShortName)){
-			leftShortName = leftName;
-			rightShortName = rightName;
-		}
-		this.handle(
-			IProblem.IncompatibleTypesInConditionalOperator,
-			new String[] {leftName, rightName },
-			new String[] {leftShortName, rightShortName },
-			expression.sourceStart,
-			expression.sourceEnd);
-	}
-	
-	public void notCompatibleTypesError(AsExpression expression, TypeBinding leftType, TypeBinding rightType) {
 		String leftName = new String(leftType.readableName());
 		String rightName = new String(rightType.readableName());
 		String leftShortName = new String(leftType.shortReadableName());
@@ -7790,22 +7766,6 @@ public class ProblemReporter extends ProblemHandler {
 			expression.sourceStart,
 			expression.sourceEnd);
 	}
-	public void typeAsError(AsExpression expression, TypeBinding leftType, TypeBinding rightType) {
-		String leftName = new String(leftType.readableName());
-		String rightName = new String(rightType.readableName());
-		String leftShortName = new String(leftType.shortReadableName());
-		String rightShortName = new String(rightType.shortReadableName());
-		if (leftShortName.equals(rightShortName)){
-			leftShortName = leftName;
-			rightShortName = rightName;
-		}
-		this.handle(
-			IProblem.IllegalCast,
-			new String[] { rightName, leftName },
-			new String[] { rightShortName, leftShortName },
-			expression.sourceStart,
-			expression.sourceEnd);
-	}
 	public void typeCollidesWithEnclosingType(TypeDeclaration typeDecl) {
 		String[] arguments = new String[] {new String(typeDecl.name)};
 		this.handle(
@@ -7884,6 +7844,14 @@ public class ProblemReporter extends ProblemHandler {
 			severity,
 			typeParam.sourceStart,
 			typeParam.sourceEnd);
+	}
+	public void notAnnotationType(TypeBinding actualType, ASTNode location) {
+		this.handle(
+				IProblem.NotAnnotationType,
+				new String[] {new String(actualType.leafComponentType().readableName())},
+				new String[] {new String(actualType.leafComponentType().shortReadableName())},
+				location.sourceStart,
+				location.sourceEnd);
 	}
 	public void typeMismatchError(TypeBinding actualType, TypeBinding expectedType, ASTNode location, ASTNode expectingLocation) {
 		if (this.options.sourceLevel < ClassFileConstants.JDK1_5) { // don't expose type variable names, complain on erased types
@@ -7997,7 +7965,9 @@ public class ProblemReporter extends ProblemHandler {
 			TypeBinding type = parameters[i];
 			boolean isVarargType = methodBinding.isVarargs() && i == length-1;
 			if (isVarargType) {
-				type = ((ArrayBinding)type).elementsType();
+				//cym 2014-12-06
+//				type = ((ArrayBinding)type).elementsType();
+				type = ((ParameterizedTypeBinding)type).arguments[0];
 			}
 			if (showNullAnnotations)
 				buffer.append(new String(type.nullAnnotatedReadableName(this.options, makeShort)));
@@ -8196,20 +8166,6 @@ public class ProblemReporter extends ProblemHandler {
 			castExpression.sourceStart,
 			castExpression.sourceEnd);
 	}
-	public void unnecessaryAs(AsExpression asExpression) {
-		if (asExpression.expression instanceof FunctionalExpression)
-			return;
-		int severity = computeSeverity(IProblem.UnnecessaryCast);
-		if (severity == ProblemSeverities.Ignore) return;
-		TypeBinding castedExpressionType = asExpression.expression.resolvedType;
-		this.handle(
-			IProblem.UnnecessaryCast,
-			new String[]{ new String(castedExpressionType.readableName()), new String(asExpression.type.resolvedType.readableName())},
-			new String[]{ new String(castedExpressionType.shortReadableName()), new String(asExpression.type.resolvedType.shortReadableName())},
-			severity,
-			asExpression.sourceStart,
-			asExpression.sourceEnd);
-	}
 	public void unnecessaryElse(ASTNode location) {
 		this.handle(
 			IProblem.UnnecessaryElse,
@@ -8238,21 +8194,6 @@ public class ProblemReporter extends ProblemHandler {
 			instanceofExpression.sourceStart,
 			instanceofExpression.sourceEnd);
 	}
-	
-	public void unnecessaryIs(IsExpression isExpression, TypeBinding checkType) {
-		int severity = computeSeverity(IProblem.UnnecessaryInstanceof);
-		if (severity == ProblemSeverities.Ignore) return;
-		TypeBinding expressionType = isExpression.expression.resolvedType;
-		this.handle(
-			IProblem.UnnecessaryInstanceof,
-			new String[]{ new String(expressionType.readableName()), new String(checkType.readableName())},
-			new String[]{ new String(expressionType.shortReadableName()), new String(checkType.shortReadableName())},
-			severity,
-			isExpression.sourceStart,
-			isExpression.sourceEnd);
-	}
-	
-	
 	public void unnecessaryNLSTags(int sourceStart, int sourceEnd) {
 		this.handle(
 			IProblem.UnnecessaryNLSTag,
@@ -8390,26 +8331,6 @@ public class ProblemReporter extends ProblemHandler {
 			castExpression.sourceStart,
 			castExpression.sourceEnd);
 	}
-	public void unsafeCast(AsExpression asExpression, Scope scope) {
-		if (this.options.sourceLevel < ClassFileConstants.JDK1_5) return; // https://bugs.eclipse.org/bugs/show_bug.cgi?id=305259
-		int severity = computeSeverity(IProblem.UnsafeGenericCast);
-		if (severity == ProblemSeverities.Ignore) return;
-		TypeBinding castedExpressionType = asExpression.expression.resolvedType;
-		TypeBinding castExpressionResolvedType = asExpression.resolvedType;
-		this.handle(
-			IProblem.UnsafeGenericCast,
-			new String[]{
-				new String(castedExpressionType.readableName()),
-				new String(castExpressionResolvedType.readableName())
-			},
-			new String[]{
-				new String(castedExpressionType.shortReadableName()),
-				new String(castExpressionResolvedType.shortReadableName())
-			},
-			severity,
-			asExpression.sourceStart,
-			asExpression.sourceEnd);
-	}
 	public void unsafeNullnessCast(CastExpression castExpression, Scope scope) {
 		TypeBinding castedExpressionType = castExpression.expression.resolvedType;
 		TypeBinding castExpressionResolvedType = castExpression.resolvedType;
@@ -8425,22 +8346,6 @@ public class ProblemReporter extends ProblemHandler {
 			},
 			castExpression.sourceStart,
 			castExpression.sourceEnd);
-	}
-	public void unsafeNullnessAs(AsExpression asExpression, Scope scope) {
-		TypeBinding castedExpressionType = asExpression.expression.resolvedType;
-		TypeBinding castExpressionResolvedType = asExpression.resolvedType;
-		this.handle(
-			IProblem.UnsafeNullnessCast,
-			new String[]{
-				new String(castedExpressionType.nullAnnotatedReadableName(this.options, false)),
-				new String(castExpressionResolvedType.nullAnnotatedReadableName(this.options, false))
-			},
-			new String[]{
-				new String(castedExpressionType.nullAnnotatedReadableName(this.options, true)),
-				new String(castExpressionResolvedType.nullAnnotatedReadableName(this.options, true))
-			},
-			asExpression.sourceStart,
-			asExpression.sourceEnd);
 	}
 	public void unsafeGenericArrayForVarargs(TypeBinding leafComponentType, ASTNode location) {
 		int severity = computeSeverity(IProblem.UnsafeGenericArrayForVarargs);
@@ -8629,6 +8534,18 @@ public class ProblemReporter extends ProblemHandler {
 			severity,
 			localDecl.sourceStart,
 			localDecl.sourceEnd);
+	}
+	public void unusedExceptionParameter(LocalDeclaration exceptionParameter) {
+		int severity = computeSeverity(IProblem.ExceptionParameterIsNeverUsed);
+		if (severity == ProblemSeverities.Ignore) return;
+		String[] arguments = new String[] {new String(exceptionParameter.name)};
+		this.handle(
+			IProblem.ExceptionParameterIsNeverUsed,
+			arguments,
+			arguments,
+			severity,
+			exceptionParameter.sourceStart,
+			exceptionParameter.sourceEnd);
 	}
 	public void unusedDeclaredThrownException(ReferenceBinding exceptionType, AbstractMethodDeclaration method, ASTNode location) {
 		boolean isConstructor = method.isConstructor();
@@ -9046,27 +8963,7 @@ public class ProblemReporter extends ProblemHandler {
 			varDecl.sourceStart,
 			varDecl.sourceEnd);
 	}
-	
-	public void variableTypeCannotBeVoid(PropertyDeclaration varDecl) {
-		String[] arguments = new String[] {new String(varDecl.name)};
-		this.handle(
-			IProblem.VariableTypeCannotBeVoid,
-			arguments,
-			arguments,
-			varDecl.sourceStart,
-			varDecl.sourceEnd);
-	}
-	
 	public void variableTypeCannotBeVoidArray(AbstractVariableDeclaration varDecl) {
-		this.handle(
-			IProblem.CannotAllocateVoidArray,
-			NoArgument,
-			NoArgument,
-			varDecl.type.sourceStart,
-			varDecl.type.sourceEnd);
-	}
-	
-	public void variableTypeCannotBeVoidArray(PropertyDeclaration varDecl) {
 		this.handle(
 			IProblem.CannotAllocateVoidArray,
 			NoArgument,
@@ -9313,15 +9210,15 @@ public class ProblemReporter extends ProblemHandler {
 			nullityMismatchPotentiallyNull(expression, requiredType, annotationName);
 			return;
 		}
-		if (this.options.sourceLevel < ClassFileConstants.JDK1_8)
-			nullityMismatchIsUnknown(expression, providedType, requiredType, annotationName);
-		else
+		if (this.options.useNullTypeAnnotations == Boolean.TRUE)
 			nullityMismatchingTypeAnnotation(expression, providedType, requiredType, NullAnnotationMatching.NULL_ANNOTATIONS_UNCHECKED);
+		else
+			nullityMismatchIsUnknown(expression, providedType, requiredType, annotationName);
 	}
 	public void nullityMismatchIsNull(Expression expression, TypeBinding requiredType) {
 		int problemId = IProblem.RequiredNonNullButProvidedNull;
-		boolean below18 = this.options.sourceLevel < ClassFileConstants.JDK1_8;
-		if (!below18 && requiredType.isTypeVariable() && !requiredType.hasNullTypeAnnotations())
+		boolean useNullTypeAnnotations = this.options.useNullTypeAnnotations == Boolean.TRUE;
+		if (useNullTypeAnnotations && requiredType.isTypeVariable() && !requiredType.hasNullTypeAnnotations())
 			problemId = IProblem.NullNotCompatibleToFreeTypeVariable;
 		if (requiredType instanceof CaptureBinding) {
 			CaptureBinding capture = (CaptureBinding) requiredType;
@@ -9330,7 +9227,7 @@ public class ProblemReporter extends ProblemHandler {
 		}
 		String[] arguments;
 		String[] argumentsShort;
-		if (below18) {
+		if (!useNullTypeAnnotations) {
 			arguments      = new String[] { annotatedTypeName(requiredType, this.options.nonNullAnnotationName) };
 			argumentsShort = new String[] { shortAnnotatedTypeName(requiredType, this.options.nonNullAnnotationName) };
 		} else {
@@ -9435,7 +9332,28 @@ public class ProblemReporter extends ProblemHandler {
 			sourceStart,
 			sourceEnd);
 	}
+	public void illegalParameterRedefinition(Argument argument, ReferenceBinding declaringClass, TypeBinding inheritedParameter) {
+		int sourceStart = argument.type.sourceStart;
+		if (argument.annotations != null) {
+			for (int i=0; i<argument.annotations.length; i++) {
+				Annotation annotation = argument.annotations[i];
+				if (   annotation.resolvedType.id == TypeIds.T_ConfiguredAnnotationNullable
+					|| annotation.resolvedType.id == TypeIds.T_ConfiguredAnnotationNonNull)
+				{
+					sourceStart = annotation.sourceStart;
+					break;
+				}
+			}
+		}
+		this.handle(
+			IProblem.IllegalParameterNullityRedefinition, 
+			new String[] { new String(argument.name), new String(declaringClass.readableName()), new String(inheritedParameter.nullAnnotatedReadableName(this.options, false)) },
+			new String[] { new String(argument.name), new String(declaringClass.shortReadableName()), new String(inheritedParameter.nullAnnotatedReadableName(this.options, true))  },
+			sourceStart,
+			argument.type.sourceEnd);
+	}
 	public void illegalReturnRedefinition(AbstractMethodDeclaration abstractMethodDecl, MethodBinding inheritedMethod, char[][] nonNullAnnotationName) {
+		// nonNullAnnotationName is not used in 1.8-mode
 		MethodDeclaration methodDecl = (MethodDeclaration) abstractMethodDecl;
 		StringBuffer methodSignature = new StringBuffer();
 		methodSignature
@@ -9454,12 +9372,31 @@ public class ProblemReporter extends ProblemHandler {
 		if (annotation != null) {
 			sourceStart = annotation.sourceStart;
 		}
+		TypeBinding inheritedReturnType = inheritedMethod.returnType;
+		String[] arguments;
+		String[] argumentsShort;
+		if (this.options.useNullTypeAnnotations != Boolean.TRUE) {
+			StringBuilder returnType = new StringBuilder();
+			returnType.append('@').append(CharOperation.concatWith(nonNullAnnotationName, '.'));
+			returnType.append(' ').append(inheritedReturnType.readableName());
+			arguments = new String[] { methodSignature.toString(), returnType.toString() };
+			
+			returnType = new StringBuilder();
+			returnType.append('@').append(nonNullAnnotationName[nonNullAnnotationName.length-1]);
+			returnType.append(' ').append(inheritedReturnType.shortReadableName());
+			argumentsShort = new String[] { shortSignature.toString(), returnType.toString() };
+		} else {
+			arguments = new String[] { methodSignature.toString(), 
+										String.valueOf(inheritedReturnType.nullAnnotatedReadableName(this.options, false))};
+			argumentsShort = new String[] { shortSignature.toString(),
+										String.valueOf(inheritedReturnType.nullAnnotatedReadableName(this.options, true))};
+		}
 		this.handle(
-			IProblem.IllegalReturnNullityRedefinition, 
-			new String[] { methodSignature.toString(), CharOperation.toString(nonNullAnnotationName)},
-			new String[] { shortSignature.toString(), new String(nonNullAnnotationName[nonNullAnnotationName.length-1])},
-			sourceStart,
-			methodDecl.returnType.sourceEnd);
+				IProblem.IllegalReturnNullityRedefinition, 
+				arguments,
+				argumentsShort,
+				sourceStart,
+				methodDecl.returnType.sourceEnd);
 	}
 	public void referenceExpressionArgumentNullityMismatch(ReferenceExpression location, TypeBinding requiredType, TypeBinding providedType,
 			MethodBinding descriptorMethod, int idx, NullAnnotationMatching status) {
@@ -9933,6 +9870,13 @@ public class ProblemReporter extends ProblemHandler {
 				location.sourceEnd);
 	}
 	
+	public void implicitObjectBoundNoNullDefault(TypeReference reference) {
+		this.handle(IProblem.ImplicitObjectBoundNoNullDefault,
+				NoArgument, NoArgument,
+				ProblemSeverities.Warning,
+				reference.sourceStart, reference.sourceEnd);
+	}
+	
 	public void dereferencingNullableExpression(Expression expression) {
 		if (expression instanceof MessageSend) {
 			MessageSend send = (MessageSend) expression;
@@ -10271,13 +10215,10 @@ public class ProblemReporter extends ProblemHandler {
 				expr.sourceStart,
 				expr.sourceEnd);
 	}
-	
-	public void lambdaShapeComputationError(LambdaExpression expression) {
-		this.handle(
-				IProblem.LambdaShapeComputationError,
-				NoArgument,
-				NoArgument,
-				expression.sourceStart,
-				expression.diagnosticsSourceEnd());
+	public void invalidTypeArguments(TypeReference[] typeReference) {
+		this.handle(IProblem.InvalidTypeArguments,
+				NoArgument, NoArgument,
+				typeReference[0].sourceStart,
+				typeReference[typeReference.length - 1].sourceEnd);
 	}
 }

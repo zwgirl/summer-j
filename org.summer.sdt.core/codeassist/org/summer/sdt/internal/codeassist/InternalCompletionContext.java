@@ -20,6 +20,8 @@ import org.summer.sdt.core.IMethod;
 import org.summer.sdt.core.ITypeRoot;
 import org.summer.sdt.core.Signature;
 import org.summer.sdt.core.WorkingCopyOwner;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnJavadoc;
+import org.summer.sdt.internal.codeassist.complete.CompletionParser;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
@@ -28,8 +30,6 @@ import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.util.ObjectVector;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnJavadoc;
-import org.summer.sdt.internal.codeassist.complete.CompletionParser;
 
 
 /**

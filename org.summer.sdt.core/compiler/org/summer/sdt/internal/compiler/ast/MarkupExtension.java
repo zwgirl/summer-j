@@ -1,5 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -9,11 +10,12 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
  * 
  *         using by XAML
  */
-public class MarkupExtension extends Element {
+public class MarkupExtension extends XAMLElement {
 	public TypeReference type;
 	public AllocationExpression allocation;
 	
 	public MarkupExtension() {
+		super(null);
 	}
 
 	@Override
@@ -36,10 +38,10 @@ public class MarkupExtension extends Element {
 	}
 
 	@Override
-	public StringBuffer generateExpression(Scope scope, int indent,
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
 			StringBuffer output) {
 		if(allocation != null){
-			return allocation.generateExpression(scope, indent, output);
+			return allocation.doGenerateExpression(scope, depsManager, indent, output);
 		}
 		return output;
 	}

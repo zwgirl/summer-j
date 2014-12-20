@@ -27,63 +27,63 @@ import org.summer.sdt.internal.compiler.env.NameEnvironmentAnswer;
 public class CodeSnippetEnvironment implements INameEnvironment, EvaluationConstants {
 	INameEnvironment env;
 	EvaluationContext context;
-	/**
-	 * Creates a new wrapper for the given environment.
-	 */
-	public CodeSnippetEnvironment(INameEnvironment env, EvaluationContext context) {
-		this.env = env;
-		this.context = context;
+/**
+ * Creates a new wrapper for the given environment.
+ */
+public CodeSnippetEnvironment(INameEnvironment env, EvaluationContext context) {
+	this.env = env;
+	this.context = context;
+}
+/**
+ * @see INameEnvironment#findType(char[][])
+ */
+public NameEnvironmentAnswer findType(char[][] compoundTypeName) {
+	NameEnvironmentAnswer result = this.env.findType(compoundTypeName);
+	if (result != null) {
+		return result;
 	}
-	/**
-	 * @see INameEnvironment#findType(char[][])
-	 */
-	public NameEnvironmentAnswer findType(char[][] compoundTypeName) {
-		NameEnvironmentAnswer result = this.env.findType(compoundTypeName);
-		if (result != null) {
-			return result;
+	if (CharOperation.equals(compoundTypeName, ROOT_COMPOUND_NAME)) {
+		IBinaryType binary = this.context.getRootCodeSnippetBinary();
+		if (binary == null) {
+			return null;
+		} else {
+			return new NameEnvironmentAnswer(binary, null /*no access restriction*/);
 		}
-		if (CharOperation.equals(compoundTypeName, ROOT_COMPOUND_NAME)) {
-			IBinaryType binary = this.context.getRootCodeSnippetBinary();
-			if (binary == null) {
+	}
+	VariablesInfo installedVars = this.context.installedVars;
+	ClassFile[] classFiles = installedVars.classFiles;
+	for (int i = 0; i < classFiles.length; i++) {
+		ClassFile classFile = classFiles[i];
+		if (CharOperation.equals(compoundTypeName, classFile.getCompoundName())) {
+			ClassFileReader binary = null;
+			try {
+				binary = new ClassFileReader(classFile.getBytes(), null);
+			} catch (ClassFormatException e) {
+				e.printStackTrace();  // Should never happen since we compiled this type
 				return null;
-			} else {
-				return new NameEnvironmentAnswer(binary, null /*no access restriction*/);
 			}
+			return new NameEnvironmentAnswer(binary, null /*no access restriction*/);
 		}
-		VariablesInfo installedVars = this.context.installedVars;
-		ClassFile[] classFiles = installedVars.classFiles;
-		for (int i = 0; i < classFiles.length; i++) {
-			ClassFile classFile = classFiles[i];
-			if (CharOperation.equals(compoundTypeName, classFile.getCompoundName())) {
-				ClassFileReader binary = null;
-				try {
-					binary = new ClassFileReader(classFile.getBytes(), null);
-				} catch (ClassFormatException e) {
-					e.printStackTrace();  // Should never happen since we compiled this type
-					return null;
-				}
-				return new NameEnvironmentAnswer(binary, null /*no access restriction*/);
-			}
-		}
-		return null;
 	}
-	/**
-	 * @see INameEnvironment#findType(char[], char[][])
-	 */
-	public NameEnvironmentAnswer findType(char[] typeName, char[][] packageName) {
-		NameEnvironmentAnswer result = this.env.findType(typeName, packageName);
-		if (result != null) {
-			return result;
-		}
-		return findType(CharOperation.arrayConcat(packageName, typeName));
+	return null;
+}
+/**
+ * @see INameEnvironment#findType(char[], char[][])
+ */
+public NameEnvironmentAnswer findType(char[] typeName, char[][] packageName) {
+	NameEnvironmentAnswer result = this.env.findType(typeName, packageName);
+	if (result != null) {
+		return result;
 	}
-	/**
-	 * @see INameEnvironment#isPackage(char[][], char[])
-	 */
-	public boolean isPackage(char[][] parentPackageName, char[] packageName) {
-		return this.env.isPackage(parentPackageName, packageName);
-	}
-	public void cleanup() {
-		this.env.cleanup();
-	}
+	return findType(CharOperation.arrayConcat(packageName, typeName));
+}
+/**
+ * @see INameEnvironment#isPackage(char[][], char[])
+ */
+public boolean isPackage(char[][] parentPackageName, char[] packageName) {
+	return this.env.isPackage(parentPackageName, packageName);
+}
+public void cleanup() {
+	this.env.cleanup();
+}
 }

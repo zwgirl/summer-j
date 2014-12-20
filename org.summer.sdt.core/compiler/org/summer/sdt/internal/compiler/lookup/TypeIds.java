@@ -132,6 +132,10 @@ public interface TypeIds {
 	final int T_ComGoogleInjectInject = 81;
 	// Java 8 - JEP 120
 	final int T_JavaLangAnnotationRepeatable = 90;
+	
+	//summer cym 2014-12-03
+	final int T_JavaLangArray = 100;
+	
 	// If you add new type id, make sure to bump up T_LastWellKnownTypeId if there is a cross over.
 	final int T_LastWellKnownTypeId = 128;
 	
@@ -247,4 +251,4 @@ public interface TypeIds {
 	 * Set of type bits that should be inherited by any sub types.
 	 */
 	final int InheritableBits = BitAutoCloseable | BitCloseable | BitUninternedType;
-}
+} 

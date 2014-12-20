@@ -10,7 +10,7 @@ import org.summer.sdt.internal.compiler.lookup.BlockScope;
  * 
  *         using by XAML
  */
-public abstract class Attribute extends Expression{
+public abstract class Attribute extends XAMLNode{
 	public FieldReference field;
 	public Expression value;
 	
@@ -18,7 +18,8 @@ public abstract class Attribute extends Expression{
 	
 	public static final int NamedFlag = 1;
 	
-	protected Attribute() {
+	protected Attribute(SingleNameReference namespace) {
+		super(namespace);
 	}
 
 	@Override

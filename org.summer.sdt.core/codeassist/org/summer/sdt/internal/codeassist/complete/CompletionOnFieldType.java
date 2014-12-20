@@ -37,19 +37,19 @@ import org.summer.sdt.internal.compiler.ast.*;
 public class CompletionOnFieldType extends FieldDeclaration {
 	public boolean isLocalVariable;
 
-public CompletionOnFieldType(TypeReference type, boolean isLocalVariable){
-	super();
-	this.sourceStart = type.sourceStart;
-	this.sourceEnd = type.sourceEnd;
-	this.type = type;
-	this.name = CharOperation.NO_CHAR;
-	this.isLocalVariable = isLocalVariable;
-	if (type instanceof CompletionOnSingleTypeReference) {
-	    ((CompletionOnSingleTypeReference) type).fieldTypeCompletionNode = this;
+	public CompletionOnFieldType(TypeReference type, boolean isLocalVariable){
+		super();
+		this.sourceStart = type.sourceStart;
+		this.sourceEnd = type.sourceEnd;
+		this.type = type;
+		this.name = CharOperation.NO_CHAR;
+		this.isLocalVariable = isLocalVariable;
+		if (type instanceof CompletionOnSingleTypeReference) {
+		    ((CompletionOnSingleTypeReference) type).fieldTypeCompletionNode = this;
+		}
 	}
-}
-
-public StringBuffer printStatement(int tab, StringBuffer output) {
-	return this.type.print(tab, output).append(';');
-}
+	
+	public StringBuffer printStatement(int tab, StringBuffer output) {
+		return this.type.print(tab, output).append(';');
+	}
 }

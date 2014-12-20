@@ -13,10 +13,8 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class JavadocArgumentExpression extends Expression {
 	public char[] token;
@@ -127,16 +125,10 @@ public class JavadocArgumentExpression extends Expression {
 		}
 		visitor.endVisit(this, blockScope);
 	}
-	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		if (this.argument == null) {
-			if (this.token != null) {
-				output.append(this.token);
-			}
-		}
-		else {
-			this.argument.print(indent, output);
-		}
+
+	@Override
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
+			StringBuffer output) {
 		return output;
 	}
 }

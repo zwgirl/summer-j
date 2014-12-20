@@ -36,5 +36,5 @@ public class CatchParameterBinding extends LocalVariableBinding {
 	}
 	public boolean isCatchParameter() {
 		return true;
-	}
+	} 
 }

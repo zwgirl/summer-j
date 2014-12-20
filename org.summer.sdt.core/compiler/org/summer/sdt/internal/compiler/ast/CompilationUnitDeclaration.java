@@ -26,8 +26,11 @@ import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IrritantSet;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.javascript.JavascriptFile;
+import org.summer.sdt.internal.compiler.javascript.TypeDependency;
+import org.summer.sdt.internal.compiler.javascript.UnitDependency;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
 import org.summer.sdt.internal.compiler.lookup.ImportBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
@@ -87,7 +90,7 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	int suppressWarningsCount;
 	public int functionalExpressionsCount;
 	public FunctionalExpression[] functionalExpressions;
-	
+
 	public CompilationUnitDeclaration(ProblemReporter problemReporter, CompilationResult compilationResult, int sourceLength) {
 		this.problemReporter = problemReporter;
 		this.compilationResult = compilationResult;
@@ -356,29 +359,37 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	 * Bytecode generation
 	 */
 	public void generateCode() {
-//		generateJavascript();   //cym add
+		if(this.currentPackage != null && (this.currentPackage.modifiers & ClassFileConstants.AccModule) != 0 ){
+			if((this.currentPackage.modifiers & ClassFileConstants.AccModuleMerge) != 0){
+				generateMerageModule();
+			} else {
+				generateModule();
+			}	
+		} else {
+			if (this.types != null) {
+				for (int i = 0, count = this.types.length; i < count; i++) {
+					this.types[i].generateJavascript(this.scope);
+					
+	//				this.types[i].generateHtml(this.scope);
+				}
+			}
+		}
+		
 		if (this.ignoreFurtherInvestigation) {
 			if (this.types != null) {
 				for (int i = 0, count = this.types.length; i < count; i++) {
 					this.types[i].ignoreFurtherInvestigation = true;
 					// propagate the flag to request problem type creation
 					this.types[i].generateCode(this.scope);
-					
-					this.types[i].generateJavascript(this.scope);
-					
-					this.types[i].generateHtml(this.scope);
 				}
 			}
 			return;
 		}
+		
 		try {
 			if (this.types != null) {
 				for (int i = 0, count = this.types.length; i < count; i++){
 					this.types[i].generateCode(this.scope);
-					
-					this.types[i].generateJavascript(this.scope);
-					
-					this.types[i].generateHtml(this.scope);
 				}
 			}
 		} catch (AbortCompilationUnit e) {
@@ -386,417 +397,56 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		}
 	}
 	
-//	//cym add
-//	/**
-//	 * javascript generation
-//	 */
-//	public void generateJavascript() {
-//		if (this.ignoreFurtherInvestigation) {
-//			if (this.types != null) {
-//				for (int i = 0, count = this.types.length; i < count; i++) {
-//					this.types[i].ignoreFurtherInvestigation = true;
-//					// propagate the flag to request problem type creation
-//					if((types[i].modifiers & ClassFileConstants.AccAnnotation) != 0){   //if Annonation skip
-//						continue;
-//					}
-//					this.types[i].generateJavascript(this.scope);
-//					System.out.println(types[i].name + "  : in compilation unit: " + new String(types[i].binding.sourceName()));
-//				}
-//			}
-//			return;
-//		}
-//		try {
-//			if (this.types != null) {
-//				for (int i = 0, count = this.types.length; i < count; i++){
-//					System.out.println(new String(types[i].name) + "  : in compilation unit: " + new String(types[i].binding.getFileName()));
-//					if((types[i].modifiers & ClassFileConstants.AccAnnotation) != 0){   //if Annonation skip
-//						continue;
-//					}
-//					this.types[i].generateJavascript(this.scope);
-//					
-//				}
-//			}
-//		} catch (AbortCompilationUnit e) {
-//			// ignore
-//		}
-//	}
+	private void generateModule() {
+		JavascriptFile jsFile = JavascriptFile.getNewInstance(getCompoundName());
+		if (this.types != null) {
+			for (int i = 0, count = this.types.length; i < count; i++) {
+				this.types[i].ignoreFurtherInvestigation = true;
+				// propagate the flag to request problem type creation
+				this.types[i].generateJavascript(this.scope, jsFile, new TypeDependency(this.types[i]));
+				jsFile.content.append("\n");
+				
+	//			this.types[i].generateHtml(this.scope);
+			}
+		}
+		this.compilationResult.record(CharOperation.concatWith(getCompoundName(), '/'), jsFile);
+	}
 	
-//	public StringBuffer print(int indent, StringBuffer output) {
-//		if (this.currentPackage != null) {
-//			printIndent(indent, output).append("package "); //$NON-NLS-1$
-//			this.currentPackage.print(0, output, false).append(";\n"); //$NON-NLS-1$
-//		}
-//		if (this.imports != null)
-//			for (int i = 0; i < this.imports.length; i++) {
-//				printIndent(indent, output).append("import "); //$NON-NLS-1$
-//				ImportReference currentImport = this.imports[i];
-//				if (currentImport.isStatic()) {
-//					output.append("static "); //$NON-NLS-1$
-//				}
-//				currentImport.print(0, output).append(";\n"); //$NON-NLS-1$
-//			}
-//		
-//		if (this.types != null) {
-//			for (int i = 0; i < this.types.length; i++) {
-//				this.types[i].print(indent, output).append("\n"); //$NON-NLS-1$
-//			}
-//		}
-//		return output;
-//	}
-	
-//	public StringBuffer generateJavascript(CompilationUnitDeclaration unit, int indent, StringBuffer output){
-//		generateAMDHeader(indent, output);
-//		
-//		if (this.ignoreFurtherInvestigation) {
-//			if (this.types != null) {
-//				for (int i = 0, count = this.types.length; i < count; i++) {
-//					this.types[i].ignoreFurtherInvestigation = true;
-//					// propagate the flag to request problem type creation
-//					this.types[i].generateJavascript(this.scope, 0, output);
-//				}
-//			}
-//			return output;
-//		}
-//		try {
-//			if (this.types != null) {
-//				for (int i = 0, count = this.types.length; i < count; i++)
-////					this.types[i].generateJavascript(this.scope, 0, buffer);
-//				generateModuleBody(indent + 1, output, this.types[i]);
-//			}
-//		} catch (AbortCompilationUnit e) {
-//			// ignore
-//		}
-//		
-//		if (this.types != null) {
-//			generateExportObject(indent + 1, output, this.types[0]);
-//		}
-//		
-//		output.append(Javascript.CR);
-//		output.append(Javascript.RBRACE).append(Javascript.RPAREN).append(Javascript.SEMICOLON);
-//		
-//		return output;
-//	}
-//	
-//	private void generateExportObject(int indent, StringBuffer output, TypeDeclaration type) {
-//		output.append(Javascript.CR);
-//		printIndent(indent, output).append(Javascript.RETURN).append(Javascript.WHITESPACE).append(Javascript.LBRACE);
-//		
-//		if(type.fields != null){
-//			for(FieldDeclaration field : type.fields){
-//				if(field instanceof Initializer){
-//					continue;
-//				}
-//				output.append(Javascript.CR);
-//				printIndent(indent + 1, output).append(field.name).append(Javascript.WHITESPACE).append(Javascript.COLON).append(Javascript.WHITESPACE);
-//				output.append(field.name);
-//				output.append(Javascript.COMMA);
-//			}
-//		}
-//
-//		if(type.methods != null){
-//			for(AbstractMethodDeclaration method : type.methods){
-//				output.append(Javascript.CR);
-//				printIndent(indent + 1, output).append(method.selector).append(Javascript.WHITESPACE).append(Javascript.COLON).append(Javascript.WHITESPACE);
-//				output.append(method.selector);
-//				output.append(Javascript.COMMA);
-//			}
-//		}
-//		
-//		output.append(Javascript.CR);
-//		printIndent(indent, output).append(Javascript.RBRACE).append(Javascript.SEMICOLON);
-//	}
-//
-//	private void generateModuleBody(int indent, StringBuffer output, TypeDeclaration type){
-//		if(type.fields != null){
-//			for(FieldDeclaration field : type.fields){
-//				if(field instanceof Initializer){
-//					continue;
-//				}
-//				
-////				if(field instanceof PropertyDeclaration){
-////					PropertyDeclaration prop = (PropertyDeclaration) field;
-////				}
-//				output.append(Javascript.CR);
-//				if(field.isFinal())
-//					printIndent(indent, output).append(Javascript.CONST);
-//				else 
-//					printIndent(indent, output).append(Javascript.LET);
-//				output.append(Javascript.WHITESPACE).append(field.name);
-//				
-//				if(field.initialization != null){
-//					output.append(Javascript.WHITESPACE).append(Javascript.EQUAL).append(Javascript.WHITESPACE);
-//					field.initialization.generateJavascript(scope, 0, output);
-//				}
-//				output.append(Javascript.SEMICOLON);
-//			}
-//		}
-//
-//		if(type.methods != null){
-//			for(AbstractMethodDeclaration method : type.methods){
-//				output.append(Javascript.CR);
-////				printIndent(indent, output).append(Javascript.FUNCTION).append(Javascript.WHITESPACE).append(method.selector).append(Javascript.LPAREN);
-////				if(method.arguments != null){
-////					boolean commaSet = false;
-////					for(Argument arg : method.arguments){
-////						if(commaSet){
-////							output.append(Javascript.COMMA);
-////						}
-////						output.append(arg.name);
-////					}
-////				}
-////				
-////				output.append(Javascript.RPAREN).append(Javascript.LBRACE);
-////				output.append(Javascript.CR);
-////				
-////				printIndent(indent, output).append(Javascript.RBRACE);
-//				method.generateJavascript(scope, indent, output);
-//			}
-//		}
-//		
-//		if(type.memberTypes != null){
-//			for(TypeDeclaration member : type.memberTypes){
-//				member.generateJavascript(scope, indent , output);
-//			}
-//		}
-//
-//	}
-//	
-//	private void generateAMDHeader(int indent, StringBuffer output) {
-//		printIndent(indent, output);
-//		output.append(Javascript.DEFINE).append(Javascript.LPAREN).append(Javascript.DOUBLE_QUOTE).append(Javascript.DOUBLE_QUOTE);
-//		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
-//		output.append(Javascript.LBRACKET);
-//		
-//		boolean commaSet = false;
-//		if(imports != null){
-//			for(ImportReference imp : imports){
-//				if(commaSet){
-//					output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
-//				}
-//				output.append(Javascript.DOUBLE_QUOTE);
-//				for (int i = 0; i < imp.tokens.length; i++) {
-//					if (i > 0) output.append('.');
-//					output.append(imp.tokens[i]);
-//				}
-//				output.append(Javascript.DOUBLE_QUOTE);
-//				
-//				commaSet = true;
-//			}
-//		}
-//
-//		output.append(Javascript.RBRACKET);
-//		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);;
-//		output.append(Javascript.FUNCTION).append(Javascript.LPAREN);
-//		
-//		if(imports != null){
-//			commaSet = false;
-//			for(ImportReference imp : imports){
-//				if(commaSet){
-//					output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
-//				}
-//				output.append(imp.tokens[imp.tokens.length - 1]);
-//				commaSet = true;
-//			}
-//		}
-//		output.append(Javascript.RPAREN).append(Javascript.LBRACE);
-//	}
+	private char[][] getCompoundName(){
+		char[][] compoundName = this.currentPackage == null ? CharOperation.NO_CHAR_CHAR : this.currentPackage.tokens;
+		return CharOperation.arrayConcat(compoundName, Dependency.getFileName(this.compilationResult.fileName));
+	}
 
-//	public void doGenerate(final Resource input, final IFileSystemAccess fsa) {
-//	    JvmModule module = (JvmModule) input.getContents().get(0);
-//		GeneratorConfig config = this.generatorConfigProvider.get(module);
-//		ImportManager importManager = new ImportManager(true, module);
-//		
-//		final TreeAppendable header = this.createAppendable(module, importManager);
-//		header.append("define([\'org.summer.lang\'");
-//		
-//		final TreeAppendable importAppend = this.createAppendable(module, importManager);
-//		
-//		TreeAppendable body  = this.createAppendable(module, null);
-//		body.append(", function(lang");
-//		
-//		XImportSection importSection = module.getImportSection();
-//		boolean varFlag = false, comma = false;;
-//		if(importSection != null){
-//		    for(XImportDeclaration decl : importSection.getImportDeclarations()){
-//		    	header.append(", ");
-//		    	header.append("\'").append(decl.getImportedNamespace()).append("\'");
-//		    	body.append(", ");
-//		    	body.append(decl.getModuleName());
-//		    	
-//		    	for(XImportItem item : decl.getImportItems()){
-//		    		if(!varFlag){
-//		    			importAppend.append("var ");
-//		    			varFlag = true;
-//		    		}
-//		    		if(comma){
-//		    			importAppend.append(", ");
-//		    		}
-//		    		importAppend.append(item.getIdentifier()).append("=")
-//		    			.append(decl.getIdentifier()).append(".")
-//		    			.append(item.getImportedId().getSimpleName());
-//					comma = true;
-//		    	}
-//		    }
-//		}
-//		
-//		if(varFlag){
-//			importAppend.append(";");
-//		}
-//		
-//		header.append("]");
-//		body.append(") {");
-//		body.increaseIndentation();
-//		body.newLine();
-//		body.append(importAppend);
-//		
-//		List<JvmIdentifiableElement> exportObjects = new LinkedList<JvmIdentifiableElement>();
-//		for (final EObject obj : module.getContents()) {
-//			if(obj instanceof XVariableDeclarationList){
-//				XVariableDeclarationList declList = (XVariableDeclarationList) obj;
-//				if(declList.isExported()){
-//					for(XExpression varDecl : declList.getDeclarations()){
-//		    			exportObjects.add((JvmIdentifiableElement) varDecl);
-//					}
-//				}
-//			}else if (obj instanceof JvmDeclaredType){
-//				JvmDeclaredType jvmType = (JvmDeclaredType) obj;
-//				if(jvmType.isExported()){
-//					exportObjects.add(jvmType);
-//				}
-//			} else if(obj instanceof XFunctionDeclaration){
-//				XFunctionDeclaration function = (XFunctionDeclaration) obj;
-//				if(function.isExported()){
-//					exportObjects.add(function);
-//				}
-//			}
-//			this.internalDoGenerate(obj, body);
-//		}
-//		
-//		XExportSection exportSection = module.getExportSection();
-//		if(exportSection != null){
-//		    for(XExportDeclaration expDecl :exportSection.getExportDeclarations()){
-//		    	List<XExportItem> items = expDecl.getExportItems();
-//		    	for(XExportItem item : items){
-//		    		exportObjects.add(item.getExportedId());
-//		    	}
-//		    }
-//		}
-//		
-//		body.newLine();
-//		body.append("return {");
-//		body.increaseIndentation();
-//		boolean comaFlag = false;
-//		for(JvmIdentifiableElement idElement : exportObjects){
-//			if(comaFlag){
-//				body.append(",");
-//				body.newLine();
-//			}
-//			comaFlag = true;
-//			
-//			body.append(idElement.getSimpleName()).append(":").append(idElement.getSimpleName());
-//		}
-//		body.decreaseIndentation();
-//		body.newLine();
-//		body.append("};");
-//		
-//		body.decreaseIndentation();
-//		body.newLine();
-//		body.append("});");
-//		
-//	 	String fileName = input.getURI().lastSegment();
-//	 	String jsFile = fileName + ".js";
-//		
-//	 	header.append(body);
-//	 	if(module.getRoot()!=null){
-//	 		TreeAppendable uiAppend = this.createAppendable(module, importManager);
-//	 		generateUI(uiAppend, module.getRoot());
-//	 		
-//	 		header.append(uiAppend);
-//	 		
-//	 	}
-//		 
-//		fsa.generateFile(jsFile, header);
-//		
-//		generateHtml(fsa, module, importManager, fileName);
-//  	}
-////	(function(){}){
-////		銆��var t = new Person1();
-////		銆��t.begin();
-////		銆��t.setName();
-////		銆��t.setAge();
-////		銆��t.content = (function(){
-////		銆��var t = new XXX():
-////		銆��t.beginInit();
-////		銆��t.xxx = ;
-////		銆��...
-////		銆��t.AdChild((function(){
-////		銆��銆傘�銆�////		銆��})锛堬級)
-////		銆��t.endInit();
-////		銆��})()
-////		銆��addChild();
-////		銆��for(){
-////		銆��
-////		銆��}
-////		}
-//	private void generateUI(TreeAppendable b, XElement ele) {
-//		b.newLine();
-//		b.append("(function(){");
-//		b.increaseIndentation();
-//		b.newLine();
-//		b.append("var t = new ").append(ele.getType().getSimpleName()).append("();").newLine();
-//		for(XAbstractAttribute attribute : ele.getProperties()){
-//			b.append("t.");
-//			b.append(attribute.getField().getSimpleName()).append(" = ");
-//			compiler.toJavaExpression(attribute.getValue(), b);
-//			b.append(";").newLine();
-//		}
-//		
-//		for(XElement element : ele.getContents()){
-//			if(element instanceof XAttributeElement){
-//				XAttributeElement attrEle = (XAttributeElement) element;
-//				b.append("t.");
-//				b.append(attrEle.getField().getSimpleName()).append(" = ");
-//				
-//				generateUI(b, attrEle.getContents().get(0));
-//			}
-//		}
-//		b.decreaseIndentation();
-//		b.newLine();
-//		b.append("})();");
-//	}
-//
-//
-//	private void generateHtml(final IFileSystemAccess fsa, JvmModule module,
-//			ImportManager importManager, String fileName) {
-//		XObjectElement rootUi = module.getRoot();
-//		if(rootUi!=null){
-//			final TreeAppendable html = this.createAppendable(module, importManager);
-//			html.append("<html>");
-//			html.increaseIndentation();
-//			html.newLine();
-//			html.append("<head>");
-//			html.increaseIndentation();
-//			html.newLine();
-//			html.append("<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
-//			html.newLine();
-//			html.append("<script src='dojo/lsjs.js' data-dojo-config='async: true'></script>");
-//			html.newLine();
-//			html.append("<script src='dojo/IndexedDBStorage.js'></script>");
-//			html.decreaseIndentation();
-//			html.newLine();
-//			html.append("</head>");
-//			html.newLine();
-//			html.append("<body>");
-//			html.newLine();
-//			html.append("</body>");
-//			html.decreaseIndentation();
-//			html.newLine();
-//			html.append("</html>");
-//			String htmlFile = fileName + ".html";
-//			fsa.generateFile(htmlFile, html);
-//		}
-//	}
-	
+	private void generateMerageModule() {
+		Dependency dependency = new UnitDependency(this, scope);
+		dependency.collect();
+		JavascriptFile jsFile = JavascriptFile.getNewInstance(getCompoundName());
+		dependency.generateAMDHeader(this.compilationResult.getFileName(), 0, jsFile.content, Javascript.DEFINE);
+		
+		if(this.types != null){
+			for (int i = 0, count = this.types.length; i < count; i++) {
+				this.types[i].generateClass(this.types[i], dependency, 1, jsFile.content);
+			}
+		}
+		
+		//generate export object
+		StringBuffer output = jsFile.content;
+		output.append("\n");
+		printIndent(1, output);
+		output.append("return {");
+		for (int i = 0, count = this.types.length; i < count; i++) {
+			output.append("\n");
+			printIndent(2, output);
+			output.append(this.types[i].name).append(" : ").append(this.types[i].name);
+		}
+		output.append("\n");
+		printIndent(1, output).append("};");
+		output.append("\n").append("}");
+		
+		
+		this.compilationResult.record(CharOperation.concatWith(getCompoundName(), '/'), jsFile);
+	}
+
 	public CompilationUnitDeclaration getCompilationUnitDeclaration() {
 		return this;
 	}
@@ -871,7 +521,7 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 				}
 				currentImport.print(0, output).append(";\n"); //$NON-NLS-1$
 			}
-		
+
 		if (this.types != null) {
 			for (int i = 0; i < this.types.length; i++) {
 				this.types[i].print(indent, output).append("\n"); //$NON-NLS-1$
@@ -925,7 +575,10 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		this.stringLiterals[this.stringLiteralsPtr++] = literal;
 	}
 	
-	public void recordSuppressWarnings(IrritantSet irritants, Annotation annotation, int scopeStart, int scopeEnd) {
+	public void recordSuppressWarnings(IrritantSet irritants, Annotation annotation, int scopeStart, int scopeEnd, ReferenceContext context) {
+		if (context instanceof LambdaExpression && context != ((LambdaExpression) context).original())
+			return; // Do not record from copies. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=441929
+			
 		if (this.suppressWarningIrritants == null) {
 			this.suppressWarningIrritants = new IrritantSet[3];
 			this.suppressWarningAnnotations = new Annotation[3];
@@ -1012,7 +665,6 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 					this.types[i].resolve(this.scope);
 				}
 			}
-			
 			if (!this.compilationResult.hasMandatoryErrors()) checkUnusedImports();
 			reportNLSProblems();
 		} catch (AbortCompilationUnit e) {
@@ -1020,7 +672,6 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 			return;
 		}
 	}
-	
 	
 	private void reportNLSProblems() {
 		if (this.nlsTags != null || this.stringLiterals != null) {
@@ -1180,7 +831,7 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	}
 
 	@Override
-	public StringBuffer generateJavascript(Scope scope, int indent,
+	public StringBuffer generateJavascript(Scope scope, Dependency depsManager, int indent,
 			StringBuffer output) {
 		// TODO Auto-generated method stub
 		return null;

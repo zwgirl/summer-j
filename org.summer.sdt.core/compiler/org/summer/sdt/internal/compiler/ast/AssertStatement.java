@@ -17,20 +17,12 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.BranchLabel;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.codegen.Opcodes;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class AssertStatement extends Statement {
 
@@ -222,16 +214,9 @@ public class AssertStatement extends Statement {
 		}
 		return output.append(';');
 	}
-
+	
 	@Override
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		printIndent(indent, output);
-		output.append("assert "); //$NON-NLS-1$
-		this.assertExpression.generateExpression(scope, 0, output);
-		if (this.exceptionArgument != null) {
-			output.append(": "); //$NON-NLS-1$
-			this.exceptionArgument.generateExpression(scope, 0, output);
-		}
-		return output.append(';');
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		return output;
 	}
 }

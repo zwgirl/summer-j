@@ -17,7 +17,7 @@ package org.summer.sdt.core;
  * @noimplement This interface is not intended to be implemented by clients.
  */
 public interface IField extends IMember, IAnnotatable {
-
+	
 	/**
 	 * Returns the constant value associated with this field
 	 * or <code>null</code> if this field has none. To have a constant value, the field needs to be

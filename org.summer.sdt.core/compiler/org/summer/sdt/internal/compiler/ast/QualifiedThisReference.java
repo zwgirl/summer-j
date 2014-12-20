@@ -16,16 +16,11 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.MethodBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class QualifiedThisReference extends ThisReference {
 
@@ -167,5 +162,20 @@ public class QualifiedThisReference extends ThisReference {
 			this.qualification.traverse(visitor, blockScope);
 		}
 		visitor.endVisit(this, blockScope);
+	}
+	
+	@Override
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		if ((this.bits & ASTNode.DepthMASK) != 0) { // outer access ?
+			// outer method can be reached through emulation if implicit access
+			int depths = (this.bits & ASTNode.DepthMASK) >> ASTNode.DepthSHIFT;
+			output.append("this.");
+			for(int i = 0; i < depths; i++){
+				output.append("__enclosing");
+			}
+		} else {
+			return super.doGenerateExpression(scope, dependency, indent, output);
+		}
+		return output;
 	}
 }

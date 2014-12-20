@@ -14,13 +14,13 @@ import java.util.Map;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.*;
+import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.*;
-import org.summer.sdt.internal.compiler.ast.*;
+import org.summer.sdt.internal.compiler.impl.*;
 import org.summer.sdt.internal.compiler.lookup.*;
 import org.summer.sdt.internal.compiler.parser.*;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
-import org.summer.sdt.internal.compiler.impl.*;
 import org.summer.sdt.internal.core.NameLookup;
 import org.summer.sdt.internal.core.SearchableEnvironment;
 
@@ -272,11 +272,36 @@ public abstract class Engine implements ITypeRequestor {
 		}
 		return null;
 	}
+	
+	private ASTNode parserElement(XAMLElement element, int position){
+		for(Attribute attribute : element.attributes){
+			if(attribute.sourceStart <= position && attribute.sourceEnd >= position){
+				return attribute;
+			}
+		}
+		
+		for(XAMLElement child : element.children){
+			if(child.sourceStart < position && child.sourceEnd >= position){
+				return parserElement(child, position);
+			}
+		}
+		return null;
+		
+	}
 
 	private ASTNode parseBlockStatements(
 		TypeDeclaration type,
 		CompilationUnitDeclaration unit,
 		int position) {
+		
+		//cym 2014-12-09
+		if(type.element != null){
+			ASTNode node = parserElement(type.element, position);
+			if(node != null){
+				return node;
+			}
+		}
+		
 		//members
 		TypeDeclaration[] memberTypes = type.memberTypes;
 		if (memberTypes != null) {
@@ -309,7 +334,7 @@ public abstract class Engine implements ITypeRequestor {
 				}
 			}
 		}
-		//initializers
+		//initializers  cym modifier 2014-12-01
 		FieldDeclaration[] fields = type.fields;
 		if (fields != null) {
 			int length = fields.length;
@@ -380,52 +405,8 @@ public abstract class Engine implements ITypeRequestor {
 				}
 			}
 		}
-		
-		//Property
-		PropertyDeclaration[] properties = type.properties;
-		if (properties != null) {
-			int length = properties.length;
-			for (int i = 0; i < length; i++) {
-				PropertyDeclaration property = properties[i];
-				MethodDeclaration getter = property.getter;
-				if (getter != null){
-					if (getter.bodyStart <= position + 1 && getter.declarationSourceEnd >= position) {
-						getParser().parseBlockStatements(getter, unit);
-						return getter;
-					}
-				}
-				MethodDeclaration setter = property.setter;
-				if (setter != null){
-					if (setter.bodyStart <= position + 1 && setter.declarationSourceEnd >= position) {
-						getParser().parseBlockStatements(setter, unit);
-						return setter;
-					}
-				}
-			}
-		}
 		return null;
 	}
-	
-//	private ASTNode parserElement(Element element, int position){
-//		ASTNode result = null;
-//		for(Attribute attr : element.attributes){
-//			if(attr.sourceStart > position || attr.sourceEnd < position){
-//				continue;
-//			}
-//			if(attr.sourceEnd >= position){
-//				return attr;
-//			}
-//		}
-//		
-//		for(Element child : element.children){
-//			result = parserElement(element, position);
-//			if(result != null){
-//				return result;
-//			}
-//		}
-//		
-//		return result;
-//	}
 
 	protected void reset(boolean resetLookupEnvironment) {
 		if (resetLookupEnvironment) this.lookupEnvironment.reset();

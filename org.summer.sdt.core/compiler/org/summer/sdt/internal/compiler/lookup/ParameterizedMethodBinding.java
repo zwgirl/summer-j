@@ -341,4 +341,4 @@ public class ParameterizedMethodBinding extends MethodBinding {
 	public MethodBinding shallowOriginal() {
 		return this.originalMethod;
 	}
-}
+} 

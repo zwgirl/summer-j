@@ -102,5 +102,6 @@ public class Javascript {
 	public static final Object NULL = "null";
 	public static final String REQUIRE = "require";
 
+	public static final String ENCLOSING = "__enclosing";
 	
 }

@@ -36,147 +36,18 @@ import org.summer.sdt.core.compiler.CategorizedProblem;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.compiler.IProblem;
 import org.summer.sdt.core.search.IJavaSearchConstants;
-import org.summer.sdt.internal.codeassist.complete.CompletionNodeDetector;
-import org.summer.sdt.internal.codeassist.complete.CompletionNodeFound;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnAnnotationOfType;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnArgumentName;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnBranchStatementLabel;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnClassLiteralAccess;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnExplicitConstructorCall;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnFieldName;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnFieldType;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnImportReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnJavadoc;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnJavadocAllocationExpression;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnJavadocFieldReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnJavadocMessageSend;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnJavadocParamNameReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnJavadocQualifiedTypeReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnJavadocSingleTypeReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnJavadocTag;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnJavadocTypeParamReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnKeyword;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnLocalName;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnMarkerAnnotationName;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnMemberAccess;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnMemberValueName;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnMessageSend;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnMessageSendName;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnMethodName;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnMethodReturnType;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnPackageReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnParameterizedQualifiedTypeReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnQualifiedAllocationExpression;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnQualifiedNameReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnQualifiedTypeReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnReferenceExpressionName;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnSingleNameReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnSingleTypeReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnStringLiteral;
-import org.summer.sdt.internal.codeassist.complete.CompletionParser;
-import org.summer.sdt.internal.codeassist.complete.CompletionScanner;
-import org.summer.sdt.internal.codeassist.complete.InvalidCursorLocation;
+import org.summer.sdt.internal.codeassist.complete.*;
 import org.summer.sdt.internal.codeassist.impl.AssistParser;
 import org.summer.sdt.internal.codeassist.impl.Engine;
 import org.summer.sdt.internal.codeassist.impl.Keywords;
 import org.summer.sdt.internal.compiler.CompilationResult;
 import org.summer.sdt.internal.compiler.DefaultErrorHandlingPolicies;
 import org.summer.sdt.internal.compiler.ExtraFlags;
-import org.summer.sdt.internal.compiler.ast.ASTNode;
-import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
-import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
-import org.summer.sdt.internal.compiler.ast.AllocationExpression;
-import org.summer.sdt.internal.compiler.ast.Annotation;
-import org.summer.sdt.internal.compiler.ast.Argument;
-import org.summer.sdt.internal.compiler.ast.ArrayInitializer;
-import org.summer.sdt.internal.compiler.ast.ArrayReference;
-import org.summer.sdt.internal.compiler.ast.AssertStatement;
-import org.summer.sdt.internal.compiler.ast.Assignment;
-import org.summer.sdt.internal.compiler.ast.BinaryExpression;
-import org.summer.sdt.internal.compiler.ast.CaseStatement;
-import org.summer.sdt.internal.compiler.ast.CastExpression;
-import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
-import org.summer.sdt.internal.compiler.ast.ConditionalExpression;
-import org.summer.sdt.internal.compiler.ast.ConstructorDeclaration;
-import org.summer.sdt.internal.compiler.ast.Expression;
-import org.summer.sdt.internal.compiler.ast.ExpressionContext;
-import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
-import org.summer.sdt.internal.compiler.ast.FieldReference;
-import org.summer.sdt.internal.compiler.ast.ForStatement;
-import org.summer.sdt.internal.compiler.ast.IfStatement;
-import org.summer.sdt.internal.compiler.ast.ImportReference;
-import org.summer.sdt.internal.compiler.ast.Initializer;
-import org.summer.sdt.internal.compiler.ast.InstanceOfExpression;
-import org.summer.sdt.internal.compiler.ast.Javadoc;
-import org.summer.sdt.internal.compiler.ast.JavadocImplicitTypeReference;
-import org.summer.sdt.internal.compiler.ast.JavadocQualifiedTypeReference;
-import org.summer.sdt.internal.compiler.ast.JavadocSingleTypeReference;
-import org.summer.sdt.internal.compiler.ast.LambdaExpression;
-import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
-import org.summer.sdt.internal.compiler.ast.MemberValuePair;
-import org.summer.sdt.internal.compiler.ast.MessageSend;
-import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
-import org.summer.sdt.internal.compiler.ast.NameReference;
-import org.summer.sdt.internal.compiler.ast.NormalAnnotation;
-import org.summer.sdt.internal.compiler.ast.OperatorExpression;
-import org.summer.sdt.internal.compiler.ast.OperatorIds;
-import org.summer.sdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
-import org.summer.sdt.internal.compiler.ast.ParameterizedSingleTypeReference;
-import org.summer.sdt.internal.compiler.ast.QualifiedNameReference;
-import org.summer.sdt.internal.compiler.ast.QualifiedTypeReference;
-import org.summer.sdt.internal.compiler.ast.ReferenceExpression;
-import org.summer.sdt.internal.compiler.ast.ReturnStatement;
-import org.summer.sdt.internal.compiler.ast.SingleNameReference;
-import org.summer.sdt.internal.compiler.ast.SingleTypeReference;
-import org.summer.sdt.internal.compiler.ast.SuperReference;
-import org.summer.sdt.internal.compiler.ast.SwitchStatement;
-import org.summer.sdt.internal.compiler.ast.ThisReference;
-import org.summer.sdt.internal.compiler.ast.TryStatement;
-import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
-import org.summer.sdt.internal.compiler.ast.TypeParameter;
-import org.summer.sdt.internal.compiler.ast.TypeReference;
-import org.summer.sdt.internal.compiler.ast.UnaryExpression;
-import org.summer.sdt.internal.compiler.ast.UnionTypeReference;
-import org.summer.sdt.internal.compiler.ast.WhileStatement;
-import org.summer.sdt.internal.compiler.ast.Wildcard;
+import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.env.AccessRestriction;
-import org.summer.sdt.internal.compiler.env.ICompilationUnit;
-import org.summer.sdt.internal.compiler.env.INameEnvironment;
-import org.summer.sdt.internal.compiler.env.ISourceType;
-import org.summer.sdt.internal.compiler.env.NameEnvironmentAnswer;
+import org.summer.sdt.internal.compiler.env.*;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
-import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
-import org.summer.sdt.internal.compiler.lookup.BaseTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.Binding;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
-import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
-import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.ImportBinding;
-import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
-import org.summer.sdt.internal.compiler.lookup.InvocationSite;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
-import org.summer.sdt.internal.compiler.lookup.MethodBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.PackageBinding;
-import org.summer.sdt.internal.compiler.lookup.ParameterizedMethodBinding;
-import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.ProblemMethodBinding;
-import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
-import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeConstants;
-import org.summer.sdt.internal.compiler.lookup.TypeIds;
-import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.VariableBinding;
-import org.summer.sdt.internal.compiler.lookup.WildcardBinding;
+import org.summer.sdt.internal.compiler.lookup.*;
 import org.summer.sdt.internal.compiler.parser.JavadocTagConstants;
 import org.summer.sdt.internal.compiler.parser.ScannerHelper;
 import org.summer.sdt.internal.compiler.parser.SourceTypeConverter;
@@ -580,8 +451,8 @@ public final class CompletionEngine
 	public HashtableOfObject typeCache;
 	public int openedBinaryTypes; // used during InternalCompletionProposal#findConstructorParameterNames()
 	
-	public static boolean DEBUG = false;
-	public static boolean PERF = false;
+	public static boolean DEBUG = true;
+	public static boolean PERF = true;
 	
 	private static final char[] KNOWN_TYPE_WITH_UNKNOWN_CONSTRUCTORS = new char[]{};
 	private static final char[] KNOWN_TYPE_WITH_KNOWN_CONSTRUCTORS = new char[]{};
@@ -758,6 +629,9 @@ public final class CompletionEngine
 		public boolean receiverIsImplicitThis() { return false; }
 		public InferenceContext18 freshInferenceContext(Scope scope) { return null; }
 		public ExpressionContext getExpressionContext() { return ExpressionContext.VANILLA_CONTEXT; }
+		public boolean isQualifiedSuper() { return false; }
+		public boolean checkingPotentialCompatibility() { return false; }
+		public void acceptPotentiallyCompatibleMethods(MethodBinding[] methods) {/* ignore */}
 	};
 
 	private int foundTypesCount;
@@ -1830,6 +1704,7 @@ public final class CompletionEngine
 
 		buildContext(astNode, astNodeParent, compilationUnitDeclaration, qualifiedBinding, scope);
 
+		if (astNode instanceof CompletionOnMemberAccess && qualifiedBinding instanceof BaseTypeBinding) return true;
 		if (astNode instanceof CompletionOnFieldType) {
 			completionOnFieldType(astNode, scope);
 		} else if (astNode instanceof CompletionOnMethodReturnType) {
@@ -2484,7 +2359,7 @@ public final class CompletionEngine
 				this.completionToken,
 				null,
 				argTypes,
-				(ReferenceBinding) ((ReferenceBinding) qualifiedBinding).capture(scope, messageSend.receiver.sourceEnd),
+				(ReferenceBinding) ((ReferenceBinding) qualifiedBinding).capture(scope, messageSend.receiver.sourceStart, messageSend.receiver.sourceEnd),
 				scope,
 				new ObjectVector(),
 				false,
@@ -2746,7 +2621,7 @@ public final class CompletionEngine
 
 				findFieldsAndMethods(
 					this.completionToken,
-					((TypeBinding) qualifiedBinding).capture(scope, access.receiver.sourceEnd),
+					((TypeBinding) qualifiedBinding).capture(scope, access.receiver.sourceStart, access.receiver.sourceEnd),
 					scope,
 					fieldsFound,
 					methodsFound,
@@ -2858,7 +2733,7 @@ public final class CompletionEngine
 				this.completionToken,
 				null,
 				argTypes,
-				(ReferenceBinding)((ReferenceBinding) qualifiedBinding).capture(scope, messageSend.receiver.sourceEnd),
+				(ReferenceBinding)((ReferenceBinding) qualifiedBinding).capture(scope, messageSend.receiver.sourceStart, messageSend.receiver.sourceEnd),
 				scope,
 				new ObjectVector(),
 				false,
@@ -2902,7 +2777,7 @@ public final class CompletionEngine
 							this.completionToken,
 							typeArgTypes,
 							null,
-							(ReferenceBinding)receiverType.capture(scope, messageSend.receiver.sourceEnd),
+							(ReferenceBinding)receiverType.capture(scope, messageSend.receiver.sourceStart, messageSend.receiver.sourceEnd),
 							scope,
 							new ObjectVector(),
 							onlyStatic,
@@ -2932,11 +2807,16 @@ public final class CompletionEngine
 			
 			TypeBinding receiverType = (TypeBinding) qualifiedBinding;
 			if (receiverType != null && receiverType instanceof ReferenceBinding) {
+				if (!(receiverType.isInterface() || this.requestor.isIgnored(CompletionProposal.KEYWORD))) {
+					this.assistNodeIsConstructor = true;
+					setSourceAndTokenRange(referenceExpression.nameSourceStart, referenceExpression.sourceEnd);
+					findKeywords(this.completionToken, new char[][] { Keywords.NEW }, false, false);
+				}
 				findMethods(
 						this.completionToken,
 						referenceExpression.resolvedTypeArguments,
 						null,
-						(ReferenceBinding)receiverType.capture(scope, referenceExpression.sourceEnd),
+						(ReferenceBinding)receiverType.capture(scope, referenceExpression.sourceStart, referenceExpression.sourceEnd),
 						scope,
 						new ObjectVector(),
 						onlyStatic,
@@ -3216,7 +3096,7 @@ public final class CompletionEngine
 
 				findFieldsAndMethods(
 						this.completionToken,
-						receiverType.capture(scope, ref.sourceEnd),
+						receiverType.capture(scope, ref.sourceStart, ref.sourceEnd),
 						scope,
 						fieldsFound,
 						methodsFound,
@@ -8310,6 +8190,9 @@ public final class CompletionEngine
 					relevance += computeRelevanceForExpectingType(TypeBinding.BOOLEAN);
 					relevance += computeRelevanceForQualification(false);
 				}
+				if (CharOperation.equals(choices[i], Keywords.NEW)) {
+					relevance += computeRelevanceForConstructor();
+				}
 				this.noProposal = false;
 				if(!this.requestor.isIgnored(CompletionProposal.KEYWORD)) {
 					InternalCompletionProposal proposal =  createProposal(CompletionProposal.KEYWORD, this.actualCompletionPosition);
@@ -8868,10 +8751,7 @@ public final class CompletionEngine
 					}
 					proposal.setCompletion(completion);
 					proposal.setFlags(method.modifiers);
-					if (completionOnReferenceExpressionName)
-						proposal.setReplaceRange(this.endPosition - this.offset - methodLength, this.endPosition - this.offset);
-					else 
-						proposal.setReplaceRange(this.startPosition - this.offset, this.endPosition - this.offset);
+					proposal.setReplaceRange(this.startPosition - this.offset, this.endPosition - this.offset);
 					proposal.setTokenRange(this.tokenStart - this.offset, this.tokenEnd - this.offset);
 					proposal.setRelevance(relevance);
 					if(parameterNames != null) proposal.setParameterNames(parameterNames);
@@ -9425,7 +9305,7 @@ public final class CompletionEngine
 				((scope instanceof MethodScope && !((MethodScope)scope).isStatic)
 				|| ((methodScope = scope.enclosingMethodScope()) != null && !methodScope.isStatic))) {
 			if (token.length > 0) {
-				findKeywords(token, new char[][]{Keywords.THIS}, true, false);
+				findKeywords(token, new char[][]{Keywords.THIS, Keywords.SUPER}, true, false);
 			} else {
 				int relevance = computeBaseRelevance();
 				relevance += computeRelevanceForResolution();
@@ -10192,7 +10072,7 @@ public final class CompletionEngine
 				ReferenceBinding[] superInterfaces = currentType.superInterfaces();
 				if (superInterfaces != null && currentType.isIntersectionType()) {
 					for (int i = 0; i < superInterfaces.length; i++) {
-						superInterfaces[i] = (ReferenceBinding)superInterfaces[i].capture(invocationScope, invocationSite.sourceEnd());
+						superInterfaces[i] = (ReferenceBinding)superInterfaces[i].capture(invocationScope, invocationSite.sourceStart(), invocationSite.sourceEnd());
 					}
 				}
 

@@ -55,6 +55,7 @@ import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
 import org.summer.sdt.internal.compiler.lookup.ParameterizedGenericMethodBinding;
+import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemFieldBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
@@ -1604,12 +1605,14 @@ class DefaultBindingResolver extends BindingResolver {
 						return null;
 					}
 					ArrayType arrayType = (ArrayType) type;
-					ArrayBinding arrayBinding = (ArrayBinding) typeBinding;
+					//cym 2014-14-18
+//					ArrayBinding arrayBinding = (ArrayBinding) typeBinding;
+					ParameterizedTypeBinding arrayBinding = (ParameterizedTypeBinding) typeBinding;
 					int dimensions = arrayType.getDimensions();
 					boolean isVarargs = typeReference.isVarargs();
 					if (dimensions == arrayBinding.dimensions)
 						return getTypeBinding(arrayBinding); // reuse.
-					return getTypeBinding(this.scope.createArrayType(arrayBinding.leafComponentType, dimensions, getTypeAnnotations(dimensions, arrayBinding, isVarargs)));
+					return getTypeBinding(this.scope.createArrayType(arrayBinding.leafComponentType(), dimensions, getTypeAnnotations(dimensions, arrayBinding, isVarargs)));
 				}
 				if (typeBinding.isArrayType()) {
 					// 'typeBinding' can still be an array type because 'node' may be "larger" than 'type' (see comment of newAstToOldAst).
@@ -1657,12 +1660,14 @@ class DefaultBindingResolver extends BindingResolver {
 					if (this.scope == null) {
 						return null;
 					}
-					ArrayBinding arrayBinding = (ArrayBinding) binding;
+					//cym 2014-14-18
+//					ArrayBinding arrayBinding = (ArrayBinding) binding;
+					ParameterizedTypeBinding arrayBinding = (ParameterizedTypeBinding) binding;
 					int dimensions = arrayType.getDimensions();
 					boolean isVarargs = node instanceof TypeReference && ((TypeReference) node).isVarargs();
 					if (dimensions == arrayBinding.dimensions)
 						return getTypeBinding(arrayBinding); // reuse
-					return getTypeBinding(this.scope.createArrayType(arrayBinding.leafComponentType, dimensions, getTypeAnnotations(dimensions, arrayBinding, isVarargs)));
+					return getTypeBinding(this.scope.createArrayType(arrayBinding.leafComponentType(), dimensions, getTypeAnnotations(dimensions, arrayBinding, isVarargs)));
 				} else if (binding.isArrayType()) {
 					// 'binding' can still be an array type because 'node' may be "larger" than 'type' (see comment of newAstToOldAst).
 					ArrayBinding arrayBinding = (ArrayBinding) binding;
@@ -1680,8 +1685,9 @@ class DefaultBindingResolver extends BindingResolver {
 		}
 		return null;
 	}
-
-	private org.summer.sdt.internal.compiler.lookup.AnnotationBinding[] getTypeAnnotations(int dimensions, ArrayBinding arrayBinding, boolean isVarargs) {
+//cym 2014-14-18
+//	private org.summer.sdt.internal.compiler.lookup.AnnotationBinding[] getTypeAnnotations(int dimensions, ArrayBinding arrayBinding, boolean isVarargs) {
+	private org.summer.sdt.internal.compiler.lookup.AnnotationBinding[] getTypeAnnotations(int dimensions, ParameterizedTypeBinding arrayBinding, boolean isVarargs) {
 		org.summer.sdt.internal.compiler.lookup.AnnotationBinding [] oldies = arrayBinding.getTypeAnnotations();
 		org.summer.sdt.internal.compiler.lookup.AnnotationBinding[] newbies = Binding.NO_ANNOTATIONS;
 		// Skip past extended dimensions encoded ahead of base dimensions. Dimension for variable argument array comes after the base dimensions.
@@ -1809,6 +1815,8 @@ class DefaultBindingResolver extends BindingResolver {
 				typeBinding = this.getTypeBinding(this.scope.getJavaLangObject());
 			} else if ("java.lang.String".equals(name)) {//$NON-NLS-1$
 				typeBinding = this.getTypeBinding(this.scope.getJavaLangString());
+			} else if ("java.lang.Array".equals(name)) {//$NON-NLS-1$  cym 2014-12-03
+				typeBinding = this.getTypeBinding(this.scope.getJavaLangArray());
 			} else if ("java.lang.StringBuffer".equals(name)) {//$NON-NLS-1$
 				typeBinding = this.getTypeBinding(this.scope.getType(TypeConstants.JAVA_LANG_STRINGBUFFER, 3));
 			} else if ("java.lang.Throwable".equals(name)) {//$NON-NLS-1$

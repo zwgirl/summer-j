@@ -32,11 +32,13 @@ import org.summer.sdt.core.search.IJavaSearchScope;
 import org.summer.sdt.core.search.SearchPattern;
 import org.summer.sdt.core.search.TypeNameMatch;
 import org.summer.sdt.core.search.TypeNameMatchRequestor;
+import org.summer.sdt.internal.codeassist.impl.*;
+import org.summer.sdt.internal.codeassist.select.*;
 import org.summer.sdt.internal.compiler.*;
+import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileReader;
 import org.summer.sdt.internal.compiler.env.*;
-import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.lookup.*;
 import org.summer.sdt.internal.compiler.parser.*;
 import org.summer.sdt.internal.compiler.problem.*;
@@ -53,8 +55,6 @@ import org.summer.sdt.internal.core.search.BasicSearchEngine;
 import org.summer.sdt.internal.core.search.TypeNameMatchRequestorWrapper;
 import org.summer.sdt.internal.core.util.ASTNodeFinder;
 import org.summer.sdt.internal.core.util.HashSetOfCharArrayArray;
-import org.summer.sdt.internal.codeassist.impl.*;
-import org.summer.sdt.internal.codeassist.select.*;
 
 /**
  * The selection engine is intended to infer the nature of a selected name in some
@@ -557,6 +557,17 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 						case '"':
 						case '\'':
 							break lineLoop;
+						case '-':
+							if (source[nextCharacterPosition] == '>') {
+								nextCharacterPosition--; // nextCharacterPosition = currentPosition
+								break lineLoop;
+							}
+							break;
+						case ':':
+							if (source[nextCharacterPosition] == ':') {
+								nextCharacterPosition--; // nextCharacterPosition = currentPosition
+								break lineLoop;
+							}
 					}
 					currentPosition--;
 				}
@@ -584,6 +595,15 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 							 	while(scanner.getNextCharAsJavaIdentifierPart()){/*empty*/}
 							 	scanner.eofPosition = temp;
 							}
+							lastIdentifierStart = scanner.startPosition;
+							lastIdentifierEnd = scanner.currentPosition - 1;
+							lastIdentifier = scanner.getCurrentTokenSource();
+							break isolateLastName;
+						}
+						break;
+					case TerminalTokens.TokenNameARROW:
+					case TerminalTokens.TokenNameCOLON_COLON:
+						if (scanner.startPosition <= selectionStart && selectionStart <= scanner.currentPosition) {
 							lastIdentifierStart = scanner.startPosition;
 							lastIdentifierEnd = scanner.currentPosition - 1;
 							lastIdentifier = scanner.getCurrentTokenSource();
@@ -1011,7 +1031,7 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 			reset(true);
 		}
 	}
-	
+
 	private void selectMemberTypeFromImport(CompilationUnitDeclaration parsedUnit, char[] lastToken, ReferenceBinding ref, boolean staticOnly) {
 		int fieldLength = lastToken.length;
 		ReferenceBinding[] memberTypes = ref.memberTypes();

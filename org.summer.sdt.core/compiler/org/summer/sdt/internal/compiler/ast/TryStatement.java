@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,33 +30,12 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.BranchLabel;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.codegen.ConstantPool;
-import org.summer.sdt.internal.compiler.codegen.ExceptionLabel;
-import org.summer.sdt.internal.compiler.codegen.MultiCatchExceptionLabel;
-import org.summer.sdt.internal.compiler.codegen.StackMapFrameCodeStream;
-import org.summer.sdt.internal.compiler.flow.ExceptionHandlingFlowContext;
-import org.summer.sdt.internal.compiler.flow.FinallyFlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.flow.InsideSubRoutineFlowContext;
-import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.InvocationSite;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
-import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeIds;
-import static org.summer.sdt.internal.compiler.javascript.Javascript.*;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class TryStatement extends SubRoutineStatement {
 
@@ -1167,6 +1146,8 @@ public class TryStatement extends SubRoutineStatement {
 			int totalCount = 0;
 			ReferenceBinding[][] allExceptionTypes = new ReferenceBinding[length][];
 			for (int i = 0; i < length; i++) {
+				if (argumentTypes[i] instanceof ArrayBinding)
+					continue;
 				ReferenceBinding currentExceptionType = (ReferenceBinding) argumentTypes[i];
 				TypeReference catchArgumentType = this.catchArguments[i].type;
 				if ((catchArgumentType.bits & ASTNode.IsUnionType) != 0) {
@@ -1187,6 +1168,7 @@ public class TryStatement extends SubRoutineStatement {
 			this.caughtExceptionsCatchBlocks  = new int[totalCount];
 			for (int i = 0, l = 0; i < length; i++) {
 				ReferenceBinding[] currentExceptions = allExceptionTypes[i];
+				if (currentExceptions == null) continue;
 				loop: for (int j = 0, max = currentExceptions.length; j < max; j++) {
 					ReferenceBinding exception = currentExceptions[j];
 					this.caughtExceptionTypes[l] = exception;
@@ -1194,6 +1176,7 @@ public class TryStatement extends SubRoutineStatement {
 					// now iterate over all previous exceptions
 					for (int k = 0; k < i; k++) {
 						ReferenceBinding[] exceptions = allExceptionTypes[k];
+						if (exceptions == null) continue;
 						for (int n = 0, max2 = exceptions.length; n < max2; n++) {
 							ReferenceBinding currentException = exceptions[n];
 							if (exception.isCompatibleWith(currentException)) {
@@ -1214,6 +1197,8 @@ public class TryStatement extends SubRoutineStatement {
 		} else {
 			this.caughtExceptionTypes = new ReferenceBinding[length];
 			for (int i = 0; i < length; i++) {
+				if (argumentTypes[i] instanceof ArrayBinding)
+					continue;
 				this.caughtExceptionTypes[i] = (ReferenceBinding) argumentTypes[i];
 				for (int j = 0; j < i; j++) {
 					if (this.caughtExceptionTypes[i].isCompatibleWith(argumentTypes[j])) {
@@ -1226,12 +1211,42 @@ public class TryStatement extends SubRoutineStatement {
 			}
 		}
 	}
+	@Override
+	public boolean doesNotCompleteNormally() {
+		if (!this.tryBlock.doesNotCompleteNormally()) {
+			return (this.finallyBlock != null) ? this.finallyBlock.doesNotCompleteNormally() : false;
+		}
+		if (this.catchBlocks != null) {
+			for (int i = 0; i < this.catchBlocks.length; i++) {
+				if (!this.catchBlocks[i].doesNotCompleteNormally()) {
+					return (this.finallyBlock != null) ? this.finallyBlock.doesNotCompleteNormally() : false;
+				}
+			}
+		}
+		return true;
+	}
+	@Override
+	public boolean completesByContinue() {
+		if (this.tryBlock.completesByContinue()) {
+			return (this.finallyBlock == null) ? true :
+				!this.finallyBlock.doesNotCompleteNormally() || this.finallyBlock.completesByContinue(); 
+		}
+		if (this.catchBlocks != null) {
+			for (int i = 0; i < this.catchBlocks.length; i++) {
+				if (this.catchBlocks[i].completesByContinue()) {
+					return (this.finallyBlock == null) ? true :
+						!this.finallyBlock.doesNotCompleteNormally() || this.finallyBlock.completesByContinue();
+				}
+			}
+		}
+		return this.finallyBlock != null && this.finallyBlock.completesByContinue();
+	}
 	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 		int length = this.resources.length;
-		printIndent(indent, output).append("try" + (length == 0 ? "\n" : " (")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		output.append("try" + (length == 0 ? "\n" : " (")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		for (int i = 0; i < length; i++) {
-			this.resources[i].generateExpression(scope, 0, output);
+			this.resources[i].doGenerateExpression(scope, dependency, 0, output);
 			if (i != length - 1) {
 				output.append(";\n"); //$NON-NLS-1$
 				printIndent(indent + 2, output);
@@ -1240,22 +1255,28 @@ public class TryStatement extends SubRoutineStatement {
 		if (length > 0) {
 			output.append(")\n"); //$NON-NLS-1$
 		}
-		this.tryBlock.generateStatement(scope, indent, output);
+		this.tryBlock.generateStatement(scope, dependency, indent, output);
 	
 		//catches
 		if (this.catchBlocks != null)
 			for (int i = 0; i < this.catchBlocks.length; i++) {
-					output.append('\n');
-					printIndent(indent, output).append("catch ("); //$NON-NLS-1$
-					this.catchArguments[i].generateJavascript(scope, 0, output).append(")\n"); //$NON-NLS-1$
-					this.catchBlocks[i].generateStatement(scope, indent, output);
+				output.append('\n');
+				printIndent(indent, output).append("catch ("); //$NON-NLS-1$
+				this.catchArguments[i].generateExpression(scope, dependency, 0, output).append(")\n"); //$NON-NLS-1$
+				this.catchBlocks[i].generateStatement(scope, dependency, indent, output);
 			}
 		//finally
 		if (this.finallyBlock != null) {
 			output.append('\n');
 			printIndent(indent, output).append("finally\n"); //$NON-NLS-1$
-			this.finallyBlock.generateStatement(scope, indent, output);
+			this.finallyBlock.generateStatement(scope, dependency, indent, output);
 		}
 		return output;
+	}
+	
+	@Override
+	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		printIndent(indent, output);
+		return super.generateExpression(scope, dependency, indent, output);
 	}
 }

@@ -29,6 +29,9 @@
  *								Bug 428352 - [1.8][compiler] Resolution errors don't always surface
  *								Bug 427163 - [1.8][null] bogus error "Contradictory null specification" on varags
  *								Bug 432348 - [1.8] Internal compiler error (NPE) after upgrade to 1.8
+ *								Bug 440143 - [1.8][null] one more case of contradictory null annotations regarding type variables
+ *								Bug 441693 - [1.8][null] Bogus warning for type argument annotated with @NonNull
+ *								Bug 434483 - [1.8][compiler][inference] Type inference not picked up with method reference
  *     Jesper S Moller - Contributions for
  *								bug 382721 - [1.8][compiler] Effectively final variables needs special treatment
  *								bug 412153 - [1.8][compiler] Check validity of annotations which may be repeatable
@@ -45,8 +48,9 @@ import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.AccessRestriction;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.AnnotationBinding;
-import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
+//import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
@@ -57,10 +61,8 @@ import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.PackageBinding;
 import org.summer.sdt.internal.compiler.lookup.ParameterizedGenericMethodBinding;
-import org.summer.sdt.internal.compiler.lookup.ParameterizedMethodBinding;
-import org.summer.sdt.internal.compiler.lookup.PolyTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemMethodBinding;
-import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
@@ -323,10 +325,8 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 	//XAML
 	public static final int IsNamedAttribute = ASTNode.Bit10;
 	
-	//ref argument
-	public static final int IsRefArgument = ASTNode.Bit15;
-	//out argument
-	public static final int IsOutArgument = ASTNode.Bit16;
+	//for XAML root element  cym 2014-12-10
+	public static final int IsRootElement = Bit19;
 	
 	public static final Argument [] NO_ARGUMENTS = new Argument [0];
 
@@ -375,7 +375,9 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 		int invocationStatus = INVOCATION_ARGUMENT_OK;
 		if (arguments == null) {
 			if (method.isVarargs()) {
-				TypeBinding parameterType = ((ArrayBinding) params[paramLength-1]).elementsType(); // no element was supplied for vararg parameter
+				//cym 2014-12-18
+//				TypeBinding parameterType = ((ArrayBinding) params[paramLength-1]).elementsType(); // no element was supplied for vararg parameter
+				TypeBinding parameterType = ((ParameterizedTypeBinding) params[paramLength-1]).elementsType(); // no element was supplied for vararg parameter
 				if (!parameterType.isReifiable()
 						&& (!is1_7 || ((method.tagBits & TagBits.AnnotationSafeVarargs) == 0))) {
 					scope.problemReporter().unsafeGenericArrayForVarargs(parameterType, (ASTNode)invocationSite);
@@ -395,12 +397,16 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 					TypeBinding originalRawParam = null;
 
 					if (paramLength != argLength || parameterType.dimensions() != argumentTypes[lastIndex].dimensions()) {
-						parameterType = ((ArrayBinding) parameterType).elementsType(); // single element was provided for vararg parameter
+						//cym 2014-12-06
+//						parameterType = ((ArrayBinding) parameterType).elementsType(); // single element was provided for vararg parameter
+						parameterType = ((ParameterizedTypeBinding) parameterType).elementsType(); // single element was provided for vararg parameter
 						if (!parameterType.isReifiable()
 								&& (!is1_7 || ((method.tagBits & TagBits.AnnotationSafeVarargs) == 0))) {
 							scope.problemReporter().unsafeGenericArrayForVarargs(parameterType, (ASTNode)invocationSite);
 						}
-						originalRawParam = rawOriginalGenericMethod == null ? null : ((ArrayBinding)rawOriginalGenericMethod.parameters[lastIndex]).elementsType();
+						//cym 2014-12-18
+//						originalRawParam = rawOriginalGenericMethod == null ? null : ((ArrayBinding)rawOriginalGenericMethod.parameters[lastIndex]).elementsType();
+						originalRawParam = rawOriginalGenericMethod == null ? null : ((ParameterizedTypeBinding)rawOriginalGenericMethod.parameters[lastIndex]).elementsType();
 					}
 					for (int i = lastIndex; i < argLength; i++) {
 						invocationStatus |= checkInvocationArgument(scope, arguments[i], parameterType, argumentTypes[i], originalRawParam);
@@ -408,7 +414,9 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 				} 
 				if (paramLength == argLength) { // 70056
 					int varargsIndex = paramLength - 1;
-					ArrayBinding varargsType = (ArrayBinding) params[varargsIndex];
+					//cym 2014-12-18
+//					ArrayBinding varargsType = (ArrayBinding) params[varargsIndex];
+					ParameterizedTypeBinding varargsType = (ParameterizedTypeBinding) params[varargsIndex];
 					TypeBinding lastArgType = argumentTypes[varargsIndex];
 					int dimensions;
 					if (lastArgType == TypeBinding.NULL) {
@@ -422,7 +430,7 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 							scope.problemReporter().varargsArgumentNeedCast(method, lastArgType, invocationSite);
 						} else if (varargsType.dimensions == dimensions
 										&& TypeBinding.notEquals(lastArgType, varargsType)
-										&& TypeBinding.notEquals(lastArgType.leafComponentType().erasure(), varargsType.leafComponentType.erasure())
+										&& TypeBinding.notEquals(lastArgType.leafComponentType().erasure(), varargsType.leafComponentType().erasure())
 										&& lastArgType.isCompatibleWith(varargsType.elementsType())
 										&& lastArgType.isCompatibleWith(varargsType)) {
 							scope.problemReporter().varargsArgumentNeedCast(method, lastArgType, invocationSite);
@@ -548,6 +556,11 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 		return false;
 	}
 
+	public boolean isQualifiedSuper() {
+
+		return false;
+	}
+
 	public boolean isThis() {
 
 		return false;
@@ -562,8 +575,12 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 	*/
 	public final boolean isTypeUseDeprecated(TypeBinding type, Scope scope) {
 
+//		if (type.isArrayType()) {
+//			type = ((ArrayBinding) type).leafComponentType;
+//		}
+		//cym 2014-12-18
 		if (type.isArrayType()) {
-			type = ((ArrayBinding) type).leafComponentType;
+			type = type.leafComponentType();
 		}
 		if (type.isBaseType())
 			return false;
@@ -602,51 +619,6 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 	}
 
 	public abstract StringBuffer print(int indent, StringBuffer output);
-	
-	public abstract StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output);
-	
-	public static StringBuffer generateAnnotations(Annotation[] annotations, StringBuffer output) {
-		int length = annotations.length;
-		for (int i = 0; i < length; i++) {
-			if (i > 0) {
-				output.append(" "); //$NON-NLS-1$
-			}
-			Annotation annotation2 = annotations[i];
-			if (annotation2 != null) {
-				annotation2.print(0, output);
-			} else {
-				output.append('?');
-			}
-		}
-		return output;
-	}
-	
-	public static StringBuffer generateModifiers(int modifiers, StringBuffer output) {
-
-		if ((modifiers & ClassFileConstants.AccPublic) != 0)
-			output.append("public "); //$NON-NLS-1$
-		if ((modifiers & ClassFileConstants.AccPrivate) != 0)
-			output.append("private "); //$NON-NLS-1$
-		if ((modifiers & ClassFileConstants.AccProtected) != 0)
-			output.append("protected "); //$NON-NLS-1$
-		if ((modifiers & ClassFileConstants.AccStatic) != 0)
-			output.append("static "); //$NON-NLS-1$
-		if ((modifiers & ClassFileConstants.AccFinal) != 0)
-			output.append("final "); //$NON-NLS-1$
-		if ((modifiers & ClassFileConstants.AccSynchronized) != 0)
-			output.append("synchronized "); //$NON-NLS-1$
-		if ((modifiers & ClassFileConstants.AccVolatile) != 0)
-			output.append("volatile "); //$NON-NLS-1$
-		if ((modifiers & ClassFileConstants.AccTransient) != 0)
-			output.append("transient "); //$NON-NLS-1$
-		if ((modifiers & ClassFileConstants.AccNative) != 0)
-			output.append("native "); //$NON-NLS-1$
-		if ((modifiers & ClassFileConstants.AccAbstract) != 0)
-			output.append("abstract "); //$NON-NLS-1$
-		if ((modifiers & ExtraCompilerModifiers.AccDefaultMethod) != 0)
-			output.append("default "); //$NON-NLS-1$
-		return output;
-	}
 
 	public static StringBuffer printAnnotations(Annotation[] annotations, StringBuffer output) {
 		int length = annotations.length;
@@ -701,119 +673,42 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 	 * After method lookup has produced 'methodBinding' but when poly expressions have been seen as arguments,
 	 * inspect the arguments to trigger another round of resolving with improved target types from the methods parameters.
 	 * If this resolving produces better types for any arguments, update the 'argumentTypes' array in-place as an
-	 * intended side effect that will feed better type information in checkInvocationArguments() and others.
+	 * intended side effect that will feed better type information in checkInvocationArguments() and others. 
 	 * @param invocation the outer invocation which is being resolved
-	 * @param methodBinding the method produced by lookup (possibly involving type inference).
-	 * @param argumentTypes the argument types as collected from first resolving the invocation arguments and as used for
-	 * 	the method lookup.
-	 * @param scope scope for error reporting
+	 * @param method the method produced by lookup (possibly involving type inference).
+	 * @param argumentTypes the argument types as collected from first resolving the invocation arguments and as used for the method lookup.
+	 * @param scope scope for resolution.
 	 */
-	public static void resolvePolyExpressionArguments(Invocation invocation, MethodBinding methodBinding, TypeBinding[] argumentTypes, Scope scope) {
-		if (!invocation.innersNeedUpdate())
+	public static void resolvePolyExpressionArguments(Invocation invocation, MethodBinding method, TypeBinding[] argumentTypes, BlockScope scope) {
+		MethodBinding candidateMethod = method.isValidBinding() ? method : method instanceof ProblemMethodBinding ? ((ProblemMethodBinding) method).closestMatch : null;
+		if (candidateMethod == null)
 			return;
-		int problemReason = 0;
-		MethodBinding candidateMethod;
-		if (methodBinding.isValidBinding()) {
-			candidateMethod = methodBinding;
-		} else if (methodBinding instanceof ProblemMethodBinding) {
-			problemReason = methodBinding.problemId();
-			candidateMethod = ((ProblemMethodBinding) methodBinding).closestMatch;
-		} else {
-			candidateMethod = null;
-		}
-		if (candidateMethod != null) {
-			boolean variableArity = candidateMethod.isVarargs();
-			InferenceContext18 infCtx = null;
-			if (candidateMethod instanceof ParameterizedMethodBinding) {
-				infCtx = invocation.getInferenceContext((ParameterizedMethodBinding) candidateMethod);
-				if (infCtx != null) {
-					if (infCtx.stepCompleted != InferenceContext18.TYPE_INFERRED) {
-						// only work in the exact state of TYPE_INFERRED
-						// - below we're not yet ready
-						// - above we're already done-done
-						return;
-					}
-					variableArity &= infCtx.isVarArgs(); // TODO: if no infCtx is available, do we have to re-check if this is a varargs invocation?
-				}
-			} else if (invocation instanceof AllocationExpression) {
-				if (((AllocationExpression)invocation).suspendedResolutionState != null)
-					return; // not yet ready
-			}
-			
-			final TypeBinding[] parameters = candidateMethod.parameters;
-			Expression[] innerArguments = invocation.arguments();
-			Expression [] arguments = innerArguments;
-			if (infCtx == null && variableArity && parameters.length == arguments.length) { // re-check
-				TypeBinding lastParam = parameters[parameters.length-1];
-				Expression lastArg = arguments[arguments.length-1];
-				if (lastArg.isCompatibleWith(lastParam, null)) {
-					variableArity = false;
-				}
-			}
-			for (int i = 0, length = arguments == null ? 0 : arguments.length; i < length; i++) {
-				Expression argument = arguments[i];
-				TypeBinding updatedArgumentType = null;
-				TypeBinding parameterType = InferenceContext18.getParameter(parameters, i, variableArity);
-				if (parameterType == null && problemReason != ProblemReasons.NoError)
-					continue; // not much we can do without a target type, assume it only happens after some resolve error
-
-				if (argument instanceof LambdaExpression && ((LambdaExpression) argument).hasErrors())
-					continue; // don't update if inner poly has errors
-
-				if (argument instanceof Invocation) {
-					Invocation innerInvocation = (Invocation)argument;
-					MethodBinding binding = innerInvocation.binding(parameterType, true, scope);
-					if (binding instanceof ParameterizedGenericMethodBinding) {
-						ParameterizedGenericMethodBinding parameterizedMethod = (ParameterizedGenericMethodBinding) binding;
-						InferenceContext18 innerContext = innerInvocation.getInferenceContext(parameterizedMethod);
-						if (innerContext != null) {
-							if (!innerContext.hasResultFor(parameterType)) {
-								argument.setExpectedType(parameterType);
-								MethodBinding improvedBinding = innerContext.inferInvocationType(innerInvocation, parameterizedMethod);
-								if (!improvedBinding.isValidBinding()) {
-									innerContext.reportInvalidInvocation(innerInvocation, improvedBinding);
-								}
-								if (innerInvocation.updateBindings(improvedBinding, parameterType)) {
-									resolvePolyExpressionArguments(innerInvocation, improvedBinding, scope);
-								}
-							} else if (innerContext.stepCompleted < InferenceContext18.BINDINGS_UPDATED) {
-								innerContext.rebindInnerPolies(parameterizedMethod, innerInvocation);
-							}
-						}
-						continue; // otherwise these have been dealt with during inner method lookup
-					}
-				}
-
-				if (argument.isPolyExpression()) {
-					// poly expressions in an invocation context may need to be resolved now:
-					if (infCtx != null && infCtx.stepCompleted == InferenceContext18.BINDINGS_UPDATED)
-						updatedArgumentType = argument.resolvedType; // in this case argument was already resolved via InferenceContext18.acceptPendingPolyArguments()
-					else
-						updatedArgumentType = argument.checkAgainstFinalTargetType(parameterType, scope);
-
-					if (problemReason == ProblemReasons.NoError // preserve errors
-							&& updatedArgumentType != null					// do we have a relevant update? ...
-							&& !(updatedArgumentType instanceof PolyTypeBinding))
-					{
-						// update the argumentTypes array (supposed to be owned by the calling method)
-						// in order to give better information for subsequent checks
-						argumentTypes[i] = updatedArgumentType;
-					}
-				}
+		boolean variableArity = candidateMethod.isVarargs();
+		final TypeBinding[] parameters = candidateMethod.parameters;
+		Expression[] arguments = invocation.arguments();
+		if (variableArity && arguments != null && parameters.length == arguments.length) {
+			if (arguments[arguments.length-1].isCompatibleWith(parameters[parameters.length-1], scope)) {
+				variableArity = false;
 			}
 		}
-		invocation.innerUpdateDone();
-	}
-
-	public static void resolvePolyExpressionArguments(Invocation invocation, MethodBinding methodBinding, Scope scope) {
-		TypeBinding[] argumentTypes = null;
-		Expression[] innerArguments = invocation.arguments();
-		if (innerArguments != null) {
-			argumentTypes = new TypeBinding[innerArguments.length];
-			for (int i = 0; i < innerArguments.length; i++)
-				argumentTypes[i] = innerArguments[i].resolvedType;
+		for (int i = 0, length = arguments == null ? 0 : arguments.length; i < length; i++) {
+			Expression argument = arguments[i];
+			TypeBinding parameterType = InferenceContext18.getParameter(parameters, i, variableArity);
+			if (parameterType == null)
+				continue; // not much we can do without a target type, assume it only happens after some resolve error
+			if (argumentTypes[i] != null && argumentTypes[i].isPolyType()) {
+				argument.setExpectedType(parameterType);
+				TypeBinding updatedArgumentType = argument.resolveType(scope); 
+				if (argument instanceof LambdaExpression) {
+					// LE.resolveType may return a valid binding because resolve does not detect structural errors at this point.
+					LambdaExpression lambda = (LambdaExpression) argument;
+					if (!lambda.isCompatibleWith(parameterType, scope) || lambda.hasErrors())
+						continue;
+				}
+				if (updatedArgumentType != null && updatedArgumentType.kind() != Binding.POLY_TYPE)
+					argumentTypes[i] = updatedArgumentType;
+			}
 		}
-		resolvePolyExpressionArguments(invocation, methodBinding, argumentTypes, scope);
 	}
 
 	public static void resolveAnnotations(BlockScope scope, Annotation[] sourceAnnotations, Binding recipient) {
@@ -1023,7 +918,7 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 			}
 		}
 		if (copySE8AnnotationsToType)
-			copySE8AnnotationsToType(scope, recipient, sourceAnnotations, true);
+			copySE8AnnotationsToType(scope, recipient, sourceAnnotations, false);
 		return annotations;
 	}
 	
@@ -1049,7 +944,7 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 	}
 
 	// When SE8 annotations feature in SE7 locations, they get attributed to the declared entity. Copy/move these to the type of the declared entity (field, local, argument etc.)
-	public static void copySE8AnnotationsToType(BlockScope scope, Binding recipient, Annotation[] annotations, boolean isLegalLocation) {
+	public static void copySE8AnnotationsToType(BlockScope scope, Binding recipient, Annotation[] annotations, boolean annotatingEnumerator) {
 		
 		if (annotations == null || annotations.length == 0 || recipient == null)
 			return;
@@ -1073,15 +968,20 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 		int se8count = 0;
 		long se8nullBits = 0;
 		Annotation se8NullAnnotation = null;
-		int firstSE8 = -1, lastSE8 = 0;
+		int firstSE8 = -1;
 		for (int i = 0, length = annotations.length; i < length; i++) {
 			AnnotationBinding annotation = annotations[i].getCompilerAnnotation();
 			if (annotation == null) continue;
 			final ReferenceBinding annotationType = annotation.getAnnotationType();
 			long metaTagBits = annotationType.getAnnotationTagBits();
 			if ((metaTagBits & TagBits.AnnotationForTypeUse) != 0) {
+				if (annotatingEnumerator) {
+					if ((metaTagBits & recipientTargetMask) == 0) {
+						scope.problemReporter().misplacedTypeAnnotations(annotations[i], annotations[i]);
+					}
+					continue;
+				}
 				if (firstSE8 == -1) firstSE8 = i;
-				lastSE8 = i;
 				if (se8Annotations == null) {
 					se8Annotations = new AnnotationBinding[] { annotation };
 					se8count = 1;
@@ -1099,10 +999,6 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 			}
 		}
 		if (se8Annotations != null) {
-			if (!isLegalLocation) {
-				scope.problemReporter().misplacedTypeAnnotations(annotations[firstSE8], annotations[lastSE8]);
-				return;
-			}
 			switch (recipient.kind()) {
 				case Binding.LOCAL:
 					LocalVariableBinding local = (LocalVariableBinding) recipient;
@@ -1163,7 +1059,12 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 		// for arrays: @T X[] SE7 associates @T to the type, but in SE8 it affects the leaf component type
 		long prevNullBits = existingType.leafComponentType().tagBits & TagBits.AnnotationNullMASK;
 		if (se8nullBits != 0 && prevNullBits != se8nullBits && ((prevNullBits | se8nullBits) == TagBits.AnnotationNullMASK)) {
-			scope.problemReporter().contradictoryNullAnnotations(se8NullAnnotation);
+			if (existingType instanceof TypeVariableBinding) {
+				// let type-use annotations override annotations on the type parameter declaration
+				existingType = existingType.withoutToplevelNullAnnotation();
+			} else {
+				scope.problemReporter().contradictoryNullAnnotations(se8NullAnnotation);
+			}
 		}
 		TypeBinding oldLeafType = (unionRef == null) ? existingType.leafComponentType() : unionRef.resolvedType;
 		AnnotationBinding [][] goodies = new AnnotationBinding[typeRef.getAnnotatableLevels()][];
@@ -1278,6 +1179,16 @@ public static void resolveDeprecatedAnnotations(BlockScope scope, Annotation[] a
 	}
 }
 
+	// ---- "default methods" for InvocationSite. Can we move to 1.8 and spare ourselves this ugliness please ?
+	public boolean checkingPotentialCompatibility() {
+		return false;
+	}
+	
+	public void acceptPotentiallyCompatibleMethods(MethodBinding [] methods) {
+		// Discard. Interested subclasses should override and grab these goodies. 
+	}
+	// --- "default methods" for InvocationSite
+	
 	public int sourceStart() {
 		return this.sourceStart;
 	}
@@ -1291,5 +1202,10 @@ public static void resolveDeprecatedAnnotations(BlockScope scope, Annotation[] a
 
 	public void traverse(ASTVisitor visitor, BlockScope scope) {
 		// do nothing by default
+	}
+	
+	public StringBuffer generateJavascript(Scope scope, Dependency depsManager, int indent,
+			StringBuffer output) {
+		return output;
 	}
 }

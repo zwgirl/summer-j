@@ -20,12 +20,10 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
-import org.summer.sdt.internal.compiler.lookup.MissingTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.ProblemFieldBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemIndexerBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
@@ -221,6 +219,8 @@ public class ArrayReference extends Reference {
 //			}
 			
 			this.resolvedType = arrayType;
+		} else {
+			return this.resolvedType;
 		}
 //		TypeBinding positionType = this.position.resolveTypeExpecting(scope, TypeBinding.INT);
 //		if (positionType != null) {
@@ -231,7 +231,7 @@ public class ArrayReference extends Reference {
 		
 		//cym 2014-11-24
 		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
-		IndexerBinding indexerBinding = this.binding = scope.getIndexer((ReferenceBinding) this.resolvedType, new TypeBinding[] {positionType}, null);
+		IndexerBinding indexerBinding = this.binding = scope.getIndexer((TypeBinding) this.resolvedType, new TypeBinding[] {positionType}, null);
 		if (!indexerBinding.isValidBinding()) {
 			this.constant = Constant.NotAConstant;
 			if (this.receiver.resolvedType instanceof ProblemReferenceBinding) {
@@ -276,9 +276,9 @@ public class ArrayReference extends Reference {
 		}
 		visitor.endVisit(this, scope);
 	}
-
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		this.receiver.generateExpression(scope, 0, output).append('[');
-		return this.position.generateExpression(scope, 0, output).append(']');
+	
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		this.receiver.doGenerateExpression(scope, dependency, 0, output).append('[');
+		return this.position.doGenerateExpression(scope, dependency, 0, output).append(']');
 	}
 }

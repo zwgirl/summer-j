@@ -12,8 +12,7 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class ImportReference extends ASTNode {
 
@@ -77,12 +76,5 @@ public class ImportReference extends ASTNode {
 		// annotations are traversed during the compilation unit traversal using a class scope
 		visitor.visit(this, scope);
 		visitor.endVisit(this, scope);
-	}
-
-	@Override
-	public StringBuffer generateJavascript(Scope scope, int indent,
-			StringBuffer output) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

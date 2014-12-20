@@ -67,17 +67,6 @@ public abstract class ASTVisitor {
 	public void endVisit(ArrayReference arrayReference, BlockScope scope) {
 		// do nothing by default
 	}
-	
-	//cym add
-	public void endVisit(FunctionType functionType, BlockScope scope) {
-		// do nothing by default
-	}
-	
-	//cym add
-	public void endVisit(FunctionType functionType, ClassScope scope) {
-		// do nothing by default
-	}
-	
 	public void endVisit(ArrayTypeReference arrayTypeReference, BlockScope scope) {
 		// do nothing by default
 	}
@@ -103,9 +92,6 @@ public abstract class ASTVisitor {
 		// do nothing by default
 	}
 	public void endVisit(CastExpression castExpression, BlockScope scope) {
-		// do nothing by default
-	}
-	public void endVisit(AsExpression asExpression, BlockScope scope) {
 		// do nothing by default
 	}
 	public void endVisit(CharLiteral charLiteral, BlockScope scope) {
@@ -192,11 +178,6 @@ public abstract class ASTVisitor {
 	}
 	public void endVisit(
     		InstanceOfExpression instanceOfExpression,
-    		BlockScope scope) {
-		// do nothing by default
-	}
-	public void endVisit(
-    		IsExpression isExpression,
     		BlockScope scope) {
 		// do nothing by default
 	}
@@ -526,7 +507,7 @@ public abstract class ASTVisitor {
 	}
 	
 	//XAML
-	public void endVisit(Element element, ClassScope scope) {
+	public void endVisit(XAMLElement element, ClassScope scope) {
 		// do nothing by default
 	}
 	
@@ -590,14 +571,6 @@ public abstract class ASTVisitor {
 		ClassScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
-	//cym add
-	public boolean visit(FunctionType functionType, BlockScope scope) {
-		return true; // do nothing by default, keep traversing
-	}
-	
-	public boolean visit(FunctionType functionType, ClassScope scope) {
-		return true; // do nothing by default, keep traversing
-	}
 	
 	public boolean visit(ArrayReference arrayReference, BlockScope scope) {
 		return true; // do nothing by default, keep traversing
@@ -627,9 +600,6 @@ public abstract class ASTVisitor {
 		return true; // do nothing by default, keep traversing
 	}
 	public boolean visit(CastExpression castExpression, BlockScope scope) {
-		return true; // do nothing by default, keep traversing
-	}
-	public boolean visit(AsExpression asExpression, BlockScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
 	public boolean visit(CharLiteral charLiteral, BlockScope scope) {
@@ -717,11 +687,6 @@ public abstract class ASTVisitor {
 	}
 	public boolean visit(
     		InstanceOfExpression instanceOfExpression,
-    		BlockScope scope) {
-		return true; // do nothing by default, keep traversing
-	}
-	public boolean visit(
-    		IsExpression instanceOfExpression,
     		BlockScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
@@ -1058,7 +1023,7 @@ public abstract class ASTVisitor {
 	}
 	
 	//XAML
-	public boolean visit(Element element, ClassScope scope) {
+	public boolean visit(XAMLElement element, ClassScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
 	

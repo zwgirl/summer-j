@@ -3141,26 +3141,27 @@ public class CodeFormatterVisitor extends ASTVisitor {
 		return false;
 	}
 
-	/**
-	 * @see org.summer.sdt.internal.compiler.ASTVisitor#visit(org.summer.sdt.internal.compiler.ast.AssertStatement, org.summer.sdt.internal.compiler.lookup.BlockScope)
-	 */
-	public boolean visit(AssertStatement assertStatement, BlockScope scope) {
-
-		this.scribe.printNextToken(TerminalTokens.TokenNameassert);
-		this.scribe.space();
-		assertStatement.assertExpression.traverse(this, scope);
-
-		if (assertStatement.exceptionArgument != null) {
-			this.scribe.printNextToken(TerminalTokens.TokenNameCOLON, this.preferences.insert_space_before_colon_in_assert);
-			if (this.preferences.insert_space_after_colon_in_assert) {
-				this.scribe.space();
-			}
-			assertStatement.exceptionArgument.traverse(this, scope);
-		}
-		this.scribe.printNextToken(TerminalTokens.TokenNameSEMICOLON, this.preferences.insert_space_before_semicolon);
-		this.scribe.printComment(CodeFormatter.K_UNKNOWN, Scribe.BASIC_TRAILING_COMMENT);
-		return false;
-	}
+	//cym 2014-12-17
+//	/**
+//	 * @see org.summer.sdt.internal.compiler.ASTVisitor#visit(org.summer.sdt.internal.compiler.ast.AssertStatement, org.summer.sdt.internal.compiler.lookup.BlockScope)
+//	 */
+//	public boolean visit(AssertStatement assertStatement, BlockScope scope) {
+//
+//		this.scribe.printNextToken(TerminalTokens.TokenNameassert);
+//		this.scribe.space();
+//		assertStatement.assertExpression.traverse(this, scope);
+//
+//		if (assertStatement.exceptionArgument != null) {
+//			this.scribe.printNextToken(TerminalTokens.TokenNameCOLON, this.preferences.insert_space_before_colon_in_assert);
+//			if (this.preferences.insert_space_after_colon_in_assert) {
+//				this.scribe.space();
+//			}
+//			assertStatement.exceptionArgument.traverse(this, scope);
+//		}
+//		this.scribe.printNextToken(TerminalTokens.TokenNameSEMICOLON, this.preferences.insert_space_before_semicolon);
+//		this.scribe.printComment(CodeFormatter.K_UNKNOWN, Scribe.BASIC_TRAILING_COMMENT);
+//		return false;
+//	}
 
 	/**
 	 * @see org.summer.sdt.internal.compiler.ASTVisitor#visit(org.summer.sdt.internal.compiler.ast.Assignment, org.summer.sdt.internal.compiler.lookup.BlockScope)

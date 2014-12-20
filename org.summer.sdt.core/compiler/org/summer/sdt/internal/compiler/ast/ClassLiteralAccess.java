@@ -12,18 +12,11 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class ClassLiteralAccess extends Expression {
 
@@ -97,8 +90,11 @@ public class ClassLiteralAccess extends Expression {
 		this.targetType = scope.environment().convertToRawType(this.targetType, true /* force conversion of enclosing types*/);
 
 		if (this.targetType.isArrayType()) {
-			ArrayBinding arrayBinding = (ArrayBinding) this.targetType;
-			TypeBinding leafComponentType = arrayBinding.leafComponentType;
+//cym 2014-12-18
+//			ArrayBinding arrayBinding = (ArrayBinding) this.targetType;
+//			TypeBinding leafComponentType = arrayBinding.leafComponentType;
+			ParameterizedTypeBinding arrayBinding = (ParameterizedTypeBinding) this.targetType;
+			TypeBinding leafComponentType = arrayBinding.leafComponentType();
 			if (leafComponentType == TypeBinding.VOID) {
 				scope.problemReporter().cannotAllocateVoidArray(this);
 				return null;
@@ -134,9 +130,15 @@ public class ClassLiteralAccess extends Expression {
 		}
 		visitor.endVisit(this, blockScope);
 	}
-	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 
-		return this.type.generateJavascript(scope, 0, output).append(".class"); //$NON-NLS-1$
+	@Override
+	public StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent,
+			StringBuffer output) {
+		if(this.targetType == null){
+			return output;
+		}
+		
+		output.append(this.targetType.sourceName()).append(".__class");
+		return output;
 	}
 }

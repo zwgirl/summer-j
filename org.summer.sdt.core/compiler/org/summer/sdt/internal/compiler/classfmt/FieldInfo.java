@@ -17,16 +17,7 @@ import org.summer.sdt.internal.compiler.codegen.AttributeNamesConstants;
 import org.summer.sdt.internal.compiler.env.IBinaryAnnotation;
 import org.summer.sdt.internal.compiler.env.IBinaryField;
 import org.summer.sdt.internal.compiler.env.IBinaryTypeAnnotation;
-import org.summer.sdt.internal.compiler.impl.BooleanConstant;
-import org.summer.sdt.internal.compiler.impl.ByteConstant;
-import org.summer.sdt.internal.compiler.impl.CharConstant;
-import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.impl.DoubleConstant;
-import org.summer.sdt.internal.compiler.impl.FloatConstant;
-import org.summer.sdt.internal.compiler.impl.IntConstant;
-import org.summer.sdt.internal.compiler.impl.LongConstant;
-import org.summer.sdt.internal.compiler.impl.ShortConstant;
-import org.summer.sdt.internal.compiler.impl.StringConstant;
+import org.summer.sdt.internal.compiler.impl.*;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.util.Util;
 
@@ -41,6 +32,10 @@ public class FieldInfo extends ClassFileStruct implements IBinaryField, Comparab
 	protected int signatureUtf8Offset;
 	protected long tagBits;
 	protected Object wrappedConstantValue;
+	
+	//cym 2014-12-04 for indexer parameters
+	static private final char[][] noParameters = CharOperation.NO_CHAR_CHAR;
+	protected char[][] parameters = noParameters;
 
 	public static FieldInfo createField(byte classFileBytes[], int offsets[], int offset) {
 		FieldInfo fieldInfo = new FieldInfo(classFileBytes, offsets, offset);
@@ -59,6 +54,28 @@ public class FieldInfo extends ClassFileStruct implements IBinaryField, Comparab
 						if (CharOperation.equals(AttributeNamesConstants.SignatureName, attributeName))
 							fieldInfo.signatureUtf8Offset = fieldInfo.constantPoolOffsets[fieldInfo.u2At(readOffset + 6)] - fieldInfo.structOffset;
 						break;
+					case 'E' :  //Exceptions  cym 2014-12-04
+						if (CharOperation.equals(attributeName, AttributeNamesConstants.ExceptionsName)) {
+							// read the number of exception entries
+							int entriesNumber = fieldInfo.u2At(readOffset + 6);
+							// place the readOffset at the beginning of the exceptions table
+							int pos = readOffset + 8;
+							if (entriesNumber == 0) {
+								fieldInfo.parameters = noParameters;
+							} else {
+								fieldInfo.parameters = new char[entriesNumber][];
+								for (int j = 0; j < entriesNumber; j++) {
+									utf8Offset =
+											fieldInfo.constantPoolOffsets[fieldInfo.u2At(
+													fieldInfo.constantPoolOffsets[fieldInfo.u2At(pos)] - fieldInfo.structOffset + 1)]
+											- fieldInfo.structOffset;
+									fieldInfo.parameters[j] = fieldInfo.utf8At(utf8Offset + 3, fieldInfo.u2At(utf8Offset + 1));
+									pos += 2;
+								}
+							}
+						}
+						break;
+						
 					case 'R' :
 						AnnotationInfo[] decodedAnnotations = null;
 						TypeAnnotationInfo[] decodedTypeAnnotations = null;
@@ -438,5 +455,10 @@ public class FieldInfo extends ClassFileStruct implements IBinaryField, Comparab
 			.append(getConstant())
 			.append('}')
 			.toString();
+	}
+	
+	//cym 2014-12-05
+	public char[][] getParameters() {
+		return this.parameters;
 	}
 }

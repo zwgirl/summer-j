@@ -20,6 +20,9 @@
  *								Bug 425460 - [1.8] [inference] Type not inferred on stream.toArray
  *								Bug 426792 - [1.8][inference][impl] generify new type inference engine
  *								Bug 428019 - [1.8][compiler] Type inference failure with nested generic invocation.
+ *								Bug 438458 - [1.8][null] clean up handling of null type annotations wrt type variables
+ *								Bug 440759 - [1.8][null] @NonNullByDefault should never affect wildcards and uses of a type variable
+ *								Bug 441693 - [1.8][null] Bogus warning for type argument annotated with @NonNull
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.lookup;
 
@@ -98,21 +101,22 @@ public final class ArrayBinding extends TypeBinding {
 		if ((this.tagBits & TagBits.HasTypeVariable) == 0) return;
 		if (actualType == TypeBinding.NULL || actualType.kind() == POLY_TYPE) return;
 	
-		switch(actualType.kind()) {
-			case Binding.ARRAY_TYPE :
-		        int actualDim = actualType.dimensions();
-		        if (actualDim == this.dimensions) {
-				    this.leafComponentType.collectSubstitutes(scope, actualType.leafComponentType(), inferenceContext, constraint);
-		        } else if (actualDim > this.dimensions) {
-		            ArrayBinding actualReducedType = this.environment.createArrayType(actualType.leafComponentType(), actualDim - this.dimensions);
-		            this.leafComponentType.collectSubstitutes(scope, actualReducedType, inferenceContext, constraint);
-		        }
-				break;
-			case Binding.TYPE_PARAMETER :
-				//TypeVariableBinding variable = (TypeVariableBinding) otherType;
-				// TODO (philippe) should consider array bounds, and recurse
-				break;
-		}
+		//cym 2014-12-18
+//		switch(actualType.kind()) {
+//			case Binding.ARRAY_TYPE :
+//		        int actualDim = actualType.dimensions();
+//		        if (actualDim == this.dimensions) {
+//				    this.leafComponentType.collectSubstitutes(scope, actualType.leafComponentType(), inferenceContext, constraint);
+//		        } else if (actualDim > this.dimensions) {
+//		            ArrayBinding actualReducedType = this.environment.createArrayType(actualType.leafComponentType(), actualDim - this.dimensions);
+//		            this.leafComponentType.collectSubstitutes(scope, actualReducedType, inferenceContext, constraint);
+//		        }
+//				break;
+//			case Binding.TYPE_PARAMETER :
+//				//TypeVariableBinding variable = (TypeVariableBinding) otherType;
+//				// TODO (philippe) should consider array bounds, and recurse
+//				break;
+//		}
 	}
 	
 	@Override
@@ -441,7 +445,14 @@ public final class ArrayBinding extends TypeBinding {
 			/* Leaf component type is the key in the type system. If it undergoes change, the array has to be rehashed.
 			   We achieve by creating a fresh array with the new component type and equating this array's id with that.
 			   This means this array can still be found under the old key, but that is harmless (since the component type
-			   is always consulted (see TypeSystem.getArrayType())
+			   is always consulted (see TypeSystem.getArrayType()). 
+			   
+			   This also means that this array type is not a fully interned singleton: There is `this' object and there is 
+			   the array that is being created down below that gets cached by the type system and doled out for all further 
+			   array creations against the same (raw) component type, dimensions and annotations. This again is harmless, 
+			   since TypeBinding.id is consulted for (in)equality checks. 
+			   
+			   See https://bugs.eclipse.org/bugs/show_bug.cgi?id=430425 for details and a test case.
 			*/ 
 			if (this.leafComponentType != resolvedType) //$IDENTITY-COMPARISON$
 				this.id = env.createArrayType(this.leafComponentType, this.dimensions, this.typeAnnotations).id;
@@ -455,11 +466,21 @@ public final class ArrayBinding extends TypeBinding {
 		return this.hasTypeAnnotations() ? this.environment.getUnannotatedType(this) : this;
 	}
 	@Override
+	public TypeBinding withoutToplevelNullAnnotation() {
+		if (!hasNullTypeAnnotations())
+			return this;
+		AnnotationBinding[] newAnnotations = this.environment.filterNullTypeAnnotations(this.typeAnnotations);
+		return this.environment.createArrayType(this.leafComponentType, this.dimensions, newAnnotations);
+	}
+	@Override
 	public TypeBinding uncapture(Scope scope) {
 		if ((this.tagBits & TagBits.HasCapturedWildcard) == 0)
 			return this;
 		TypeBinding leafType = this.leafComponentType.uncapture(scope);
 		return scope.environment().createArrayType(leafType, this.dimensions, this.typeAnnotations);
 	}
-
+	@Override
+	public boolean acceptsNonNullDefault() {
+		return true;
+	}
 }

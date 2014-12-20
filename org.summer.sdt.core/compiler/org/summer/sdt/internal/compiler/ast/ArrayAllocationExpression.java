@@ -23,16 +23,11 @@ import java.util.List;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ast.TypeReference.AnnotationCollector;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.impl.*;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 @SuppressWarnings({"rawtypes"})
 public class ArrayAllocationExpression extends Expression {
@@ -84,7 +79,9 @@ public class ArrayAllocationExpression extends Expression {
 		// array allocation
 		if (explicitDimCount == 1) {
 			// Mono-dimensional array
-			codeStream.newArray(this.type, this, (ArrayBinding)this.resolvedType);
+			//cym 2014-12-06
+//			codeStream.newArray(this.type, this, (ArrayBinding)this.resolvedType);
+			codeStream.new_(this.type, (ParameterizedTypeBinding)this.resolvedType);
 		} else {
 			// Multi-dimensional array
 			codeStream.multianewarray(this.type, this.resolvedType, explicitDimCount, this);
@@ -183,23 +180,26 @@ public class ArrayAllocationExpression extends Expression {
 			}
 			this.resolvedType = scope.createArrayType(referenceType, this.dimensions.length);
 
-			if (this.annotationsOnDimensions != null) {
-				this.resolvedType = resolveAnnotations(scope, this.annotationsOnDimensions, this.resolvedType);
-				long[] nullTagBitsPerDimension = ((ArrayBinding)this.resolvedType).nullTagBitsPerDimension;
-				if (nullTagBitsPerDimension != null) {
-					for (int i = 0; i < this.annotationsOnDimensions.length; i++) {
-						if ((nullTagBitsPerDimension[i] & TagBits.AnnotationNullMASK) == TagBits.AnnotationNullMASK) {
-							scope.problemReporter().contradictoryNullAnnotations(this.annotationsOnDimensions[i]);
-							nullTagBitsPerDimension[i] = 0;
-						}
-					}
-				}
-			}
+			//cym 2014-12-18
+//			if (this.annotationsOnDimensions != null) {
+//				this.resolvedType = resolveAnnotations(scope, this.annotationsOnDimensions, this.resolvedType);
+//				long[] nullTagBitsPerDimension = ((ArrayBinding)this.resolvedType).nullTagBitsPerDimension;
+//				if (nullTagBitsPerDimension != null) {
+//					for (int i = 0; i < this.annotationsOnDimensions.length; i++) {
+//						if ((nullTagBitsPerDimension[i] & TagBits.AnnotationNullMASK) == TagBits.AnnotationNullMASK) {
+//							scope.problemReporter().contradictoryNullAnnotations(this.annotationsOnDimensions[i]);
+//							nullTagBitsPerDimension[i] = 0;
+//						}
+//					}
+//				}
+//			}
 
 			// check the initializer
 			if (this.initializer != null) {
 				if ((this.initializer.resolveTypeExpecting(scope, this.resolvedType)) != null)
-					this.initializer.binding = (ArrayBinding)this.resolvedType;
+					//cym 2014-12-18
+//					this.initializer.binding = (ArrayBinding)this.resolvedType;
+					this.initializer.binding = (ParameterizedTypeBinding) this.resolvedType;
 			}
 			if ((referenceType.tagBits & TagBits.HasMissingType) != 0) {
 				return null;
@@ -247,42 +247,25 @@ public class ArrayAllocationExpression extends Expression {
 		return this.annotationsOnDimensions;
 	}
 
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-//		this.type.print(0, output);
-//		for (int i = 0; i < this.dimensions.length; i++) {
-//			if (this.annotationsOnDimensions != null && this.annotationsOnDimensions[i] != null) {
-//				output.append(Javascript.WHITESPACE);
-////				printAnnotations(this.annotationsOnDimensions[i], output);
-//				output.append(' ');
-//			}
-//			if (this.dimensions[i] == null)
-//				output.append("[]"); //$NON-NLS-1$
-//			else {
-//				output.append('[');
-//				this.dimensions[i].generateExpression(scope, 0, output);
-//				output.append(']');
-//			}
-//		}
-//		if (this.initializer != null) this.initializer.generateExpression(scope, 0, output);
-//		return output;
-		
-		if (this.initializer != null) return this.initializer.generateExpression(scope, 0, output);
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+
+		if (this.initializer != null) return this.initializer.generateExpression(scope, dependency, 0, output);
 		
 		if(this.dimensions.length == 1){
 			output.append("new Array(");
-			this.dimensions[0].generateExpression(scope, 0, output);
+			this.dimensions[0].generateExpression(scope, dependency, 0, output);
 			output.append(")");
 			return output;
 		}
-		generateArray(scope, indent, output, 0);
+		generateArray(scope, dependency, indent, output, 0);
 		return output;
 	}
 	
-	private void  generateArray(Scope scope, int indent, StringBuffer output, int currentDim){
+	private void  generateArray(Scope scope, Dependency dependency, int indent, StringBuffer output, int currentDim){
 		if(currentDim + 1 == this.dimensions.length){
 			if(this.dimensions[currentDim] != null){
 				output.append("new Array(");
-				this.dimensions[currentDim].generateExpression(scope, 0, output);
+				this.dimensions[currentDim].doGenerateExpression(scope, dependency, 0, output);
 				output.append(");");
 			} else {
 				output.append("new Array();");
@@ -294,21 +277,21 @@ public class ArrayAllocationExpression extends Expression {
 		output.append("(function(){").append('\n');
 		printIndent(indent + 1, output);
 		output.append("var result = new Array(");
-		this.dimensions[currentDim].generateExpression(scope, 0, output);
+		this.dimensions[currentDim].doGenerateExpression(scope, dependency, 0, output);
 		output.append(");");
 		
 		output.append('\n');
 		printIndent(indent + 1, output);
 		
 		output.append("for(var i = 0; i < ");
-		this.dimensions[currentDim].generateExpression(scope, 0, output);
+		this.dimensions[currentDim].doGenerateExpression(scope, dependency, 0, output);
 		output.append("; i++) {");
 		
 		output.append('\n');
 		printIndent(indent + 2, output);
 		
 		output.append("result[i] = ");
-		generateArray(scope, indent + 2, output, currentDim + 1);
+		generateArray(scope, dependency, indent + 2, output, currentDim + 1);
 		output.append(";");
 
 		output.append('\n');

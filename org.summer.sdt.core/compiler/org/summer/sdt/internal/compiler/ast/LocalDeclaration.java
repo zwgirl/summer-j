@@ -40,19 +40,11 @@ import java.util.List;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ast.TypeReference.AnnotationCollector;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
-import org.summer.sdt.internal.compiler.lookup.Binding;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.impl.*;
+import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.parser.RecoveryScanner;
 
 @SuppressWarnings("rawtypes")
 public class LocalDeclaration extends AbstractVariableDeclaration {
@@ -70,54 +62,54 @@ public class LocalDeclaration extends AbstractVariableDeclaration {
 		this.declarationEnd = sourceEnd;
 	}
 
-	public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext, FlowInfo flowInfo) {
-		// record variable initialization if any
-		if ((flowInfo.tagBits & FlowInfo.UNREACHABLE_OR_DEAD) == 0) {
-			this.bits |= ASTNode.IsLocalDeclarationReachable; // only set if actually reached
-		}
-		if (this.initialization == null) {
-			return flowInfo;
-		}
-		this.initialization.checkNPEbyUnboxing(currentScope, flowContext, flowInfo);
-		
-		FlowInfo preInitInfo = null;
-		boolean shouldAnalyseResource = this.binding != null 
-				&& flowInfo.reachMode() == FlowInfo.REACHABLE
-				&& currentScope.compilerOptions().analyseResourceLeaks
-				&& FakedTrackingVariable.isAnyCloseable(this.initialization.resolvedType);
-		if (shouldAnalyseResource) {
-			preInitInfo = flowInfo.unconditionalCopy();
-			// analysis of resource leaks needs additional context while analyzing the RHS:
-			FakedTrackingVariable.preConnectTrackerAcrossAssignment(this, this.binding, this.initialization, flowInfo);
-		}
-	
-		flowInfo =
-			this.initialization
-				.analyseCode(currentScope, flowContext, flowInfo)
-				.unconditionalInits();
-	
-		if (shouldAnalyseResource)
-			FakedTrackingVariable.handleResourceAssignment(currentScope, preInitInfo, flowInfo, flowContext, this, this.initialization, this.binding);
-		else
-			FakedTrackingVariable.cleanUpAfterAssignment(currentScope, Binding.LOCAL, this.initialization);
-	
-		int nullStatus = this.initialization.nullStatus(flowInfo, flowContext);
-		if (!flowInfo.isDefinitelyAssigned(this.binding)){// for local variable debug attributes
-			this.bits |= FirstAssignmentToLocal;
-		} else {
-			this.bits &= ~FirstAssignmentToLocal;  // int i = (i = 0);
-		}
-		flowInfo.markAsDefinitelyAssigned(this.binding);
-		if (currentScope.compilerOptions().isAnnotationBasedNullAnalysisEnabled) {
-			nullStatus = NullAnnotationMatching.checkAssignment(currentScope, flowContext, this.binding, nullStatus, this.initialization, this.initialization.resolvedType);
-		}
-		if ((this.binding.type.tagBits & TagBits.IsBaseType) == 0) {
-			flowInfo.markNullStatus(this.binding, nullStatus);
-			// no need to inform enclosing try block since its locals won't get
-			// known by the finally block
-		}
+public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext, FlowInfo flowInfo) {
+	// record variable initialization if any
+	if ((flowInfo.tagBits & FlowInfo.UNREACHABLE_OR_DEAD) == 0) {
+		this.bits |= ASTNode.IsLocalDeclarationReachable; // only set if actually reached
+	}
+	if (this.initialization == null) {
 		return flowInfo;
 	}
+	this.initialization.checkNPEbyUnboxing(currentScope, flowContext, flowInfo);
+	
+	FlowInfo preInitInfo = null;
+	boolean shouldAnalyseResource = this.binding != null 
+			&& flowInfo.reachMode() == FlowInfo.REACHABLE
+			&& currentScope.compilerOptions().analyseResourceLeaks
+			&& FakedTrackingVariable.isAnyCloseable(this.initialization.resolvedType);
+	if (shouldAnalyseResource) {
+		preInitInfo = flowInfo.unconditionalCopy();
+		// analysis of resource leaks needs additional context while analyzing the RHS:
+		FakedTrackingVariable.preConnectTrackerAcrossAssignment(this, this.binding, this.initialization, flowInfo);
+	}
+
+	flowInfo =
+		this.initialization
+			.analyseCode(currentScope, flowContext, flowInfo)
+			.unconditionalInits();
+
+	if (shouldAnalyseResource)
+		FakedTrackingVariable.handleResourceAssignment(currentScope, preInitInfo, flowInfo, flowContext, this, this.initialization, this.binding);
+	else
+		FakedTrackingVariable.cleanUpAfterAssignment(currentScope, Binding.LOCAL, this.initialization);
+
+	int nullStatus = this.initialization.nullStatus(flowInfo, flowContext);
+	if (!flowInfo.isDefinitelyAssigned(this.binding)){// for local variable debug attributes
+		this.bits |= FirstAssignmentToLocal;
+	} else {
+		this.bits &= ~FirstAssignmentToLocal;  // int i = (i = 0);
+	}
+	flowInfo.markAsDefinitelyAssigned(this.binding);
+	if (currentScope.compilerOptions().isAnnotationBasedNullAnalysisEnabled) {
+		nullStatus = NullAnnotationMatching.checkAssignment(currentScope, flowContext, this.binding, nullStatus, this.initialization, this.initialization.resolvedType);
+	}
+	if ((this.binding.type.tagBits & TagBits.IsBaseType) == 0) {
+		flowInfo.markNullStatus(this.binding, nullStatus);
+		// no need to inform enclosing try block since its locals won't get
+		// known by the finally block
+	}
+	return flowInfo;
+}
 
 	public void checkModifiers() {
 
@@ -212,7 +204,12 @@ public class LocalDeclaration extends AbstractVariableDeclaration {
 				scope.problemReporter().variableTypeCannotBeVoid(this);
 				return;
 			}
-			if (variableType.isArrayType() && ((ArrayBinding) variableType).leafComponentType == TypeBinding.VOID) {
+//			if (variableType.isArrayType() && ((ArrayBinding) variableType).leafComponentType == TypeBinding.VOID) {
+//				scope.problemReporter().variableTypeCannotBeVoidArray(this);
+//				return;
+//			}
+			//cym 2014-12-18
+			if (variableType.isArrayType() && variableType.leafComponentType() == TypeBinding.VOID) {
 				scope.problemReporter().variableTypeCannotBeVoidArray(this);
 				return;
 			}
@@ -250,7 +247,9 @@ public class LocalDeclaration extends AbstractVariableDeclaration {
 			if (this.initialization instanceof ArrayInitializer) {
 				TypeBinding initializationType = this.initialization.resolveTypeExpecting(scope, variableType);
 				if (initializationType != null) {
-					((ArrayInitializer) this.initialization).binding = (ArrayBinding) initializationType;
+					//cym 2014-12-18
+//					((ArrayInitializer) this.initialization).binding = (ArrayBinding) initializationType;
+					((ArrayInitializer) this.initialization).binding = (ParameterizedTypeBinding) initializationType;
 					this.initialization.computeConversion(scope, variableType, initializationType);
 				}
 			} else {
@@ -330,17 +329,8 @@ public class LocalDeclaration extends AbstractVariableDeclaration {
 		visitor.endVisit(this, scope);
 	}
 
-//	@Override
-//	public void generateJavascript(Scope scope, int indent, StringBuffer buffer) {
-//		buffer.append(Javascript.VAR).append(Javascript.WHITESPACE);
-//		
-//		buffer.append(this.name);
-//		
-//		if(this.initialization != null){
-//			buffer.append(Javascript.WHITESPACE).append(Javascript.EQUAL).append(Javascript.WHITESPACE);
-//			this.initialization.generateJavascript(scope, indent, buffer);
-//		}
-//		buffer.append(Javascript.SEMICOLON);
-//	}
-
+	public boolean isRecoveredFromLoneIdentifier() { // recovered from lonely identifier or identifier cluster ?
+		return this.name == RecoveryScanner.FAKE_IDENTIFIER && 
+				(this.type instanceof SingleTypeReference || (this.type instanceof QualifiedTypeReference && !(this.type instanceof ArrayQualifiedTypeReference))) && this.initialization == null && !this.type.isBaseTypeReference();
+	}
 }

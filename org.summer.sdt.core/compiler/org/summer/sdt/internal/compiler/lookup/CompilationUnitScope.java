@@ -18,6 +18,7 @@ import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.AccessRestriction;
+import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.problem.ProblemReporter;
 import org.summer.sdt.internal.compiler.util.*;
 
@@ -153,7 +154,9 @@ public class CompilationUnitScope extends Scope {
 				problemReporter().typeCollidesWithPackage(this.referenceContext, typeDecl);
 			}
 	
-			if ((typeDecl.modifiers & ClassFileConstants.AccPublic) != 0) {
+			//cym 2014-12-13
+			if ((typeDecl.modifiers & ClassFileConstants.AccPublic) != 0 
+					&& this.referenceContext.currentPackage != null && (this.referenceContext.currentPackage.modifiers & ClassFileConstants.AccModule) == 0) {
 				char[] mainTypeName;
 				if ((mainTypeName = this.referenceContext.getMainTypeName()) != null // mainTypeName == null means that implementor of ICompilationUnit decided to return null
 						&& !CharOperation.equals(mainTypeName, typeDecl.name)) {
@@ -161,11 +164,48 @@ public class CompilationUnitScope extends Scope {
 					// tolerate faulty main type name (91091), allow to proceed into type construction
 				}
 			}
-	
-			ClassScope child = new ClassScope(this, typeDecl);
+			
+//			if ((typeDecl.modifiers & ClassFileConstants.AccPublic) != 0 ) {
+//				char[] mainTypeName;
+//				if ((mainTypeName = this.referenceContext.getMainTypeName()) != null // mainTypeName == null means that implementor of ICompilationUnit decided to return null
+//						&& !CharOperation.equals(mainTypeName, typeDecl.name)) {
+//					problemReporter().publicClassMustMatchFileName(this.referenceContext, typeDecl);
+//					// tolerate faulty main type name (91091), allow to proceed into type construction
+//				}
+//			}
+//			ClassScope child = new ClassScope(this, typeDecl);
+//			SourceTypeBinding type = child.buildType(null, this.fPackage, accessRestriction);
+//			if (firstIsSynthetic && i == 0)
+//				type.modifiers |= ClassFileConstants.AccSynthetic;
+//			if (type != null)
+//				this.topLevelTypes[count++] = type;
+			
+			//cym 2014-12-11
+			Scope parent = this;
+//			if(this.referenceContext.currentPackage != null &&
+//					typeDecl.name.length == 5 && typeDecl.name[0] == 'W' && CharOperation.equals(TypeConstants.WINDOW, typeDecl.name)
+//					&& CharOperation.equals(TypeConstants.JAVA_LANG_WINDOW, this.referenceContext.currentPackage.tokens)){
+//			} else {
+//				GlobalScope global = new GlobalScope(this);
+//				parent = new WindowScope(global);
+//			}
+			
+			ClassScope child = new ClassScope(parent, typeDecl);
 			SourceTypeBinding type = child.buildType(null, this.fPackage, accessRestriction);
 			if (firstIsSynthetic && i == 0)
 				type.modifiers |= ClassFileConstants.AccSynthetic;
+			//cym 2014-12-13
+			if(this.referenceContext.currentPackage != null && (this.referenceContext.currentPackage.modifiers & ClassFileConstants.AccModule) != 0){
+				if((this.referenceContext.currentPackage.modifiers & ClassFileConstants.AccNative) != 0){
+					type.modifiers |= ClassFileConstants.AccModuleMerge;
+				}
+				type.modifiers |= ClassFileConstants.AccModule;
+			}
+			//cym 2014-12-13
+			if((type.modifiers & ClassFileConstants.AccNative) != 0){
+				type.modifiers |= ClassFileConstants.AccCompleteNative;
+			}
+			
 			if (type != null)
 				this.topLevelTypes[count++] = type;
 		}
@@ -317,13 +357,8 @@ public class CompilationUnitScope extends Scope {
 	}
 	
 	void connectTypeHierarchy() {
-		this.connectingHierarchy = true;
-		try {
-			for (int i = 0, length = this.topLevelTypes.length; i < length; i++)
-				this.topLevelTypes[i].scope.connectTypeHierarchy();
-		} finally {
-			this.connectingHierarchy = false;
-		}
+		for (int i = 0, length = this.topLevelTypes.length; i < length; i++)
+			this.topLevelTypes[i].scope.connectTypeHierarchy();
 	}
 	void faultInImports() {
 		boolean unresolvedFound = false;
@@ -800,15 +835,22 @@ public class CompilationUnitScope extends Scope {
 		return "--- CompilationUnit Scope : " + new String(this.referenceContext.getFileName()); //$NON-NLS-1$
 	}
 	private ReferenceBinding typeToRecord(TypeBinding type) {
+		TypeBinding old = type;
+//		System.out.println(old);
+		if (type == null)
+			return null;
+		//cym 2014-12-18
+//		while (type.isArrayType())
+//			type = ((ArrayBinding) type).leafComponentType();
 		while (type.isArrayType())
-			type = ((ArrayBinding) type).leafComponentType();
-	
+			type = type.leafComponentType();
+		
 		switch (type.kind()) {
 			case Binding.BASE_TYPE :
 			case Binding.TYPE_PARAMETER :
 			case Binding.WILDCARD_TYPE :
 			case Binding.INTERSECTION_TYPE :
-			case Binding.INTERSECTION_CAST_TYPE: // constituents would have been recorded.
+			case Binding.INTERSECTION_TYPE18: // constituents would have been recorded.
 			case Binding.POLY_TYPE: // not a real type, will mutate into one, hopefully soon.
 				return null;
 			case Binding.PARAMETERIZED_TYPE :

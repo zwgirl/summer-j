@@ -15,12 +15,12 @@ import java.util.List;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.compiler.InvalidInputException;
+import org.summer.sdt.internal.codeassist.CompletionEngine;
 import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.parser.JavadocParser;
 import org.summer.sdt.internal.compiler.parser.ScannerHelper;
 import org.summer.sdt.internal.compiler.parser.TerminalTokens;
-import org.summer.sdt.internal.codeassist.CompletionEngine;
 
 /**
  * Parser specialized for decoding javadoc comments which includes cursor location for code completion.

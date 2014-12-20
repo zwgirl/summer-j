@@ -249,7 +249,6 @@ public class CompilationUnitStructureRequestor extends ReferenceInfoAdapter impl
 	protected PackageDeclaration createPackageDeclaration(JavaElement parent, String name) {
 		return new PackageDeclaration((CompilationUnit) parent, name);
 	}
-	
 	protected SourceType createTypeHandle(JavaElement parent, TypeInfo typeInfo) {
 		String nameString= new String(typeInfo.name);
 		return new SourceType(parent, nameString);

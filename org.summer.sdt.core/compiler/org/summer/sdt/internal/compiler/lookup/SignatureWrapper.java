@@ -95,3 +95,4 @@ public class SignatureWrapper {
 		return new String(this.signature) + " @ " + this.start; //$NON-NLS-1$
 	}
 }
+ 

@@ -19,6 +19,9 @@
  *                          Bug 409236 - [1.8][compiler] Type annotations on intersection cast types dropped by code generator
  *                          Bug 409250 - [1.8][compiler] Various loose ends in 308 code generation
  *                          Bug 405104 - [1.8][compiler][codegen] Implement support for serializeable lambdas
+ *                          Bug 449467 - [1.8][compiler] Invalid lambda deserialization with anonymous class
+ *        Olivier Tardieu (tardieu@us.ibm.com) - Contributions for
+ *                          Bug 442418 - $deserializeLambda$ off-by-one error when deserializing the captured arguments of a lambda that also capture this
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.codegen;
 
@@ -48,26 +51,7 @@ import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
-import org.summer.sdt.internal.compiler.lookup.Binding;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.IntersectionCastTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.NestedTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.SyntheticArgumentBinding;
-import org.summer.sdt.internal.compiler.lookup.SyntheticMethodBinding;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeConstants;
-import org.summer.sdt.internal.compiler.lookup.TypeIds;
-import org.summer.sdt.internal.compiler.lookup.VariableBinding;
+import org.summer.sdt.internal.compiler.lookup.*;
 import org.summer.sdt.internal.compiler.problem.AbortMethod;
 import org.summer.sdt.internal.compiler.util.Util;
 
@@ -1894,7 +1878,7 @@ public class CodeStream {
 		invokeClassForName();
 		int paramLength = methodBinding.parameters.length;
 		this.generateInlinedValue(paramLength);
-		newArray(scope.createArrayType(scope.getType(TypeConstants.JAVA_LANG_CLASS, 3), 1));
+	//	newArray(scope.createArrayType(scope.getType(TypeConstants.JAVA_LANG_CLASS, 3), 1));  //cym comment 2014-12-03
 		if (paramLength > 0) {
 			dup();
 			for (int i = 0; i < paramLength; i++) {
@@ -1950,7 +1934,7 @@ public class CodeStream {
 		this.ldc(String.valueOf(methodBinding.selector));
 		int paramLength = methodBinding.parameters.length;
 		this.generateInlinedValue(paramLength);
-		newArray(scope.createArrayType(scope.getType(TypeConstants.JAVA_LANG_CLASS, 3), 1));
+	//	newArray(scope.createArrayType(scope.getType(TypeConstants.JAVA_LANG_CLASS, 3), 1));  //cym comment 2014-12-03
 		if (paramLength > 0) {
 			dup();
 			for (int i = 0; i < paramLength; i++) {
@@ -2670,8 +2654,8 @@ public class CodeStream {
 					ConstantPool.GetFunctionalInterfaceClass, ConstantPool.GetFunctionalInterfaceClassSignature);
 			String functionalInterface = null;
 			final TypeBinding expectedType = lambdaEx.expectedType();
-			if (expectedType instanceof IntersectionCastTypeBinding) {
-				functionalInterface = new String(((IntersectionCastTypeBinding)expectedType).getSAMType(scope).constantPoolName());
+			if (expectedType instanceof IntersectionTypeBinding18) {
+				functionalInterface = new String(((IntersectionTypeBinding18)expectedType).getSAMType(scope).constantPoolName());
 			} else {
 				functionalInterface = new String(expectedType.constantPoolName());
 			}
@@ -2699,7 +2683,7 @@ public class CodeStream {
 			aload_0();
 			invoke(Opcodes.OPC_invokevirtual, 1, 1, ConstantPool.JavaLangInvokeSerializedLambdaConstantPoolName, 
 					ConstantPool.GetImplClass, ConstantPool.GetImplClassSignature);
-			ldc(new String(CharOperation.concatWith(mb.declaringClass.compoundName,'/'))); // e.g. "com/foo/X"
+			ldc(new String(mb.declaringClass.constantPoolName())); // e.g. "com/foo/X"
 			invokeObjectEquals();
 			ifeq(errorLabel);
 	
@@ -2726,7 +2710,7 @@ public class CodeStream {
 			SyntheticArgumentBinding[] outerLocalVariables = lambdaEx.outerLocalVariables;
 			for (int p=0,max=outerLocalVariables.length;p<max;p++) {
 				aload_0();
-				loadInt(p);
+				loadInt(index);
 				invoke(Opcodes.OPC_invokevirtual, 1, 1, ConstantPool.JavaLangInvokeSerializedLambdaConstantPoolName, 
 						ConstantPool.GetCapturedArg, ConstantPool.GetCapturedArgSignature);
 				TypeBinding varType = outerLocalVariables[p].type;
@@ -2743,8 +2727,8 @@ public class CodeStream {
 				sig.append(varType.signature());
 			}
 			sig.append(")"); //$NON-NLS-1$
-			if (lambdaEx.resolvedType instanceof IntersectionCastTypeBinding) {
-				sig.append(((IntersectionCastTypeBinding)lambdaEx.resolvedType).getSAMType(scope).signature());
+			if (lambdaEx.resolvedType instanceof IntersectionTypeBinding18) {
+				sig.append(((IntersectionTypeBinding18)lambdaEx.resolvedType).getSAMType(scope).signature());
 			} else {
 				sig.append(lambdaEx.resolvedType.signature());
 			}
@@ -2819,7 +2803,7 @@ public class CodeStream {
 		arraylength();
 		dup();
 		istore_1();
-		newArray((ArrayBinding) enumArray);
+//		newArray((ArrayBinding) enumArray);   //cym 2014-12-18
 		dup();
 		astore_2();
 		iconst_0();
@@ -3011,54 +2995,55 @@ public class CodeStream {
 		}
 	}
 	
+	//cym comment 2014-12-03
 	public void generateSyntheticBodyForSwitchTable(SyntheticMethodBinding methodBinding) {
-		ClassScope scope = ((SourceTypeBinding)methodBinding.declaringClass).scope;
-		initializeMaxLocals(methodBinding);
-		final BranchLabel nullLabel = new BranchLabel(this);
-		FieldBinding syntheticFieldBinding = methodBinding.targetReadField;
-		fieldAccess(Opcodes.OPC_getstatic, syntheticFieldBinding, null /* default declaringClass */);
-		dup();
-		ifnull(nullLabel);
-		areturn();
-		pushOnStack(syntheticFieldBinding.type);
-		nullLabel.place();
-		pop();
-		ReferenceBinding enumBinding = (ReferenceBinding) methodBinding.targetEnumType;
-		ArrayBinding arrayBinding = scope.createArrayType(enumBinding, 1);
-		invokeJavaLangEnumValues(enumBinding, arrayBinding);
-		arraylength();
-		newarray(ClassFileConstants.INT_ARRAY);
-		astore_0();
-		LocalVariableBinding localVariableBinding = new LocalVariableBinding(" tab".toCharArray(), scope.createArrayType(TypeBinding.INT, 1), 0, false); //$NON-NLS-1$
-		addVariable(localVariableBinding);
-		final FieldBinding[] fields = enumBinding.fields();
-		if (fields != null) {
-			for (int i = 0, max = fields.length; i < max; i++) {
-				FieldBinding fieldBinding = fields[i];
-				if ((fieldBinding.getAccessFlags() & ClassFileConstants.AccEnum) != 0) {
-					final BranchLabel endLabel = new BranchLabel(this);
-					final ExceptionLabel anyExceptionHandler = new ExceptionLabel(this, TypeBinding.LONG /* represents NoSuchFieldError*/);
-					anyExceptionHandler.placeStart();
-					aload_0();
-					fieldAccess(Opcodes.OPC_getstatic, fieldBinding, null /* default declaringClass */);
-					invokeEnumOrdinal(enumBinding.constantPoolName());
-					this.generateInlinedValue(fieldBinding.id + 1); // zero should not be returned see bug 141810
-					iastore();
-					anyExceptionHandler.placeEnd();
-					goto_(endLabel);
-					// Generate the body of the exception handler
-					pushExceptionOnStack(TypeBinding.LONG /*represents NoSuchFieldError*/);
-					anyExceptionHandler.place();
-					pop(); // we don't use it so we can pop it
-					endLabel.place();
-				}
-			}
-		}
-		aload_0();
-		dup();
-		fieldAccess(Opcodes.OPC_putstatic, syntheticFieldBinding, null /* default declaringClass */);
-		areturn();
-		removeVariable(localVariableBinding);
+	//	ClassScope scope = ((SourceTypeBinding)methodBinding.declaringClass).scope;
+	//	initializeMaxLocals(methodBinding);
+	//	final BranchLabel nullLabel = new BranchLabel(this);
+	//	FieldBinding syntheticFieldBinding = methodBinding.targetReadField;
+	//	fieldAccess(Opcodes.OPC_getstatic, syntheticFieldBinding, null /* default declaringClass */);
+	//	dup();
+	//	ifnull(nullLabel);
+	//	areturn();
+	//	pushOnStack(syntheticFieldBinding.type);
+	//	nullLabel.place();
+	//	pop();
+	//	ReferenceBinding enumBinding = (ReferenceBinding) methodBinding.targetEnumType;
+	//	ArrayBinding arrayBinding = scope.createArrayType(enumBinding, 1);
+	//	invokeJavaLangEnumValues(enumBinding, arrayBinding);
+	//	arraylength();
+	//	newarray(ClassFileConstants.INT_ARRAY);
+	//	astore_0();
+	//	LocalVariableBinding localVariableBinding = new LocalVariableBinding(" tab".toCharArray(), scope.createArrayType(TypeBinding.INT, 1), 0, false); //$NON-NLS-1$
+	//	addVariable(localVariableBinding);
+	//	final FieldBinding[] fields = enumBinding.fields();
+	//	if (fields != null) {
+	//		for (int i = 0, max = fields.length; i < max; i++) {
+	//			FieldBinding fieldBinding = fields[i];
+	//			if ((fieldBinding.getAccessFlags() & ClassFileConstants.AccEnum) != 0) {
+	//				final BranchLabel endLabel = new BranchLabel(this);
+	//				final ExceptionLabel anyExceptionHandler = new ExceptionLabel(this, TypeBinding.LONG /* represents NoSuchFieldError*/);
+	//				anyExceptionHandler.placeStart();
+	//				aload_0();
+	//				fieldAccess(Opcodes.OPC_getstatic, fieldBinding, null /* default declaringClass */);
+	//				invokeEnumOrdinal(enumBinding.constantPoolName());
+	//				this.generateInlinedValue(fieldBinding.id + 1); // zero should not be returned see bug 141810
+	//				iastore();
+	//				anyExceptionHandler.placeEnd();
+	//				goto_(endLabel);
+	//				// Generate the body of the exception handler
+	//				pushExceptionOnStack(TypeBinding.LONG /*represents NoSuchFieldError*/);
+	//				anyExceptionHandler.place();
+	//				pop(); // we don't use it so we can pop it
+	//				endLabel.place();
+	//			}
+	//		}
+	//	}
+	//	aload_0();
+	//	dup();
+	//	fieldAccess(Opcodes.OPC_putstatic, syntheticFieldBinding, null /* default declaringClass */);
+	//	areturn();
+	//	removeVariable(localVariableBinding);
 	}
 	
 	/**
@@ -3393,7 +3378,7 @@ public class CodeStream {
 							&& (options.complianceLevel >= ClassFileConstants.JDK1_4 || !(isImplicitThisReceiver && codegenBinding.isStatic()))
 							&& codegenBinding.declaringClass.id != TypeIds.T_JavaLangObject) // no change for Object methods
 						|| !codegenBinding.declaringClass.canBeSeenBy(currentScope)) {
-					if (!actualReceiverType.isIntersectionCastType()) // no constant pool representation. FIXME, visibility issue not handled.
+					if (!actualReceiverType.isIntersectionType18()) // no constant pool representation. FIXME, visibility issue not handled.
 						constantPoolDeclaringClass = actualReceiverType.erasure();
 				}
 			}				

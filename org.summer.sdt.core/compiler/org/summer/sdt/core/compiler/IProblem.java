@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -192,6 +192,8 @@
  *									NonNullDefaultDetailIsNotEvaluated
  *									NullNotCompatibleToFreeTypeVariable
  *									NullityMismatchAgainstFreeTypeVariable
+ *									ImplicitObjectBoundNoNullDefault
+ *									IllegalParameterNullityRedefinition
  *      Jesper S Moller  - added the following constants
  *									TargetTypeNotAFunctionalInterface
  *									OuterLocalMustBeEffectivelyFinal
@@ -402,6 +404,8 @@ void setSourceStart(int sourceStart);
 	int NonStaticContextForEnumMemberType = Internal + 32;
 	/** @since 3.3 */
 	int TypeHidingType = TypeRelated + 33;
+	/** @since 3.11 */
+	int NotAnnotationType = TypeRelated + 34;
 
 	// variables
 	int UndefinedName = Internal + FieldRelated + 50;
@@ -455,6 +459,10 @@ void setSourceStart(int sourceStart);
 	int UnresolvedVariable = FieldRelated + 83;
 	/** @since 3.10 */
 	int NonStaticOrAlienTypeReceiver = MethodRelated + 84;
+
+	/** @since 3.11 */
+	int ExceptionParameterIsNeverUsed = Internal + 85;
+
 	// variable hiding
 	/** @since 3.0 */
 	int LocalVariableHidingLocalVariable = Internal + 90;
@@ -805,9 +813,6 @@ void setSourceStart(int sourceStart);
 	int IllegalVisibilityModifierCombinationForField = FieldRelated + 344;
 	int IllegalModifierCombinationFinalVolatileForField = FieldRelated + 345;
 	int UnexpectedStaticModifierForField = FieldRelated + 346;
-	
-	// property related problem //cym 2014-11-24
-	int IllegalModifierForProperty = FieldRelated + 348;
 
 	/** @deprecated - problem is no longer generated, use {@link #UndefinedType} instead */
 	int FieldTypeNotFound =  FieldRelated + 349 + ProblemReasons.NotFound; // FieldRelated + 350
@@ -1287,6 +1292,8 @@ void setSourceStart(int sourceStart);
 
 	/** @since 3.9 */
 	int UnsafeElementTypeConversion = TypeRelated + 585;
+	/** @since 3.11 */
+    int InvalidTypeArguments = MethodRelated + TypeRelated + 586;
 
 	/**
 	 * 1.5 Syntax errors (when source level < 1.5)
@@ -1787,6 +1794,11 @@ void setSourceStart(int sourceStart);
 	int NullNotCompatibleToFreeTypeVariable = 969;
 	/** @since 3.10 */
 	int NullityMismatchAgainstFreeTypeVariable = 970;
+	/** @since 3.11 */
+	int ImplicitObjectBoundNoNullDefault = 971;
+	/** @since 3.11 */
+	int IllegalParameterNullityRedefinition = MethodRelated + 972;
+
 
 	// Java 8 work
 	/** @since 3.10 */
@@ -1824,11 +1836,7 @@ void setSourceStart(int sourceStart);
 	/** @since 3.10 */
 	int GenericInferenceError = 1100; 	// FIXME: This is just a stop-gap measure, be more specific via https://bugs.eclipse.org/404675
 	
-	/** @since 3.10 */
+	/** @deprecated - problem is no longer generated (implementation issue has been resolved)
+	 * @since 3.10 */
 	int LambdaShapeComputationError = 1101;
-	
-	/**
-	 * XAML
-	 */
-	int DuplicateNamedElement = 2000;
 }

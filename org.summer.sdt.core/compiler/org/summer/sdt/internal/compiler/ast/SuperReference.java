@@ -14,8 +14,10 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class SuperReference extends ThisReference {
@@ -72,5 +74,12 @@ public class SuperReference extends ThisReference {
 	public void traverse(ASTVisitor visitor, BlockScope blockScope) {
 		visitor.visit(this, blockScope);
 		visitor.endVisit(this, blockScope);
+	}
+	
+	@Override
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager,
+			int indent, StringBuffer output) {
+		output.append(this.resolvedType.sourceName()).append(".prototype");
+		return output;
 	}
 }

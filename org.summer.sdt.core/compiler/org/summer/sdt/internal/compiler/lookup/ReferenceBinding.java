@@ -31,6 +31,8 @@
  *								Bug 418743 - [1.8][null] contradictory annotations on invocation of generic method not reported
  *								Bug 429958 - [1.8][null] evaluate new DefaultLocation attribute of @NonNullByDefault
  *								Bug 431581 - Eclipse compiles what it should not
+ *								Bug 440759 - [1.8][null] @NonNullByDefault should never affect wildcards and uses of a type variable
+ *								Bug 452788 - [1.8][compiler] Type not correctly inferred in lambda expression
  *      Jesper S Moller - Contributions for
  *								bug 382701 - [1.8][compiler] Implement semantic analysis of Lambda expressions & Reference expression
  *								bug 412153 - [1.8][compiler] Check validity of annotations which may be repeatable
@@ -39,12 +41,15 @@ package org.summer.sdt.internal.compiler.lookup;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Stack;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.compiler.InvalidInputException;
+import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
+import org.summer.sdt.internal.compiler.impl.ReferenceContext;
 import org.summer.sdt.internal.compiler.util.SimpleLookupTable;
 
 /*
@@ -567,6 +572,11 @@ abstract public class ReferenceBinding extends TypeBinding {
 				switch (typeName[0]) {
 					case 'A' :
 						switch(typeName.length) {
+							case 5 :   //cym 2014-12-03
+								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ARRAY[2])) {
+									this.id = TypeIds.T_JavaLangArray;
+								}
+								return;
 							case 13 :
 								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_AUTOCLOSEABLE[2])) {
 									this.id = TypeIds.T_JavaLangAutoCloseable;
@@ -916,6 +926,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 		}
 	}
 	
+	public void computeId(LookupEnvironment environment) {
+		environment.getUnannotatedType(this);
+	}
+	
 	/**
 	 * p.X<T extends Y & I, U extends Y> {} -> Lp/X<TT;TU;>;
 	 */
@@ -1187,6 +1201,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 		return 0;
 	}
 	
+	public boolean acceptsNonNullDefault() {
+		return true;
+	}
+	
 	public final boolean hasRestrictedAccess() {
 		return (this.modifiers & ExtraCompilerModifiers.AccRestrictedAccess) != 0;
 	}
@@ -1353,6 +1371,18 @@ abstract public class ReferenceBinding extends TypeBinding {
 						return isCompatibleWith(otherLowerBound);
 					}
 				}
+				if (otherType instanceof InferenceVariable) {
+					// may interpret InferenceVariable as a joker, but only when within an outer lambda inference:
+					if (captureScope != null) {
+						MethodScope methodScope = captureScope.methodScope();
+						if (methodScope != null) {
+							ReferenceContext referenceContext = methodScope.referenceContext;
+							if (referenceContext instanceof LambdaExpression
+									&& ((LambdaExpression)referenceContext).inferenceContext != null)
+								return true;
+						}
+					}
+				}
 				//$FALL-THROUGH$
 			case Binding.GENERIC_TYPE :
 			case Binding.TYPE :
@@ -1373,7 +1403,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 					if (this instanceof TypeVariableBinding && captureScope != null) {
 						TypeVariableBinding typeVariable = (TypeVariableBinding) this;
 						if (typeVariable.firstBound instanceof ParameterizedTypeBinding) {
-							TypeBinding bound = typeVariable.firstBound.capture(captureScope, -1); // no position needed as this capture will never escape this context
+							TypeBinding bound = typeVariable.firstBound.capture(captureScope, -1, -1); // no position needed as this capture will never escape this context
 							return bound.isCompatibleWith(otherReferenceType);
 						}
 					}
@@ -1962,19 +1992,18 @@ abstract public class ReferenceBinding extends TypeBinding {
 				continue;
 			if (!method.isValidBinding()) 
 				throw new InvalidInputException("Not a functional interface"); //$NON-NLS-1$
-			if (method.isDefaultMethod()) {
-				for (int j = 0; j < contractsCount; j++) {
-					if (contracts[j] == null)
-						continue;
-					if (MethodVerifier.doesMethodOverride(method, contracts[j], scope.environment())) {
-						contractsCount--;
-						// abstract method from super type rendered default by present interface ==> contracts[j] = null;
-						if (j < contractsCount)
-							System.arraycopy(contracts, j+1, contracts, j, contractsCount - j);
-					}
+			for (int j = 0; j < contractsCount; j++) {
+				if (contracts[j] == null)
+					continue;
+				if (MethodVerifier.doesMethodOverride(method, contracts[j], scope.environment())) {
+					contractsCount--;
+					// abstract method from super type overridden by present interface ==> contracts[j] = null;
+					if (j < contractsCount)
+						System.arraycopy(contracts, j+1, contracts, j, contractsCount - j);
 				}
-				continue; // skip default method itself
 			}
+			if (method.isDefaultMethod())
+				continue; // skip default method itself
 			if (contractsCount == contractsLength) {
 				System.arraycopy(contracts, 0, contracts = new MethodBinding[contractsLength += 16], 0, contractsCount);
 			}
@@ -2140,5 +2169,22 @@ abstract public class ReferenceBinding extends TypeBinding {
 				return false;
 		}
 		return true;
+	}
+	
+	//cym 2014-12-16
+	public char[][] getQualifiedName(){
+		ReferenceBinding parent = this;
+		Stack<ReferenceBinding> stack = new Stack<ReferenceBinding>();
+		while(parent != null){
+			stack.push(parent);
+			parent = parent.enclosingType();
+		}
+		
+		char[][] result = null;
+		while(!stack.isEmpty()){
+			result = CharOperation.arrayConcat(result, stack.pop().sourceName);
+		}
+		
+		return result;
 	}
 }

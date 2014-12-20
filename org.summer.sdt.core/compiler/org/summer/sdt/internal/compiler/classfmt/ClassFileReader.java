@@ -20,13 +20,7 @@ import java.util.Arrays;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.codegen.AttributeNamesConstants;
-import org.summer.sdt.internal.compiler.env.IBinaryAnnotation;
-import org.summer.sdt.internal.compiler.env.IBinaryElementValuePair;
-import org.summer.sdt.internal.compiler.env.IBinaryField;
-import org.summer.sdt.internal.compiler.env.IBinaryMethod;
-import org.summer.sdt.internal.compiler.env.IBinaryNestedType;
-import org.summer.sdt.internal.compiler.env.IBinaryType;
-import org.summer.sdt.internal.compiler.env.IBinaryTypeAnnotation;
+import org.summer.sdt.internal.compiler.env.*;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;

@@ -19,7 +19,7 @@ public interface IBinaryField extends IGenericField {
 	 * Answer the runtime visible and invisible annotations for this field or null if none.
 	 */
 	IBinaryAnnotation[] getAnnotations();
-
+	
 	/**
 	 * Answer the runtime visible and invisible type annotations for this field or null if none.
 	 */
@@ -58,4 +58,7 @@ public interface IBinaryField extends IGenericField {
 	 *   - an array of floats is [F
 	 */
 	char[] getTypeName();
+	
+	//cym 2014-12-05
+	char[][] getParameters();
 }

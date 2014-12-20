@@ -25,16 +25,16 @@ package org.summer.sdt.internal.codeassist.complete;
 import java.util.HashSet;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.codeassist.impl.*;
 import org.summer.sdt.internal.compiler.*;
+import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.*;
-import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.parser.*;
 import org.summer.sdt.internal.compiler.problem.*;
 import org.summer.sdt.internal.compiler.util.HashtableOfObjectToInt;
 import org.summer.sdt.internal.compiler.util.Util;
-import org.summer.sdt.core.compiler.CharOperation;
-import org.summer.sdt.internal.codeassist.impl.*;
 
 @SuppressWarnings("rawtypes")
 public class CompletionParser extends AssistParser {
@@ -2081,6 +2081,127 @@ public class CompletionParser extends AssistParser {
 		if (checkLabelStatement()) return;
 		if (checkNameCompletion()) return;
 	}
+	
+	//cym 2014-12-09
+	protected void consumeElementTag(){
+		/* no need to take action if not inside completed identifiers */
+		if ((indexOfAssistIdentifier(true)) < 0) {
+			super.consumeElementTag();
+			return;
+		}
+		
+		ObjectElement element = new ObjectElement();
+		pushOnElementStack(element);
+		
+		element.type = createSingleAssistTypeReference(
+				assistIdentifier(),
+				this.identifierPositionStack[this.identifierPtr--]);
+		
+		this.assistNode = element.type;
+		this.lastCheckPoint = element.type.sourceEnd + 1;
+		
+		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
+	}
+	
+	protected void consumeGeneralAttribute(SingleNameReference namespace) {
+		if ((indexOfAssistIdentifier(true)) < 0) {
+			super.consumeGeneralAttribute(null);
+			return;
+		}
+		
+		ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr];
+		// SimpleName = expression 
+		char[] token = this.identifierStack[this.identifierPtr];
+		long positions = this.identifierPositionStack[this.identifierPtr--];
+		
+		GeneralAttribute attr = new GeneralAttribute(null);
+		
+		CompletionOnMemberAccess fr = new CompletionOnMemberAccess(token, positions, false);
+		this.assistNode = fr;
+		this.lastCheckPoint = fr.sourceEnd + 1;
+		
+		attr.field = fr;
+		
+		attr.field.receiver = new ThisReference(0,0); //ThisReference.implicitThis();
+		this.identifierLengthPtr--;
+		attr.value =  this.expressionStack[this.expressionPtr--];
+		this.expressionLengthPtr--;
+		
+		attr.sourceStart = (int) (positions >>> 32);
+		
+		//check named attribute
+		if(CharOperation.equals(attr.field.token, Attribute.NAME)){
+			attr.bits |= ASTNode.IsNamedAttribute;
+			if(element.name != null){
+				problemReporter().duplicateNamedElementInType(element, element.name.field);
+			}
+			element.name = attr;
+			StringLiteral str = (StringLiteral) attr.value;
+			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
+			fieldDecl.type = element.type;
+			fieldDecl.bits |= ClassFileConstants.AccPrivate;
+		}
+		
+		pushOnAttributeStack(attr);
+	}
+	
+	protected void consumeMarkupExtensionTag(){
+		if ((indexOfAssistIdentifier(true)) < 0) {
+			super.consumeMarkupExtensionTag();
+			return;
+		}
+		MarkupExtension markupExtension = new MarkupExtension();
+		markupExtension.type = createSingleAssistTypeReference(
+				assistIdentifier(),
+				this.identifierPositionStack[this.identifierPtr--]);
+		
+		pushOnExpressionStack(markupExtension);	
+	}
+	
+	protected void consumeAttributeElementTag(){
+		//AttributeElementTag ::= $empty
+		if ((indexOfAssistIdentifier(true)) < 0) {
+			this.identifierPtr--;
+			this.identifierLengthPtr--;
+			if(this.indexOfAssistIdentifier() != 0 ) {
+				this.identifierPtr++;
+				this.identifierLengthPtr++;
+				super.consumeAttributeElementTag();
+			} else {
+				AttributeElement element = new AttributeElement();
+				element.sourceStart = this.intStack[this.intPtr--];
+				
+				element.field = new FieldReference(
+						this.identifierStack[this.identifierPtr],
+						this.identifierPositionStack[this.identifierPtr--]);
+				element.field.receiver = new ThisReference(0,0);
+				this.identifierLengthPtr--;
+				
+				element.type = new CompletionOnSingleTypeReference(
+						this.identifierStack[this.identifierPtr],
+						this.identifierPositionStack[this.identifierPtr--]);
+				this.identifierLengthPtr--;
+				
+				pushOnElementStack(element);
+			}
+		} else {
+			AttributeElement element = new AttributeElement();
+			element.sourceStart = this.intStack[this.intPtr--];
+			
+			element.field = new CompletionOnMemberAccess(
+					this.identifierStack[this.identifierPtr],
+					this.identifierPositionStack[this.identifierPtr--], false);
+			element.field.receiver = new ThisReference(0,0);
+			this.identifierLengthPtr--;
+			
+			element.type = new SingleTypeReference(
+					this.identifierStack[this.identifierPtr],
+					this.identifierPositionStack[this.identifierPtr--]);
+			this.identifierLengthPtr--;
+			pushOnElementStack(element);
+		}
+	}
+	
 	protected void consumeArrayCreationExpressionWithInitializer() {
 		super.consumeArrayCreationExpressionWithInitializer();
 		popElement(K_ARRAY_CREATION);
@@ -2237,7 +2358,7 @@ public class CompletionParser extends AssistParser {
 		super.consumeClassBodyopt();
 	}
 	/* (non-Javadoc)
-	 * @see org.eclipse.jdt.internal.compiler.parser.Parser#consumeClassDeclaration()
+	 * @see org.summer.sdt.internal.compiler.parser.Parser#consumeClassDeclaration()
 	 */
 	protected void consumeClassDeclaration() {
 		if (this.astPtr >= 0) {
@@ -2318,6 +2439,11 @@ public class CompletionParser extends AssistParser {
 			}
 		}
 	}
+	protected void consumeClassInstanceCreationExpressionName() {
+		super.consumeClassInstanceCreationExpressionName();
+		this.invocationType = QUALIFIED_ALLOCATION;
+		this.qualifier = this.expressionPtr;
+	}
 	protected void consumeClassTypeElt() {
 		pushOnElementStack(K_NEXT_TYPEREF_IS_EXCEPTION);
 		super.consumeClassTypeElt();
@@ -2325,7 +2451,7 @@ public class CompletionParser extends AssistParser {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.eclipse.jdt.internal.compiler.parser.Parser#consumeCompilationUnit()
+	 * @see org.summer.sdt.internal.compiler.parser.Parser#consumeCompilationUnit()
 	 */
 	protected void consumeCompilationUnit() {
 		this.javadoc = null;
@@ -2426,8 +2552,17 @@ public class CompletionParser extends AssistParser {
 		   decide whether to call contactNodeLists. See Parser.consumeBlockStatement(s) 
 		*/
 		if (this.shouldStackAssistNode && this.assistNode != null)
-			this.astStack[this.astPtr] = this.assistNode;
+			this.astStack[this.astPtr] = this.assistNodeParent instanceof MessageSend ? this.assistNodeParent : this.assistNode;
 		this.shouldStackAssistNode = false;
+	}
+	@Override
+	protected void consumeBlockStatement() {
+		super.consumeBlockStatement();
+		if (this.shouldStackAssistNode && this.assistNode != null) {
+			Statement stmt = (Statement) this.astStack[this.astPtr];
+			if (stmt.sourceStart <= this.assistNode.sourceStart && stmt.sourceEnd >= this.assistNode.sourceEnd)
+				this.shouldStackAssistNode = false;
+		}
 	}
 	protected void consumeEnhancedForStatement() {
 		super.consumeEnhancedForStatement();
@@ -2604,7 +2739,11 @@ public class CompletionParser extends AssistParser {
 		} else if (this.assistNode != null && this.assistNode == variable.initialization) {
 				this.assistNodeParent = variable;
 		}
-		triggerRecoveryUponLambdaClosure(variable, false);
+		if (triggerRecoveryUponLambdaClosure(variable, false)) {
+			if (this.currentElement != null) {
+				this.restartRecovery = true;
+			}
+		}
 	}
 	protected void consumeExitVariableWithoutInitialization() {
 		// ExitVariableWithoutInitialization ::= $empty
@@ -2787,7 +2926,7 @@ public class CompletionParser extends AssistParser {
 		}
 		Expression castType = getTypeReference(this.intStack[this.intPtr--]);
 		if (additionalBoundsLength > 0) {
-			bounds[0] = getTypeReference(this.intStack[this.intPtr--]);
+			bounds[0] = (TypeReference) castType;
 			castType = createIntersectionCastTypeReference(bounds); 
 		}
 		if(isParameterized) {
@@ -3263,6 +3402,13 @@ public class CompletionParser extends AssistParser {
 		pushOnLabelStack(this.identifierStack[this.identifierPtr]);
 		this.pushOnElementStack(K_LABEL, this.labelPtr);
 	}
+	@Override
+	protected void consumeLambdaExpression() {
+		super.consumeLambdaExpression();
+		Expression expression = this.expressionStack[this.expressionPtr];
+		if (this.assistNode == null || !(this.assistNode.sourceStart >= expression.sourceStart && this.assistNode.sourceEnd <= expression.sourceEnd))
+			popElement(K_LAMBDA_EXPRESSION_DELIMITER);
+	}
 	protected void consumeMarkerAnnotation(boolean isTypeAnnotation) {
 		if (this.topKnownElementKind(COMPLETION_OR_ASSIST_PARSER) == K_BETWEEN_ANNOTATION_NAME_AND_RPAREN &&
 				(this.topKnownElementInfo(COMPLETION_OR_ASSIST_PARSER) & ANNOTATION_NAME_COMPLETION) != 0 ) {
@@ -3537,6 +3683,7 @@ public class CompletionParser extends AssistParser {
 		if (token == TokenNameIdentifier
 				&& this.identifierStack[this.identifierPtr] == assistIdentifier()
 				&& this.currentElement == null
+				&& (!isIndirectlyInsideLambdaExpression() || isIndirectlyInsideLambdaBlock())
 				&& isIndirectlyInsideFieldInitialization()) {
 			this.scanner.eofPosition = this.cursorLocation < Integer.MAX_VALUE ? this.cursorLocation+1 : this.cursorLocation;
 		}
@@ -3972,9 +4119,10 @@ public class CompletionParser extends AssistParser {
 				case TokenNamesynchronized:
 					pushOnElementStack(K_BETWEEN_SYNCHRONIZED_AND_RIGHT_PAREN, this.bracketDepth);
 					break;
-				case TokenNameassert:
-					pushOnElementStack(K_INSIDE_ASSERT_STATEMENT, this.bracketDepth);
-					break;
+				//cym 2014-12-17
+//				case TokenNameassert:
+//					pushOnElementStack(K_INSIDE_ASSERT_STATEMENT, this.bracketDepth);
+//					break;
 				case TokenNamecase :
 					pushOnElementStack(K_BETWEEN_CASE_AND_COLON);
 					break;
@@ -4661,7 +4809,7 @@ public class CompletionParser extends AssistParser {
 		this.labelPtr = -1;
 		initializeForBlockStatements();
 	}
-	public void copyState(CommitRollbackParser from) {
+	public void copyState(Parser from) {
 	
 		super.copyState(from);
 		
@@ -5028,7 +5176,7 @@ public class CompletionParser extends AssistParser {
 		}
 	}
 	
-	protected CommitRollbackParser createSnapShotParser() {
+	protected CompletionParser createSnapShotParser() {
 		return new CompletionParser(this.problemReporter, this.storeSourceEnds);
 	}
 	/*
@@ -5146,6 +5294,11 @@ public class CompletionParser extends AssistParser {
 		this.shouldStackAssistNode = true;
 	}
 	
+	@Override
+	protected boolean assistNodeNeedsStacking() {
+		return this.shouldStackAssistNode;
+	}
+	
 	public  String toString() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("elementKindStack : int[] = {"); //$NON-NLS-1$
@@ -5170,14 +5323,15 @@ public class CompletionParser extends AssistParser {
 		/* expose parser state to recovery state */
 		this.currentElement.updateFromParserState();
 	
-		/* may be able to retrieve completionNode as an orphan, and then attach it */
-		completionIdentifierCheck();
-		// attachOrphanCompletionNode pops various stacks to construct astNodeParent and enclosingNode. This does not gel well with extended recovery.
-		CommitRollbackParser parser = null;
+		// completionIdentifierCheck && attachOrphanCompletionNode pops various stacks to construct astNodeParent and enclosingNode. This does not gel well with extended recovery.
+		AssistParser parser = null;
 		if (lastIndexOfElement(K_LAMBDA_EXPRESSION_DELIMITER) >= 0) {
 			parser = createSnapShotParser();
 			parser.copyState(this);
 		}
+		
+		/* may be able to retrieve completionNode as an orphan, and then attach it */
+		completionIdentifierCheck();
 		attachOrphanCompletionNode();
 		if (parser != null)
 			this.copyState(parser);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2009 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,10 +13,11 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.StringConstant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.util.Util;
 
 public class StringLiteral extends Literal {
 
@@ -79,34 +80,19 @@ public class StringLiteral extends Literal {
 		// handle some special char.....
 		output.append('\"');
 		for (int i = 0; i < this.source.length; i++) {
-			switch (this.source[i]) {
-				case '\b' :
-					output.append("\\b"); //$NON-NLS-1$
-					break;
-				case '\t' :
-					output.append("\\t"); //$NON-NLS-1$
-					break;
-				case '\n' :
-					output.append("\\n"); //$NON-NLS-1$
-					break;
-				case '\f' :
-					output.append("\\f"); //$NON-NLS-1$
-					break;
-				case '\r' :
-					output.append("\\r"); //$NON-NLS-1$
-					break;
-				case '\"' :
-					output.append("\\\""); //$NON-NLS-1$
-					break;
-				case '\'' :
-					output.append("\\'"); //$NON-NLS-1$
-					break;
-				case '\\' : //take care not to display the escape as a potential real char
-					output.append("\\\\"); //$NON-NLS-1$
-					break;
-				default :
-					output.append(this.source[i]);
-			}
+			Util.appendEscapedChar(output, this.source[i], true);
+		}
+		output.append('\"');
+		return output;
+	}
+	
+	@Override
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager,
+			int indent, StringBuffer output) {
+		// handle some special char.....
+		output.append('\"');
+		for (int i = 0; i < this.source.length; i++) {
+			Util.appendEscapedChar(output, this.source[i], true);
 		}
 		output.append('\"');
 		return output;
@@ -120,43 +106,5 @@ public class StringLiteral extends Literal {
 	public void traverse(ASTVisitor visitor, BlockScope scope) {
 		visitor.visit(this, scope);
 		visitor.endVisit(this, scope);
-	}
-	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-
-		// handle some special char.....
-		output.append('\"');
-		for (int i = 0; i < this.source.length; i++) {
-			switch (this.source[i]) {
-				case '\b' :
-					output.append("\\b"); //$NON-NLS-1$
-					break;
-				case '\t' :
-					output.append("\\t"); //$NON-NLS-1$
-					break;
-				case '\n' :
-					output.append("\\n"); //$NON-NLS-1$
-					break;
-				case '\f' :
-					output.append("\\f"); //$NON-NLS-1$
-					break;
-				case '\r' :
-					output.append("\\r"); //$NON-NLS-1$
-					break;
-				case '\"' :
-					output.append("\\\""); //$NON-NLS-1$
-					break;
-				case '\'' :
-					output.append("\\'"); //$NON-NLS-1$
-					break;
-				case '\\' : //take care not to display the escape as a potential real char
-					output.append("\\\\"); //$NON-NLS-1$
-					break;
-				default :
-					output.append(this.source[i]);
-			}
-		}
-		output.append('\"');
-		return output;
 	}
 }

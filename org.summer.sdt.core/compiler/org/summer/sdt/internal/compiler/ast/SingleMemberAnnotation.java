@@ -13,10 +13,8 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.ElementValuePair;
-import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 /**
  * SingleMemberAnnotation node
@@ -84,10 +82,10 @@ public class SingleMemberAnnotation extends Annotation {
 		visitor.endVisit(this, scope);
 	}
 	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		super.generateExpression(scope, indent, output);
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
+		super.doGenerateExpression(scope, depsManager, indent, output);
 		output.append('(');
-		this.memberValue.generateExpression(scope, indent, output);
+		this.memberValue.doGenerateExpression(scope, depsManager, indent, output);
 		return output.append(')');
 	}
 }

@@ -1,11 +1,15 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
-public class AttributeElement extends Element{
-	public TypeReference type;
+public class AttributeElement extends XAMLElement{
+	public AttributeElement() {
+		super(null);
+	}
+
 	public FieldReference field;
 
 	@Override
@@ -18,7 +22,7 @@ public class AttributeElement extends Element{
 	public void resolve(BlockScope scope) {
 		type.resolve(scope);
 		field.resolve(scope);
-		for(Element child : children){
+		for(XAMLElement child : children){
 			child.resolve(scope);
 		}
 	}
@@ -31,7 +35,7 @@ public class AttributeElement extends Element{
 	}
 
 	@Override
-	public StringBuffer generateExpression(Scope scope, int indent,
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
 			StringBuffer output) {
 		printIndent(indent, output);
 		output.append("this.").append(field.token).append(" = ");

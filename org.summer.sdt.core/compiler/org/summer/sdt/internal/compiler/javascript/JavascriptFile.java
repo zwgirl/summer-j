@@ -1,22 +1,9 @@
 package org.summer.sdt.internal.compiler.javascript;
 
-import javax.naming.CompoundName;
-
-import org.summer.sdt.core.compiler.CategorizedProblem;
 import org.summer.sdt.core.compiler.CharOperation;
-import org.summer.sdt.internal.compiler.ClassFile;
 import org.summer.sdt.internal.compiler.CompilationResult;
-import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
-import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.lookup.Binding;
-import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodBinding;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
-import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
-import org.summer.sdt.internal.compiler.util.Util;
 
 /**
  * 
@@ -25,16 +12,16 @@ import org.summer.sdt.internal.compiler.util.Util;
  */
 public class JavascriptFile {
 	public final StringBuffer content;
-	public SourceTypeBinding referenceBinding;
-	private char[] fullFileName;
+//	public SourceTypeBinding referenceBinding;
+	private char[][] compoundName;
 	
-	public JavascriptFile(SourceTypeBinding referenceBinding){
+	public JavascriptFile(char[][] compoundName){
 		content = new StringBuffer();
-		this.referenceBinding = referenceBinding;
+		this.compoundName = compoundName;
 	}
 
-	public static JavascriptFile getNewInstance(SourceTypeBinding typeBinding) {
-		return new JavascriptFile(typeBinding);
+	public static JavascriptFile getNewInstance(char[][] compoundName) {
+		return new JavascriptFile(compoundName);
 	}
 	
 	/**
@@ -46,7 +33,7 @@ public class JavascriptFile {
 	 */
 	public static void createProblemType(TypeDeclaration typeDeclaration, CompilationResult unitResult) {
 		SourceTypeBinding typeBinding = typeDeclaration.binding;
-		JavascriptFile classFile = JavascriptFile.getNewInstance(typeBinding);
+		JavascriptFile classFile = JavascriptFile.getNewInstance(typeDeclaration.binding.compoundName);
 //		classFile.initialize(typeBinding, null, true);
 //
 //		if (typeBinding.hasMemberTypes()) {
@@ -137,10 +124,10 @@ public class JavascriptFile {
 	 * e.g. {{java}, {util}, {Hashtable}}.
 	 */
 	public char[][] getCompoundName() {
-		return referenceBinding.compoundName;
+		return this.compoundName;
 	}
 
 	public char[] fileName() {
-		return CharOperation.concatWith(referenceBinding.compoundName, '/');
+		return CharOperation.concatWith(this.compoundName, '/');
 	}
 }

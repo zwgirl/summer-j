@@ -38,7 +38,7 @@ public abstract class Binding {
 	public static final int INTERSECTION_TYPE = TYPE | ASTNode.Bit14;
 	// jsr 308
 	public static final int TYPE_USE = TYPE | ASTNode.Bit15;
-	public static final int INTERSECTION_CAST_TYPE = TYPE | ASTNode.Bit16;
+	public static final int INTERSECTION_TYPE18 = TYPE | ASTNode.Bit16;
 	public static final int POLY_TYPE = TYPE | ASTNode.Bit17;
 	
 	public static final int MODULE_TYPE = TYPE | ASTNode.Bit18;   //cym add

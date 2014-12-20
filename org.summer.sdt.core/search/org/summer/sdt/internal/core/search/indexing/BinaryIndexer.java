@@ -75,11 +75,6 @@ public class BinaryIndexer extends AbstractIndexer implements SuffixConstants {
 			char[][] compoundName = TypeConstants.JAVA_LANG_OVERRIDE;
 			addAnnotationTypeReference(compoundName[compoundName.length-1]);
 		}
-		//cym 2014-11-24
-		if ((annotationTagBits & TagBits.AnnotationOverload) != 0) {
-			char[][] compoundName = TypeConstants.JAVA_LANG_OVERLOAD;
-			addAnnotationTypeReference(compoundName[compoundName.length-1]);
-		}
 		if ((annotationTagBits & TagBits.AnnotationSuppressWarnings) != 0) {
 			char[][] compoundName = TypeConstants.JAVA_LANG_SUPPRESSWARNINGS;
 			addAnnotationTypeReference(compoundName[compoundName.length-1]);

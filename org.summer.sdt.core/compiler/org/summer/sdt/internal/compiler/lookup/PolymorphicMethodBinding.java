@@ -80,4 +80,4 @@ public class PolymorphicMethodBinding extends MethodBinding {
 	public boolean isVarargs() {
 		return false;
 	}
-}
+} 

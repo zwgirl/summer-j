@@ -1,5 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -11,8 +12,8 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
  */
 public class GeneralAttribute extends Attribute{
 
-	public GeneralAttribute() {
-		// TODO Auto-generated constructor stub
+	public GeneralAttribute(SingleNameReference namespace) {
+		super(namespace);
 	}
 
 	@Override
@@ -32,11 +33,11 @@ public class GeneralAttribute extends Attribute{
 	}
 
 	@Override
-	public StringBuffer generateExpression(Scope scope, int indent,
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
 			StringBuffer output) {
 		printIndent(indent, output);
 		output.append("this.").append(field.token).append(" = ");
-		value.generateExpression(scope, indent, output);
+		value.doGenerateExpression(scope, depsManager, indent, output);
 		return output;
 	}
 }

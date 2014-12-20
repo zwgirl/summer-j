@@ -7,6 +7,8 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
+ *     Stephan Herrmann - Contribution for
+ *								Bug 438458 - [1.8][null] clean up handling of null type annotations wrt type variables
  *******************************************************************************/
 
 package org.summer.sdt.core.dom;
@@ -22,6 +24,7 @@ import org.summer.sdt.internal.compiler.lookup.BaseTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.CaptureBinding;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.IntersectionTypeBinding18;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.PackageBinding;
@@ -221,7 +224,12 @@ class TypeBinding implements ITypeBinding {
 		if (!isArray()) {
 			return null;
 		}
-		ArrayBinding arrayBinding = (ArrayBinding) this.binding;
+		
+		//cym 2014-12-18
+//		ArrayBinding arrayBinding = (ArrayBinding) this.binding;
+//		return this.resolver.getTypeBinding(arrayBinding.elementsType());
+		
+		ParameterizedTypeBinding arrayBinding = (ParameterizedTypeBinding) this.binding;
 		return this.resolver.getTypeBinding(arrayBinding.elementsType());
 	}
 
@@ -444,8 +452,10 @@ class TypeBinding implements ITypeBinding {
 		if (!isArray()) {
 			return 0;
 		}
-		ArrayBinding arrayBinding = (ArrayBinding) this.binding;
-		return arrayBinding.dimensions;
+//		ArrayBinding arrayBinding = (ArrayBinding) this.binding;
+//		return arrayBinding.dimensions;
+		//cym 2014-12-18
+		return this.binding.dimensions();
 	}
 
 	/*
@@ -455,8 +465,10 @@ class TypeBinding implements ITypeBinding {
 		if (!isArray()) {
 			return null;
 		}
-		ArrayBinding arrayBinding = (ArrayBinding) this.binding;
-		return this.resolver.getTypeBinding(arrayBinding.leafComponentType);
+//		ArrayBinding arrayBinding = (ArrayBinding) this.binding;
+//		return this.resolver.getTypeBinding(arrayBinding.leafComponentType);
+		//cym 2014-12-18
+		return this.resolver.getTypeBinding(this.binding.leafComponentType());
 	}
 
 	/* (non-Javadoc)
@@ -682,6 +694,10 @@ class TypeBinding implements ITypeBinding {
 				buffer.append(brackets);
 				return String.valueOf(buffer);
 
+			case Binding.INTERSECTION_TYPE18 :
+				// just use the first bound for now (same kludge as in IntersectionTypeBinding18#constantPoolName())
+				return new String(((IntersectionTypeBinding18) this.binding).getIntersectingTypes()[0].sourceName());
+
 			default :
 				if (isPrimitive() || isNullType()) {
 					BaseTypeBinding baseTypeBinding = (BaseTypeBinding) this.binding;
@@ -704,7 +720,7 @@ class TypeBinding implements ITypeBinding {
 			case Binding.TYPE_PARAMETER : // includes capture scenario
 			case Binding.WILDCARD_TYPE :
 			case Binding.INTERSECTION_TYPE:
-			case Binding.INTERSECTION_CAST_TYPE:
+			case Binding.INTERSECTION_TYPE18:
 				return null;
 		}
 		ReferenceBinding referenceBinding = (ReferenceBinding) this.binding;
@@ -801,7 +817,7 @@ class TypeBinding implements ITypeBinding {
 				}
 				return String.valueOf(buffer);
 			default :
-				if (isAnonymous() || this.binding.isLocalType() || this.binding.isIntersectionCastType()) {
+				if (isAnonymous() || this.binding.isLocalType() || this.binding.isIntersectionType18()) {
 					return NO_NAME;
 				}
 				if (isPrimitive() || isNullType()) {
@@ -1032,6 +1048,8 @@ class TypeBinding implements ITypeBinding {
 	public boolean isArray() {
 		return this.binding.isArrayType();
 	}
+	
+	
 
 	/* (non-Javadoc)
 	 * @see ITypeBinding#isAssignmentCompatible(ITypeBinding)
@@ -1068,7 +1086,7 @@ class TypeBinding implements ITypeBinding {
 			if (!(type instanceof TypeBinding)) return false;
 			org.summer.sdt.internal.compiler.lookup.TypeBinding expressionType = ((TypeBinding) type).binding;
 			// simulate capture in case checked binding did not properly get extracted from a reference
-			expressionType = expressionType.capture(scope, 0);
+			expressionType = expressionType.capture(scope, 0, 0);
 			return TypeBinding.EXPRESSION.checkCastTypesCompatibility(scope, this.binding, expressionType, null);
 		} catch (AbortCompilation e) {
 			// don't surface internal exception to clients

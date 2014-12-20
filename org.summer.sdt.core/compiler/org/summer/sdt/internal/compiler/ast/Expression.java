@@ -7,7 +7,7 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
- *     Stephan Herrmann <stephan@cs.tu-berlin.de> - Contributions for 
+ *     Stephan Herrmann - Contributions for 
  *								bug 292478 - Report potentially null across variable assignment
  *								bug 345305 - [compiler][null] Compiler misidentifies a case of "variable can only be null"
  *								bug 392862 - [1.8][compiler][null] Evaluate null annotations on array types
@@ -25,6 +25,7 @@
  *								Bug 426996 - [1.8][inference] try to avoid method Expression.unresolve()?
  *								Bug 428274 - [1.8] [compiler] Cannot cast from Number to double
  *								Bug 428352 - [1.8][compiler] Resolution errors don't always surface
+ *								Bug 452788 - [1.8][compiler] Type not correctly inferred in lambda expression
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
@@ -39,14 +40,17 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.BaseTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
@@ -71,6 +75,9 @@ public abstract class Expression extends Statement {
 
 	public int implicitConversion;
 	public TypeBinding resolvedType;
+	
+	static Expression [] NO_EXPRESSIONS = new Expression[0];
+	
 
 	public static final boolean isConstantValueRepresentable(Constant constant, int constantTypeID, int targetTypeID) {
 		//true if there is no loss of precision while casting.
@@ -302,7 +309,7 @@ public abstract class Expression extends Statement {
 			return true;
 		}
 	
-		if (castType.isIntersectionCastType()) {
+		if (castType.isIntersectionType18()) {
 			ReferenceBinding [] intersectingTypes = castType.getIntersectingTypes();
 			for (int i = 0, length = intersectingTypes.length; i < length; i++) {
 				if (!checkCastTypesCompatibility(scope, intersectingTypes[i], expressionType, expression))
@@ -328,8 +335,11 @@ public abstract class Expression extends Statement {
 				switch (castType.kind()) {
 					case Binding.ARRAY_TYPE :
 						// ( ARRAY ) ARRAY
-						TypeBinding castElementType = ((ArrayBinding) castType).elementsType();
-						TypeBinding exprElementType = ((ArrayBinding) expressionType).elementsType();
+						//cym 2014-12-18
+//						TypeBinding castElementType = ((ArrayBinding) castType).elementsType();
+//						TypeBinding exprElementType = ((ArrayBinding) expressionType).elementsType();
+						TypeBinding castElementType = ((ParameterizedTypeBinding) castType).elementsType();
+						TypeBinding exprElementType = ((ParameterizedTypeBinding) expressionType).elementsType();
 						if (exprElementType.isBaseType() || castElementType.isBaseType()) {
 							if (TypeBinding.equalsEquals(castElementType, exprElementType)) {
 								tagAsNeedCheckCast();
@@ -382,7 +392,7 @@ public abstract class Expression extends Statement {
 				if (bound == null) bound = scope.getJavaLangObject();
 				// recursively on the type variable upper bound
 				return checkCastTypesCompatibility(scope, castType, bound, expression);
-			case Binding.INTERSECTION_CAST_TYPE:
+			case Binding.INTERSECTION_TYPE18:
 				ReferenceBinding [] intersectingTypes = expressionType.getIntersectingTypes();
 				for (int i = 0, length = intersectingTypes.length; i < length; i++) {
 					if (checkCastTypesCompatibility(scope, castType, intersectingTypes[i], expression))
@@ -652,6 +662,9 @@ public abstract class Expression extends Statement {
 			TypeBinding boxedType = scope.environment().computeBoxingType(runtimeType);
 			if (TypeBinding.equalsEquals(boxedType, runtimeType)) // Object o = 12;
 				boxedType = compileTimeType;
+			if (boxedType.id >= TypeIds.T_LastWellKnownTypeId) {  // (Comparable & Serializable) 0
+				boxedType = compileTimeType;
+			}
 			this.implicitConversion = TypeIds.BOXING | (boxedType.id << 4) + compileTimeType.id;
 			scope.problemReporter().autoboxing(this, compileTimeType, scope.environment().computeBoxingType(boxedType));
 			return;
@@ -914,14 +927,6 @@ public abstract class Expression extends Statement {
 		return false;
 	}
 	
-	public boolean isAssignmentCompatible (TypeBinding left, Scope scope) {
-		if (this.resolvedType == null)
-			return false;
-		return isConstantValueOfTypeAssignableToType(this.resolvedType, left) || 
-					this.resolvedType.isCompatibleWith(left) || 
-					isBoxingCompatible(this.resolvedType, left, this, scope);
-	}
-	
 	public boolean isTypeReference() {
 		return false;
 	}
@@ -1062,14 +1067,8 @@ public abstract class Expression extends Statement {
 		return expressionType;
 	}
 	
-	/**
-	 * Once outer contexts have finalized the target type for this expression,
-	 * perform any checks that might have been delayed previously.
-	 * @param targetType the final target type (aka expectedType) for this expression.
-	 * @param scope scope for error reporting
-	 */
-	public TypeBinding checkAgainstFinalTargetType(TypeBinding targetType, Scope scope) {
-		return this.resolvedType; // subclasses may choose to do real stuff here
+	public Expression resolveExpressionExpecting(TypeBinding targetType, Scope scope, InferenceContext18 context) {
+		return this; // subclasses should implement for a better resolved expression if required.
 	}
 	
 	/**
@@ -1164,15 +1163,11 @@ public abstract class Expression extends Statement {
 	}
 	
 	public boolean isBoxingCompatibleWith(TypeBinding left, Scope scope) {
-		return isBoxingCompatible(this.resolvedType, left, this, scope);
+		return this.resolvedType != null && isBoxingCompatible(this.resolvedType, left, this, scope);
 	}
 	
 	public boolean sIsMoreSpecific(TypeBinding s, TypeBinding t, Scope scope) {
 		return s.isCompatibleWith(t, scope);
-	}
-	
-	public void tagAsEllipsisArgument() {
-		// don't care. Subclasses that are poly expressions in specific contexts should listen in and make note.
 	}
 	
 	public boolean isExactMethodReference() {
@@ -1251,15 +1246,22 @@ public abstract class Expression extends Statement {
 		return null;
 	}
 	
-	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
-		printIndent(indent, output);
-		return generateExpression(scope, indent, output);
+	public boolean isFunctionalType() {
+		return false;
 	}
 	
-//	public abstract StringBuffer generateExpression(Scope scope, int indent, StringBuffer output);
+	/** Returns contained poly expressions, result could be 0, 1 or more (for conditional expression) */
+	public Expression [] getPolyExpressions() {
+		return isPolyExpression() ? new Expression [] { this } : NO_EXPRESSIONS;
+	}
 	
-//	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
-//		return generateExpression(scope, indent, output).append(";"); //$NON-NLS-1$
-//	}
-
+	public boolean isPotentiallyCompatibleWith(TypeBinding targetType, Scope scope) {
+		return isCompatibleWith(targetType, scope); // for all but functional expressions, potential compatibility is the same as compatibility.
+	}
+	
+	
+	public StringBuffer generateJavascript(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		printIndent(indent, output);
+		return generateExpression(scope, dependency, indent, output);
+	}
 }

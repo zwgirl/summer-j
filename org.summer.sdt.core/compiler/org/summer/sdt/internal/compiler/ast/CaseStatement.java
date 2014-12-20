@@ -18,6 +18,7 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IntConstant;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -144,13 +145,13 @@ public class CaseStatement extends Statement {
 		visitor.endVisit(this, blockScope);
 	}
 	
-	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
-		printIndent(tab, output);
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		printIndent(indent, output);
 		if (this.constantExpression == null) {
 			output.append(Javascript.DEFAULT).append(Javascript.WHITESPACE).append(Javascript.COLON);
 		} else {
 			output.append(Javascript.CASE).append(Javascript.WHITESPACE);
-			this.constantExpression.generateExpression(scope, 0, output).append(Javascript.WHITESPACE).append(Javascript.COLON);
+			this.constantExpression.doGenerateExpression(scope, dependency, 0, output).append(Javascript.WHITESPACE).append(Javascript.COLON);
 		}
 		return output;
 	}

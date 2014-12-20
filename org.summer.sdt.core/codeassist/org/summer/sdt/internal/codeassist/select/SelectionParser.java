@@ -21,6 +21,7 @@ package org.summer.sdt.internal.codeassist.select;
  */
 
 import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnMemberAccess;
 import org.summer.sdt.internal.codeassist.impl.AssistParser;
 import org.summer.sdt.internal.compiler.CompilationResult;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
@@ -29,12 +30,15 @@ import org.summer.sdt.internal.compiler.ast.AllocationExpression;
 import org.summer.sdt.internal.compiler.ast.Annotation;
 import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.ArrayAllocationExpression;
+import org.summer.sdt.internal.compiler.ast.Attribute;
 import org.summer.sdt.internal.compiler.ast.CaseStatement;
 import org.summer.sdt.internal.compiler.ast.CastExpression;
 import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.summer.sdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.summer.sdt.internal.compiler.ast.Expression;
+import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldReference;
+import org.summer.sdt.internal.compiler.ast.GeneralAttribute;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
@@ -43,6 +47,7 @@ import org.summer.sdt.internal.compiler.ast.MemberValuePair;
 import org.summer.sdt.internal.compiler.ast.MessageSend;
 import org.summer.sdt.internal.compiler.ast.NameReference;
 import org.summer.sdt.internal.compiler.ast.NormalAnnotation;
+import org.summer.sdt.internal.compiler.ast.ObjectElement;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.Reference;
 import org.summer.sdt.internal.compiler.ast.ReferenceExpression;
@@ -50,16 +55,18 @@ import org.summer.sdt.internal.compiler.ast.ReturnStatement;
 import org.summer.sdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.summer.sdt.internal.compiler.ast.SingleNameReference;
 import org.summer.sdt.internal.compiler.ast.Statement;
+import org.summer.sdt.internal.compiler.ast.StringLiteral;
 import org.summer.sdt.internal.compiler.ast.SuperReference;
 import org.summer.sdt.internal.compiler.ast.SwitchStatement;
+import org.summer.sdt.internal.compiler.ast.ThisReference;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeReference;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.ICompilationUnit;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.parser.CommitRollbackParser;
 import org.summer.sdt.internal.compiler.parser.JavadocParser;
 import org.summer.sdt.internal.compiler.parser.RecoveredType;
 import org.summer.sdt.internal.compiler.problem.ProblemReporter;
@@ -118,8 +125,14 @@ public class SelectionParser extends AssistParser {
 					this.currentElement = this.currentElement.add(statement, 0);
 				}
 			}
-			if (!isIndirectlyInsideLambdaExpression())
+			if (isIndirectlyInsideLambdaExpression()) {
+				if (this.currentToken == TokenNameLBRACE)
+					this.ignoreNextOpeningBrace = true;
+				else if (this.currentToken == TokenNameRBRACE)
+					this.ignoreNextClosingBrace = true;
+			} else {
 				this.currentToken = 0; // given we are not on an eof, we do not want side effects caused by looked-ahead token
+			}
 		}
 	}
 	private void buildMoreCompletionContext(Expression expression) {
@@ -270,6 +283,53 @@ public class SelectionParser extends AssistParser {
 			super.classInstanceCreation(hasClassBody);
 		}
 	}
+	
+	protected void consumeGeneralAttribute(SingleNameReference namespace) {
+		if ((indexOfAssistIdentifier(true)) < 0) {
+			super.consumeGeneralAttribute(namespace);
+			return;
+		}
+		
+		ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr];
+		char[] token = this.identifierStack[this.identifierPtr];
+		long positions = this.identifierPositionStack[this.identifierPtr--];
+		
+		GeneralAttribute generalAttr = new GeneralAttribute(namespace);
+
+		SelectionOnFieldReference fr = new SelectionOnFieldReference(token, positions);
+		this.assistNode = fr;
+		this.lastCheckPoint = fr.sourceEnd + 1;
+		
+		generalAttr.field = fr;
+		
+		generalAttr.field.receiver = new ThisReference(0,0); //ThisReference.implicitThis();
+		this.identifierLengthPtr--;
+		generalAttr.value =  this.expressionStack[this.expressionPtr--];
+		this.expressionLengthPtr--;
+		
+		generalAttr.sourceStart = (int) (positions >>> 32);
+		
+		//check named attribute
+		if(CharOperation.equals(generalAttr.field.token, Attribute.NAME)){
+			generalAttr.bits |= ASTNode.IsNamedAttribute;
+			if(element.name != null){
+				problemReporter().duplicateNamedElementInType(element, element.name.field);
+			}
+			element.name = generalAttr;
+			StringLiteral str = (StringLiteral) generalAttr.value;
+			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
+			fieldDecl.type = element.type;
+			fieldDecl.bits |= ClassFileConstants.AccPrivate;
+//			pushOnAstStack(fieldDecl);
+//			if(xamlFlag){
+//				concatNodeLists();
+//			}
+//			xamlFlag = true ;
+		}
+		
+		pushOnAttributeStack(generalAttr);
+	}
+	
 	protected void consumeArrayCreationExpressionWithoutInitializer() {
 		// ArrayCreationWithoutArrayInitializer ::= 'new' PrimitiveType DimWithOrWithOutExprs
 		// ArrayCreationWithoutArrayInitializer ::= 'new' ClassOrInterfaceType DimWithOrWithOutExprs
@@ -552,8 +612,10 @@ public class SelectionParser extends AssistParser {
 		if (!this.diet){
 			this.restartRecovery	= true;	// force to restart in recovery mode
 			this.lastIgnoredToken = -1;
-			if (!isIndirectlyInsideLambdaExpression())
-				this.currentToken = 0; // opening brace already taken into account
+			if (isIndirectlyInsideLambdaExpression())
+				this.ignoreNextOpeningBrace = true;
+			else 
+				this.currentToken = 0; // opening brace already taken into account.
 			this.hasReportedError = true;
 		}
 	
@@ -563,8 +625,10 @@ public class SelectionParser extends AssistParser {
 		if (this.currentElement != null){
 			this.lastCheckPoint = anonymousType.bodyStart;
 			this.currentElement = this.currentElement.add(anonymousType, 0);
-			if (!isIndirectlyInsideLambdaExpression())
-				this.currentToken = 0; // opening brace already taken into account
+			if (isIndirectlyInsideLambdaExpression())
+				this.ignoreNextOpeningBrace = true;
+			else 
+				this.currentToken = 0; // opening brace already taken into account.
 			this.lastIgnoredToken = -1;
 		}
 	}
@@ -769,6 +833,8 @@ public class SelectionParser extends AssistParser {
 				this.expressionStack[this.expressionPtr] = new SelectionOnLambdaExpression(expression);
 			}
 		}
+		if (!(this.selectionStart >= expression.sourceStart && this.selectionEnd <= expression.sourceEnd))
+			popElement(K_LAMBDA_EXPRESSION_DELIMITER);
 	}
 	@Override
 	protected void consumeReferenceExpression(ReferenceExpression referenceExpression) {
@@ -787,7 +853,7 @@ public class SelectionParser extends AssistParser {
 		super.consumeLocalVariableDeclarationStatement();
 	
 		// force to restart in recovery mode if the declaration contains the selection
-		if (!this.diet) {
+		if (!this.diet && this.astStack[this.astPtr] instanceof LocalDeclaration) {
 			LocalDeclaration localDeclaration = (LocalDeclaration) this.astStack[this.astPtr];
 			if ((this.selectionStart >= localDeclaration.sourceStart)
 					&&  (this.selectionEnd <= localDeclaration.sourceEnd)) {
@@ -886,6 +952,18 @@ public class SelectionParser extends AssistParser {
 			}
 		} else {
 			super.consumeMethodInvocationName();
+			if (requireExtendedRecovery()) {
+				// https://bugs.eclipse.org/bugs/show_bug.cgi?id=430572, compensate for the hacks elsewhere where super/this gets treated as identifier. See getUnspecifiedReference
+				if (this.astPtr >= 0 && this.astStack[this.astPtr] == this.assistNode && this.assistNode instanceof ThisReference) {
+					MessageSend messageSend = (MessageSend) this.expressionStack[this.expressionPtr];
+					if (messageSend.receiver instanceof SingleNameReference) {
+						SingleNameReference snr = (SingleNameReference) messageSend.receiver;
+						if (snr.token == CharOperation.NO_CHAR) { // dummy reference created by getUnspecifiedReference ???
+							messageSend.receiver = (Expression) this.astStack[this.astPtr--];
+						}
+					}
+				}
+			}
 			return;
 		}
 	
@@ -912,9 +990,10 @@ public class SelectionParser extends AssistParser {
 					return output;
 				}
 				@Override
-				public StringBuffer generateExpression(Scope scope, int indent,
+				public StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent,
 						StringBuffer output) {
-					return output;
+					// TODO Auto-generated method stub
+					return null;
 				}
 			});
 		}
@@ -966,9 +1045,10 @@ public class SelectionParser extends AssistParser {
 					return output;
 				}
 				@Override
-				public StringBuffer generateExpression(Scope scope, int indent,
+				public StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent,
 						StringBuffer output) {
-					return output;
+					// TODO Auto-generated method stub
+					return null;
 				}
 			});
 		}
@@ -1226,7 +1306,7 @@ public class SelectionParser extends AssistParser {
 			this.restartRecovery = true; // used to avoid branching back into the regular automaton
 		}
 	}
-	protected CommitRollbackParser createSnapShotParser() {
+	protected SelectionParser createSnapShotParser() {
 		return new SelectionParser(this.problemReporter);
 	}
 	public ImportReference createAssistImportReference(char[][] tokens, long[] positions, int mod){

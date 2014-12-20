@@ -33,7 +33,7 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -729,7 +729,7 @@ public class QualifiedNameReference extends NameReference {
 			this.constant = ((FieldBinding) this.binding).constant();
 			// perform capture conversion if read access
 			return (type != null && (this.bits & ASTNode.IsStrictlyAssigned) == 0)
-					? type.capture(scope, this.sourceEnd)
+					? type.capture(scope, this.sourceStart, this.sourceEnd)
 					: type;
 		}
 		// allocation of the fieldBindings array	and its respective constants
@@ -749,7 +749,7 @@ public class QualifiedNameReference extends NameReference {
 	
 			this.bits &= ~ASTNode.DepthMASK; // flush previous depth if any
 			FieldBinding previousField = field;
-			field = scope.getField(type.capture(scope, (int)this.sourcePositions[index]), token, this);
+			field = scope.getField(type.capture(scope, (int) (this.sourcePositions[index] >>> 32), (int)this.sourcePositions[index]), token, this);
 			int place = index - this.indexOfFirstFieldBinding;
 			this.otherBindings[place] = field;
 			this.otherDepths[place] = (this.bits & ASTNode.DepthMASK) >> ASTNode.DepthSHIFT;
@@ -813,7 +813,7 @@ public class QualifiedNameReference extends NameReference {
 		type = (this.otherBindings[otherBindingsLength - 1]).type;
 		// perform capture conversion if read access
 		return (type != null && (this.bits & ASTNode.IsStrictlyAssigned) == 0)
-				? type.capture(scope, this.sourceEnd)
+				? type.capture(scope, this.sourceStart, this.sourceEnd)
 				: type;
 	}
 	
@@ -1163,7 +1163,7 @@ public class QualifiedNameReference extends NameReference {
 		return null;
 	}
 	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 		for (int i = 0; i < this.tokens.length; i++) {
 			if (i > 0) output.append('.');
 			output.append(this.tokens[i]);

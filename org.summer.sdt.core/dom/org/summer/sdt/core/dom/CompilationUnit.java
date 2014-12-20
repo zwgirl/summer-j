@@ -70,7 +70,7 @@ public class CompilationUnit extends ASTNode {
 	 */
 	public static final ChildPropertyDescriptor PACKAGE_PROPERTY =
 		new ChildPropertyDescriptor(CompilationUnit.class, "package", PackageDeclaration.class, OPTIONAL, NO_CYCLE_RISK); //$NON-NLS-1$
-	
+
 	/**
 	 * A list of property descriptors (element type:
 	 * {@link StructuralPropertyDescriptor}),
@@ -1018,6 +1018,7 @@ public class CompilationUnit extends ASTNode {
 		this.optionalPackageDeclaration = pkgDecl;
 		postReplaceChild(oldChild, pkgDecl, PACKAGE_PROPERTY);
 	}
+
 
 	/**
 	 * Sets the array of problems reported by the compiler during the parsing or

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,18 +15,11 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.codegen.BranchLabel;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.flow.LoopingFlowContext;
-import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
-import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeIds;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.impl.*;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class DoStatement extends Statement {
 
@@ -235,22 +228,41 @@ public class DoStatement extends Statement {
 		visitor.endVisit(this, scope);
 	}
 	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+	@Override
+	public boolean doesNotCompleteNormally() {
+		Constant cst = this.condition.constant;
+		boolean isConditionTrue = cst != Constant.NotAConstant && cst.booleanValue() == true;
+		cst = this.condition.optimizedBooleanConstant();
+		boolean isConditionOptimizedTrue = cst != Constant.NotAConstant && cst.booleanValue() == true;
+		
+		if (isConditionTrue || isConditionOptimizedTrue)
+			return this.action == null || !this.action.breaksOut(null);
+		if (this.action == null || this.action.breaksOut(null))
+			return false;
+		return this.action.doesNotCompleteNormally() && !this.action.completesByContinue();
+	}
+	
+	@Override
+	public boolean completesByContinue() {
+		return this.action.continuesAtOuterLabel();
+	}
+	
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 		output.append("do"); //$NON-NLS-1$
 		if (this.action == null)
 			output.append(" ;\n"); //$NON-NLS-1$
 		else {
 			output.append('\n');
-			this.action.generateStatement(scope, indent + 1, output).append('\n');
+			this.action.generateStatement(scope, dependency, indent + 1, output).append('\n');
 		}
 		printIndent(indent, output).append("while ("); //$NON-NLS-1$
-		return this.condition.generateExpression(scope, 0, output).append(");"); //$NON-NLS-1$
+		return this.condition.doGenerateExpression(scope, dependency, 0, output).append(");"); //$NON-NLS-1$
 	}
 	
 	@Override
-	public StringBuffer generateStatement(Scope scope, int indent,
+	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent,
 			StringBuffer output) {
 		printIndent(indent, output);
-		return this.generateExpression(scope, indent, output);
+		return this.generateExpression(scope, dependency, indent, output);
 	}
 }

@@ -15,16 +15,11 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.BranchLabel;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.impl.BooleanConstant;
-import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.impl.*;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class UnaryExpression extends OperatorExpression {
 
@@ -318,9 +313,9 @@ public class UnaryExpression extends OperatorExpression {
 		visitor.endVisit(this, blockScope);
 	}
 	
-	public StringBuffer generateExpressionNoParenthesis(Scope scope, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 
 		output.append(operatorToString()).append(' ');
-		return this.expression.generateExpression(scope, 0, output);
+		return this.expression.doGenerateExpression(scope, dependency, 0, output);
 	}
 }

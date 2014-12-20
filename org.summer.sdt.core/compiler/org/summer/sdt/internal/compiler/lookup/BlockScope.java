@@ -23,7 +23,6 @@
  *     Keigo Imai - Contribution for  bug 388903 - Cannot extend inner class as an anonymous class when it extends the outer class
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.lookup;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -191,21 +190,6 @@ public class BlockScope extends Scope {
 		return s;
 	}
 	
-//	private void checkAndSetModifiersForVariable(LocalVariableBinding varBinding) {
-//		int modifiers = varBinding.modifiers;
-//		if ((modifiers & ExtraCompilerModifiers.AccAlternateModifierProblem) != 0 && varBinding.declaration != null){
-//			problemReporter().duplicateModifierForVariable(varBinding.declaration, this instanceof MethodScope);
-//		}
-//		int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
-//	
-//		int unexpectedModifiers = ~ClassFileConstants.AccFinal;
-//		if ((realModifiers & unexpectedModifiers) != 0 && varBinding.declaration != null){
-//			problemReporter().illegalModifierForVariable(varBinding.declaration, this instanceof MethodScope);
-//		}
-//		varBinding.modifiers = modifiers;
-//	}
-	
-	//cym modified 2014-10-26
 	private void checkAndSetModifiersForVariable(LocalVariableBinding varBinding) {
 		int modifiers = varBinding.modifiers;
 		if ((modifiers & ExtraCompilerModifiers.AccAlternateModifierProblem) != 0 && varBinding.declaration != null){
@@ -213,7 +197,7 @@ public class BlockScope extends Scope {
 		}
 		int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
 	
-		int unexpectedModifiers = ~(ClassFileConstants.AccFinal | ClassFileConstants.AccRef | ClassFileConstants.AccOut);
+		int unexpectedModifiers = ~ClassFileConstants.AccFinal;
 		if ((realModifiers & unexpectedModifiers) != 0 && varBinding.declaration != null){
 			problemReporter().illegalModifierForVariable(varBinding.declaration, this instanceof MethodScope);
 		}
@@ -264,8 +248,12 @@ public class BlockScope extends Scope {
 					&& (local.declaration != null) // unused (and non secret) local
 					&& ((local.declaration.bits & ASTNode.IsLocalDeclarationReachable) != 0)) { // declaration is reachable
 	
-					if (!(local.declaration instanceof Argument)) // do not report unused catch arguments
+					if (local.isCatchParameter()) {
+						problemReporter().unusedExceptionParameter(local.declaration); // report unused catch arguments
+					}
+					else {
 						problemReporter().unusedLocalVariable(local.declaration);
+					}
 				}
 	
 				// could be optimized out, but does need to preserve unread variables ?
@@ -685,7 +673,7 @@ public class BlockScope extends Scope {
 			while (currentIndex < length) {
 				ReferenceBinding typeBinding = (ReferenceBinding) binding;
 				char[] nextName = compoundName[currentIndex++];
-				TypeBinding receiverType = typeBinding.capture(this, invocationSite.sourceEnd());
+				TypeBinding receiverType = typeBinding.capture(this, invocationSite.sourceStart(), invocationSite.sourceEnd());
 				if ((binding = findField(receiverType, nextName, invocationSite, true /*resolve*/)) != null) {
 					if (!binding.isValidBinding()) {
 						return new ProblemFieldBinding(
@@ -728,7 +716,7 @@ public class BlockScope extends Scope {
 					CharOperation.concatWith(CharOperation.subarray(compoundName, 0, currentIndex), '.'),
 					ProblemReasons.NotFound);
 			}
-			TypeBinding receiverType = typeBinding.capture(this, invocationSite.sourceEnd());
+			TypeBinding receiverType = typeBinding.capture(this, invocationSite.sourceStart(), invocationSite.sourceEnd());
 			variableBinding = findField(receiverType, compoundName[currentIndex++], invocationSite, true /*resolve*/);
 			if (variableBinding == null) {
 				return new ProblemFieldBinding(
@@ -953,11 +941,9 @@ public class BlockScope extends Scope {
 		boolean isStatic = binding.isStatic();
 		ReferenceBinding fieldDeclaringClass = binding.declaringClass;
 		// loop in enclosing context, until reaching the field declaring context
-		MethodScope methodScope = methodScope();
+		MethodScope methodScope = namedMethodScope();
 		while (methodScope != null) {
 			if (methodScope.isStatic != isStatic)
-				return false;
-			if (methodScope.isLambdaScope())
 				return false;
 			if (!methodScope.isInsideInitializer() // inside initializer
 					&& !((AbstractMethodDeclaration) methodScope.referenceContext).isInitializationMethod()) { // inside constructor or clinit
@@ -970,7 +956,7 @@ public class BlockScope extends Scope {
 			if (!enclosingType.erasure().isAnonymousType()) {
 				return false; // only check inside anonymous type
 			}
-			methodScope = methodScope.enclosingMethodScope();
+			methodScope = methodScope.enclosingMethodScope().namedMethodScope();
 		}
 		return false;
 	}
@@ -1047,6 +1033,7 @@ public class BlockScope extends Scope {
 	private List trackingVariables; // can be null if no resources are tracked
 	/** Used only during analyseCode and only for checking if a resource was closed in a finallyBlock. */
 	public FlowInfo finallyInfo;
+	
 	/**
 	 * Register a tracking variable and compute its id.
 	 */

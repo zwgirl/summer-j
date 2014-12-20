@@ -79,6 +79,7 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.StringConstant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
@@ -455,6 +456,11 @@ public class ClassFile implements TypeConstants, TypeIds {
 		if (genericSignature != null) {
 			attributesNumber += generateSignatureAttribute(genericSignature);
 		}
+		
+		//cym 2014-12-04
+		if(fieldBinding instanceof IndexerBinding){
+			attributesNumber += generateExceptionsAttribute1(((IndexerBinding)fieldBinding).parameters);
+		}
 		if (this.targetJDK >= ClassFileConstants.JDK1_4) {
 			FieldDeclaration fieldDeclaration = fieldBinding.sourceField();
 			if (fieldDeclaration != null) {
@@ -502,6 +508,36 @@ public class ClassFile implements TypeConstants, TypeIds {
 		return attributesNumber;
 	}
 
+	private int generateExceptionsAttribute1(TypeBinding[] arguments) {
+		if(arguments == null || arguments.length == 0){
+			return 0;
+		}
+		int localContentsOffset = this.contentsOffset;
+		int length = arguments.length;
+		int exSize = 8 + length * 2;
+		if (exSize + this.contentsOffset >= this.contents.length) {
+			resizeContents(exSize);
+		}
+		int exceptionNameIndex =
+			this.constantPool.literalIndex(AttributeNamesConstants.ExceptionsName);
+		this.contents[localContentsOffset++] = (byte) (exceptionNameIndex >> 8);
+		this.contents[localContentsOffset++] = (byte) exceptionNameIndex;
+		// The attribute length = length * 2 + 2 in case of a exception attribute
+		int attributeLength = length * 2 + 2;
+		this.contents[localContentsOffset++] = (byte) (attributeLength >> 24);
+		this.contents[localContentsOffset++] = (byte) (attributeLength >> 16);
+		this.contents[localContentsOffset++] = (byte) (attributeLength >> 8);
+		this.contents[localContentsOffset++] = (byte) attributeLength;
+		this.contents[localContentsOffset++] = (byte) (length >> 8);
+		this.contents[localContentsOffset++] = (byte) length;
+		for (int i = 0; i < length; i++) {
+			int exceptionIndex = this.constantPool.literalIndexForType(arguments[i]);
+			this.contents[localContentsOffset++] = (byte) (exceptionIndex >> 8);
+			this.contents[localContentsOffset++] = (byte) exceptionIndex;
+		}
+		this.contentsOffset = localContentsOffset;
+		return 1;
+	}
 	/**
 	 * INTERNAL USE-ONLY
 	 * This methods generates the bytes for the given field binding
@@ -4883,6 +4919,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 		if (aType.isProtected()) { // rewrite protected into public
 			accessFlags |= ClassFileConstants.AccPublic;
 		}
+		
 		// clear all bits that are illegal for a class or an interface
 		accessFlags
 			&= ~(
@@ -4890,8 +4927,9 @@ public class ClassFile implements TypeConstants, TypeIds {
 					| ClassFileConstants.AccProtected
 					| ClassFileConstants.AccPrivate
 					| ClassFileConstants.AccStatic
-					| ClassFileConstants.AccSynchronized
-					| ClassFileConstants.AccNative);
+//					| ClassFileConstants.AccSynchronized  //cym 2014-12-13
+//					| ClassFileConstants.AccNative  //cym 2014-12-13
+					);
 
 		// set the AccSuper flag (has to be done after clearing AccSynchronized - since same value)
 		if (!aType.isInterface()) { // class or enum
@@ -4904,6 +4942,11 @@ public class ClassFile implements TypeConstants, TypeIds {
 		if ((accessFlags & finalAbstract) == finalAbstract) {
 			accessFlags &= ~finalAbstract;
 		}
+		
+		if((accessFlags & ClassFileConstants.AccCompleteNative) != 0){
+			System.err.println("class is complete native!");
+		}
+		
 		this.enclosingClassFile = parentClassFile;
 		// innerclasses get their names computed at code gen time
 

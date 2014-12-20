@@ -29,9 +29,7 @@ public interface ClassFileConstants {
 	int AccStatic       = 0x0008;
 	int AccFinal        = 0x0010;
 	int AccSynchronized = 0x0020;
-	int AccRef = AccSynchronized;
 	int AccVolatile     = 0x0040;
-	int AccOut = AccVolatile;
 	int AccBridge       = 0x0040;
 	int AccTransient    = 0x0080;
 	int AccVarargs      = 0x0080;
@@ -42,7 +40,17 @@ public interface ClassFileConstants {
 	int AccSynthetic    = 0x1000;
 	int AccAnnotation   = 0x2000;
 	int AccEnum         = 0x4000;
-
+	
+	//cym 2014-12-04
+	//flag for indexer, property, event
+	int AccProperty    	= AccAnnotation;
+	int AccIndexer   	= AccInterface;
+	int AccEvent        = AccEnum;
+	
+	//cym 2014-12-12
+	int AccModule       = AccBridge;
+	int AccModuleMerge		= AccNative;
+	int AccCompleteNative = AccTransient;
 	/**
 	 * From classfile version 52 (compliance 1.8 up), meaning that a formal parameter is mandated
 	 * by a language specification, so all compilers for the language must emit it.

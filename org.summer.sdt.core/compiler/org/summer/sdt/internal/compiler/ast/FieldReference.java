@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,7 +26,7 @@ import org.summer.sdt.internal.compiler.codegen.Opcodes;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.EventBinding;
@@ -70,6 +70,7 @@ public class FieldReference extends Reference implements InvocationSite {
 		this.sourceStart = (int) (pos >>> 32);
 		this.sourceEnd = (int) (pos & 0x00000000FFFFFFFFL);
 		this.bits |= Binding.FIELD;
+	
 	}
 	
 	public FlowInfo analyseAssignment(BlockScope currentScope, FlowContext flowContext, FlowInfo flowInfo, Assignment assignment, boolean isCompound) {
@@ -499,6 +500,11 @@ public class FieldReference extends Reference implements InvocationSite {
 		return this.receiver.isSuper();
 	}
 	
+	@Override
+	public boolean isQualifiedSuper() {
+		return this.receiver.isQualifiedSuper();
+	}
+	
 	public boolean isTypeAccess() {
 		return this.receiver != null && this.receiver.isTypeReference();
 	}
@@ -704,7 +710,7 @@ public class FieldReference extends Reference implements InvocationSite {
 		TypeBinding fieldType = fieldBinding.type;
 		if (fieldType != null) {
 			if ((this.bits & ASTNode.IsStrictlyAssigned) == 0) {
-				fieldType = fieldType.capture(scope, this.sourceEnd);	// perform capture conversion if read access
+				fieldType = fieldType.capture(scope, this.sourceStart, this.sourceEnd);	// perform capture conversion if read access
 			}
 			this.resolvedType = fieldType;
 			if ((fieldType.tagBits & TagBits.HasMissingType) != 0) {
@@ -747,7 +753,7 @@ public class FieldReference extends Reference implements InvocationSite {
 		return null;
 	}
 	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		return this.receiver.printExpression(0, output).append('.').append(this.token);
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
+		return this.receiver.doGenerateExpression(scope, depsManager, 0, output).append('.').append(this.token);
 	}
 }

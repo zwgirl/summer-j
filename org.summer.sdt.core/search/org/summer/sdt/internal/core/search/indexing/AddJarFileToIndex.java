@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipError;
 import java.util.zip.ZipFile;
 
 import org.eclipse.core.resources.IFile;
@@ -260,6 +261,13 @@ class AddJarFileToIndex extends IndexRequest {
 			}
 			this.manager.removeIndex(this.containerPath);
 			return false;
+		} catch (ZipError e) { // merge with the code above using '|' when we move to 1.7
+			if (JobManager.VERBOSE) {
+				org.summer.sdt.internal.core.util.Util.verbose("-> failed to index " + this.containerPath + " because of the following exception:"); //$NON-NLS-1$ //$NON-NLS-2$
+				e.printStackTrace();
+			}
+			this.manager.removeIndex(this.containerPath);
+			return false;
 		}
 		return true;
 	}
@@ -273,7 +281,7 @@ class AddJarFileToIndex extends IndexRequest {
 			// assert and enum will not be recognized as java identifiers 
 			// in 1.7 mode, which are in 1.3.
 			case TerminalTokens.TokenNameIdentifier:
-			case TerminalTokens.TokenNameassert:
+//			case TerminalTokens.TokenNameassert:   //cym 2014-12-17
 			case TerminalTokens.TokenNameenum:
 				return true;
 			default:

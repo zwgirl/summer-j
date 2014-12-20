@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,15 +17,11 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.codegen.BranchLabel;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.impl.*;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class IfStatement extends Statement {
 
@@ -290,24 +286,39 @@ public class IfStatement extends Statement {
 		visitor.endVisit(this, blockScope);
 	}
 	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		printIndent(indent, output).append("if ("); //$NON-NLS-1$
-		this.condition.generateExpression(scope, 0, output).append(")\n");	//$NON-NLS-1$
+	@Override
+	public boolean doesNotCompleteNormally() {
+		return this.thenStatement != null && this.thenStatement.doesNotCompleteNormally() && this.elseStatement != null && this.elseStatement.doesNotCompleteNormally();
+	}
+	@Override
+	public boolean completesByContinue() {
+		return this.thenStatement != null && this.thenStatement.completesByContinue() || this.elseStatement != null && this.elseStatement.completesByContinue();
+	}
+	
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		output.append("if ("); //$NON-NLS-1$
+		this.condition.generateExpression(scope, dependency, 0, output).append(")\n");	//$NON-NLS-1$
 		if(this.thenStatement instanceof Block){
-			this.thenStatement.generateStatement(scope, indent, output);
+			this.thenStatement.generateStatement(scope, dependency, indent, output);
 		} else{
-			this.thenStatement.generateStatement(scope, indent + 1, output);
+			this.thenStatement.generateStatement(scope, dependency, indent + 1, output);
 		}
 		if (this.elseStatement != null) {
 			output.append('\n');
 			printIndent(indent, output);
 			output.append("else\n"); //$NON-NLS-1$
 			if(elseStatement instanceof Block){
-				this.elseStatement.generateStatement(scope, indent, output);
+				this.elseStatement.generateStatement(scope, dependency, indent, output);
 			} else {
-				this.elseStatement.generateStatement(scope, indent + 1, output);
+				this.elseStatement.generateStatement(scope, dependency, indent + 1, output);
 			}
 		}
 		return output;
+	}
+	
+	@Override
+	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		printIndent(indent, output);
+		return doGenerateExpression(scope, dependency, indent, output);
 	}
 }

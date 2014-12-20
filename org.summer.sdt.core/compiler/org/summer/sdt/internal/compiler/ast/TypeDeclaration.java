@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import org.summer.sdt.core.ClasspathContainerInitializer;
 import org.summer.sdt.core.compiler.CategorizedProblem;
@@ -40,9 +41,11 @@ import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IrritantSet;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
-import org.summer.sdt.internal.compiler.javascript.ImportManager;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.javascript.Javascript;
 import org.summer.sdt.internal.compiler.javascript.JavascriptFile;
+import org.summer.sdt.internal.compiler.javascript.JavascriptTypes;
+import org.summer.sdt.internal.compiler.javascript.TypeDependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -87,9 +90,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	public TypeReference superclass;
 	public TypeReference[] superInterfaces;
 	public FieldDeclaration[] fields;
-	public IndexerDeclaration[] indexers;
-	public PropertyDeclaration[] properties;
-	public EventDeclaration[] events;
+//	public IndexerDeclaration[] indexers;
+//	public PropertyDeclaration[] properties;
+//	public EventDeclaration[] events;
 	public AbstractMethodDeclaration[] methods;
 	public TypeDeclaration[] memberTypes;
 	public SourceTypeBinding binding;
@@ -116,9 +119,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	public TypeParameter[] typeParameters;
 	
 	//XAML root element
-	public Element element;
+	public XAMLElement element;
 	
-	public ImportManager importManager;
+	public Dependency dependency;
 
 	public TypeDeclaration(CompilationResult compilationResult){
 		this.compilationResult = compilationResult;
@@ -640,8 +643,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 	}
 	
-
-	
 	/**
 	 * Bytecode generation for a local inner type (API as a normal statement code gen)
 	 */
@@ -690,14 +691,14 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		generateCode((ClassFile) null);
 	}
 	
-	public void generateHtml(CompilationUnitScope unitScope){
+	public void generateHtml(CompilationUnitScope unitScope, Dependency dependency){
 		generateHtml(unitScope, null);
 	}
 	
 	/**
 	 * Generic javascript generation for type
 	 */
-	public void generateHtml(CompilationUnitScope unitScope, HtmlFile enclosingClassFile) {
+	public void generateHtml(CompilationUnitScope unitScope, Dependency dependency, HtmlFile enclosingClassFile) {
 		if (this.ignoreFurtherInvestigation) {
 			if (this.binding == null)
 				return;
@@ -716,7 +717,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			// create the result for a compiled type
 			HtmlFile htmlFile = HtmlFile.getNewInstance(this.binding);
 			
-			this.importManager = new ImportManager(this);
+			this.dependency = new TypeDependency(this);
 			
 			StringBuffer output = htmlFile.content;
 			
@@ -725,7 +726,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append("<body>").append('\n');
 			output.append("<script>").append('\n');
 			output.append("alert('hello world!');").append('\n');
-			generateMainBody(unitScope, output, 0, method);
+			generateMainBody(unitScope, dependency, output, 0, method);
 			output.append("\n");
 			output.append("</script>").append('\n');
 			output.append("</body>").append('\n');
@@ -743,13 +744,13 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 	}
 	
-	private void generateMainBody(CompilationUnitScope unitScope, StringBuffer output, int indent, MethodDeclaration method){
+	private void generateMainBody(CompilationUnitScope unitScope, Dependency dependency, StringBuffer output, int indent, MethodDeclaration method){
 		printIndent(indent + 1, output);
-		generateAMDHeader(unitScope.referenceContext, 0, output, Javascript.REQUIRE);
+		dependency.generateAMDHeader(new char[0], 0, output, Javascript.REQUIRE);
 		if(method.statements != null){
 			for(int j = 0, length = method.statements.length; j < length; j++){
 				output.append("\n");
-				method.statements[j].generateStatement(scope, indent + 2, output);
+				method.statements[j].generateStatement(scope, dependency, indent + 2, output);
 			}
 		}
 		
@@ -780,7 +781,14 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	}
 
 	public void generateJavascript(CompilationUnitScope unitScope) {
-		generateJavascript(unitScope, (JavascriptFile) null);
+		if((this.modifiers & ClassFileConstants.AccAnnotation) != 0){
+			return;
+		}
+		
+		if(this.binding == null){
+			return;
+		}
+		generateJavascript(unitScope, JavascriptFile.getNewInstance(this.binding.compoundName), new TypeDependency(this));
 	}
 	
 	public boolean hasErrors() {
@@ -926,8 +934,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			ReferenceBinding superclassBinding = (ReferenceBinding)nestedType.superclass.erasure();
 			if (superclassBinding.enclosingType() != null && !superclassBinding.isStatic()) {
 				if (!superclassBinding.isLocalType()
-						|| ((NestedTypeBinding)superclassBinding).getSyntheticField(superclassBinding.enclosingType(), true) != null){
-	
+						|| ((NestedTypeBinding)superclassBinding).getSyntheticField(superclassBinding.enclosingType(), true) != null
+						|| superclassBinding.isMemberType()){
 					nestedType.addSyntheticArgument(superclassBinding.enclosingType());
 				}
 			}
@@ -1022,21 +1030,22 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				this.bits |= (abstractMethodDeclaration.bits & ASTNode.HasSyntaxErrors);
 			}
 		}
-		
-		//cym 2014-10-13 
-		if (this.properties != null) {
-			int length = this.properties.length;
-			for (int i = 0; i < length; i++) {
-				PropertyDeclaration prop = properties[i];
-				if(prop.setter != null){
-					prop.setter.parseStatements(parser, unit);
-				}
-				if(prop.getter != null){
-					prop.getter.parseStatements(parser, unit);
-				}
-			}
-		}
 	
+//		//initializers
+//		if (this.fields != null) {
+//			int length = this.fields.length;
+//			for (int i = 0; i < length; i++) {
+//				final FieldDeclaration fieldDeclaration = this.fields[i];
+//				switch(fieldDeclaration.getKind()) {
+//					case AbstractVariableDeclaration.INITIALIZER:
+//						((Initializer) fieldDeclaration).parseStatements(parser, this, unit);
+//						this.bits |= (fieldDeclaration.bits & ASTNode.HasSyntaxErrors);
+//						break;
+//				}
+//			}
+//		}
+		
+		//cym mofified 2014-12-04
 		//initializers
 		if (this.fields != null) {
 			int length = this.fields.length;
@@ -1046,26 +1055,43 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					case AbstractVariableDeclaration.INITIALIZER:
 						((Initializer) fieldDeclaration).parseStatements(parser, this, unit);
 						this.bits |= (fieldDeclaration.bits & ASTNode.HasSyntaxErrors);
-						break;
-					case AbstractVariableDeclaration.FIELD:
-						if(fieldDeclaration instanceof PropertyDeclaration){
-							PropertyDeclaration prop = (PropertyDeclaration) this.fields[i];
-							if(prop.setter != null){
-								prop.setter.parseStatements(parser, unit);
-							}
-							if(prop.getter != null){
-								prop.getter.parseStatements(parser, unit);
-							}
-						} else if(fieldDeclaration instanceof IndexerDeclaration){
-							IndexerDeclaration prop = (IndexerDeclaration) this.fields[i];
-							if(prop.setter != null){
-								prop.setter.parseStatements(parser, unit);
-							}
-							if(prop.getter != null){
-								prop.getter.parseStatements(parser, unit);
-							}
-						}
-						break;
+						continue;
+				}
+				
+				if(fieldDeclaration instanceof IndexerDeclaration){
+					IndexerDeclaration indexer = (IndexerDeclaration) fieldDeclaration;
+					if(indexer.getter != null){
+						indexer.getter.parseStatements(parser, unit);
+					}
+					
+					if(indexer.setter != null){
+						indexer.setter.parseStatements(parser, unit);
+					}
+					
+					continue;
+				} 
+				if(fieldDeclaration instanceof PropertyDeclaration){
+					PropertyDeclaration property = (PropertyDeclaration) fieldDeclaration;
+					if(property.getter != null){
+						property.getter.parseStatements(parser, unit);
+					}
+					
+					if(property.setter != null){
+						property.setter.parseStatements(parser, unit);
+					}
+					
+					continue;
+				} 
+				if(fieldDeclaration instanceof EventDeclaration){
+					
+					EventDeclaration event = (EventDeclaration) fieldDeclaration;
+					if(event.add != null){
+						event.add.parseStatements(parser, unit);
+					}
+					
+					if(event.remove != null){
+						event.remove.parseStatements(parser, unit);
+					}
 				}
 			}
 		}
@@ -1381,6 +1407,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						}
 					}
 					break;
+			}
+			
+			//check element cym 2014-12-09
+			if(this.element != null){
+				this.element.resolve(this.initializerScope);
 			}
 			
 			//check property  cym add 2014-11-03
@@ -1744,126 +1775,128 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		return (this.bits & ASTNode.IsSecondaryType) != 0;
 	}
 
-	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
-		if (this.javadoc != null) {
-			this.javadoc.print(indent, output);
-		}
-		if ((this.bits & ASTNode.IsAnonymousType) == 0 && (this.modifiers & ClassFileConstants.AccNative) != 0) {
-			printIndent(indent, output);
-			generateHeader(scope, 0, output);
-		}
-		return generateBody(scope, indent, output);
-	}
-	
-	public StringBuffer generateBody(Scope scope, int indent, StringBuffer output) {
-		output.append(" {"); //$NON-NLS-1$
+	public StringBuffer generateJavascript(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+//		if (this.javadoc != null) {
+//			this.javadoc.print(indent, output);
+//		}
+//		if ((this.bits & ASTNode.IsAnonymousType) == 0 && (this.modifiers & ClassFileConstants.AccNative) != 0) {
+//			printIndent(indent, output);
+//			generateHeader(scope, 0, output);
+//		}
+//		return generateBody(scope, dependency, indent, output);
 		
-		//for XAML
-		if(this.element != null){
-			output.append('\n');
-			this.element.print(indent + 1, output).append("\n");
-		}
-		
-		if (this.memberTypes != null) {
-			for (int i = 0; i < this.memberTypes.length; i++) {
-				if (this.memberTypes[i] != null) {
-					output.append('\n');
-					this.memberTypes[i].generateJavascript(scope, indent + 1, output);
-				}
-			}
-		}
-		if (this.fields != null) {
-			for (int fieldI = 0; fieldI < this.fields.length; fieldI++) {
-				if((this.fields[fieldI].modifiers & ClassFileConstants.AccNative) != 0){
-					continue;
-				}
-				
-				if (this.fields[fieldI] != null) {
-					output.append('\n');
-					this.fields[fieldI].generateJavascript(scope, indent + 1, output);
-				}
-			}
-		}
-		if (this.methods != null) {
-			for (int i = 0; i < this.methods.length; i++) {
-				if((this.methods[i].modifiers & ClassFileConstants.AccNative) != 0){
-					continue;
-				}
-				if (this.methods[i] != null) {
-					output.append('\n');
-					this.methods[i].generateJavascript(scope, indent + 1, output);
-				}
-			}
-		}
-		output.append('\n');
-		return printIndent(indent, output).append('}');
-	}
-	
-	public StringBuffer generateHeader(Scope scope, int indent, StringBuffer output) {
-		printModifiers(this.modifiers, output);
-		if (this.annotations != null) {
-			generateAnnotations(this.annotations, output);
-			output.append(' ');
-		}
-	
-		switch (kind(this.modifiers)) {
-			case TypeDeclaration.CLASS_DECL :
-				output.append("class "); //$NON-NLS-1$
-				break;
-			case TypeDeclaration.INTERFACE_DECL :
-				output.append("interface "); //$NON-NLS-1$
-				break;
-			case TypeDeclaration.ENUM_DECL :
-				output.append("enum "); //$NON-NLS-1$
-				break;
-			case TypeDeclaration.ANNOTATION_TYPE_DECL :
-				output.append("@interface "); //$NON-NLS-1$
-				break;
-		}
-		output.append(this.name);
-		if (this.typeParameters != null) {
-			output.append("<");//$NON-NLS-1$
-			for (int i = 0; i < this.typeParameters.length; i++) {
-				if (i > 0) output.append( ", "); //$NON-NLS-1$
-				this.typeParameters[i].print(0, output);
-			}
-			output.append(">");//$NON-NLS-1$
-		}
-		if (this.superclass != null) {
-			output.append(" extends ");  //$NON-NLS-1$
-			this.superclass.print(0, output);
-		}
-		if (this.superInterfaces != null && this.superInterfaces.length > 0) {
-			switch (kind(this.modifiers)) {
-				case TypeDeclaration.CLASS_DECL :
-				case TypeDeclaration.ENUM_DECL :
-					output.append(" implements "); //$NON-NLS-1$
-					break;
-				case TypeDeclaration.INTERFACE_DECL :
-				case TypeDeclaration.ANNOTATION_TYPE_DECL :
-					output.append(" extends "); //$NON-NLS-1$
-					break;
-			}
-			for (int i = 0; i < this.superInterfaces.length; i++) {
-				if (i > 0) output.append( ", "); //$NON-NLS-1$
-				this.superInterfaces[i].generateJavascript(scope, 0, output);
-			}
-		}
 		return output;
 	}
 	
-	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
+//	public StringBuffer generateBody(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+//		output.append(" {"); //$NON-NLS-1$
+//		
+//		//for XAML
+//		if(this.element != null){
+//			output.append('\n');
+//			this.element.print(indent + 1, output).append("\n");
+//		}
+//		
+//		if (this.memberTypes != null) {
+//			for (int i = 0; i < this.memberTypes.length; i++) {
+//				if (this.memberTypes[i] != null) {
+//					output.append('\n');
+//					this.memberTypes[i].generateJavascript(scope, dependency, indent + 1, output);
+//				}
+//			}
+//		}
+//		if (this.fields != null) {
+//			for (int fieldI = 0; fieldI < this.fields.length; fieldI++) {
+//				if((this.fields[fieldI].modifiers & ClassFileConstants.AccNative) != 0){
+//					continue;
+//				}
+//				
+//				if (this.fields[fieldI] != null) {
+//					output.append('\n');
+//					this.fields[fieldI].generateJavascript(scope, dependency, indent + 1, output);
+//				}
+//			}
+//		}
+//		if (this.methods != null) {
+//			for (int i = 0; i < this.methods.length; i++) {
+//				if((this.methods[i].modifiers & ClassFileConstants.AccNative) != 0){
+//					continue;
+//				}
+//				if (this.methods[i] != null) {
+//					output.append('\n');
+//					this.methods[i].generateJavascript(scope, dependency, indent + 1, output);
+//				}
+//			}
+//		}
+//		output.append('\n');
+//		return printIndent(indent, output).append('}');
+//	}
+//	
+//	public StringBuffer generateHeader(Scope scope, int indent, StringBuffer output) {
+//		printModifiers(this.modifiers, output);
+////		if (this.annotations != null) {
+////			generateAnnotations(this.annotations, output);
+////			output.append(' ');
+////		}
+//	
+//		switch (kind(this.modifiers)) {
+//			case TypeDeclaration.CLASS_DECL :
+//				output.append("class "); //$NON-NLS-1$
+//				break;
+//			case TypeDeclaration.INTERFACE_DECL :
+//				output.append("interface "); //$NON-NLS-1$
+//				break;
+//			case TypeDeclaration.ENUM_DECL :
+//				output.append("enum "); //$NON-NLS-1$
+//				break;
+//			case TypeDeclaration.ANNOTATION_TYPE_DECL :
+//				output.append("@interface "); //$NON-NLS-1$
+//				break;
+//		}
+//		output.append(this.name);
+//		if (this.typeParameters != null) {
+//			output.append("<");//$NON-NLS-1$
+//			for (int i = 0; i < this.typeParameters.length; i++) {
+//				if (i > 0) output.append( ", "); //$NON-NLS-1$
+//				this.typeParameters[i].print(0, output);
+//			}
+//			output.append(">");//$NON-NLS-1$
+//		}
+//		if (this.superclass != null) {
+//			output.append(" extends ");  //$NON-NLS-1$
+//			this.superclass.print(0, output);
+//		}
+//		if (this.superInterfaces != null && this.superInterfaces.length > 0) {
+//			switch (kind(this.modifiers)) {
+//				case TypeDeclaration.CLASS_DECL :
+//				case TypeDeclaration.ENUM_DECL :
+//					output.append(" implements "); //$NON-NLS-1$
+//					break;
+//				case TypeDeclaration.INTERFACE_DECL :
+//				case TypeDeclaration.ANNOTATION_TYPE_DECL :
+//					output.append(" extends "); //$NON-NLS-1$
+//					break;
+//			}
+//			for (int i = 0; i < this.superInterfaces.length; i++) {
+//				if (i > 0) output.append( ", "); //$NON-NLS-1$
+//				this.superInterfaces[i].generateJavascript(scope, 0, output);
+//			}
+//		}
+//		return output;
+//	}
+	
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 		//var className = (function() {})();
 		output.append("var ").append(this.name).append(" = " ).append("(function() {");
 		
-		generateClassBody(this, tab + 1, output);
+		generateClass(this, dependency, indent + 1, output);
 		output.append('\n');
-		printIndent(tab + 1, output);
+		printIndent(indent + 1, output);
 		if((this.modifiers & ClassFileConstants.AccNative) == 0){   //if native skip 
 			output.append("return ").append(this.name).append(";");
 			output.append('\n');
 		}
-		printIndent(tab, output);
+		printIndent(indent, output);
 		output.append("})()");
 		return output;
 	}
@@ -1872,79 +1905,34 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	/**
 	 * Generic javascript generation for type
 	 */
-	public void generateJavascript(CompilationUnitScope unitScope, JavascriptFile enclosingClassFile) {
+	public void generateJavascript(CompilationUnitScope unitScope, JavascriptFile jsFile, Dependency dependency) {
 //		if ((this.bits & ASTNode.HasBeenGenerated) != 0)
 //			return;
 //		this.bits |= ASTNode.HasBeenGenerated;
 		if (this.ignoreFurtherInvestigation) {
 			if (this.binding == null)
 				return;
-			JavascriptFile.createProblemType(
-				this,
-				this.scope.referenceCompilationUnit().compilationResult);
-			return;
+//			JavascriptFile.createProblemType(
+//				this,
+//				this.scope.referenceCompilationUnit().compilationResult);
+//			return;
 		}
 		try {
-			// create the result for a compiled type
-			JavascriptFile jsFile = JavascriptFile.getNewInstance(this.binding);
-			
-			this.importManager = new ImportManager(this);
-//			JavascriptFile.initialize(this.binding, enclosingClassFile, false);
-//			if (this.binding.isMemberType()) {
-//				classFile.recordInnerClasses(this.binding);
-//			} else if (this.binding.isLocalType()) {
-//				enclosingClassFile.recordInnerClasses(this.binding);
-//				classFile.recordInnerClasses(this.binding);
-//			}
-//			TypeVariableBinding[] typeVariables = this.binding.typeVariables();
-//			for (int i = 0, max = typeVariables.length; i < max; i++) {
-//				TypeVariableBinding typeVariableBinding = typeVariables[i];
-//				if ((typeVariableBinding.tagBits & TagBits.ContainsNestedTypeReferences) != 0) {
-//					Util.recordNestedType(classFile, typeVariableBinding);
-//				}
-//			}
-//	
-//			// generate all fields
-//			classFile.addFieldInfos();
-//	
-//			if (this.memberTypes != null) {
-//				for (int i = 0, max = this.memberTypes.length; i < max; i++) {
-//					TypeDeclaration memberType = this.memberTypes[i];
-//					classFile.recordInnerClasses(memberType.binding);
-//					memberType.generateCode(this.scope, classFile);
-//				}
-//			}
-//			// generate all methods
-//			classFile.setForMethodInfos();
-//			if (this.methods != null) {
-//				for (int i = 0, max = this.methods.length; i < max; i++) {
-//					this.methods[i].generateCode(this.scope, classFile);
-//				}
-//			}
-//			// generate all synthetic and abstract methods
-//			classFile.addSpecialMethods();
-//	
-//			if (this.ignoreFurtherInvestigation) { // trigger problem type generation for code gen errors
-//				throw new AbortType(this.scope.referenceCompilationUnit().compilationResult, null);
-//			}
-//	
-//			// finalize the compiled type result
-//			classFile.addAttributes();
-			
 			StringBuffer output = jsFile.content;
 			
-			generateAMDHeader(unitScope.referenceContext, 0, output, Javascript.DEFINE);
+			dependency.collect();
+			dependency.generateAMDHeader(CharOperation.concatWith(this.binding.compoundName, '.'), 0, output, Javascript.DEFINE);
 			
-			generateClassBody(this, 1, output);
+			generateClass(this, dependency, 1, output);
 			
-			generateExportObject(1, output);
+			output.append(Javascript.CR);
+			printIndent(1, output).append(Javascript.RETURN).append(Javascript.WHITESPACE);
+			output.append(this.name).append(Javascript.SEMICOLON);
 			
 			output.append(Javascript.CR);
 			output.append(Javascript.RBRACE).append(Javascript.RPAREN).append(Javascript.SEMICOLON);
 			
-			this.scope.referenceCompilationUnit().compilationResult.record(
-				this.binding.constantPoolName(),
-				jsFile);
+			this.scope.referenceCompilationUnit().compilationResult.record(this.binding.constantPoolName(), jsFile);
 		} catch (AbortType e) {
 			if (this.binding == null)
 				return;
@@ -1952,16 +1940,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				this,
 				this.scope.referenceCompilationUnit().compilationResult);
 		}
-	}
-	
-	private void generateExportObject(int indent, StringBuffer output) {
-		output.append(Javascript.CR);
-		printIndent(indent, output).append(Javascript.RETURN).append(Javascript.WHITESPACE);
-//		if((this.modifiers & ClassFileConstants.AccNative) != 0){
-//			output.append("null;");
-//		} else {
-			output.append(this.name).append(Javascript.SEMICOLON);
-//		}
 	}
 	
 	private char[] getTypeName(){
@@ -2208,9 +2186,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 //		return EMPTY;
 //	}
 	
-	public void generateClassBody(TypeDeclaration type, int indent, StringBuffer output){
+	public void generateClass(TypeDeclaration type, Dependency dependnecy, int indent, StringBuffer output){
 		
-		if((this.modifiers & ClassFileConstants.AccNative ) == 0 ){
+		if((type.modifiers & ClassFileConstants.AccNative ) == 0 ){
 			output.append("\n");
 	
 			printIndent(indent, output).append("function ");
@@ -2222,13 +2200,13 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			List<ConstructorDeclaration> constructors = new ArrayList<ConstructorDeclaration>();
 			for(AbstractMethodDeclaration method : type.methods){
 				if(method.isConstructor()){
-					if((this.modifiers & ClassFileConstants.AccNative) == 0){  //native type no non-native constructor default
+					if((type.modifiers & ClassFileConstants.AccNative) == 0){  //native type no non-native constructor default
 						constructors.add((ConstructorDeclaration) method);
 					}
 				}
 			}
 			
-			if((this.modifiers & ClassFileConstants.AccNative) == 0){
+			if((type.modifiers & ClassFileConstants.AccNative) == 0){
 				if(constructors.size() > 1){
 					output.append("){");
 					output.append("\n");
@@ -2248,26 +2226,41 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						output.append("\n");
 						printIndent(indent + 1, output);
 						output.append("\"").append(Annotation.getOverloadPostfix(constructor.annotations)).append("\"").append(" : ").append("function(");
-						generateConstructor(constructor, initializerScope, indent, output, type);
+						generateConstructor(constructor, constructor.scope, dependnecy, indent, output, type);
 						comma = true;
 					}
 					output.append("\n");
 					printIndent(indent, output).append("};");
 				} else if(constructors.size() == 1){
 					ConstructorDeclaration constructor = constructors.get(0);
-					generateConstructor(constructor, initializerScope, indent, output, type);
-				} else if((this.modifiers & ClassFileConstants.AccInterface) != 0){
+					generateConstructor(constructor, initializerScope, dependnecy, indent, output, type);
+				} else if((type.modifiers & ClassFileConstants.AccInterface) != 0){
 					output.append("){};");
 				}
+			}
+		} else {
+			output.append("){ };");
+		}
+		
+		//set prototype.__proto__
+		if(type.binding.superclass != null){
+			ReferenceBinding superBinding = type.binding.superclass;
+			output.append("\n");
+			printIndent(indent, output);
+			output.append(type.binding.sourceName).append(".prototype.__proto__ = ");
+			if(superBinding.isMemberType()){
+				output.append(CharOperation.concatWith(superBinding.getQualifiedName(), '.')).append(".prototype;");
+			} else {
+				output.append(superBinding.sourceName).append(".prototype;");
 			}
 		}
 		
 		//generate static fields
-		generateFields(scope, indent, output, false, type);
+		generateFields(type.scope, dependnecy, indent, output, false, type);
 		
-		generateProperties(initializerScope, indent, output, type);
+		generateProperties(type.scope, dependnecy, indent, output, type);
 		
-		generateIndexers(initializerScope, indent, output, type);
+		generateIndexers(type.scope, dependnecy, indent, output, type);
 		
 		if(type.methods != null){
 			
@@ -2284,7 +2277,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				}
 				
 				if((method.modifiers & ClassFileConstants.AccPrivate) != 0){
-					generatePrivateMethod((MethodDeclaration) method, scope, indent, output);
+					generatePrivateMethod((MethodDeclaration) method, type.scope, dependnecy, indent, output);
 					continue;
 				}
 				
@@ -2298,7 +2291,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				output.append(getMethodName(method));
 					
 				output.append(" = function(");
-				generateMethod((MethodDeclaration) method, scope, indent, output);
+				generateMethod((MethodDeclaration) method, type.scope, dependnecy, indent, output);
 			}
 		}
 		
@@ -2311,31 +2304,68 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				} else {
 					output.append(type.getTypeName()).append(".prototype.").append(member.getTypeName()).append(" = ");
 				}
-				generateMemberType(initializerScope, indent, output, member);
+				generateMemberType(type.scope, dependnecy, indent, output, member);
 			}
 		}
 		
 		//type information
 		output.append("\n");
-		printIndent(indent, output).append(type.getTypeName()).append(".prototype.Type = new Type(");
-		if(type.binding.superclass != null){
-			output.append(type.binding.superclass.constantPoolName()).append(", ");
-		} else{
-			output.append(" ").append(", ");
+		printIndent(indent, output).append(type.getTypeName()).append(".prototype.__class = new Class(");
+		
+		output.append("\"").append(type.binding.sourceName).append("\", ");
+		if(type.binding.fPackage != null){
+			output.append("\"").append(CharOperation.concatWith(type.binding.fPackage.compoundName, '.')).append("\", ");
+		} else {
+			output.append("\"\", ");
 		}
-		output.append("\"").append(type.binding.constantPoolName()).append("\"");
-		output.append(", [");
+		
+		output.append(type.binding.sourceName).append(", ");
+		
+		if(type.binding.superclass != null){
+			output.append(type.binding.superclass.sourceName).append(", ");
+		} else{
+			output.append("\"\"").append(", ");
+		}
+
+		output.append("[");
 		if(type.binding.superInterfaces != null){
 			boolean comma = false;
 			for(ReferenceBinding binding : type.binding.superInterfaces){
 				if(comma){
 					output.append(", ");
 				}
-				output.append(binding.constantPoolName());
+				output.append(binding.sourceName);
+				comma = true;
 			}
 		}
-		output.append("])");
-		output.append(";");
+		output.append("], ");
+		
+		int flags = 0;
+		//output type
+		switch (type.modifiers & (ClassFileConstants.AccInterface|ClassFileConstants.AccAnnotation|ClassFileConstants.AccEnum)) {
+			case ClassFileConstants.AccInterface :
+				flags |= INTERFACE_DECL;
+				break;
+			case ClassFileConstants.AccInterface|ClassFileConstants.AccAnnotation :
+				flags |= ANNOTATION_TYPE_DECL;
+				break;
+			case ClassFileConstants.AccEnum :
+				flags |= ENUM_DECL;
+				break;
+			default :
+				flags |= CLASS_DECL;
+		}
+		
+		if(type.binding.isArrayType()){
+			flags |= JavascriptTypes.ARRAY;
+		}
+		
+		if(this.binding.isPrimitiveType()){
+			flags |= JavascriptTypes.PRIMITIVE;
+		}
+		
+		output.append(flags);
+		output.append(");");
 	}
 	
 	private char[] getMethodName(AbstractMethodDeclaration method){
@@ -2347,7 +2377,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	}
 
 	private void generatePrivateMethod(MethodDeclaration method,
-			ClassScope scope, int indent, StringBuffer output) {
+			ClassScope scope, Dependency dependnecy, int indent, StringBuffer output) {
 		output.append('\n');
 		printIndent(indent, output);
 		if(method.isStatic()){
@@ -2363,13 +2393,13 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				output.append(method.arguments[j].name);
 			}
 		}
-		generateMethodBody(method, scope, indent, output);
+		generateMethodBody(method, method.scope, dependnecy, indent, output);
 		
 	}
 
-	private void generateMemberType(Scope scope, int indent, StringBuffer output, TypeDeclaration memberType){
+	private void generateMemberType(Scope scope, Dependency dependnecy, int indent, StringBuffer output, TypeDeclaration memberType){
 		output.append("(function(){").append('\n');
-		generateClassBody(memberType, indent+1, output);
+		generateClass(memberType, dependnecy, indent+1, output);
 		output.append('\n');
 		printIndent(indent+1, output);
 		output.append("return ").append(memberType.getTypeName()).append(";");
@@ -2378,7 +2408,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append("}");
 	}
 	
-	private void generateProperties(Scope scope, int indent, StringBuffer output, TypeDeclaration type){
+	private void generateProperties(Scope scope, Dependency dependnecy, int indent, StringBuffer output, TypeDeclaration type){
 		if(type.fields != null){
 			for(int i = 0, length = type.fields.length; i < length; i++){
 				if(!(type.fields[i] instanceof PropertyDeclaration)){
@@ -2387,12 +2417,12 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				if((this.fields[i].modifiers & ClassFileConstants.AccNative) != 0){
 					continue;
 				}
-				this.fields[i].generateStatement(scope, indent, output);
+				this.fields[i].generateStatement(scope, dependnecy, indent, output);
 			}
 		}
 	}
 	
-	private void generateIndexers(MethodScope initializerScope2, int indent,
+	private void generateIndexers(Scope scope, Dependency dependnecy, int indent,
 			StringBuffer output, TypeDeclaration type) {
 		if(type.fields != null){
 			for(int i = 0, length = type.fields.length; i < length; i++){
@@ -2402,13 +2432,13 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				if((this.fields[i].modifiers & ClassFileConstants.AccNative) != 0){
 					continue;
 				}
-				this.fields[i].generateStatement(scope, indent, output);
+				this.fields[i].generateStatement(scope, dependnecy, indent, output);
 			}
 		}
 		
 	}
 	
-	private void generateFields(Scope scope, int indent, StringBuffer output, boolean instance, TypeDeclaration type){
+	private void generateFields(Scope scope, Dependency dependnecy, int indent, StringBuffer output, boolean instance, TypeDeclaration type){
 		if(type.fields != null){
 			for(int i = 0, length = type.fields.length; i < length; i++){
 				if(type.fields[i] instanceof PropertyDeclaration 
@@ -2423,16 +2453,16 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				
 				if(instance && !type.fields[i].isStatic()){
 					output.append("\n");
-					type.fields[i].generateStatement(scope, indent, output);
+					type.fields[i].generateStatement(scope, dependnecy, indent, output);
 				} else if(!instance && type.fields[i].isStatic()){
 					output.append("\n");
-					type.fields[i].generateStatement(scope, indent, output);
+					type.fields[i].generateStatement(scope, dependnecy, indent, output);
 				}
 			}
 		}
 	}
 	
-	private void generateConstructor(ConstructorDeclaration constructor, Scope scope, int indent, StringBuffer output, TypeDeclaration type){
+	private void generateConstructor(ConstructorDeclaration constructor, Scope scope, Dependency dependnecy, int indent, StringBuffer output, TypeDeclaration type){
 		if(constructor.arguments != null){
 			for(int i=0, length = constructor.arguments.length; i < length; i++){
 				if(i > 0){
@@ -2453,7 +2483,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					if(cstrCall.arguments != null){
 						for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
 							output.append(", ");
-							cstrCall.arguments[j].generateExpression(scope, indent, output);
+							cstrCall.arguments[j].doGenerateExpression(scope, dependnecy, indent, output);
 						}
 					}
 					output.append(");");
@@ -2463,7 +2493,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				if(cstrCall.arguments != null){
 					for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
 						output.append(", ");
-						cstrCall.arguments[j].generateExpression(scope, indent, output);
+						cstrCall.arguments[j].doGenerateExpression(scope, dependnecy, indent, output);
 					}
 				}
 				output.append(");");
@@ -2478,13 +2508,13 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 //			output.append(");");
 		}
 		
-		generateFields(scope, indent + 1, output, true, type);
+		generateFields(scope, dependnecy, indent + 1, output, true, type);
 		
 		if(constructor.statements != null){
 			for(int i=0, length = constructor.statements.length; i < length; i++){
 				output.append("\n");
 				printIndent(indent + 1, output);
-				constructor.statements[i].generateStatement(scope, indent, output);
+				constructor.statements[i].generateStatement(constructor.scope, dependnecy, indent, output);
 			}
 		}
 		
@@ -2492,7 +2522,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		printIndent(indent, output).append("}");
 	}
 	
-	private void generateMethod(MethodDeclaration method, Scope scope, int indent, StringBuffer output){
+	private void generateMethod(MethodDeclaration method, Scope scope, Dependency dependnecy, int indent, StringBuffer output){
 		if(method.arguments != null){
 			for(int j = 0, length1 = method.arguments.length; j < length1; j++){
 				if(j > 0)
@@ -2500,17 +2530,17 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				output.append(method.arguments[j].name);
 			}
 		}
-		generateMethodBody(method, scope, indent, output);
+		generateMethodBody(method, scope, dependnecy, indent, output);
 	}
 
-	private void generateMethodBody(MethodDeclaration method, Scope scope, int indent,
+	private void generateMethodBody(MethodDeclaration method, Scope scope, Dependency dependnecy, int indent,
 			StringBuffer output) {
 		output.append(") {");
 		
 		if(method.statements != null){
 			for(int j = 0, length = method.statements.length; j < length; j++){
 				output.append("\n");
-				method.statements[j].generateStatement(scope, indent + 1, output);
+				method.statements[j].generateStatement(method.scope, dependnecy, indent + 1, output);
 			}
 		}
 		
@@ -2518,20 +2548,21 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		printIndent(indent, output).append("}");
 	}
 	
-	private void generateAMDHeader(CompilationUnitDeclaration unit, int indent, StringBuffer output, String function) {
-		printIndent(indent, output);
-		output.append(function).append(Javascript.LPAREN).append(Javascript.DOUBLE_QUOTE).append(Javascript.DOUBLE_QUOTE);
-		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
-		output.append(Javascript.LBRACKET);
-		
-		this.importManager.generateDependency(this.scope, indent, output);
-
-		output.append(Javascript.RBRACKET);
-		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);;
-		output.append(Javascript.FUNCTION).append(Javascript.LPAREN);
-		
-		this.importManager.generateParameters(this.scope, indent, output);
-		output.append(Javascript.RPAREN).append(Javascript.LBRACE);
-	}
+//	private void generateAMDHeader(CompilationUnitDeclaration unit, int indent, StringBuffer output, String funcName) {
+//		printIndent(indent, output);
+//		output.append(funcName).append(Javascript.LPAREN).append(Javascript.DOUBLE_QUOTE)
+//		.append(CharOperation.concatWith(this.compilationResult.packageName, this.name, '.')).append(Javascript.DOUBLE_QUOTE);
+//		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+//		output.append(Javascript.LBRACKET);
+//		
+//		this.dependency.generateDependency(this.scope, indent, output);
+//
+//		output.append(Javascript.RBRACKET);
+//		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);;
+//		output.append(Javascript.FUNCTION).append(Javascript.LPAREN);
+//		
+//		this.dependency.generateParameters(this.scope, indent, output);
+//		output.append(Javascript.RPAREN).append(Javascript.LBRACE);
+//	}
 
 }

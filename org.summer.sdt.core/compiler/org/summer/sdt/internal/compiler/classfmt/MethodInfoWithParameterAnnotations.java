@@ -17,42 +17,42 @@ import org.summer.sdt.internal.compiler.env.IBinaryAnnotation;
 class MethodInfoWithParameterAnnotations extends MethodInfoWithAnnotations {
 	private AnnotationInfo[][] parameterAnnotations;
 
-	MethodInfoWithParameterAnnotations(MethodInfo methodInfo, AnnotationInfo[] annotations, AnnotationInfo[][] parameterAnnotations) {
-		super(methodInfo, annotations);
-		this.parameterAnnotations = parameterAnnotations;
+MethodInfoWithParameterAnnotations(MethodInfo methodInfo, AnnotationInfo[] annotations, AnnotationInfo[][] parameterAnnotations) {
+	super(methodInfo, annotations);
+	this.parameterAnnotations = parameterAnnotations;
+}
+public IBinaryAnnotation[] getParameterAnnotations(int index) {
+	return this.parameterAnnotations == null ? null : this.parameterAnnotations[index];
+}
+public int getAnnotatedParametersCount() {
+	return this.parameterAnnotations == null ? 0 : this.parameterAnnotations.length;
+}
+protected void initialize() {
+	for (int i = 0, l = this.parameterAnnotations == null ? 0 : this.parameterAnnotations.length; i < l; i++) {
+		AnnotationInfo[] infos = this.parameterAnnotations[i];
+		for (int j = 0, k = infos == null ? 0 : infos.length; j < k; j++)
+			infos[j].initialize();
 	}
-	public IBinaryAnnotation[] getParameterAnnotations(int index) {
-		return this.parameterAnnotations == null ? null : this.parameterAnnotations[index];
+	super.initialize();
+}
+protected void reset() {
+	for (int i = 0, l = this.parameterAnnotations == null ? 0 : this.parameterAnnotations.length; i < l; i++) {
+		AnnotationInfo[] infos = this.parameterAnnotations[i];
+		for (int j = 0, k = infos == null ? 0 : infos.length; j < k; j++)
+			infos[j].reset();
 	}
-	public int getAnnotatedParametersCount() {
-		return this.parameterAnnotations == null ? 0 : this.parameterAnnotations.length;
-	}
-	protected void initialize() {
-		for (int i = 0, l = this.parameterAnnotations == null ? 0 : this.parameterAnnotations.length; i < l; i++) {
-			AnnotationInfo[] infos = this.parameterAnnotations[i];
-			for (int j = 0, k = infos == null ? 0 : infos.length; j < k; j++)
-				infos[j].initialize();
-		}
-		super.initialize();
-	}
-	protected void reset() {
-		for (int i = 0, l = this.parameterAnnotations == null ? 0 : this.parameterAnnotations.length; i < l; i++) {
-			AnnotationInfo[] infos = this.parameterAnnotations[i];
-			for (int j = 0, k = infos == null ? 0 : infos.length; j < k; j++)
-				infos[j].reset();
-		}
-		super.reset();
-	}
-	protected void toStringContent(StringBuffer buffer) {
-		super.toStringContent(buffer);
-		for (int i = 0, l = this.parameterAnnotations == null ? 0 : this.parameterAnnotations.length; i < l; i++) {
-			buffer.append("param" + (i - 1)); //$NON-NLS-1$
+	super.reset();
+}
+protected void toStringContent(StringBuffer buffer) {
+	super.toStringContent(buffer);
+	for (int i = 0, l = this.parameterAnnotations == null ? 0 : this.parameterAnnotations.length; i < l; i++) {
+		buffer.append("param" + (i - 1)); //$NON-NLS-1$
+		buffer.append('\n');
+		AnnotationInfo[] infos = this.parameterAnnotations[i];
+		for (int j = 0, k = infos == null ? 0 : infos.length; j < k; j++) {
+			buffer.append(infos[j]);
 			buffer.append('\n');
-			AnnotationInfo[] infos = this.parameterAnnotations[i];
-			for (int j = 0, k = infos == null ? 0 : infos.length; j < k; j++) {
-				buffer.append(infos[j]);
-				buffer.append('\n');
-			}
 		}
 	}
+}
 }

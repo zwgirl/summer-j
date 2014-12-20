@@ -24,6 +24,10 @@
  *								Bug 417295 - [1.8[[null] Massage type annotated null analysis to gel well with deep encoded type bindings.
  *								Bug 416190 - [1.8][null] detect incompatible overrides due to null type annotations
  *								Bug 424624 - [1.8][null] if a static-object with annotation @NonNull is used, a warning is shown
+ *								Bug 438458 - [1.8][null] clean up handling of null type annotations wrt type variables
+ *								Bug 439516 - [1.8][null] NonNullByDefault wrongly applied to implicit type bound of binary type
+ *								Bug 434602 - Possible error with inferred null annotations leading to contradictory null annotations
+ *								Bug 435805 - [1.8][compiler][null] Java 8 compiler does not recognize declaration style null annotations
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.lookup;
 
@@ -35,6 +39,7 @@ import java.util.Set;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ClassFilePool;
+import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.summer.sdt.internal.compiler.ast.Wildcard;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
@@ -53,14 +58,14 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 	/**
 	 * Map from typeBinding -> accessRestriction rule
 	 */
-	private Map<TypeBinding, AccessRestriction> accessRestrictions;
+	private Map accessRestrictions;
 	ImportBinding[] defaultImports;
 	public PackageBinding defaultPackage;
 	HashtableOfPackage knownPackages;
 	private int lastCompletedUnitIndex = -1;
 	private int lastUnitIndex = -1;
 
-	private TypeSystem typeSystem;
+	TypeSystem typeSystem;
 	
 	public INameEnvironment nameEnvironment;
 	public CompilerOptions globalOptions;
@@ -433,7 +438,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 				break;
 			case Binding.POLY_TYPE:
 				return ((PolyTypeBinding) type).computeBoxingType();
-			case Binding.INTERSECTION_CAST_TYPE:
+			case Binding.INTERSECTION_TYPE18:
 				return computeBoxingType(type.getIntersectingTypes()[0]);
 		}
 		return type;
@@ -659,19 +664,31 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 		return this.typeSystem.getAnnotationType(annotationType, false);
 	}
 	
+//	/*
+//	 *  Used to guarantee array type identity.
+//	 */
+//	public ArrayBinding createArrayType(TypeBinding leafComponentType, int dimensionCount) {
+//		return this.typeSystem.getArrayType(leafComponentType, dimensionCount);
+//	}
+//	
+//	public ArrayBinding createArrayType(TypeBinding leafComponentType, int dimensionCount, AnnotationBinding [] annotations) {
+//		return this.typeSystem.getArrayType(leafComponentType, dimensionCount, annotations);
+//	}
+	
+	//cym 2014-12-18
 	/*
 	 *  Used to guarantee array type identity.
 	 */
-	public ArrayBinding createArrayType(TypeBinding leafComponentType, int dimensionCount) {
+	public ReferenceBinding createArrayType(TypeBinding leafComponentType, int dimensionCount) {
 		return this.typeSystem.getArrayType(leafComponentType, dimensionCount);
 	}
-	
-	public ArrayBinding createArrayType(TypeBinding leafComponentType, int dimensionCount, AnnotationBinding [] annotations) {
+	//cym 2014-12-18
+	public ReferenceBinding createArrayType(TypeBinding leafComponentType, int dimensionCount, AnnotationBinding [] annotations) {
 		return this.typeSystem.getArrayType(leafComponentType, dimensionCount, annotations);
 	}
 	
-	public TypeBinding createIntersectionCastType(ReferenceBinding[] intersectingTypes) {
-		return this.typeSystem.getIntersectionCastType(intersectingTypes);
+	public TypeBinding createIntersectionType18(ReferenceBinding[] intersectingTypes) {
+		return this.typeSystem.getIntersectionType18(intersectingTypes);
 	}	
 	
 	public BinaryTypeBinding createBinaryTypeFrom(IBinaryType binaryType, PackageBinding packageBinding, AccessRestriction accessRestriction) {
@@ -1000,6 +1017,10 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 		return this.typeSystem.getWildcard(genericType, rank, bound, otherBounds, boundKind);
 	}
 	
+	public CaptureBinding createCapturedWildcard(WildcardBinding wildcard, ReferenceBinding contextType, int start, int end, ASTNode cud, int id) {
+		return this.typeSystem.getCapturedWildcard(wildcard, contextType, start, end, cud, id);
+	}
+	
 	public WildcardBinding createWildcard(ReferenceBinding genericType, int rank, TypeBinding bound, TypeBinding[] otherBounds, int boundKind, AnnotationBinding [] annotations) {
 		return this.typeSystem.getWildcard(genericType, rank, bound, otherBounds, boundKind, annotations);
 	}
@@ -1065,6 +1086,28 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 	
 	public char[][] getNonNullByDefaultAnnotationName() {
 		return this.globalOptions.nonNullByDefaultAnnotationName;
+	}
+	
+	public boolean usesNullTypeAnnotations() {
+		if (this.globalOptions.useNullTypeAnnotations != null)
+			return this.globalOptions.useNullTypeAnnotations;
+	
+		this.globalOptions.useNullTypeAnnotations = Boolean.FALSE;
+		if (!this.globalOptions.isAnnotationBasedNullAnalysisEnabled || this.globalOptions.sourceLevel < ClassFileConstants.JDK1_8)
+			return false;
+		ReferenceBinding nullable = this.nullableAnnotation != null ? this.nullableAnnotation.getAnnotationType() : getType(this.getNullableAnnotationName());
+		ReferenceBinding nonNull = this.nonNullAnnotation != null ? this.nonNullAnnotation.getAnnotationType() : getType(this.getNonNullAnnotationName());
+		if (nullable == null && nonNull == null)
+			return false;
+		if (nullable == null || nonNull == null)
+			return false; // TODO should report an error about inconsistent setup
+		long nullableMetaBits = nullable.getAnnotationTagBits() & TagBits.AnnotationForTypeUse;
+		long nonNullMetaBits = nonNull.getAnnotationTagBits() & TagBits.AnnotationForTypeUse;
+		if (nullableMetaBits != nonNullMetaBits)
+			return false; // TODO should report an error about inconsistent setup
+		if (nullableMetaBits == 0)
+			return false;
+		return this.globalOptions.useNullTypeAnnotations = Boolean.TRUE;
 	}
 	
 	/* Answer the top level package named name if it exists in the cache.
@@ -1256,7 +1299,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 		AnnotationBinding [][] annotationsOnDimensions = null;
 		if (dimension > 0 && walker != TypeAnnotationWalker.EMPTY_ANNOTATION_WALKER) {
 			for (int i = 0; i < dimension; i++) {
-				AnnotationBinding [] annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(), this, missingTypeNames);
+				AnnotationBinding [] annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(0), this, missingTypeNames);
 				if (annotations != Binding.NO_ANNOTATIONS) { 
 					if (annotationsOnDimensions == null)
 						annotationsOnDimensions = new AnnotationBinding[dimension][];
@@ -1341,7 +1384,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 		}
 		AnnotationBinding [][] annotations = null;
 		for (int i = 0; i < depth; i++) {
-			AnnotationBinding[] annots = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(), this, missingTypeNames);
+			AnnotationBinding[] annots = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(binding.id), this, missingTypeNames);
 			if (annots != null && annots.length > 0) {
 				if (annotations == null)
 					annotations = new AnnotationBinding[depth][];
@@ -1386,7 +1429,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 		AnnotationBinding [][] annotationsOnDimensions = null;
 		if (dimension > 0 && walker != TypeAnnotationWalker.EMPTY_ANNOTATION_WALKER) {
 			for (int i = 0; i < dimension; i++) {
-				AnnotationBinding [] annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(), this, missingTypeNames);
+				AnnotationBinding [] annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(0), this, missingTypeNames);
 				if (annotations != Binding.NO_ANNOTATIONS) { 
 					if (annotationsOnDimensions == null)
 						annotationsOnDimensions = new AnnotationBinding[dimension][];
@@ -1431,7 +1474,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 		if (actualEnclosing != null) { // convert needed if read some static member type
 			actualEnclosing = (ReferenceBinding) convertToRawType(actualEnclosing, false /*do not force conversion of enclosing types*/);
 		}
-		AnnotationBinding [] annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(), this, missingTypeNames);
+		AnnotationBinding [] annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(actualType.id), this, missingTypeNames);
 		TypeBinding[] typeArguments = getTypeArgumentsFromSignature(wrapper, staticVariables, enclosingType, actualType, missingTypeNames, walker);
 		ParameterizedTypeBinding parameterizedType = createParameterizedType(actualType, typeArguments, actualEnclosing, annotations);
 	
@@ -1445,7 +1488,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 			if (memberType == null)
 				this.problemReporter.corruptedSignature(parameterizedType, wrapper.signature, memberStart); // aborts
 			walker = walker.toNextNestedType();
-			annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(), this, missingTypeNames);
+			annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(memberType.id), this, missingTypeNames);
 			if (wrapper.signature[wrapper.start] == '<') {
 				wrapper.start++; // skip '<'
 				typeArguments = getTypeArgumentsFromSignature(wrapper, staticVariables, enclosingType, memberType, missingTypeNames, walker);
@@ -1459,7 +1502,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 	}
 	
 	private TypeBinding getTypeFromTypeVariable(TypeVariableBinding typeVariableBinding, int dimension, AnnotationBinding [][] annotationsOnDimensions, TypeAnnotationWalker walker, char [][][] missingTypeNames) {
-		AnnotationBinding [] annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(), this, missingTypeNames);
+		AnnotationBinding [] annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(0), this, missingTypeNames);
 		if (annotations != null && annotations != Binding.NO_ANNOTATIONS)
 			typeVariableBinding = (TypeVariableBinding) createAnnotatedType(typeVariableBinding, new AnnotationBinding [][] { annotations });
 	
@@ -1486,18 +1529,18 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 				// ? super aType
 				wrapper.start++;
 				TypeBinding bound = getTypeFromTypeSignature(wrapper, staticVariables, enclosingType, missingTypeNames, walker.toWildcardBound());
-				AnnotationBinding [] annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(), this, missingTypeNames);
+				AnnotationBinding [] annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(0), this, missingTypeNames);
 				return this.typeSystem.getWildcard(genericType, rank, bound, null /*no extra bound*/, Wildcard.SUPER, annotations);
 			case '+' :
 				// ? extends aType
 				wrapper.start++;
 				bound = getTypeFromTypeSignature(wrapper, staticVariables, enclosingType, missingTypeNames, walker.toWildcardBound());
-				annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(), this, missingTypeNames);
+				annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(0), this, missingTypeNames);
 				return this.typeSystem.getWildcard(genericType, rank, bound, null /*no extra bound*/, Wildcard.EXTENDS, annotations);
 			case '*' :
 				// ?
 				wrapper.start++;
-				annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(), this, missingTypeNames);
+				annotations = BinaryTypeBinding.createAnnotations(walker.getAnnotationsAtCursor(0), this, missingTypeNames);
 				return this.typeSystem.getWildcard(genericType, rank, null, null /*no extra bound*/, Wildcard.UNBOUND, annotations);
 			default :
 				return getTypeFromTypeSignature(wrapper, staticVariables, enclosingType, missingTypeNames, walker);
@@ -1603,5 +1646,28 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 	// Given a type, return all its variously annotated versions.
 	public TypeBinding[] getAnnotatedTypes(TypeBinding type) {
 		return this.typeSystem.getAnnotatedTypes(type);
+	}
+	
+	public AnnotationBinding[] filterNullTypeAnnotations(AnnotationBinding[] typeAnnotations) {
+		if (typeAnnotations.length == 0)
+			return typeAnnotations;
+		AnnotationBinding[] filtered = new AnnotationBinding[typeAnnotations.length];
+		int count = 0;
+		for (int i = 0; i < typeAnnotations.length; i++) {
+			AnnotationBinding typeAnnotation = typeAnnotations[i];
+			if (typeAnnotation == null) {
+				count++; // sentinel in annotation sequence for array dimensions
+			} else {
+				int id = typeAnnotation.type.id;
+				if (id != TypeIds.T_ConfiguredAnnotationNonNull && id != TypeIds.T_ConfiguredAnnotationNullable)
+					filtered[count++] = typeAnnotation;
+			}
+		}
+		if (count == 0)
+			return Binding.NO_ANNOTATIONS;
+		if (count == typeAnnotations.length)
+			return typeAnnotations;
+		System.arraycopy(filtered, 0, filtered = new AnnotationBinding[count], 0, count);
+		return filtered;
 	}
 }

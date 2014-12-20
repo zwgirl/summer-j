@@ -22,5 +22,4 @@ public class InferenceFailureException extends Exception {
 	public InferenceFailureException(String message) {
 		super(message);
 	}
-	
 }

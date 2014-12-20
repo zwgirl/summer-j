@@ -34,21 +34,12 @@ import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.Binding;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.VariableBinding;
-import org.summer.sdt.internal.compiler.lookup.WildcardBinding;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class Assignment extends Expression {
 
@@ -203,7 +194,7 @@ public class Assignment extends Expression {
 		this.expression.setExpressionContext(ASSIGNMENT_CONTEXT);
 		this.expression.setExpectedType(lhsType); // needed in case of generic method invocation
 		if (lhsType != null) {
-			this.resolvedType = lhsType.capture(scope, this.sourceEnd);
+			this.resolvedType = lhsType.capture(scope, this.lhs.sourceStart, this.lhs.sourceEnd); // make it unique, `this' shares source end with 'this.expression'.
 		}
 		LocalVariableBinding localVariableBinding = this.lhs.localVariableBinding();
 		if (localVariableBinding != null && (localVariableBinding.isCatchParameter() || localVariableBinding.isParameter())) { 
@@ -278,18 +269,13 @@ public class Assignment extends Expression {
 		return true;
 	}
 	
-	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateJavascript(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
 		//no () when used as a statement
 		printIndent(indent, output);
-		return generateExpression(scope, indent, output);
+		return generateExpression(scope, depsManager, indent, output);
 	}
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		//subclass redefine printExpressionNoParenthesis()
-//		output.append('(');
-		return generateExpressionNoParenthesis(scope, 0, output); //.append(')');
-	}
-	public StringBuffer generateExpressionNoParenthesis(Scope scope, int indent, StringBuffer output) {
-		this.lhs.generateExpression(scope, indent, output).append(" = "); //$NON-NLS-1$
-		return this.expression.generateExpression(scope, 0, output);
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		this.lhs.generateExpression(scope, dependency, indent, output).append(" = "); //$NON-NLS-1$
+		return this.expression.generateExpression(scope, dependency, 0, output);
 	}
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@
  *								bug 400421 - [compiler] Null analysis for fields does not take @com.google.inject.Inject into account
  *								Bug 392099 - [1.8][compiler][null] Apply null annotation on types for null analysis
  *								Bug 416176 - [1.8][compiler][null] null type annotations cause grief on type variables
+ *								Bug 435805 - [1.8][compiler][null] Java 8 compiler does not recognize declaration style null annotations
  *        Andy Clement (GoPivotal, Inc) aclement@gopivotal.com - Contributions for
  *                          Bug 415399 - [1.8][compiler] Type annotations on constructor results dropped by the code generator
  *******************************************************************************/
@@ -27,43 +28,16 @@ package org.summer.sdt.internal.compiler.ast;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.summer.sdt.core.compiler.CategorizedProblem;
-import org.summer.sdt.core.compiler.CharOperation;
-import org.summer.sdt.core.compiler.IProblem;
-import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.ClassFile;
-import org.summer.sdt.internal.compiler.CompilationResult;
+import org.summer.sdt.core.compiler.*;
+import org.summer.sdt.internal.compiler.*;
 import org.summer.sdt.internal.compiler.ast.TypeReference.AnnotationCollector;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.codegen.Opcodes;
-import org.summer.sdt.internal.compiler.codegen.StackMapFrameCodeStream;
-import org.summer.sdt.internal.compiler.flow.ExceptionHandlingFlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.flow.InitializationFlowContext;
-import org.summer.sdt.internal.compiler.lookup.Binding;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.EventBinding;
-import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
-import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.NestedTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.PropertyBinding;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.SyntheticArgumentBinding;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
-import org.summer.sdt.internal.compiler.lookup.TypeConstants;
-import org.summer.sdt.internal.compiler.lookup.TypeIds;
-import org.summer.sdt.internal.compiler.parser.Parser;
-import org.summer.sdt.internal.compiler.problem.AbortMethod;
-import org.summer.sdt.internal.compiler.problem.ProblemReporter;
-import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.parser.*;
+import org.summer.sdt.internal.compiler.problem.*;
 import org.summer.sdt.internal.compiler.util.Util;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -170,10 +144,10 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 			}
 	
 			// nullity and mark as assigned
-			if (classScope.compilerOptions().sourceLevel < ClassFileConstants.JDK1_8)
-				analyseArguments(flowInfo, this.arguments, this.binding);
-			else
+			if (classScope.environment().usesNullTypeAnnotations())
 				analyseArguments18(flowInfo, this.arguments, this.binding);
+			else
+				analyseArguments(flowInfo, this.arguments, this.binding);
 	
 			// propagate to constructor call
 			if (this.constructorCall != null) {
@@ -301,6 +275,15 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 		}
 		boolean restart = false;
 		boolean abort = false;
+		CompilationResult unitResult = null;
+		int problemCount = 0;
+		if (classScope != null) {
+			TypeDeclaration referenceContext = classScope.referenceContext;
+			if (referenceContext != null) {
+				unitResult = referenceContext.compilationResult();
+				problemCount = unitResult.problemCount;
+			}
+		}
 		do {
 			try {
 				problemResetPC = classFile.contentsOffset;
@@ -312,11 +295,19 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 					classFile.contentsOffset = problemResetPC;
 					classFile.methodCount--;
 					classFile.codeStream.resetInWideMode(); // request wide mode
+					// reset the problem count to prevent reporting the same warning twice
+					if (unitResult != null) {
+						unitResult.problemCount = problemCount;
+					}
 					restart = true;
 				} else if (e.compilationResult == CodeStream.RESTART_CODE_GEN_FOR_UNUSED_LOCALS_MODE) {
 					classFile.contentsOffset = problemResetPC;
 					classFile.methodCount--;
 					classFile.codeStream.resetForCodeGenUnusedLocals();
+					// reset the problem count to prevent reporting the same warning twice
+					if (unitResult != null) {
+						unitResult.problemCount = problemCount;
+					}
 					restart = true;
 				} else {
 					restart = false;
@@ -598,10 +589,15 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 				this.constructorCall.resolve(this.scope);
 			}
 		}
-		//cym modified 2014-11-24
+		
+		//cym 2014-12-13
 		if ((this.modifiers & ExtraCompilerModifiers.AccSemicolonBody) != 0 && (this.modifiers & ClassFileConstants.AccNative) == 0) {
 			this.scope.problemReporter().methodNeedBody(this);
 		}
+		
+//		if ((this.modifiers & ExtraCompilerModifiers.AccSemicolonBody) != 0) {
+//			this.scope.problemReporter().methodNeedBody(this);
+//		}
 		super.resolveStatements();
 	}
 	
@@ -645,16 +641,16 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 	    return this.typeParameters;
 	}
 	
-	public StringBuffer generateBody(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateBody(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
 		output.append(" {"); //$NON-NLS-1$
 		if (this.constructorCall != null) {
 			output.append('\n');
-			this.constructorCall.generateStatement(scope, indent, output);
+			this.constructorCall.generateStatement(scope, depsManager, indent, output);
 		}
 		if (this.statements != null) {
 			for (int i = 0; i < this.statements.length; i++) {
 				output.append('\n');
-				this.statements[i].generateStatement(scope, indent, output);
+				this.statements[i].generateStatement(scope, depsManager, indent, output);
 			}
 		}
 		output.append('\n');

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ISourceElementRequestor.ParameterInfo;
 import org.summer.sdt.internal.compiler.ISourceElementRequestor.TypeParameterInfo;
 import org.summer.sdt.internal.compiler.ast.ASTNode;

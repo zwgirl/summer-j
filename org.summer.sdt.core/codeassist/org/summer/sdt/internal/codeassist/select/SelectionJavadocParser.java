@@ -13,9 +13,9 @@ package org.summer.sdt.internal.codeassist.select;
 import java.util.List;
 
 import org.summer.sdt.core.compiler.InvalidInputException;
+import org.summer.sdt.internal.codeassist.SelectionEngine;
 import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.parser.JavadocParser;
-import org.summer.sdt.internal.codeassist.SelectionEngine;
 
 /**
  * Parser specialized for decoding javadoc comments which includes code selection.

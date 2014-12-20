@@ -13,6 +13,17 @@ package org.summer.sdt.internal.codeassist;
 import java.util.Map;
 
 import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnAnnotationOfType;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnArgumentName;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnFieldName;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnFieldType;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnImportReference;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnKeyword;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnKeyword2;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnMethodName;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnMethodReturnType;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnMethodTypeParameter;
+import org.summer.sdt.internal.codeassist.complete.CompletionOnPackageReference;
 import org.summer.sdt.internal.compiler.SourceElementNotifier;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -25,17 +36,6 @@ import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeParameter;
 import org.summer.sdt.internal.compiler.ast.TypeReference;
 import org.summer.sdt.internal.compiler.util.HashtableOfObjectToInt;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnAnnotationOfType;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnArgumentName;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnFieldName;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnFieldType;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnImportReference;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnKeyword;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnKeyword2;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnMethodName;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnMethodReturnType;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnMethodTypeParameter;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnPackageReference;
 
 public class CompletionElementNotifier extends SourceElementNotifier {
 

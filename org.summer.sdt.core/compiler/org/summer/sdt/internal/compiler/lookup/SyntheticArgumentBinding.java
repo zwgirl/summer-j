@@ -55,5 +55,5 @@ public class SyntheticArgumentBinding extends LocalVariableBinding {
 			enclosingType,
 			ClassFileConstants.AccFinal,
 			true);
-	}
+	} 
 }

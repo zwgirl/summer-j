@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,18 +17,11 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.BranchLabel;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.flow.LoopingFlowContext;
-import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class ForStatement extends Statement {
 
@@ -245,8 +238,8 @@ public class ForStatement extends Statement {
 	/**
 	 * For statement code generation
 	 *
-	 * @param currentScope org.summer.sdt.internal.compiler.lookup.BlockScope
-	 * @param codeStream org.summer.sdt.internal.compiler.codegen.CodeStream
+	 * @param currentScope org.eclipse.jdt.internal.compiler.lookup.BlockScope
+	 * @param codeStream org.eclipse.jdt.internal.compiler.codegen.CodeStream
 	 */
 	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
 
@@ -435,8 +428,23 @@ public class ForStatement extends Statement {
 		}
 		visitor.endVisit(this, blockScope);
 	}
+
+	@Override
+	public boolean doesNotCompleteNormally() {
+		Constant cst = this.condition == null ? null : this.condition.constant;
+		boolean isConditionTrue = cst == null || cst != Constant.NotAConstant && cst.booleanValue() == true;
+		cst = this.condition == null ? null : this.condition.optimizedBooleanConstant();
+		boolean isConditionOptimizedTrue = cst == null ? true : cst != Constant.NotAConstant && cst.booleanValue() == true;
+		
+		return (isConditionTrue || isConditionOptimizedTrue) && (this.action == null || !this.action.breaksOut(null));
+	}
 	
-	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output) {
+	@Override
+	public boolean completesByContinue() {
+		return this.action.continuesAtOuterLabel();
+	}
+	
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 
 		output.append("for ("); //$NON-NLS-1$
 		//inits
@@ -444,18 +452,18 @@ public class ForStatement extends Statement {
 			for (int i = 0; i < this.initializations.length; i++) {
 				//nice only with expressions
 				if (i > 0) output.append(", "); //$NON-NLS-1$
-				this.initializations[i].generateExpression(scope, 0, output);
+				this.initializations[i].doGenerateExpression(scope, dependency, 0, output);
 			}
 		}
 		output.append("; "); //$NON-NLS-1$
 		//cond
-		if (this.condition != null) this.condition.generateExpression(scope, 0, output);
+		if (this.condition != null) this.condition.doGenerateExpression(scope, dependency, 0, output);
 		output.append("; "); //$NON-NLS-1$
 		//updates
 		if (this.increments != null) {
 			for (int i = 0; i < this.increments.length; i++) {
 				if (i > 0) output.append(", "); //$NON-NLS-1$
-				this.increments[i].generateJavascript(scope, 0, output);
+				this.increments[i].generateJavascript(scope, dependency, 0, output);
 			}
 		}
 		output.append(") "); //$NON-NLS-1$
@@ -464,18 +472,17 @@ public class ForStatement extends Statement {
 			output.append(';');
 		else {
 			if(action instanceof Block){
-				this.action.generateStatement(scope, tab, output);
+				this.action.generateStatement(scope, dependency, indent, output);
 			} else {
-				this.action.generateStatement(scope, tab + 1, output);
+				this.action.generateStatement(scope, dependency, indent + 1, output);
 			}
 		}
 		return output;
 	}
 	
 	@Override
-	public StringBuffer generateStatement(Scope scope, int indent,
-			StringBuffer output) {
+	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		return this.generateExpression(scope, indent, output);
+		return this.generateExpression(scope, dependency, indent, output);
 	}
 }

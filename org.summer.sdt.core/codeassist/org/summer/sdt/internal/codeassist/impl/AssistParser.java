@@ -17,6 +17,7 @@ package org.summer.sdt.internal.codeassist.impl;
 
 import java.util.HashSet;
 
+import org.summer.sdt.core.compiler.InvalidInputException;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
@@ -35,7 +36,7 @@ import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
 import org.summer.sdt.internal.compiler.ast.MessageSend;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.NameReference;
-import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
+import org.summer.sdt.internal.compiler.ast.ObjectElement;
 import org.summer.sdt.internal.compiler.ast.Statement;
 import org.summer.sdt.internal.compiler.ast.SuperReference;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
@@ -43,12 +44,12 @@ import org.summer.sdt.internal.compiler.ast.TypeReference;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
-import org.summer.sdt.internal.compiler.parser.CommitRollbackParser;
 import org.summer.sdt.internal.compiler.parser.Parser;
 import org.summer.sdt.internal.compiler.parser.RecoveredBlock;
 import org.summer.sdt.internal.compiler.parser.RecoveredElement;
 import org.summer.sdt.internal.compiler.parser.RecoveredField;
 import org.summer.sdt.internal.compiler.parser.RecoveredInitializer;
+import org.summer.sdt.internal.compiler.parser.RecoveredLocalVariable;
 import org.summer.sdt.internal.compiler.parser.RecoveredMethod;
 import org.summer.sdt.internal.compiler.parser.RecoveredStatement;
 import org.summer.sdt.internal.compiler.parser.RecoveredType;
@@ -110,6 +111,9 @@ public abstract class AssistParser extends Parser {
 
 	protected boolean isFirst = false;
 
+	public AssistParser snapShot;
+	private static final int[] RECOVERY_TOKENS = new int [] { TokenNameSEMICOLON, TokenNameRPAREN,};
+
 
 	public AssistParser(ProblemReporter problemReporter) {
 		super(problemReporter, true);
@@ -121,7 +125,7 @@ public abstract class AssistParser extends Parser {
 	
 	public abstract char[] assistIdentifier();
 	
-	public void copyState(CommitRollbackParser from) {
+	public void copyState(Parser from) {
 		
 		super.copyState(from);
 	
@@ -166,11 +170,6 @@ public abstract class AssistParser extends Parser {
 	public int bodyEnd(Initializer initializer){
 		return initializer.declarationSourceEnd;
 	}
-	
-	public int bodyEnd(PropertyDeclaration property){
-		return property.bodyEnd;
-	}
-	
 	/*
 	 * Build initial recovery state.
 	 * Recovery state is inferred from the current state of the parser (reduced node stack).
@@ -237,7 +236,7 @@ public abstract class AssistParser extends Parser {
 						break;
 					}
 					if (this.blockStarts[j] != lastStart){ // avoid multiple block if at same position
-						block = new Block(0, lastNode instanceof LambdaExpression);
+						block = new Block(0);
 						block.sourceStart = lastStart = this.blockStarts[j];
 						element = element.add(block, 1);
 					}
@@ -263,7 +262,12 @@ public abstract class AssistParser extends Parser {
 						this.lastCheckPoint = local.initialization.sourceEnd + 1;
 					}
 				} else {
-					element = element.add(local, 0);
+					if (!local.isArgument()) {
+						element = element.add(local, 0);
+					} else {
+						// Bug 442868 - For arguments, let the method continue to be the current element.
+						element.add(local, 0);
+					}
 					this.lastCheckPoint = local.declarationSourceEnd + 1;
 				}
 				continue;
@@ -333,8 +337,11 @@ public abstract class AssistParser extends Parser {
 				this.lastCheckPoint = importRef.declarationSourceEnd + 1;
 			}
 		}
-		if (this.currentToken == TokenNameRBRACE && !isIndirectlyInsideLambdaExpression()) {
-			this.currentToken = 0; // closing brace has already been taken care of
+		if (this.currentToken == TokenNameRBRACE) {
+			 if (isIndirectlyInsideLambdaExpression())
+				 this.ignoreNextClosingBrace = true;
+			 else 
+				 this.currentToken = 0; // closing brace has already been taken care of
 		}
 	
 		/* might need some extra block (after the last reduced node) */
@@ -344,7 +351,7 @@ public abstract class AssistParser extends Parser {
 		for (int j = blockIndex; j <= this.realBlockPtr; j++){
 			if (this.blockStarts[j] >= 0) {
 				if ((this.blockStarts[j] < pos || createLambdaBlock) && (this.blockStarts[j] != lastStart)){ // avoid multiple block if at same position
-					block = new Block(0, createLambdaBlock);
+					block = new Block(0);
 					block.sourceStart = lastStart = this.blockStarts[j];
 					element = element.add(block, 1);
 					createLambdaBlock = false;
@@ -368,7 +375,6 @@ public abstract class AssistParser extends Parser {
 		popElement(K_METHOD_DELIMITER);
 		super.consumeClassBodyDeclaration();
 	}
-	
 	protected void consumeClassBodyopt() {
 		super.consumeClassBodyopt();
 		popElement(K_SELECTOR);
@@ -377,7 +383,6 @@ public abstract class AssistParser extends Parser {
 		super.consumeClassHeader();
 		pushOnElementStack(K_TYPE_DELIMITER);
 	}
-
 	protected void consumeConstructorBody() {
 		super.consumeConstructorBody();
 		popElement(K_METHOD_DELIMITER);
@@ -471,29 +476,48 @@ public abstract class AssistParser extends Parser {
 			}
 		}
 		
-		if (lambdaClosed && this.currentElement != null) {
-			this.restartRecovery = true;
+		if (lambdaClosed && this.currentElement != null && !(this.currentElement instanceof RecoveredField)) {
 			if (!(statement instanceof AbstractVariableDeclaration)) { // added already as part of standard recovery since these contribute a name to the scope prevailing at the cursor.
 				/* See if CompletionParser.attachOrphanCompletionNode has already added bits and pieces of AST to the recovery tree. If so, we want to
 				   replace those fragments with the fuller statement that provides target type for the lambda that got closed just now. There is prior
 				   art/precedent in the Java 7 world to this: Search for recoveredBlock.statements[--recoveredBlock.statementCount] = null;
 				   See also that this concern does not arise in the case of field/local initialization since the initializer is replaced with full tree by consumeExitVariableWithInitialization.
 				*/
-				ASTNode assistNodeParent = this.assistNodeParent();
-				ASTNode enclosingNode = this.enclosingNode();
-				if (assistNodeParent != null || enclosingNode != null) {
-					RecoveredBlock recoveredBlock = (RecoveredBlock) (this.currentElement instanceof RecoveredBlock ? this.currentElement : 
-														(this.currentElement.parent instanceof RecoveredBlock) ? this.currentElement.parent : null);
-					if (recoveredBlock != null) {
-						RecoveredStatement recoveredStatement = recoveredBlock.statementCount > 0 ? recoveredBlock.statements[recoveredBlock.statementCount - 1] : null;
-						ASTNode parseTree = recoveredStatement != null ? recoveredStatement.updatedStatement(0, new HashSet()) : null;
-						if (parseTree != null && (parseTree == assistNodeParent || parseTree == enclosingNode)) {
-							recoveredBlock.statements[--recoveredBlock.statementCount] = null;
-							this.currentElement = recoveredBlock;
+				RecoveredBlock recoveredBlock = (RecoveredBlock) (this.currentElement instanceof RecoveredBlock ? this.currentElement : 
+					(this.currentElement.parent instanceof RecoveredBlock) ? this.currentElement.parent : 
+						this.currentElement instanceof RecoveredMethod ? ((RecoveredMethod) this.currentElement).methodBody : null);
+				if (recoveredBlock != null) {
+					RecoveredStatement recoveredStatement = recoveredBlock.statementCount > 0 ? recoveredBlock.statements[recoveredBlock.statementCount - 1] : null;
+					ASTNode parseTree = recoveredStatement != null ? recoveredStatement.updatedStatement(0, new HashSet()) : null;
+					if (parseTree != null) {
+						if ((parseTree.sourceStart == 0 || parseTree.sourceEnd == 0) || (parseTree.sourceStart >= statementStart && parseTree.sourceEnd <= statementEnd)) {
+							recoveredBlock.statements[recoveredBlock.statementCount - 1] = new RecoveredStatement(statement, recoveredBlock, 0);
+							statement = null;
+						} else if (recoveredStatement instanceof RecoveredLocalVariable && statement instanceof Expression) {
+							RecoveredLocalVariable local = (RecoveredLocalVariable) recoveredStatement;
+							if (local.localDeclaration != null && local.localDeclaration.initialization != null) {
+								if ((local.localDeclaration.initialization.sourceStart == 0 || local.localDeclaration.initialization.sourceEnd == 0) || 
+								        (local.localDeclaration.initialization.sourceStart >= statementStart && local.localDeclaration.initialization.sourceEnd <= statementEnd) ){
+									local.localDeclaration.initialization = (Expression) statement;
+									local.localDeclaration.declarationSourceEnd = statement.sourceEnd;
+									local.localDeclaration.declarationEnd = statement.sourceEnd;
+									statement = null;
+								}
+							}
 						}
 					}
 				}
-				this.currentElement.add(statement, 0);
+				
+				if (statement != null) {
+					while (this.currentElement != null) {
+						ASTNode tree = this.currentElement.parseTree();
+						if (tree.sourceStart < statement.sourceStart) {
+							this.currentElement.add(statement, 0);
+							break;
+						}
+						this.currentElement = this.currentElement.parent;
+					}
+				}
 			}
 		}
 		this.snapShot = null;
@@ -511,17 +535,22 @@ public abstract class AssistParser extends Parser {
 	}
 	protected void consumeBlockStatement() {
 		super.consumeBlockStatement();
-		triggerRecoveryUponLambdaClosure((Statement) this.astStack[this.astPtr], true);
+		if (triggerRecoveryUponLambdaClosure((Statement) this.astStack[this.astPtr], true) && this.currentElement != null)
+			this.restartRecovery = true;
 	}
 	protected void consumeBlockStatements() {
 		super.consumeBlockStatements();
-		triggerRecoveryUponLambdaClosure((Statement) this.astStack[this.astPtr], true);
+		if (triggerRecoveryUponLambdaClosure((Statement) this.astStack[this.astPtr], true) && this.currentElement != null) {
+			this.restartRecovery = true;
+		}
 	}
 	protected void consumeFieldDeclaration() {
 		super.consumeFieldDeclaration();
 		if (triggerRecoveryUponLambdaClosure((Statement) this.astStack[this.astPtr], true)) {
 			if (this.currentElement instanceof RecoveredType)
 				popUntilElement(K_TYPE_DELIMITER);
+			if (this.currentElement != null)
+				this.restartRecovery = true;
 		}
 	}
 	protected void consumeForceNoDiet() {
@@ -767,123 +796,12 @@ public abstract class AssistParser extends Parser {
 			this.restartRecovery = true; // used to avoid branching back into the regular automaton
 		}
 	}
-	
-	//cym add 2014-11-01
-	protected void consumeModuleDeclarationName() {
-		// PackageDeclarationName ::= 'module' Name
-		/* build an ImportRef build from the last name
-		stored in the identifier stack. */
-	
-		int index;
-	
-		/* no need to take action if not inside assist identifiers */
-		if ((index = indexOfAssistIdentifier()) < 0) {
-			super.consumePackageDeclarationName();
-			return;
-		}
-		/* retrieve identifiers subset and whole positions, the assist node positions
-			should include the entire replaced source. */
-		int length = this.identifierLengthStack[this.identifierLengthPtr];
-		char[][] subset = identifierSubSet(index+1); // include the assistIdentifier
-		this.identifierLengthPtr--;
-		this.identifierPtr -= length;
-		long[] positions = new long[length];
-		System.arraycopy(
-			this.identifierPositionStack,
-			this.identifierPtr + 1,
-			positions,
-			0,
-			length);
-	
-		/* build specific assist node on package statement */
-		ImportReference reference = createAssistPackageReference(subset, positions);
-		this.assistNode = reference;
-		this.lastCheckPoint = reference.sourceEnd + 1;
-		this.compilationUnit.currentPackage = reference;
-	
-		if (this.currentToken == TokenNameSEMICOLON){
-			reference.declarationSourceEnd = this.scanner.currentPosition - 1;
-		} else {
-			reference.declarationSourceEnd = (int) positions[length-1];
-		}
-		//endPosition is just before the ;
-		reference.declarationSourceStart = this.intStack[this.intPtr--];
-		// flush comments defined prior to import statements
-		reference.declarationSourceEnd = flushCommentsDefinedPriorTo(reference.declarationSourceEnd);
-	
-		// recovery
-		if (this.currentElement != null){
-			this.lastCheckPoint = reference.declarationSourceEnd+1;
-			this.restartRecovery = true; // used to avoid branching back into the regular automaton
-		}
-	}
-	
-	//cym add 2014-11-01
-	protected void consumeModuleDeclarationNameWithModifiers() {
-		// PackageDeclarationName ::= Modifiers 'module' PushRealModifiers Name
-		/* build an ImportRef build from the last name
-		stored in the identifier stack. */
-	
-		int index;
-	
-		/* no need to take action if not inside assist identifiers */
-		if ((index = indexOfAssistIdentifier()) < 0) {
-			super.consumePackageDeclarationNameWithModifiers();
-			return;
-		}
-		/* retrieve identifiers subset and whole positions, the assist node positions
-			should include the entire replaced source. */
-		int length = this.identifierLengthStack[this.identifierLengthPtr];
-		char[][] subset = identifierSubSet(index+1); // include the assistIdentifier
-		this.identifierLengthPtr--;
-		this.identifierPtr -= length;
-		long[] positions = new long[length];
-		System.arraycopy(
-			this.identifierPositionStack,
-			this.identifierPtr + 1,
-			positions,
-			0,
-			length);
-	
-		this.intPtr--; // we don't need the modifiers start
-		this.intPtr--; // we don't need the package modifiers
-		ImportReference reference = createAssistPackageReference(subset, positions);
-		// consume annotations
-		if ((length = this.expressionLengthStack[this.expressionLengthPtr--]) != 0) {
-			System.arraycopy(
-				this.expressionStack,
-				(this.expressionPtr -= length) + 1,
-				reference.annotations = new Annotation[length],
-				0,
-				length);
-		}
-		/* build specific assist node on package statement */
-		this.assistNode = reference;
-		this.lastCheckPoint = reference.sourceEnd + 1;
-		this.compilationUnit.currentPackage = reference;
-	
-		if (this.currentToken == TokenNameSEMICOLON){
-			reference.declarationSourceEnd = this.scanner.currentPosition - 1;
-		} else {
-			reference.declarationSourceEnd = (int) positions[length-1];
-		}
-		//endPosition is just before the ;
-		reference.declarationSourceStart = this.intStack[this.intPtr--];
-		// flush comments defined prior to import statements
-		reference.declarationSourceEnd = flushCommentsDefinedPriorTo(reference.declarationSourceEnd);
-	
-		// recovery
-		if (this.currentElement != null){
-			this.lastCheckPoint = reference.declarationSourceEnd+1;
-			this.restartRecovery = true; // used to avoid branching back into the regular automaton
-		}
-	}
-	
 	protected void consumeRestoreDiet() {
 		super.consumeRestoreDiet();
 		// if we are not in a method (i.e. we were not in a local variable initializer)
 		// then we are exiting a field initializer
 		if (!isInsideMethod()) {
+			popUntilElement(K_FIELD_INITIALIZER_DELIMITER);
 			popElement(K_FIELD_INITIALIZER_DELIMITER);
 		}
 	}
@@ -1508,6 +1426,15 @@ public abstract class AssistParser extends Parser {
 		}
 		return false;
 	}
+	protected boolean isIndirectlyInsideLambdaBlock(){
+		int i = this.elementPtr;
+		while (i > -1) {
+			if (this.elementKindStack[i] == K_LAMBDA_EXPRESSION_DELIMITER && this.elementInfoStack[i] == BLOCK_BODY)
+				return true;
+			i--;
+		}
+		return false;
+	}
 	protected boolean isIndirectlyInsideType(){
 		int i = this.elementPtr;
 		while(i > -1) {
@@ -1710,6 +1637,19 @@ public abstract class AssistParser extends Parser {
 		}
 	}
 	
+	//cym 2014-12-09
+	/**
+	 * Parse the block statements inside the given initializer and try to complete at the
+	 * cursor location.
+	 */
+	public void parseBlockStatements(
+		ObjectElement element,
+		TypeDeclaration type,
+		CompilationUnitDeclaration unit) {
+	
+	
+	}
+	
 	/**
 	 * Parse the block statements inside the given method declaration and try to complete at the
 	 * cursor location.
@@ -1779,12 +1719,7 @@ public abstract class AssistParser extends Parser {
 			return;
 		
 		int stackPointer = this.elementPtr;
-		
-		if (this.elementKindStack[stackPointer] == K_LAMBDA_EXPRESSION_DELIMITER) {
-			if (kind == K_FIELD_INITIALIZER_DELIMITER) // wait until lambda is reduced.
-				return;
-		}
-		
+	
 		if (kind != K_LAMBDA_EXPRESSION_DELIMITER) {
 			while (this.elementKindStack[stackPointer] == K_LAMBDA_EXPRESSION_DELIMITER) {
 				stackPointer --;
@@ -1953,6 +1888,78 @@ public abstract class AssistParser extends Parser {
 	public void reset(){
 		flushAssistState();
 	}
+	
+	protected void commit() {
+		if (this.snapShot == null) {
+			this.snapShot = createSnapShotParser();
+		}
+		this.snapShot.copyState(this);
+	}
+	
+	protected boolean assistNodeNeedsStacking() {
+		return false;
+	}
+	
+	protected void shouldStackAssistNode() {
+		// Not relevant here.
+	}
+	
+	protected int getNextToken() {
+		try {
+			return this.scanner.getNextToken();
+		} catch (InvalidInputException e) {
+			return TokenNameEOF;
+		}
+	}
+	
+	protected abstract AssistParser createSnapShotParser();
+	
+	// We get here on real syntax error or syntax error triggered by fake EOF at completion site, never due to triggered recovery.
+	protected int fallBackToSpringForward(Statement unused) {
+		int nextToken;
+		int automatonState = automatonState();
+				
+		// If triggered fake EOF at completion site, see if the real next token would have passed muster.
+		if (this.currentToken == TokenNameEOF) {
+			if (this.scanner.eofPosition < this.scanner.source.length) {
+				shouldStackAssistNode();
+				this.scanner.eofPosition = this.scanner.source.length;
+				nextToken = getNextToken();
+				if (automatonWillShift(nextToken, automatonState)) {
+					this.currentToken = nextToken;
+					return RESUME;
+				}
+				this.scanner.ungetToken(nextToken); // spit out what has been bitten more than we can chew.
+			} else {
+				return HALT; // don't know how to proceed.
+			}
+		} else {
+			nextToken = this.currentToken;
+			this.scanner.ungetToken(nextToken);
+			if (nextToken == TokenNameRBRACE)
+				ignoreNextClosingBrace(); // having ungotten it, recoveryTokenCheck will see this again. 
+		}
+		// OK, next token is no good to resume "in place", attempt some local repair. FIXME: need to make sure we don't get stuck keep reducing empty statements !!
+		for (int i = 0, length = RECOVERY_TOKENS.length; i < length; i++) {
+			if (automatonWillShift(RECOVERY_TOKENS[i], automatonState)) {
+				this.currentToken = RECOVERY_TOKENS[i];
+				return RESUME;
+			}
+		}
+		// OK, no in place resumption, no local repair, fast forward to next statement.
+		if (this.snapShot == null)
+			return RESTART;
+	
+		this.copyState(this.snapShot);
+		if (assistNodeNeedsStacking()) {
+			this.currentToken = TokenNameSEMICOLON;
+			return RESUME;
+		}
+		this.currentToken = this.scanner.fastForward(unused);
+		return RESUME;
+	}
+	
+	
 	/*
 	 * Reset context so as to resume to regular parse loop
 	 * If unable to reset for resuming, answers false.
@@ -1969,6 +1976,8 @@ public abstract class AssistParser extends Parser {
 					return mode;
 				// else fall through and RESTART
 			} else {
+				if (this.currentToken == TokenNameLBRACE)
+					this.ignoreNextOpeningBrace = true;  // already accounted for in recovery token check.
 				return RESUME;
 			}
 		}

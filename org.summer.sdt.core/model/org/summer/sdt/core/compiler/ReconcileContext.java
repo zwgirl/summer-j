@@ -20,6 +20,7 @@ import org.summer.sdt.core.ICompilationUnit;
 import org.summer.sdt.core.IJavaElementDelta;
 import org.summer.sdt.core.IJavaModelMarker;
 import org.summer.sdt.core.JavaModelException;
+import org.summer.sdt.core.compiler.CategorizedProblem;
 import org.summer.sdt.core.dom.AST;
 import org.summer.sdt.core.dom.ASTParser;
 import org.summer.sdt.internal.core.CompilationUnit;

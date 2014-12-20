@@ -18,29 +18,29 @@ import org.summer.sdt.core.SourceRange;
  */
 /* package */ class SourceRefElementInfo extends JavaElementInfo {
 	protected int sourceRangeStart, sourceRangeEnd;
-	/**
-	 * @see org.summer.sdt.internal.compiler.env.ISourceType#getDeclarationSourceEnd()
-	 * @see org.summer.sdt.internal.compiler.env.ISourceMethod#getDeclarationSourceEnd()
-	 * @see org.summer.sdt.internal.compiler.env.ISourceField#getDeclarationSourceEnd()
-	 */
-	public int getDeclarationSourceEnd() {
-		return this.sourceRangeEnd;
-	}
-	/**
-	 * @see org.summer.sdt.internal.compiler.env.ISourceType#getDeclarationSourceStart()
-	 * @see org.summer.sdt.internal.compiler.env.ISourceMethod#getDeclarationSourceStart()
-	 * @see org.summer.sdt.internal.compiler.env.ISourceField#getDeclarationSourceStart()
-	 */
-	public int getDeclarationSourceStart() {
-		return this.sourceRangeStart;
-	}
-	protected ISourceRange getSourceRange() {
-		return new SourceRange(this.sourceRangeStart, this.sourceRangeEnd - this.sourceRangeStart + 1);
-	}
-	protected void setSourceRangeEnd(int end) {
-		this.sourceRangeEnd = end;
-	}
-	protected void setSourceRangeStart(int start) {
-		this.sourceRangeStart = start;
-	}
+/**
+ * @see org.summer.sdt.internal.compiler.env.ISourceType#getDeclarationSourceEnd()
+ * @see org.summer.sdt.internal.compiler.env.ISourceMethod#getDeclarationSourceEnd()
+ * @see org.summer.sdt.internal.compiler.env.ISourceField#getDeclarationSourceEnd()
+ */
+public int getDeclarationSourceEnd() {
+	return this.sourceRangeEnd;
+}
+/**
+ * @see org.summer.sdt.internal.compiler.env.ISourceType#getDeclarationSourceStart()
+ * @see org.summer.sdt.internal.compiler.env.ISourceMethod#getDeclarationSourceStart()
+ * @see org.summer.sdt.internal.compiler.env.ISourceField#getDeclarationSourceStart()
+ */
+public int getDeclarationSourceStart() {
+	return this.sourceRangeStart;
+}
+protected ISourceRange getSourceRange() {
+	return new SourceRange(this.sourceRangeStart, this.sourceRangeEnd - this.sourceRangeStart + 1);
+}
+protected void setSourceRangeEnd(int end) {
+	this.sourceRangeEnd = end;
+}
+protected void setSourceRangeStart(int start) {
+	this.sourceRangeStart = start;
+}
 }

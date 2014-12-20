@@ -17,17 +17,17 @@ public abstract class Label {
 
 	public final static int POS_NOT_SET = -1;
 
-	public Label() {
-		// for creating labels ahead of code generation
-	}
-	
-	public Label(CodeStream codeStream) {
-		this.codeStream = codeStream;
-	}
-	
-	/*
-	* Place the label target position.
-	*/
-	public abstract void place();
-	
+public Label() {
+	// for creating labels ahead of code generation
+}
+
+public Label(CodeStream codeStream) {
+	this.codeStream = codeStream;
+}
+
+/*
+* Place the label target position.
+*/
+public abstract void place();
+
 }

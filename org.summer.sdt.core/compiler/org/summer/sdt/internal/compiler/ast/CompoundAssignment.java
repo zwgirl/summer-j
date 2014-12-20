@@ -18,16 +18,10 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class CompoundAssignment extends Assignment implements OperatorIds {
 	public int operator;
@@ -46,28 +40,28 @@ public class CompoundAssignment extends Assignment implements OperatorIds {
 		this.operator = operator ;
 	}
 
-	public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext,
+public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext,
 		FlowInfo flowInfo) {
-		// record setting a variable: various scenarii are possible, setting an array reference,
-		// a field reference, a blank final field reference, a field of an enclosing instance or
-		// just a local variable.
-		if (this.resolvedType.id != T_JavaLangString) {
-			this.lhs.checkNPE(currentScope, flowContext, flowInfo);
-			// account for exceptions thrown by any arithmetics:
-			flowContext.recordAbruptExit();
-		}
-		flowInfo = ((Reference) this.lhs).analyseAssignment(currentScope, flowContext, flowInfo, this, true).unconditionalInits();
-		if (this.resolvedType.id == T_JavaLangString) {
-			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=339250
-			LocalVariableBinding local = this.lhs.localVariableBinding();
-			if (local != null) {
-				// compound assignment results in a definitely non null value for String
-				flowInfo.markAsDefinitelyNonNull(local);
-				flowContext.markFinallyNullStatus(local, FlowInfo.NON_NULL);
-			}
-		}
-		return flowInfo;
+	// record setting a variable: various scenarii are possible, setting an array reference,
+	// a field reference, a blank final field reference, a field of an enclosing instance or
+	// just a local variable.
+	if (this.resolvedType.id != T_JavaLangString) {
+		this.lhs.checkNPE(currentScope, flowContext, flowInfo);
+		// account for exceptions thrown by any arithmetics:
+		flowContext.recordAbruptExit();
 	}
+	flowInfo = ((Reference) this.lhs).analyseAssignment(currentScope, flowContext, flowInfo, this, true).unconditionalInits();
+	if (this.resolvedType.id == T_JavaLangString) {
+		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=339250
+		LocalVariableBinding local = this.lhs.localVariableBinding();
+		if (local != null) {
+			// compound assignment results in a definitely non null value for String
+			flowInfo.markAsDefinitelyNonNull(local);
+			flowContext.markFinallyNullStatus(local, FlowInfo.NON_NULL);
+		}
+	}
+	return flowInfo;
+}
 
 	public boolean checkCastCompatibility() {
 		return true;
@@ -86,10 +80,10 @@ public class CompoundAssignment extends Assignment implements OperatorIds {
 		codeStream.recordPositionsFrom(pc, this.sourceStart);
 	}
 
-	public int nullStatus(FlowInfo flowInfo, FlowContext flowContext) {
-		return FlowInfo.NON_NULL;
-		// we may have complained on checkNPE, but we avoid duplicate error
-	}
+public int nullStatus(FlowInfo flowInfo, FlowContext flowContext) {
+	return FlowInfo.NON_NULL;
+	// we may have complained on checkNPE, but we avoid duplicate error
+}
 
 	public String operatorToString() {
 		switch (this.operator) {
@@ -156,8 +150,7 @@ public class CompoundAssignment extends Assignment implements OperatorIds {
 			}
 		}
 
-//		if (restrainUsageToNumericTypes() && !lhsType.isNumericType()) {
-		if (restrainUsageToNumericTypes() && !lhsType.isNumericType() && !lhsType.isEnum()) {   //cym 2014-10-24
+		if (restrainUsageToNumericTypes() && !lhsType.isNumericType()) {
 			scope.problemReporter().operatorOnlyValidOnNumericType(this, lhsType, expressionType);
 			return null;
 		}
@@ -223,11 +216,5 @@ public class CompoundAssignment extends Assignment implements OperatorIds {
 			this.expression.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
-	}
-	
-	public StringBuffer generateExpressionNoParenthesis(Scope scope, int indent, StringBuffer output) {
-
-		this.lhs.generateExpression(scope, indent, output).append(' ').append(operatorToString()).append(' ');
-		return this.expression.generateExpression(scope, 0, output) ;
 	}
 }

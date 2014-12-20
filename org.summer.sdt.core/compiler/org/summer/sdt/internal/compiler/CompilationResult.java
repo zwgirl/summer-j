@@ -433,12 +433,12 @@ public class CompilationResult {
 	/**
 	 * For now, remember the compiled type using its compound name.
 	 */
-	public void record(char[] typeName, JavascriptFile jsFile) {
+	public void record(char[] compoundName, JavascriptFile jsFile) {
 //	    SourceTypeBinding sourceType = jsFile.referenceBinding;
 //	    if (!sourceType.isLocalType() && sourceType.isHierarchyInconsistent()) {
 //	        this.hasInconsistentToplevelHierarchies = true;
 //	    }
-		this.compiledJsFiles.put(typeName, jsFile);
+		this.compiledJsFiles.put(compoundName, jsFile);
 	}
 	
 	//cym add 2014-11-21

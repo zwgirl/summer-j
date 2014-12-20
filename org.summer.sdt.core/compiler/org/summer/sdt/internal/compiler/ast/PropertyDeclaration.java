@@ -7,6 +7,7 @@ import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -37,6 +38,8 @@ public class PropertyDeclaration extends FieldDeclaration {
 
 	public PropertyDeclaration(char[] name, int s, int e) {
 		super(name, s, e);
+		
+		this.modifiers |= ClassFileConstants.AccProperty;
 	}
 	
 	public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext, FlowInfo flowInfo) {
@@ -121,64 +124,66 @@ public class PropertyDeclaration extends FieldDeclaration {
 					&& scope.compilerOptions().sourceLevel >= ClassFileConstants.JDK1_5) {
 				scope.problemReporter().missingDeprecatedAnnotationForField(this);
 			}
-			// the resolution of the initialization hasn't been done
-			if (this.initialization == null) {
-				this.binding.setConstant(Constant.NotAConstant);
-			} else {
-				// break dead-lock cycles by forcing constant to NotAConstant
-				this.binding.setConstant(Constant.NotAConstant);
-	
-				TypeBinding fieldType = this.binding.type;
-				TypeBinding initializationType;
-				this.initialization.setExpressionContext(ASSIGNMENT_CONTEXT);
-				this.initialization.setExpectedType(fieldType); // needed in case of generic method invocation
-				if (this.initialization instanceof ArrayInitializer) {
-	
-					if ((initializationType = this.initialization.resolveTypeExpecting(scope, fieldType)) != null) {
-						((ArrayInitializer) this.initialization).binding = (ArrayBinding) initializationType;
-						this.initialization.computeConversion(scope, fieldType, initializationType);
-					}
-				} else if ((initializationType = this.initialization.resolveType(scope)) != null) {
-					//cym add 2014-10-26 TODO
-					if(this.getKind() == ENUM_CONSTANT){
-						return;
-					}
-					
-					if (TypeBinding.notEquals(fieldType, initializationType)) // must call before computeConversion() and typeMismatchError()
-						scope.compilationUnitScope().recordTypeConversion(fieldType, initializationType);
-					if (this.initialization.isConstantValueOfTypeAssignableToType(initializationType, fieldType)
-							|| initializationType.isCompatibleWith(fieldType, classScope)) {
-						this.initialization.computeConversion(scope, fieldType, initializationType);
-						if (initializationType.needsUncheckedConversion(fieldType)) {
-							    scope.problemReporter().unsafeTypeConversion(this.initialization, initializationType, fieldType);
-						}
-						if (this.initialization instanceof CastExpression
-								&& (this.initialization.bits & ASTNode.UnnecessaryCast) == 0) {
-							CastExpression.checkNeedForAssignedCast(scope, fieldType, (CastExpression) this.initialization);
-						}
-					} else if (isBoxingCompatible(initializationType, fieldType, this.initialization, scope)) {
-						this.initialization.computeConversion(scope, fieldType, initializationType);
-						if (this.initialization instanceof CastExpression
-								&& (this.initialization.bits & ASTNode.UnnecessaryCast) == 0) {
-							CastExpression.checkNeedForAssignedCast(scope, fieldType, (CastExpression) this.initialization);
-						}
-					} else {
-						if ((fieldType.tagBits & TagBits.HasMissingType) == 0) {
-							// if problem already got signaled on type, do not report secondary problem
-							scope.problemReporter().typeMismatchError(initializationType, fieldType, this.initialization, null);
-						}
-					}
-					if (this.binding.isFinal()){ // cast from constant actual type to variable type
-						this.binding.setConstant(this.initialization.constant.castTo((this.binding.type.id << 4) + this.initialization.constant.typeID()));
-					}
-				} else {
-					this.binding.setConstant(Constant.NotAConstant);
-				}
-				// check for assignment with no effect
-				if (this.binding == Expression.getDirectBinding(this.initialization)) {
-					scope.problemReporter().assignmentHasNoEffect(this, this.name);
-				}
-			}
+			
+			//cym 2014-12-18
+//			// the resolution of the initialization hasn't been done
+//			if (this.initialization == null) {
+//				this.binding.setConstant(Constant.NotAConstant);
+//			} else {
+//				// break dead-lock cycles by forcing constant to NotAConstant
+//				this.binding.setConstant(Constant.NotAConstant);
+//	
+//				TypeBinding fieldType = this.binding.type;
+//				TypeBinding initializationType;
+//				this.initialization.setExpressionContext(ASSIGNMENT_CONTEXT);
+//				this.initialization.setExpectedType(fieldType); // needed in case of generic method invocation
+//				if (this.initialization instanceof ArrayInitializer) {
+//	
+//					if ((initializationType = this.initialization.resolveTypeExpecting(scope, fieldType)) != null) {
+//						((ArrayInitializer) this.initialization).binding = (ArrayBinding) initializationType;
+//						this.initialization.computeConversion(scope, fieldType, initializationType);
+//					}
+//				} else if ((initializationType = this.initialization.resolveType(scope)) != null) {
+//					//cym add 2014-10-26 TODO
+//					if(this.getKind() == ENUM_CONSTANT){
+//						return;
+//					}
+//					
+//					if (TypeBinding.notEquals(fieldType, initializationType)) // must call before computeConversion() and typeMismatchError()
+//						scope.compilationUnitScope().recordTypeConversion(fieldType, initializationType);
+//					if (this.initialization.isConstantValueOfTypeAssignableToType(initializationType, fieldType)
+//							|| initializationType.isCompatibleWith(fieldType, classScope)) {
+//						this.initialization.computeConversion(scope, fieldType, initializationType);
+//						if (initializationType.needsUncheckedConversion(fieldType)) {
+//							    scope.problemReporter().unsafeTypeConversion(this.initialization, initializationType, fieldType);
+//						}
+//						if (this.initialization instanceof CastExpression
+//								&& (this.initialization.bits & ASTNode.UnnecessaryCast) == 0) {
+//							CastExpression.checkNeedForAssignedCast(scope, fieldType, (CastExpression) this.initialization);
+//						}
+//					} else if (isBoxingCompatible(initializationType, fieldType, this.initialization, scope)) {
+//						this.initialization.computeConversion(scope, fieldType, initializationType);
+//						if (this.initialization instanceof CastExpression
+//								&& (this.initialization.bits & ASTNode.UnnecessaryCast) == 0) {
+//							CastExpression.checkNeedForAssignedCast(scope, fieldType, (CastExpression) this.initialization);
+//						}
+//					} else {
+//						if ((fieldType.tagBits & TagBits.HasMissingType) == 0) {
+//							// if problem already got signaled on type, do not report secondary problem
+//							scope.problemReporter().typeMismatchError(initializationType, fieldType, this.initialization, null);
+//						}
+//					}
+//					if (this.binding.isFinal()){ // cast from constant actual type to variable type
+//						this.binding.setConstant(this.initialization.constant.castTo((this.binding.type.id << 4) + this.initialization.constant.typeID()));
+//					}
+//				} else {
+//					this.binding.setConstant(Constant.NotAConstant);
+//				}
+//				// check for assignment with no effect
+//				if (this.binding == Expression.getDirectBinding(this.initialization)) {
+//					scope.problemReporter().assignmentHasNoEffect(this, this.name);
+//				}
+//			}
 			// Resolve Javadoc comment if one is present
 			if (this.javadoc != null) {
 				this.javadoc.resolve(scope);
@@ -230,10 +235,10 @@ public class PropertyDeclaration extends FieldDeclaration {
 		return output;
 	}
 	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
 		output.append("\n");
 		if (this.javadoc != null) {
-			this.javadoc.generateJavascript(scope, indent, output);
+			this.javadoc.generateJavascript(scope, depsManager, indent, output);
 		}
 		
 		printIndent(indent, output);
@@ -252,7 +257,7 @@ public class PropertyDeclaration extends FieldDeclaration {
 			if(this.getter.statements != null){
 				for(int i = 0, length = this.getter.statements.length; i < length; i++){
 					output.append("\n");
-					this.getter.statements[i].generateStatement(scope, indent + 2, output);
+					this.getter.statements[i].generateStatement(scope, depsManager, indent + 2, output);
 				}
 			}
 			output.append("\n");
@@ -273,7 +278,7 @@ public class PropertyDeclaration extends FieldDeclaration {
 			if(this.setter.statements != null){
 				for(int i = 0, length = this.setter.statements.length; i < length; i++){
 					output.append("\n");
-					this.setter.statements[i].generateStatement(scope, indent + 2, output);
+					this.setter.statements[i].generateStatement(scope, depsManager, indent + 2, output);
 				}
 			}
 			output.append("\n");
@@ -288,25 +293,4 @@ public class PropertyDeclaration extends FieldDeclaration {
 		
 		return output;
 	}
-
-//	@Override
-//	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
-//		// TODO Auto-generated method stub
-//		
-//	}
-//
-//	@Override
-//	public StringBuffer printStatement(int indent, StringBuffer output) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//	
-//	public int getKind(){
-//		return 0;
-//	}
-//
-//	public boolean isStatic() {
-//		// TODO Auto-generated method stub
-//		return false;
-//	}
 }

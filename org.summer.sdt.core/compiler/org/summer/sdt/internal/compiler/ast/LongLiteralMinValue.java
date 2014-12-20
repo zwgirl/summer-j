@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
-import org.summer.sdt.internal.compiler.impl.LongConstant;
+import org.summer.sdt.internal.compiler.impl.*;
 
 public class LongLiteralMinValue extends LongLiteral {
 

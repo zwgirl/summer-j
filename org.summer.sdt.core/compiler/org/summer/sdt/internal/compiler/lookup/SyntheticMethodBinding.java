@@ -550,4 +550,4 @@ public class SyntheticMethodBinding extends MethodBinding {
 	public LambdaExpression sourceLambda() {
 		return this.lambda;
 	}
-}
+} 

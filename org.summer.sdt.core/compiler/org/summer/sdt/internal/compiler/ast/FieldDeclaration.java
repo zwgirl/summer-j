@@ -18,34 +18,19 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
-import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_CONTEXT;
-
 import java.util.List;
 
-import org.summer.sdt.core.compiler.CharOperation;
+import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_CONTEXT;
+
 import org.summer.sdt.core.compiler.IProblem;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ast.TypeReference.AnnotationCollector;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.codegen.Opcodes;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.impl.CompilerOptions;
-import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
-import org.summer.sdt.internal.compiler.lookup.Binding;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
-import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeIds;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.impl.*;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 import org.summer.sdt.internal.compiler.problem.ProblemReporter;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 import org.summer.sdt.internal.compiler.util.Util;
@@ -71,7 +56,7 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		// for subtypes or conversion
 	}
 	
-	public FieldDeclaration(char[] name, int sourceStart, int sourceEnd) {
+	public FieldDeclaration(	char[] name, int sourceStart, int sourceEnd) {
 		this.name = name;
 		//due to some declaration like
 		// int x, y = 3, z , x ;
@@ -274,10 +259,13 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 				if (this.initialization instanceof ArrayInitializer) {
 	
 					if ((initializationType = this.initialization.resolveTypeExpecting(initializationScope, fieldType)) != null) {
-						((ArrayInitializer) this.initialization).binding = (ArrayBinding) initializationType;
+						//cym 2014-12-18
+//						((ArrayInitializer) this.initialization).binding = (ArrayBinding) initializationType;
+						((ArrayInitializer) this.initialization).binding = (ParameterizedTypeBinding) initializationType;
 						this.initialization.computeConversion(initializationScope, fieldType, initializationType);
 					}
 				} else if ((initializationType = this.initialization.resolveType(initializationScope)) != null) {
+	
 					if (TypeBinding.notEquals(fieldType, initializationType)) // must call before computeConversion() and typeMismatchError()
 						initializationScope.compilationUnitScope().recordTypeConversion(fieldType, initializationType);
 					if (this.initialization.isConstantValueOfTypeAssignableToType(initializationType, fieldType)
@@ -356,9 +344,9 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		visitor.endVisit(this, scope);
 	}
 	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
 		if (this.javadoc != null) {
-			this.javadoc.generateJavascript(scope, indent, output);
+			this.javadoc.generateJavascript(scope, depsManager, indent, output);
 		}
 		printIndent(indent, output);
 		if(isStatic()){
@@ -369,7 +357,7 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		output.append(this.name);
 		if (this.initialization != null) {
 			output.append(" = "); //$NON-NLS-1$
-			this.initialization.generateExpression(scope, indent, output);
+			this.initialization.doGenerateExpression(scope, depsManager, indent, output);
 		} else {
 			output.append(" = "); //$NON-NLS-1$
 			if(this.binding != null){
@@ -417,7 +405,7 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 				}
 			}
 		}
-		output.append(";");
+//		output.append(";");
 		return output;
 	}
 }

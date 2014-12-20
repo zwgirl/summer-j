@@ -30,6 +30,8 @@
  *								Bug 417758 - [1.8][null] Null safety compromise during array creation.
  *								Bug 427438 - [1.8][compiler] NPE at org.summer.sdt.internal.compiler.ast.ConditionalExpression.generateCode(ConditionalExpression.java:280)
  *								Bug 430150 - [1.8][null] stricter checking against type variables
+ *								Bug 435805 - [1.8][compiler][null] Java 8 compiler does not recognize declaration style null annotations
+ *								Bug 452788 - [1.8][compiler] Type not correctly inferred in lambda expression
  *     Jesper S Moller - Contributions for
  *								bug 382701 - [1.8][compiler] Implement semantic analysis of Lambda expressions & Reference expression
  *******************************************************************************/
@@ -38,22 +40,11 @@ package org.summer.sdt.internal.compiler.ast;
 import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_CONTEXT;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.flow.InitializationFlowContext;
-import org.summer.sdt.internal.compiler.flow.InsideSubRoutineFlowContext;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeIds;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class ReturnStatement extends Statement {
 
@@ -181,11 +172,15 @@ public class ReturnStatement extends Statement {
 		flowContext.recordAbruptExit();
 		return FlowInfo.DEAD_END;
 	}
+	@Override
+	public boolean doesNotCompleteNormally() {
+		return true;
+	}
 	void checkAgainstNullAnnotation(BlockScope scope, FlowContext flowContext, FlowInfo flowInfo) {
 		int nullStatus = this.expression.nullStatus(flowInfo, flowContext);
 		long tagBits;
 		MethodBinding methodBinding = null;
-		boolean useTypeAnnotations = scope.compilerOptions().sourceLevel >= ClassFileConstants.JDK1_8;
+		boolean useTypeAnnotations = scope.environment().usesNullTypeAnnotations();
 		try {
 			methodBinding = scope.methodScope().referenceMethodBinding();
 			tagBits = (useTypeAnnotations) ? methodBinding.returnType.tagBits : methodBinding.tagBits;
@@ -354,7 +349,7 @@ public class ReturnStatement extends Statement {
 		if (TypeBinding.notEquals(methodType, expressionType)) // must call before computeConversion() and typeMismatchError()
 			scope.compilationUnitScope().recordTypeConversion(methodType, expressionType);
 		if (this.expression.isConstantValueOfTypeAssignableToType(expressionType, methodType)
-				|| expressionType.isCompatibleWith(methodType)) {
+				|| expressionType.isCompatibleWith(methodType, scope)) {
 	
 			this.expression.computeConversion(scope, methodType, expressionType);
 			if (expressionType.needsUncheckedConversion(methodType)) {
@@ -386,10 +381,10 @@ public class ReturnStatement extends Statement {
 		visitor.endVisit(this, scope);
 	}
 
-	public StringBuffer generateExpression(Scope scope, int tab, StringBuffer output){
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 		output.append("return "); //$NON-NLS-1$
 		if (this.expression != null )
-			this.expression.generateExpression(scope, 0, output) ;
+			this.expression.doGenerateExpression(scope, dependency, 0, output) ;
 		return output;
 	}
 }

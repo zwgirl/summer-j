@@ -43,6 +43,7 @@ import org.summer.sdt.internal.compiler.ast.TypeParameter;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.*;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
+import org.summer.sdt.internal.compiler.parser.Parser;
 import org.summer.sdt.internal.compiler.problem.ProblemReporter;
 import org.summer.sdt.internal.core.*;
 import org.summer.sdt.internal.core.util.Util;
@@ -116,9 +117,10 @@ public class SourceTypeConverter extends TypeConverter {
 		this.cu = (ICompilationUnit) cuHandle;
 
 		final CompilationUnitElementInfo compilationUnitElementInfo = (CompilationUnitElementInfo) ((JavaElement) this.cu).getElementInfo();
-		if (this.has1_5Compliance && 
-				(compilationUnitElementInfo.annotationNumber >= CompilationUnitElementInfo.ANNOTATION_THRESHOLD_FOR_DIET_PARSE ||
-				(compilationUnitElementInfo.hasFunctionalTypes && (this.flags & LOCAL_TYPE) != 0))) {
+		//cym comment 2014-12-04
+//		if (this.has1_5Compliance && 
+//				(compilationUnitElementInfo.annotationNumber >= CompilationUnitElementInfo.ANNOTATION_THRESHOLD_FOR_DIET_PARSE ||
+//				(compilationUnitElementInfo.hasFunctionalTypes && (this.flags & LOCAL_TYPE) != 0))) {
 			// If more than 10 annotations, diet parse as this is faster, but not if
 			// the client wants local and anonymous types to be converted (https://bugs.eclipse.org/bugs/show_bug.cgi?id=254738)
 			// Also see bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=405843
@@ -127,50 +129,51 @@ public class SourceTypeConverter extends TypeConverter {
 			} else {
 				return new Parser(this.problemReporter, true).parse(this.cu, compilationResult);
 			}
-		}
+//		}
 
-		/* only positions available */
-		int start = topLevelTypeInfo.getNameSourceStart();
-		int end = topLevelTypeInfo.getNameSourceEnd();
-
-		/* convert package and imports */
-		String[] packageName = ((PackageFragment) cuHandle.getParent()).names;
-		if (packageName.length > 0)
-			// if its null then it is defined in the default package
-			this.unit.currentPackage =
-				createImportReference(packageName, start, end, false, ClassFileConstants.AccDefault);
-		IImportDeclaration[] importDeclarations = topLevelTypeInfo.getHandle().getCompilationUnit().getImports();
-		int importCount = importDeclarations.length;
-		this.unit.imports = new ImportReference[importCount];
-		for (int i = 0; i < importCount; i++) {
-			ImportDeclaration importDeclaration = (ImportDeclaration) importDeclarations[i];
-			ISourceImport sourceImport = (ISourceImport) importDeclaration.getElementInfo();
-			String nameWithoutStar = importDeclaration.getNameWithoutStar();
-			this.unit.imports[i] = createImportReference(
-				Util.splitOn('.', nameWithoutStar, 0, nameWithoutStar.length()),
-				sourceImport.getDeclarationSourceStart(),
-				sourceImport.getDeclarationSourceEnd(),
-				importDeclaration.isOnDemand(),
-				sourceImport.getModifiers());
-		}
-		/* convert type(s) */
-		try {
-			int typeCount = sourceTypes.length;
-			final TypeDeclaration[] types = new TypeDeclaration[typeCount];
-			/*
-			 * We used a temporary types collection to prevent this.unit.types from being null during a call to
-			 * convert(...) when the source is syntactically incorrect and the parser is flushing the unit's types.
-			 * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=97466
-			 */
-			for (int i = 0; i < typeCount; i++) {
-				SourceTypeElementInfo typeInfo = (SourceTypeElementInfo) sourceTypes[i];
-				types[i] = convert((SourceType) typeInfo.getHandle(), compilationResult);
-			}
-			this.unit.types = types;
-			return this.unit;
-		} catch (AnonymousMemberFound e) {
-			return new Parser(this.problemReporter, true).parse(this.cu, compilationResult);
-		}
+		//cym comment 2014-12-04
+//		/* only positions available */
+//		int start = topLevelTypeInfo.getNameSourceStart();
+//		int end = topLevelTypeInfo.getNameSourceEnd();
+//
+//		/* convert package and imports */
+//		String[] packageName = ((PackageFragment) cuHandle.getParent()).names;
+//		if (packageName.length > 0)
+//			// if its null then it is defined in the default package
+//			this.unit.currentPackage =
+//				createImportReference(packageName, start, end, false, ClassFileConstants.AccDefault);
+//		IImportDeclaration[] importDeclarations = topLevelTypeInfo.getHandle().getCompilationUnit().getImports();
+//		int importCount = importDeclarations.length;
+//		this.unit.imports = new ImportReference[importCount];
+//		for (int i = 0; i < importCount; i++) {
+//			ImportDeclaration importDeclaration = (ImportDeclaration) importDeclarations[i];
+//			ISourceImport sourceImport = (ISourceImport) importDeclaration.getElementInfo();
+//			String nameWithoutStar = importDeclaration.getNameWithoutStar();
+//			this.unit.imports[i] = createImportReference(
+//				Util.splitOn('.', nameWithoutStar, 0, nameWithoutStar.length()),
+//				sourceImport.getDeclarationSourceStart(),
+//				sourceImport.getDeclarationSourceEnd(),
+//				importDeclaration.isOnDemand(),
+//				sourceImport.getModifiers());
+//		}
+//		/* convert type(s) */
+//		try {
+//			int typeCount = sourceTypes.length;
+//			final TypeDeclaration[] types = new TypeDeclaration[typeCount];
+//			/*
+//			 * We used a temporary types collection to prevent this.unit.types from being null during a call to
+//			 * convert(...) when the source is syntactically incorrect and the parser is flushing the unit's types.
+//			 * See https://bugs.eclipse.org/bugs/show_bug.cgi?id=97466
+//			 */
+//			for (int i = 0; i < typeCount; i++) {
+//				SourceTypeElementInfo typeInfo = (SourceTypeElementInfo) sourceTypes[i];
+//				types[i] = convert((SourceType) typeInfo.getHandle(), compilationResult);
+//			}
+//			this.unit.types = types;
+//			return this.unit;
+//		} catch (AnonymousMemberFound e) {
+//			return new Parser(this.problemReporter, true).parse(this.cu, compilationResult);
+//		}
 	}
 
 	/*

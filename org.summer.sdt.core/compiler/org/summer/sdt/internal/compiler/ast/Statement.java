@@ -1,4 +1,4 @@
-/*******************************************************************************
+ /*******************************************************************************
  * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -29,28 +29,22 @@
  *								Bug 418537 - [1.8][null] Fix null type annotation analysis for poly conditional expressions
  *								Bug 428352 - [1.8][compiler] Resolution errors don't always surface
  *								Bug 429430 - [1.8] Lambdas and method reference infer wrong exception type with generics (RuntimeException instead of IOException)
+ *								Bug 435805 - [1.8][compiler][null] Java 8 compiler does not recognize declaration style null annotations
  *        Andy Clement - Contributions for
  *                          Bug 383624 - [1.8][compiler] Revive code generation support for type annotations (from Olivier's work)
  *                          Bug 409250 - [1.8][compiler] Various loose ends in 308 code generation
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.BranchLabel;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.MethodBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeIds;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public abstract class Statement extends ASTNode {
 
@@ -87,6 +81,24 @@ public abstract class Statement extends ASTNode {
 	}
 	public abstract FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext, FlowInfo flowInfo);
 	
+	/** Lambda shape analysis: *Assuming* this is reachable, analyze if this completes normally i.e control flow can reach the textually next statement.
+	   For blocks, we don't perform intra-reachability analysis. We assume the lambda body is free of intrinsic control flow errors (if such errors
+	   exist they will not be flagged by this analysis, but are guaranteed to surface later on.) 
+	   
+	   @see Block#doesNotCompleteNormally
+	*/
+	public boolean doesNotCompleteNormally() {
+		return false;
+	}
+	
+	/** Lambda shape analysis: *Assuming* this is reachable, analyze if this completes by continuing i.e control flow cannot reach the textually next statement.
+	    This is necessitated by the fact that continue claims to not complete normally. So this is necessary to discriminate between do { continue; } while (false); 
+	    which completes normally and do { throw new Exception(); } while (false); which does not complete normally.
+	*/
+	public boolean completesByContinue() {
+		return false;
+	}
+	
 		public static final int NOT_COMPLAINED = 0;
 		public static final int COMPLAINED_FAKE_REACHABLE = 1;
 		public static final int COMPLAINED_UNREACHABLE = 2;
@@ -100,8 +112,7 @@ public abstract class Statement extends ASTNode {
 			CompilerOptions compilerOptions = currentScope.compilerOptions();
 			if (compilerOptions.sourceLevel >= ClassFileConstants.JDK1_7 && methodBinding.isPolymorphic())
 				return;
-			boolean considerTypeAnnotations = compilerOptions.sourceLevel >= ClassFileConstants.JDK1_8
-					&& compilerOptions.isAnnotationBasedNullAnalysisEnabled;
+			boolean considerTypeAnnotations = currentScope.environment().usesNullTypeAnnotations();
 			boolean hasJDK15NullAnnotations = methodBinding.parameterNonNullness != null;
 			int numParamsToCheck = methodBinding.parameters.length;
 			int varArgPos = -1;
@@ -213,6 +224,52 @@ public abstract class Statement extends ASTNode {
 		// do nothing by default
 	}
 	
+	// Inspect AST nodes looking for a break statement, descending into nested control structures only when necessary (looking for a break with a specific label.)
+	public boolean breaksOut(final char[] label) {
+		return new ASTVisitor() {
+			
+			boolean breaksOut;
+			public boolean visit(TypeDeclaration type, BlockScope skope) { return label != null; }
+			public boolean visit(TypeDeclaration type, ClassScope skope) { return label != null; }
+			public boolean visit(LambdaExpression lambda, BlockScope skope) { return label != null;}
+			public boolean visit(WhileStatement whileStatement, BlockScope skope) { return label != null; }
+			public boolean visit(DoStatement doStatement, BlockScope skope) { return label != null; }
+			public boolean visit(ForeachStatement foreachStatement, BlockScope skope) { return label != null; }
+			public boolean visit(ForStatement forStatement, BlockScope skope) { return label != null; }
+			public boolean visit(SwitchStatement switchStatement, BlockScope skope) { return label != null; }
+			
+			public boolean visit(BreakStatement breakStatement, BlockScope skope) {
+				if (label == null || CharOperation.equals(label,  breakStatement.label))
+					this.breaksOut = true;
+		    	return false;
+		    }
+			
+			public boolean breaksOut() {
+				Statement.this.traverse(this, null);
+				return this.breaksOut;
+			}
+		}.breaksOut();
+	}
+	
+	/* Inspect AST nodes looking for a continue statement with a label, descending into nested control structures.
+	   The label is presumed to be NOT attached to this. This condition is certainly true for lambda shape analysis
+	   where this analysis triggers only from do {} while (false); situations. See LabeledStatement.continuesAtOuterLabel
+	*/
+	public boolean continuesAtOuterLabel() {
+		return new ASTVisitor() {
+			boolean continuesToLabel;
+			public boolean visit(ContinueStatement continueStatement, BlockScope skope) {
+				if (continueStatement.label != null)
+					this.continuesToLabel = true;
+		    	return false;
+		    }
+			public boolean continuesAtOuterLabel() {
+				Statement.this.traverse(this, null);
+				return this.continuesToLabel;
+			}
+		}.continuesAtOuterLabel();
+	}
+	
 	// Report an error if necessary (if even more unreachable than previously reported
 	// complaintLevel = 0 if was reachable up until now, 1 if fake reachable (deadcode), 2 if fatal unreachable (error)
 	public int complainIfUnreachable(FlowInfo flowInfo, BlockScope scope, int previousComplaintLevel, boolean endOfBlock) {
@@ -251,8 +308,10 @@ public abstract class Statement extends ASTNode {
 			for (int i = 0; i < varArgIndex; i++) {
 				arguments[i].generateCode(currentScope, codeStream, true);
 			}
-			ArrayBinding varArgsType = (ArrayBinding) params[varArgIndex]; // parameterType has to be an array type
-			ArrayBinding codeGenVarArgsType = (ArrayBinding) binding.parameters[varArgIndex].erasure();
+			//cym 2014-12-18
+//			ArrayBinding varArgsType = (ArrayBinding) params[varArgIndex]; // parameterType has to be an array type
+//			ArrayBinding codeGenVarArgsType = (ArrayBinding) binding.parameters[varArgIndex].erasure();
+			ParameterizedTypeBinding varArgsType = (ParameterizedTypeBinding) params[varArgIndex]; // parameterType has to be an array type
 			int elementsTypeID = varArgsType.elementsType().id;
 			int argLength = arguments == null ? 0 : arguments.length;
 	
@@ -261,7 +320,7 @@ public abstract class Statement extends ASTNode {
 				// called with (argLength - lastIndex) elements : foo(1, 2) or foo(1, 2, 3, 4)
 				// need to gen elements into an array, then gen each remaining element into created array
 				codeStream.generateInlinedValue(argLength - varArgIndex);
-				codeStream.newArray(codeGenVarArgsType); // create a mono-dimensional array
+//				codeStream.newArray(codeGenVarArgsType); // create a mono-dimensional array  //cym 2014-12-18
 				for (int i = varArgIndex; i < argLength; i++) {
 					codeStream.dup();
 					codeStream.generateInlinedValue(i - varArgIndex);
@@ -280,7 +339,7 @@ public abstract class Statement extends ASTNode {
 					// right number but not directly compatible or too many arguments - wrap extra into array
 					// need to gen elements into an array, then gen each remaining element into created array
 					codeStream.generateInlinedValue(1);
-					codeStream.newArray(codeGenVarArgsType); // create a mono-dimensional array
+//					codeStream.newArray(codeGenVarArgsType); // create a mono-dimensional array   //cym 2014-12-18
 					codeStream.dup();
 					codeStream.generateInlinedValue(0);
 					arguments[varArgIndex].generateCode(currentScope, codeStream, true);
@@ -290,7 +349,7 @@ public abstract class Statement extends ASTNode {
 				// scenario: foo(1) --> foo(1, new int[0])
 				// generate code for an empty array of parameterType
 				codeStream.generateInlinedValue(0);
-				codeStream.newArray(codeGenVarArgsType); // create a mono-dimensional array
+//				codeStream.newArray(codeGenVarArgsType); // create a mono-dimensional array    //cym 2014-12-18
 			}
 		} else if (arguments != null) { // standard generation for method arguments
 			for (int i = 0, max = arguments.length; i < max; i++)
@@ -299,18 +358,6 @@ public abstract class Statement extends ASTNode {
 	}
 	
 	public abstract void generateCode(BlockScope currentScope, CodeStream codeStream);
-	
-	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
-		return generateStatement(scope, indent, output);
-	}
-	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output){
-		printIndent(indent, output);
-		generateExpression(scope, indent, output);
-		return output.append(";");
-	}
-	
-	public abstract StringBuffer generateExpression(Scope scope, int indent, StringBuffer output);
 	
 	public boolean isBoxingCompatible(TypeBinding expressionType, TypeBinding targetType, Expression expression, Scope scope) {
 		if (scope.isBoxingCompatibleWith(expressionType, targetType))
@@ -385,16 +432,29 @@ public abstract class Statement extends ASTNode {
 		resolvePolyExpressionArguments(site, ctorBinding, argumentTypes, scope);
 		return ctorBinding;
 	}
-	/**
-	 * If an exception-throwing statement is resolved within the scope of a lambda, record the exception type(s).
-	 * It is likely wrong to do this during resolve, should probably use precise flow information.
-	 */
-	protected void recordExceptionsForEnclosingLambda(BlockScope scope, TypeBinding... thrownExceptions) {
-		MethodScope methodScope = scope.methodScope();
-		if (methodScope != null && methodScope.referenceContext instanceof LambdaExpression) {
-			LambdaExpression lambda = (LambdaExpression) methodScope.referenceContext;
-			for (int i = 0; i < thrownExceptions.length; i++)
-				lambda.throwsException(thrownExceptions[i]);
-		}
+	
+	public StringBuffer generateJavascript(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		return generateStatement(scope, dependency, indent, output);
 	}
+	
+	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output){
+		printIndent(indent, output);
+		generateExpression(scope, dependency, indent, output);
+		return output.append(";");
+	}
+	
+	public StringBuffer generateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		int parenthesesCount = (this.bits & ASTNode.ParenthesizedMASK) >> ASTNode.ParenthesizedSHIFT;
+		String suffix = ""; //$NON-NLS-1$
+		for(int i = 0; i < parenthesesCount; i++) {
+			output.append('(');
+			suffix += ')';
+		}
+		this.doGenerateExpression(scope, dependency, indent, output);
+		output.append(suffix);
+		
+		return output;
+	}
+	
+	protected abstract StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output);
 }

@@ -15,14 +15,14 @@ import org.summer.sdt.internal.compiler.util.SimpleSet;
 
 public class DeclarationOfReferencedTypesPattern extends TypeReferencePattern {
 
-	protected SimpleSet knownTypes;
-	protected IJavaElement enclosingElement;
-	
-	public DeclarationOfReferencedTypesPattern(IJavaElement enclosingElement) {
-		super(null, null, R_PATTERN_MATCH);
-	
-		this.enclosingElement = enclosingElement;
-		this.knownTypes = new SimpleSet();
-		this.mustResolve = true;
-	}
+protected SimpleSet knownTypes;
+protected IJavaElement enclosingElement;
+
+public DeclarationOfReferencedTypesPattern(IJavaElement enclosingElement) {
+	super(null, null, R_PATTERN_MATCH);
+
+	this.enclosingElement = enclosingElement;
+	this.knownTypes = new SimpleSet();
+	this.mustResolve = true;
+}
 }

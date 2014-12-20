@@ -5,16 +5,6 @@ import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.impl.Constant;
 
 public class PropertyBinding extends FieldBinding {
-//	public ReferenceBinding declaringClass;
-//	public int compoundUseFlag = 0; // number or accesses via postIncrement or compoundAssignment
-//	
-//	public int modifiers;
-//	public TypeBinding type;
-//	public char[] name;
-//	protected Constant constant;
-//	public int id; // for flow-analysis (position in flowInfo bit vector)
-//	public long tagBits;
-	
 	protected PropertyBinding() {
 		this((char[])null, null, 0, null);
 		// for creating problem field

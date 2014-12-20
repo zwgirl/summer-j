@@ -19,4 +19,4 @@ public class InnerEmulationDependency{
 		this.scope = scope;
 		this.wasEnclosingInstanceSupplied = wasEnclosingInstanceSupplied;
 	}
-}
+} 

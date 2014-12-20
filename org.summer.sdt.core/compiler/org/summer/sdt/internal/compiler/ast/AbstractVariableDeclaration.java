@@ -15,6 +15,7 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.InvocationSite;
@@ -51,6 +52,7 @@ public abstract class AbstractVariableDeclaration extends Statement implements I
 	public static final int LOCAL_VARIABLE = 4;
 	public static final int PARAMETER = 5;
 	public static final int TYPE_PARAMETER = 6;
+
 
 	/**
 	 * @see org.summer.sdt.internal.compiler.lookup.InvocationSite#genericTypeArguments()
@@ -145,8 +147,8 @@ public abstract class AbstractVariableDeclaration extends Statement implements I
 		// do nothing by default
 	}
 	
-	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
-		generateExpression(scope, indent, output);
+	public StringBuffer generateStatement(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
+		doGenerateExpression(scope, depsManager, indent, output);
 		switch(getKind()) {
 			case ENUM_CONSTANT:
 				return output.append(',');
@@ -155,29 +157,20 @@ public abstract class AbstractVariableDeclaration extends Statement implements I
 		}
 	}
 
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
 		printIndent(indent, output);
-//		generateModifiers(this.modifiers, output);
-//		if (this.annotations != null) {
-//			generateAnnotations(this.annotations, output);
-//			output.append(' ');
-//		}
-//
-//		if (this.type != null) {
-//			this.type.print(0, output).append(' ');
-//		}
 		output.append("var ");
 		output.append(this.name);
 		switch(getKind()) {
 			case ENUM_CONSTANT:
 				if (this.initialization != null) {
-					this.initialization.generateExpression(scope, indent, output);
+					this.initialization.doGenerateExpression(scope, depsManager, indent, output);
 				}
 				break;
 			default:
 				if (this.initialization != null) {
 					output.append(" = "); //$NON-NLS-1$
-					this.initialization.generateExpression(scope, indent, output);
+					this.initialization.doGenerateExpression(scope, depsManager, indent, output);
 				}
 		}
 		return output;

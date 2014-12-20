@@ -14,6 +14,7 @@
  *							Bug 412153 - [1.8][compiler] Check validity of annotations which may be repeatable
  *     Andy Clement (GoPivotal, Inc) aclement@gopivotal.com - Contributions for
  *                          Bug 405104 - [1.8][compiler][codegen] Implement support for serializeable lambdas
+ *                          Bug 439889 - [1.8][compiler] [lambda] Deserializing lambda fails with IllegalArgumentException: "Invalid lambda deserialization"
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.codegen;
 
@@ -324,7 +325,6 @@ public class ConstantPool implements ClassFileConstants, TypeIds {
 		return this.poolContent;
 	}
 	public int literalIndex(byte[] utf8encoding, char[] stringCharArray) {
-		System.out.println("TTTT : " + utf8encoding);
 		int index;
 		if ((index = this.UTF8Cache.putIfAbsent(stringCharArray, this.currentIndex)) < 0) {
 			// The entry doesn't exit yet
@@ -787,6 +787,7 @@ public class ConstantPool implements ClassFileConstants, TypeIds {
 			isInterface ? binding.isStatic() ? MethodHandleRefKindInvokeStatic : binding.isPrivate() ? MethodHandleRefKindInvokeSpecial : MethodHandleRefKindInvokeInterface
 			: binding.isConstructor() ? MethodHandleRefKindNewInvokeSpecial
 			: binding.isStatic() ? MethodHandleRefKindInvokeStatic
+			: binding.isPrivate() ? MethodHandleRefKindInvokeSpecial
 			: MethodHandleRefKindInvokeVirtual;
 		
 		return literalIndexForMethodHandle(referenceKind, binding.declaringClass, binding.selector, binding.signature(), isInterface);

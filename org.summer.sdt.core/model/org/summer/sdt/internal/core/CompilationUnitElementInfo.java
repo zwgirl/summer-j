@@ -38,19 +38,19 @@ public class CompilationUnitElementInfo extends OpenableElementInfo {
 
 	public boolean hasFunctionalTypes = false;
 
-	/**
-	 * Returns the length of the source string.
-	 */
-	public int getSourceLength() {
-		return this.sourceLength;
-	}
-	protected ISourceRange getSourceRange() {
-		return new SourceRange(0, this.sourceLength);
-	}
-	/**
-	 * Sets the length of the source string.
-	 */
-	public void setSourceLength(int newSourceLength) {
-		this.sourceLength = newSourceLength;
-	}
+/**
+ * Returns the length of the source string.
+ */
+public int getSourceLength() {
+	return this.sourceLength;
+}
+protected ISourceRange getSourceRange() {
+	return new SourceRange(0, this.sourceLength);
+}
+/**
+ * Sets the length of the source string.
+ */
+public void setSourceLength(int newSourceLength) {
+	this.sourceLength = newSourceLength;
+}
 }

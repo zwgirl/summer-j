@@ -8,6 +8,7 @@ import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
+import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
@@ -22,24 +23,28 @@ import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
  * 
  *         using by XAML
  */
-public abstract class Element extends Expression {
-	public int closeMode;
-	public static final int CLOSE_TAG = 1;   // "/>"
-	public static final int CLOSE_ELEMENT = 2;		 // "</"
+public abstract class XAMLElement extends XAMLNode {
+	public static final Attribute[] NO_ATTRIBUTES = new Attribute[0];
+	public static final XAMLElement[] NO_ELEMENTS= new XAMLElement[0];
 	public static final char[][] noName = new char[0][0];
-	
-	public static final Attribute[] noAttribute = new Attribute[0];
-	
-	public TypeReference type;
-	public Attribute[] attributes = noAttribute;
 
-	public static final Element[] noChild = new Element[0];
-	public Element[] children = noChild;
+
+	public TypeReference type;
+	public Attribute[] attributes = NO_ATTRIBUTES;
+
+	public XAMLElement[] children = NO_ELEMENTS;
 	public int declarationSourceStart;
 	public int declarationSourceEnd;
 	public int bodyStart;
 	public int bodyEnd; // doesn't include the trailing comment if any.
 	public ElementScope scope;
+	
+	public Initializer initializer;
+	public MethodScope initializeScope;
+	
+	protected XAMLElement(SingleNameReference namespace){
+		super(namespace);
+	}
 	
 
 	public StringBuffer print(int indent, StringBuffer output) {
@@ -54,7 +59,7 @@ public abstract class Element extends Expression {
 		printTagName(indent, output);
 //		printProperties(indent, output);
 		
-		if(this.closeMode == CLOSE_TAG){
+		if(this.kind == EMPTY_ELEMENT){
 			return output.append("/>");
 		} else {
 			output.append(">");
@@ -184,7 +189,7 @@ public abstract class Element extends Expression {
 //	}
 	
 	protected void resolveChild(ClassScope scope){
-		for(Element child: children){
+		for(XAMLElement child: children){
 			child.resolve(scope);
 		}
 	}

@@ -58,26 +58,26 @@ public class DeltaProcessingState implements IResourceChangeListener {
 	}
 
 	/* A table from IPath (from a classpath entry) to DeltaProcessor.RootInfo */
-	public HashMap<IPath, DeltaProcessor.RootInfo> roots = new HashMap();
+	public HashMap roots = new HashMap();
 
 	/* A table from IPath (from a classpath entry) to ArrayList of DeltaProcessor.RootInfo
 	 * Used when an IPath corresponds to more than one root */
-	public HashMap<IPath, List<DeltaProcessor.RootInfo>> otherRoots = new HashMap();
+	public HashMap otherRoots = new HashMap();
 
 	/* A table from IPath (from a classpath entry) to DeltaProcessor.RootInfo
 	 * from the last time the delta processor was invoked. */
-	public HashMap<IPath, DeltaProcessor.RootInfo> oldRoots = new HashMap();
+	public HashMap oldRoots = new HashMap();
 
 	/* A table from IPath (from a classpath entry) to ArrayList of DeltaProcessor.RootInfo
 	 * from the last time the delta processor was invoked.
 	 * Used when an IPath corresponds to more than one root */
-	public HashMap<IPath, List<DeltaProcessor.RootInfo>> oldOtherRoots = new HashMap();
+	public HashMap oldOtherRoots = new HashMap();
 
 	/* A table from IPath (a source attachment path from a classpath entry) to IPath (a root path) */
-	public HashMap<IPath, IPath> sourceAttachments = new HashMap();
+	public HashMap sourceAttachments = new HashMap();
 
 	/* A table from IJavaProject to IJavaProject[] (the list of direct dependent of the key) */
-	public HashMap<IJavaProject, IJavaProject[]> projectDependencies = new HashMap();
+	public HashMap projectDependencies = new HashMap();
 
 	/* Whether the roots tables should be recomputed */
 	public boolean rootsAreStale = true;
@@ -86,35 +86,35 @@ public class DeltaProcessingState implements IResourceChangeListener {
 	private Set initializingThreads = Collections.synchronizedSet(new HashSet());
 
 	/* A table from file system absoulte path (String) to timestamp (Long) */
-	public Hashtable<String, Long> externalTimeStamps;
+	public Hashtable externalTimeStamps;
 
 	/*
 	 * Map from IProject to ClasspathChange
 	 * Note these changes need to be kept on the delta processing state to ensure we don't loose them
 	 * (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=271102 Java model corrupt after switching target platform)
 	 */
-	private HashMap<IProject, ClasspathChange> classpathChanges = new HashMap();
+	private HashMap classpathChanges = new HashMap();
 
 	/* A table from JavaProject to ClasspathValidation */
-	private HashMap<JavaProject, ClasspathValidation> classpathValidations = new HashMap();
+	private HashMap classpathValidations = new HashMap();
 
 	/* A table from JavaProject to ProjectReferenceChange */
-	private HashMap<JavaProject, ProjectReferenceChange> projectReferenceChanges = new HashMap();
+	private HashMap projectReferenceChanges = new HashMap();
 
 	/* A table from JavaProject to ExternalFolderChange */
-	private HashMap<JavaProject, ExternalFolderChange> externalFolderChanges = new HashMap();
+	private HashMap externalFolderChanges = new HashMap();
 
 	/**
 	 * Workaround for bug 15168 circular errors not reported
 	 * This is a cache of the projects before any project addition/deletion has started.
 	 */
-	private HashSet<String> javaProjectNamesCache;
+	private HashSet javaProjectNamesCache;
 
 	/*
 	 * A list of IJavaElement used as a scope for external archives refresh during POST_CHANGE.
 	 * This is null if no refresh is needed.
 	 */
-	private HashSet<IJavaElement> externalElementsToRefresh;
+	private HashSet externalElementsToRefresh;
 
 	/*
 	 * Need to clone defensively the listener information, in case some listener is reacting to some notification iteration by adding/changing/removing
@@ -531,7 +531,7 @@ public class DeltaProcessingState implements IResourceChangeListener {
 	 */
 	public synchronized HashSet getOldJavaProjecNames() {
 		if (this.javaProjectNamesCache == null) {
-			HashSet<String> result = new HashSet();
+			HashSet result = new HashSet();
 			IJavaProject[] projects;
 			try {
 				projects = JavaModelManager.getJavaModelManager().getJavaModel().getJavaProjects();

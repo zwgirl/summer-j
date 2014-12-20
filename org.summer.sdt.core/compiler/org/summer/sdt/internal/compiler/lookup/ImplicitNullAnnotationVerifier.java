@@ -21,7 +21,6 @@ import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.NullAnnotationMatching;
 import org.summer.sdt.internal.compiler.ast.NullAnnotationMatching.CheckMode;
-import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 
 /**
@@ -75,9 +74,12 @@ public class ImplicitNullAnnotationVerifier {
 			if (currentType.id == TypeIds.T_JavaLangObject) {
 				return;
 			}
-			long sourceLevel = scope.compilerOptions().sourceLevel;
-			boolean needToApplyNonNullDefault = currentMethod.hasNonNullDefaultFor(Binding.DefaultLocationParameter|Binding.DefaultLocationReturnType,
-																					sourceLevel >= ClassFileConstants.JDK1_8);
+			boolean usesTypeAnnotations = scope.environment().usesNullTypeAnnotations();
+			boolean needToApplyReturnNonNullDefault =
+					currentMethod.hasNonNullDefaultFor(Binding.DefaultLocationReturnType, usesTypeAnnotations);
+			boolean needToApplyParameterNonNullDefault =
+					currentMethod.hasNonNullDefaultFor(Binding.DefaultLocationParameter, usesTypeAnnotations);
+			boolean needToApplyNonNullDefault = needToApplyReturnNonNullDefault | needToApplyParameterNonNullDefault;
 			// compatibility & inheritance do not consider constructors / static methods:
 			boolean isInstanceMethod = !currentMethod.isConstructor() && !currentMethod.isStatic();
 			complain &= isInstanceMethod;
@@ -110,7 +112,7 @@ public class ImplicitNullAnnotationVerifier {
 						// recurse to prepare currentSuper
 						checkImplicitNullAnnotations(currentSuper, null, false, scope); // TODO (stephan) complain=true if currentSuper is source method??
 					}
-					checkNullSpecInheritance(currentMethod, srcMethod, needToApplyNonNullDefault, complain, currentSuper, scope, inheritedNonNullnessInfos);
+					checkNullSpecInheritance(currentMethod, srcMethod, needToApplyReturnNonNullDefault, needToApplyParameterNonNullDefault, complain, currentSuper, scope, inheritedNonNullnessInfos);
 					needToApplyNonNullDefault = false;
 				}
 				
@@ -124,7 +126,7 @@ public class ImplicitNullAnnotationVerifier {
 						tagBits = TagBits.AnnotationNullable;
 					}
 					if (tagBits != 0) {
-						if (sourceLevel < ClassFileConstants.JDK1_8) {
+						if (!usesTypeAnnotations) {
 							currentMethod.tagBits |= tagBits;
 						} else {
 							if (!currentMethod.returnType.isBaseType()) {
@@ -138,7 +140,7 @@ public class ImplicitNullAnnotationVerifier {
 					info = inheritedNonNullnessInfos[i+1];
 					if (!info.complained && info.inheritedNonNullness != null) {
 						Argument currentArg = srcMethod == null ? null : srcMethod.arguments[i];
-						if (sourceLevel < ClassFileConstants.JDK1_8)
+						if (!usesTypeAnnotations)
 							recordArgNonNullness(currentMethod, paramLen, i, currentArg, info.inheritedNonNullness);
 						else
 							recordArgNonNullness18(currentMethod, i, currentArg, info.inheritedNonNullness, scope.environment());
@@ -147,7 +149,7 @@ public class ImplicitNullAnnotationVerifier {
 
 			}
 			if (needToApplyNonNullDefault) {
-				if (scope.compilerOptions().sourceLevel < ClassFileConstants.JDK1_8)
+				if (!usesTypeAnnotations)
 					currentMethod.fillInDefaultNonNullness(srcMethod);
 				else
 					currentMethod.fillInDefaultNonNullness18(srcMethod, scope.environment());
@@ -206,7 +208,8 @@ public class ImplicitNullAnnotationVerifier {
 	 * The main algorithm in this class.
 	 * @param currentMethod focus method
 	 * @param srcMethod AST of 'currentMethod' if present
-	 * @param hasNonNullDefault is a @NonNull default applicable at the site of currentMethod?
+	 * @param hasReturnNonNullDefault is a @NonNull default applicable for the return type of currentMethod?
+	 * @param hasParameterNonNullDefault is a @NonNull default applicable for parameters of currentMethod?
 	 * @param shouldComplain should we report any errors found? 
 	 *   (see also comment about flows into this method, below).
 	 * @param inheritedMethod one overridden method from a super type
@@ -216,7 +219,7 @@ public class ImplicitNullAnnotationVerifier {
 	 *   Index position 0 is used for the return type, positions i+1 for argument i.
 	 */
 	void checkNullSpecInheritance(MethodBinding currentMethod, AbstractMethodDeclaration srcMethod, 
-			boolean hasNonNullDefault, boolean shouldComplain,
+			boolean hasReturnNonNullDefault, boolean hasParameterNonNullDefault, boolean shouldComplain,
 			MethodBinding inheritedMethod, Scope scope, InheritedNonNullnessInfo[] inheritedNonNullnessInfos) 
 	{
 		// Note that basically two different flows lead into this method:
@@ -233,7 +236,7 @@ public class ImplicitNullAnnotationVerifier {
 			// TODO (stephan): even here we may need to report problems? How to discriminate?
 			this.buddyImplicitNullAnnotationsVerifier.checkImplicitNullAnnotations(inheritedMethod, null, false, scope);
 		}
-		boolean useTypeAnnotations = this.environment.globalOptions.sourceLevel >= ClassFileConstants.JDK1_8;
+		boolean useTypeAnnotations = this.environment.usesNullTypeAnnotations();
 		long inheritedNullnessBits = getReturnTypeNullnessTagBits(inheritedMethod, useTypeAnnotations);
 		long currentNullnessBits = getReturnTypeNullnessTagBits(currentMethod, useTypeAnnotations);
 		
@@ -247,7 +250,7 @@ public class ImplicitNullAnnotationVerifier {
 				// unspecified, may fill in either from super or from default
 				if (shouldInherit) {
 					if (inheritedNullnessBits != 0) {
-						if (hasNonNullDefault) {
+						if (hasReturnNonNullDefault) {
 							// both inheritance and default: check for conflict?
 							if (shouldComplain && inheritedNullnessBits == TagBits.AnnotationNullable)
 								scope.problemReporter().conflictingNullAnnotations(currentMethod, ((MethodDeclaration) srcMethod).returnType, inheritedMethod);
@@ -263,7 +266,7 @@ public class ImplicitNullAnnotationVerifier {
 						break returnType; // compatible by construction, skip complain phase below
 					}
 				}
-				if (hasNonNullDefault) { // conflict with inheritance already checked
+				if (hasReturnNonNullDefault && currentMethod.returnType.acceptsNonNullDefault()) { // conflict with inheritance already checked
 					currentNullnessBits = TagBits.AnnotationNonNull;
 					applyReturnNullBits(currentMethod, currentNullnessBits);
 				}
@@ -289,7 +292,10 @@ public class ImplicitNullAnnotationVerifier {
 						substituteReturnType = substitute.returnType;
 					}
 					if (NullAnnotationMatching.analyse(inheritedMethod.returnType, currentMethod.returnType, substituteReturnType, 0, CheckMode.OVERRIDE).isAnyMismatch()) {
-						scope.problemReporter().cannotImplementIncompatibleNullness(currentMethod, inheritedMethod, useTypeAnnotations);
+						if (srcMethod != null)
+							scope.problemReporter().illegalReturnRedefinition(srcMethod, inheritedMethod, null);
+						else
+							scope.problemReporter().cannotImplementIncompatibleNullness(currentMethod, inheritedMethod, useTypeAnnotations);
 						return;
 					}
 				}
@@ -330,7 +336,7 @@ public class ImplicitNullAnnotationVerifier {
 				// unspecified, may fill in either from super or from default
 				if (inheritedNonNullNess != null) {
 					if (shouldInherit) {
-						if (hasNonNullDefault) {
+						if (hasParameterNonNullDefault) {
 							// both inheritance and default: check for conflict?
 							if (shouldComplain
 									&& inheritedNonNullNess == Boolean.FALSE
@@ -353,12 +359,14 @@ public class ImplicitNullAnnotationVerifier {
 						continue; // compatible by construction, skip complain phase below
 					}
 				}
-				if (hasNonNullDefault) { // conflict with inheritance already checked
+				if (hasParameterNonNullDefault) { // conflict with inheritance already checked
 					currentNonNullNess = Boolean.TRUE;
 					if (!useTypeAnnotations)
 						recordArgNonNullness(currentMethod, length, i, currentArgument, Boolean.TRUE);
-					else
+					else if (currentMethod.parameters[i].acceptsNonNullDefault())
 						recordArgNonNullness18(currentMethod, i, currentArgument, Boolean.TRUE, this.environment);
+					else
+						currentNonNullNess = null; // cancel if parameter doesn't accept the default
 				}
 			}
 			if (shouldComplain) {
@@ -404,9 +412,13 @@ public class ImplicitNullAnnotationVerifier {
 					}
 				} 
 				if (useTypeAnnotations) {
+					TypeBinding inheritedParameter = inheritedMethod.parameters[i];
 					TypeBinding substituteParameter = substituteParameters != null ? substituteParameters[i] : null;
-					if (NullAnnotationMatching.analyse(currentMethod.parameters[i], inheritedMethod.parameters[i], substituteParameter, 0, CheckMode.OVERRIDE).isAnyMismatch()) {
-						scope.problemReporter().cannotImplementIncompatibleNullness(currentMethod, inheritedMethod, false);
+					if (NullAnnotationMatching.analyse(currentMethod.parameters[i], inheritedParameter, substituteParameter, 0, CheckMode.OVERRIDE).isAnyMismatch()) {
+						if (currentArgument != null)
+							scope.problemReporter().illegalParameterRedefinition(currentArgument, inheritedMethod.declaringClass, inheritedParameter);
+						else
+							scope.problemReporter().cannotImplementIncompatibleNullness(currentMethod, inheritedMethod, false);
 					}
 				}
 			}
@@ -414,12 +426,12 @@ public class ImplicitNullAnnotationVerifier {
 	}
 
 	void applyReturnNullBits(MethodBinding method, long nullnessBits) {
-		if (this.environment.globalOptions.sourceLevel < ClassFileConstants.JDK1_8) {
-			method.tagBits |= nullnessBits;
-		} else {
+		if (this.environment.usesNullTypeAnnotations()) {
 			if (!method.returnType.isBaseType()) {
 				method.returnType = this.environment.createAnnotatedType(method.returnType, this.environment.nullAnnotationsFromTagBits(nullnessBits));
 			}
+		} else {
+			method.tagBits |= nullnessBits;
 		}
 	}
 

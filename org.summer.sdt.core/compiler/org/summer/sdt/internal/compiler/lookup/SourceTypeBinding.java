@@ -32,6 +32,10 @@
  *								Bug 392238 - [1.8][compiler][null] Detect semantically invalid null type annotations
  *								Bug 429958 - [1.8][null] evaluate new DefaultLocation attribute of @NonNullByDefault
  *								Bug 432348 - [1.8] Internal compiler error (NPE) after upgrade to 1.8
+ *								Bug 438458 - [1.8][null] clean up handling of null type annotations wrt type variables
+ *								Bug 435570 - [1.8][null] @NonNullByDefault illegally tries to affect "throws E"
+ *								Bug 441693 - [1.8][null] Bogus warning for type argument annotated with @NonNull
+ *								Bug 435805 - [1.8][compiler][null] Java 8 compiler does not recognize declaration style null annotations
  *      Jesper S Moller <jesper@selskabet.org> -  Contributions for
  *								Bug 412153 - [1.8][compiler] Check validity of annotations which may be repeatable
  *      Till Brychcy - Contributions for
@@ -700,7 +704,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 	 */
 	public SyntheticMethodBinding addSyntheticBridgeMethod(MethodBinding inheritedMethodToBridge, MethodBinding targetMethod) {
 		if (!isPrototype()) throw new IllegalStateException();
-		if (isInterface()) return null; // only classes & enums get bridge methods
+		if (isInterface() && this.scope.compilerOptions().sourceLevel <= ClassFileConstants.JDK1_7) return null; // only classes & enums get bridge methods, interfaces too at 1.8+
 		// targetMethod may be inherited
 		if (TypeBinding.equalsEquals(inheritedMethodToBridge.returnType.erasure(), targetMethod.returnType.erasure())
 			&& inheritedMethodToBridge.areParameterErasuresEqual(targetMethod)) {
@@ -867,7 +871,6 @@ public class SourceTypeBinding extends ReferenceBinding {
 			this.modifiers |= ExtraCompilerModifiers.AccDeprecatedImplicitly;
 		fields();
 		methods();
-		properties();
 	
 		for (int i = 0, length = this.memberTypes.length; i < length; i++)
 			((SourceTypeBinding) this.memberTypes[i]).faultInTypesForFieldsAndMethods();
@@ -924,14 +927,14 @@ public class SourceTypeBinding extends ReferenceBinding {
 						failed++;
 					}
 				} else{
-				if (resolveTypeFor(this.fields[i]) == null) {
-					// do not alter original field array until resolution is over, due to reentrance (143259)
-					if (resolvedFields == this.fields) {
-						System.arraycopy(this.fields, 0, resolvedFields = new FieldBinding[length], 0, length);
+					if (resolveTypeFor(this.fields[i]) == null) {
+						// do not alter original field array until resolution is over, due to reentrance (143259)
+						if (resolvedFields == this.fields) {
+							System.arraycopy(this.fields, 0, resolvedFields = new FieldBinding[length], 0, length);
+						}
+						resolvedFields[i] = null;
+						failed++;
 					}
-					resolvedFields[i] = null;
-					failed++;
-				}
 				}
 			}
 		} finally {
@@ -952,7 +955,6 @@ public class SourceTypeBinding extends ReferenceBinding {
 		this.tagBits |= TagBits.AreFieldsComplete;
 		return this.fields;
 	}
-	
 	/**
 	 * @see org.summer.sdt.internal.compiler.lookup.TypeBinding#genericTypeSignature()
 	 */
@@ -1103,7 +1105,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 		if ((this.tagBits & TagBits.AreFieldsComplete) != 0) { // have resolved all arg types & return type of the methods
 			long range;
 			if ((range = ReferenceBinding.binarySearch(this.fields)) >= 0) {
-				nextMethod: for (int ifield = (int)range, end = (int)(range >> 32); ifield <= end; ifield++) {
+				nextIndexer: for (int ifield = (int)range, end = (int)(range >> 32); ifield <= end; ifield++) {
 					if(!(this.fields[ifield] instanceof IndexerBinding)){
 						continue;
 					}
@@ -1113,7 +1115,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 						TypeBinding[] toMatch = indexer.parameters;
 						for (int iarg = 0; iarg < argCount; iarg++)
 							if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
-								continue nextMethod;
+								continue nextIndexer;
 						return indexer;
 					}
 				}
@@ -1137,8 +1139,8 @@ public class SourceTypeBinding extends ReferenceBinding {
 					}
 					IndexerBinding indexer = (IndexerBinding) this.fields[ifield];
 					if (resolveTypeFor((IndexerBinding)indexer) == null || indexer.type == null) {
-						methods();
-						return getExactIndexer(argumentTypes, refScope); // try again since the problem methods have been removed
+						fields();
+						return getExactIndexer(argumentTypes, refScope); // try again since the problem indexers have been removed
 					}
 				}
 //				// check dup collisions
@@ -1808,57 +1810,57 @@ public class SourceTypeBinding extends ReferenceBinding {
 		return this.methods;
 	}
 	
-	// NOTE: the return type, arg & exception types of each method of a source type are resolved when needed
-	public PropertyBinding[] properties() {
-		
-		if (!isPrototype()) {
-			if ((this.tagBits & TagBits.ArePropertiesComplete) != 0)
-				return this.properties;
-			this.tagBits |= TagBits.ArePropertiesComplete;
-			return this.properties = this.prototype.properties();
-		}
-		
-//		if ((this.tagBits & TagBits.ArePropertiesComplete) != 0)
-//			return this.properties;
-	
-		int failed = 0;
-		PropertyBinding[] resolvedProperties = this.properties;
-		try {
-			// lazily sort fields
-			if ((this.tagBits & TagBits.ArePropertiesSorted) == 0) {
-				int length = this.properties.length;
-				if (length > 1)
-					ReferenceBinding.sortProperties(this.properties, 0, length);
-				this.tagBits |= TagBits.ArePropertiesSorted;
-			}
-			for (int i = 0, length = this.properties.length; i < length; i++) {
-				if (resolveTypeFor(this.properties[i]) == null) {
-					// do not alter original field array until resolution is over, due to reentrance (143259)
-					if (resolvedProperties == this.properties) {
-						System.arraycopy(this.properties, 0, resolvedProperties = new PropertyBinding[length], 0, length);
-					}
-					resolvedProperties[i] = null;
-					failed++;
-				}
-			}
-		} finally {
-			if (failed > 0) {
-				// ensure fields are consistent reqardless of the error
-				int newSize = resolvedProperties.length - failed;
-				if (newSize == 0)
-					return setProperties(Binding.NO_PROPERTIES);
-	
-				PropertyBinding[] newProperties = new PropertyBinding[newSize];
-				for (int i = 0, j = 0, length = resolvedProperties.length; i < length; i++) {
-					if (resolvedProperties[i] != null)
-						newProperties[j++] = resolvedProperties[i];
-				}
-				setProperties(newProperties);
-			}
-		}
-		this.tagBits |= TagBits.AreFieldsComplete;
-		return this.properties;
-	}
+//	// NOTE: the return type, arg & exception types of each method of a source type are resolved when needed
+//	public PropertyBinding[] properties() {
+//		
+//		if (!isPrototype()) {
+//			if ((this.tagBits & TagBits.ArePropertiesComplete) != 0)
+//				return this.properties;
+//			this.tagBits |= TagBits.ArePropertiesComplete;
+//			return this.properties = this.prototype.properties();
+//		}
+//		
+////		if ((this.tagBits & TagBits.ArePropertiesComplete) != 0)
+////			return this.properties;
+//	
+//		int failed = 0;
+//		PropertyBinding[] resolvedProperties = this.properties;
+//		try {
+//			// lazily sort fields
+//			if ((this.tagBits & TagBits.ArePropertiesSorted) == 0) {
+//				int length = this.properties.length;
+//				if (length > 1)
+//					ReferenceBinding.sortProperties(this.properties, 0, length);
+//				this.tagBits |= TagBits.ArePropertiesSorted;
+//			}
+//			for (int i = 0, length = this.properties.length; i < length; i++) {
+//				if (resolveTypeFor(this.properties[i]) == null) {
+//					// do not alter original field array until resolution is over, due to reentrance (143259)
+//					if (resolvedProperties == this.properties) {
+//						System.arraycopy(this.properties, 0, resolvedProperties = new PropertyBinding[length], 0, length);
+//					}
+//					resolvedProperties[i] = null;
+//					failed++;
+//				}
+//			}
+//		} finally {
+//			if (failed > 0) {
+//				// ensure fields are consistent reqardless of the error
+//				int newSize = resolvedProperties.length - failed;
+//				if (newSize == 0)
+//					return setProperties(Binding.NO_PROPERTIES);
+//	
+//				PropertyBinding[] newProperties = new PropertyBinding[newSize];
+//				for (int i = 0, j = 0, length = resolvedProperties.length; i < length; i++) {
+//					if (resolvedProperties[i] != null)
+//						newProperties[j++] = resolvedProperties[i];
+//				}
+//				setProperties(newProperties);
+//			}
+//		}
+//		this.tagBits |= TagBits.AreFieldsComplete;
+//		return this.properties;
+//	}
 	
 	public TypeBinding prototype() {
 		return this.prototype;
@@ -1923,7 +1925,13 @@ public class SourceTypeBinding extends ReferenceBinding {
 					fieldDecl.binding = null;
 					return null;
 				}
-				if (fieldType.isArrayType() && ((ArrayBinding) fieldType).leafComponentType == TypeBinding.VOID) {
+//				if (fieldType.isArrayType() && ((ArrayBinding) fieldType).leafComponentType == TypeBinding.VOID) {
+//					this.scope.problemReporter().variableTypeCannotBeVoidArray(fieldDecl);
+//					fieldDecl.binding = null;
+//					return null;
+//				}
+				//cym 2014-12-18
+				if (fieldType.isArrayType() && fieldType.leafComponentType() == TypeBinding.VOID) {
 					this.scope.problemReporter().variableTypeCannotBeVoidArray(fieldDecl);
 					fieldDecl.binding = null;
 					return null;
@@ -1940,7 +1948,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 					Annotation [] annotations = fieldDecl.annotations;
 					if (annotations != null && annotations.length != 0) {
 						ASTNode.copySE8AnnotationsToType(initializationScope, field, annotations,
-								fieldDecl.getKind() != AbstractVariableDeclaration.ENUM_CONSTANT); // type annotation is illegal on enum constant
+								fieldDecl.getKind() == AbstractVariableDeclaration.ENUM_CONSTANT); // type annotation is illegal on enum constant
 					}
 					Annotation.isTypeUseCompatible(fieldDecl.type, this.scope, annotations);
 				}
@@ -1959,7 +1967,6 @@ public class SourceTypeBinding extends ReferenceBinding {
 							field.tagBits &= ~TagBits.AnnotationNullMASK;
 					}
 				}
-				
 			} finally {
 			    initializationScope.initializedField = previousField;
 			}
@@ -2006,11 +2013,18 @@ public class SourceTypeBinding extends ReferenceBinding {
 					propertyDecl.binding = null;
 					return null;
 				}
-				if (propType.isArrayType() && ((ArrayBinding) propType).leafComponentType == TypeBinding.VOID) {
+//				if (propType.isArrayType() && ((ArrayBinding) propType).leafComponentType == TypeBinding.VOID) {
+//					this.scope.problemReporter().variableTypeCannotBeVoidArray(propertyDecl);
+//					propertyDecl.binding = null;
+//					return null;
+//				}
+				//cym 2014-12-18
+				if (propType.isArrayType() && propType.leafComponentType() == TypeBinding.VOID) {
 					this.scope.problemReporter().variableTypeCannotBeVoidArray(propertyDecl);
 					propertyDecl.binding = null;
 					return null;
 				}
+				
 				if ((propType.tagBits & TagBits.HasMissingType) != 0) {
 					property.tagBits |= TagBits.HasMissingType;
 				}
@@ -2354,7 +2368,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 				if ((resolvedExceptionType.tagBits & TagBits.HasMissingType) != 0) {
 					method.tagBits |= TagBits.HasMissingType;
 				}
-				if (resolvedExceptionType.hasNullTypeAnnotations()) {
+				if (exceptionTypes[i].hasNullTypeAnnotation()) {
 					methodDecl.scope.problemReporter().nullAnnotationUnsupportedLocation(exceptionTypes[i]);
 				}
 				method.modifiers |= (resolvedExceptionType.modifiers & ExtraCompilerModifiers.AccGenericSignature);
@@ -2463,7 +2477,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 					if (sourceLevel >= ClassFileConstants.JDK1_8 && !method.isVoidMethod()) {
 						Annotation [] annotations = methodDecl.annotations;
 						if (annotations != null && annotations.length != 0) {
-							ASTNode.copySE8AnnotationsToType(methodDecl.scope, method, methodDecl.annotations, true);
+							ASTNode.copySE8AnnotationsToType(methodDecl.scope, method, methodDecl.annotations, false);
 						}
 						Annotation.isTypeUseCompatible(returnType, this.scope, methodDecl.annotations);
 					}
@@ -2491,16 +2505,16 @@ public class SourceTypeBinding extends ReferenceBinding {
 				long nullTagBits = method.tagBits & TagBits.AnnotationNullMASK;
 				if (nullTagBits != 0) {
 					TypeReference returnTypeRef = ((MethodDeclaration)methodDecl).returnType;
-					if (compilerOptions.sourceLevel < ClassFileConstants.JDK1_8) {
-						if (!this.scope.validateNullAnnotation(nullTagBits, returnTypeRef, methodDecl.annotations))
-							method.tagBits &= ~TagBits.AnnotationNullMASK;
-					} else {
+					if (this.scope.environment().usesNullTypeAnnotations()) {
 						if (nullTagBits != (method.returnType.tagBits & TagBits.AnnotationNullMASK)) {
 							if (!this.scope.validateNullAnnotation(nullTagBits, returnTypeRef, methodDecl.annotations)) {
 								method.returnType.tagBits &= ~TagBits.AnnotationNullMASK;
 							}
 							method.tagBits &= ~TagBits.AnnotationNullMASK;
 						}
+					} else {
+						if (!this.scope.validateNullAnnotation(nullTagBits, returnTypeRef, methodDecl.annotations))
+							method.tagBits &= ~TagBits.AnnotationNullMASK;
 					}
 				}
 			}
@@ -2513,7 +2527,6 @@ public class SourceTypeBinding extends ReferenceBinding {
 		method.modifiers &= ~ExtraCompilerModifiers.AccUnresolved;
 		return method;
 	}
-	
 	public MethodBinding resolveTypesFor2(MethodBinding method) {
 		
 		if (!isPrototype())
@@ -2804,12 +2817,22 @@ public class SourceTypeBinding extends ReferenceBinding {
 					pkg.defaultNullness = NULL_UNSPECIFIED_BY_DEFAULT;
 			}
 		} else {
-			// transfer nullness info from tagBits to this.nullnessDefaultAnnotation
+			// transfer nullness info from tagBits to this.defaultNullness
 			int newDefaultNullness = NO_NULL_DEFAULT;
-			if ((annotationTagBits & TagBits.AnnotationNullUnspecifiedByDefault) != 0)
+			if ((annotationTagBits & TagBits.AnnotationNullUnspecifiedByDefault) != 0) {
 				newDefaultNullness = NULL_UNSPECIFIED_BY_DEFAULT;
-			else if ((annotationTagBits & TagBits.AnnotationNonNullByDefault) != 0)
+			} else if ((annotationTagBits & TagBits.AnnotationNonNullByDefault) != 0) {
 				newDefaultNullness = NONNULL_BY_DEFAULT;
+			} else if (this.defaultNullness != 0) {
+				 // NNBD with argument while NN & NU are SE5 annotations, revert to old default & encoding.
+				if (this.defaultNullness == NULL_UNSPECIFIED_BY_DEFAULT) {
+					annotationTagBits = TagBits.AnnotationNullUnspecifiedByDefault;
+					newDefaultNullness = NULL_UNSPECIFIED_BY_DEFAULT;
+				} else {
+					annotationTagBits = TagBits.AnnotationNonNullByDefault;
+					newDefaultNullness = NONNULL_BY_DEFAULT;
+				}
+			}
 			if (newDefaultNullness != NO_NULL_DEFAULT) {
 				if (isPackageInfo) {
 					pkg.defaultNullness = newDefaultNullness;
@@ -2846,17 +2869,17 @@ public class SourceTypeBinding extends ReferenceBinding {
 	 * Recursively check if the given annotations are redundant with equal annotations at an enclosing level.
 	 * @param location fallback location to report the warning against (if we can't blame a specific annotation)
 	 * @param annotations search these for the annotation that should be blamed in warning messages
-	 * @param nullBits in 1.7- times these are the annotationTagBits, in 1.8+ the bitvector from {@link Binding#NullnessDefaultMASK}
-	 * @param isJdk18 toggles the interpretation of 'nullBits'
+	 * @param nullBits when using declaration annotations these are the annotationTagBits, for type annotations the bitvector from {@link Binding#NullnessDefaultMASK}
+	 * @param useNullTypeAnnotations toggles the interpretation of 'nullBits'
 	 * 
 	 * @pre null annotation analysis is enabled
 	 */
-	protected void checkRedundantNullnessDefaultRecurse(ASTNode location, Annotation[] annotations, long nullBits, boolean isJdk18) {
+	protected void checkRedundantNullnessDefaultRecurse(ASTNode location, Annotation[] annotations, long nullBits, boolean useNullTypeAnnotations) {
 		
 		if (!isPrototype()) throw new IllegalStateException();
 		
 		if (this.fPackage.defaultNullness != NO_NULL_DEFAULT) {
-			boolean isRedundant = isJdk18
+			boolean isRedundant = useNullTypeAnnotations
 					? this.fPackage.defaultNullness == nullBits
 					: (this.fPackage.defaultNullness == NONNULL_BY_DEFAULT
 							&& ((nullBits & TagBits.AnnotationNonNullByDefault) != 0));
@@ -2868,13 +2891,13 @@ public class SourceTypeBinding extends ReferenceBinding {
 	}
 	
 	// return: should caller continue searching?
-	protected boolean checkRedundantNullnessDefaultOne(ASTNode location, Annotation[] annotations, long nullBits, boolean isJdk18) {
+	protected boolean checkRedundantNullnessDefaultOne(ASTNode location, Annotation[] annotations, long nullBits, boolean useNullTypeAnnotations) {
 		
 		if (!isPrototype()) throw new IllegalStateException();
 		
 		int thisDefault = getNullDefault();
 		if (thisDefault != NO_NULL_DEFAULT) {
-			boolean isRedundant = isJdk18
+			boolean isRedundant = useNullTypeAnnotations
 					? thisDefault == nullBits
 					: (nullBits & TagBits.AnnotationNonNullByDefault) != 0;
 			if (isRedundant) {
@@ -3268,6 +3291,16 @@ public class SourceTypeBinding extends ReferenceBinding {
 	}
 	
 	public TypeBinding unannotated() {
+		return this.prototype;
+	}
+	
+	@Override
+	public TypeBinding withoutToplevelNullAnnotation() {
+		if (!hasNullTypeAnnotations())
+			return this;
+		AnnotationBinding[] newAnnotations = this.environment.filterNullTypeAnnotations(this.typeAnnotations);
+		if (newAnnotations.length > 0)
+			return this.environment.createAnnotatedType(this.prototype, newAnnotations);
 		return this.prototype;
 	}
 	

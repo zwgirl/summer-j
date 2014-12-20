@@ -14,22 +14,18 @@
  *								Bug 392099 - [1.8][compiler][null] Apply null annotation on types for null analysis
  *								Bug 417295 - [1.8[[null] Massage type annotated null analysis to gel well with deep encoded type bindings.
  *								Bug 392238 - [1.8][compiler][null] Detect semantically invalid null type annotations
+ *								Bug 435570 - [1.8][null] @NonNullByDefault illegally tries to affect "throws E"
  *        Andy Clement - Contributions for
  *                          Bug 383624 - [1.8][compiler] Revive code generation support for type annotations (from Olivier's work)
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class InstanceOfExpression extends OperatorExpression {
 
@@ -70,8 +66,8 @@ public class InstanceOfExpression extends OperatorExpression {
 	/**
 	 * Code generation for instanceOfExpression
 	 *
-	 * @param currentScope org.summer.sdt.internal.compiler.lookup.BlockScope
-	 * @param codeStream org.summer.sdt.internal.compiler.codegen.CodeStream
+	 * @param currentScope org.eclipse.jdt.internal.compiler.lookup.BlockScope
+	 * @param codeStream org.eclipse.jdt.internal.compiler.codegen.CodeStream
 	 * @param valueRequired boolean
 	*/
 	public void generateCode(BlockScope currentScope, CodeStream codeStream, boolean valueRequired) {
@@ -95,7 +91,7 @@ public class InstanceOfExpression extends OperatorExpression {
 		this.constant = Constant.NotAConstant;
 		TypeBinding expressionType = this.expression.resolveType(scope);
 		TypeBinding checkedType = this.type.resolveType(scope, true /* check bounds*/);
-		if (expressionType != null && checkedType != null && checkedType.hasNullTypeAnnotations()) {
+		if (expressionType != null && checkedType != null && this.type.hasNullTypeAnnotation()) {
 			// don't complain if the entire operation is redundant anyway
 			if (!expressionType.isCompatibleWith(checkedType) || NullAnnotationMatching.analyse(checkedType, expressionType, -1).isAnyMismatch())
 				scope.problemReporter().nullAnnotationUnsupportedLocation(this.type);
@@ -133,8 +129,7 @@ public class InstanceOfExpression extends OperatorExpression {
 	}
 
 	@Override
-	public StringBuffer generateExpressionNoParenthesis(Scope scope,
-			int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 		// TODO Auto-generated method stub
 		return null;
 	}

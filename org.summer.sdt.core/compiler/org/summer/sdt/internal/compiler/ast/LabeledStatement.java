@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * Copyright (c) 2000, 2014 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,15 +11,10 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.codegen.BranchLabel;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.flow.LabelFlowContext;
-import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class LabeledStatement extends Statement {
 
@@ -95,8 +90,8 @@ public class LabeledStatement extends Statement {
 	 *
 	 * may not need actual source positions recording
 	 *
-	 * @param currentScope org.summer.sdt.internal.compiler.lookup.BlockScope
-	 * @param codeStream org.summer.sdt.internal.compiler.codegen.CodeStream
+	 * @param currentScope org.eclipse.jdt.internal.compiler.lookup.BlockScope
+	 * @param codeStream org.eclipse.jdt.internal.compiler.codegen.CodeStream
 	 */
 	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
 
@@ -148,14 +143,23 @@ public class LabeledStatement extends Statement {
 	}
 
 	@Override
-	public StringBuffer generateExpression(Scope scope, int indent,
-			StringBuffer output) {
+	public boolean doesNotCompleteNormally() {
+		if (this.statement.breaksOut(this.label))
+			return false;
+		return this.statement.doesNotCompleteNormally();
+	}
+	
+	@Override
+	public boolean completesByContinue() {
+		return this.statement instanceof ContinueStatement; // NOT this.statement.continuesAtOuterLabel
+	}
+
+	@Override
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 
 		printIndent(indent, output).append(this.label).append(": "); //$NON-NLS-1$
-		if (this.statement == null)
-			output.append(';');
-		else
-			this.statement.printStatement(0, output);
+		if (this.statement != null)
+			this.statement.generateExpression(scope, dependency, 0, output);
 		return output;
 	}
 }

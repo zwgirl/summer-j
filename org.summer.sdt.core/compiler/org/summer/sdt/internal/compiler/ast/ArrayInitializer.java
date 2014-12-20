@@ -13,6 +13,7 @@
  *								bug 388996 - [compiler][resource] Incorrect 'potential resource leak'
  *								Bug 417758 - [1.8][null] Null safety compromise during array creation.
  *								Bug 427438 - [1.8][compiler] NPE at org.summer.sdt.internal.compiler.ast.ConditionalExpression.generateCode(ConditionalExpression.java:280)
+ *								Bug 435805 - [1.8][compiler][null] Java 8 compiler does not recognize declaration style null annotations
  *        Andy Clement (GoPivotal, Inc) aclement@gopivotal.com - Contributions for
  *                          Bug 383624 - [1.8][compiler] Revive code generation support for type annotations (from Olivier's work)
  *******************************************************************************/
@@ -21,21 +22,19 @@ package org.summer.sdt.internal.compiler.ast;
 import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_CONTEXT;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.flow.FlowContext;
-import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.flow.*;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.*;
 
 public class ArrayInitializer extends Expression {
 
 	public Expression[] expressions;
-	public ArrayBinding binding; //the type of the { , , , }
+	//cym 2014-12-18
+//	public ArrayBinding binding; //the type of the { , , , }
+	public ParameterizedTypeBinding binding; //the type of the { , , , }
 
 	/**
 	 * ArrayInitializer constructor comment.
@@ -50,8 +49,7 @@ public class ArrayInitializer extends Expression {
 		if (this.expressions != null) {
 			CompilerOptions compilerOptions = currentScope.compilerOptions();
 			boolean analyseResources = compilerOptions.analyseResourceLeaks;
-			boolean evalNullTypeAnnotations = compilerOptions.sourceLevel >= ClassFileConstants.JDK1_8 
-												&& compilerOptions.isAnnotationBasedNullAnalysisEnabled;
+			boolean evalNullTypeAnnotations = currentScope.environment().usesNullTypeAnnotations();
 			for (int i = 0, max = this.expressions.length; i < max; i++) {
 				flowInfo = this.expressions[i].analyseCode(currentScope, flowContext, flowInfo).unconditionalInits();
 
@@ -79,10 +77,12 @@ public class ArrayInitializer extends Expression {
 		int pc = codeStream.position;
 		int expressionLength = (this.expressions == null) ? 0: this.expressions.length;
 		codeStream.generateInlinedValue(expressionLength);
-		codeStream.newArray(typeReference, allocationExpression, this.binding);
+//		codeStream.newArray(typeReference, allocationExpression, this.binding);  //cym comment 2014-12-18
 		if (this.expressions != null) {
 			// binding is an ArrayType, so I can just deal with the dimension
-			int elementsTypeID = this.binding.dimensions > 1 ? -1 : this.binding.leafComponentType.id;
+			//cym 2014-12-18
+//			int elementsTypeID = this.binding.dimensions > 1 ? -1 : this.binding.leafComponentType();
+			int elementsTypeID = this.binding.dimensions > 1 ? -1 : this.binding.leafComponentType().id;
 			for (int i = 0; i < expressionLength; i++) {
 				Expression expr;
 				if ((expr = this.expressions[i]).constant != Constant.NotAConstant) {
@@ -168,8 +168,10 @@ public class ArrayInitializer extends Expression {
 		// this method is recursive... (the test on isArrayType is the stop case)
 
 		this.constant = Constant.NotAConstant;
-
-		if (expectedType instanceof ArrayBinding) {
+		
+//		if (expectedType instanceof ArrayBinding) {
+		//cym 2014-12-18
+		if (expectedType != null && expectedType.isArrayType()) {
 			// allow new List<?>[5]
 			if ((this.bits & IsAnnotationDefaultValue) == 0) { // annotation default value need only to be commensurate JLS9.7
 				// allow new List<?>[5] - only check for generic array when no initializer, since also checked inside initializer resolution
@@ -178,7 +180,10 @@ public class ArrayInitializer extends Expression {
 				    scope.problemReporter().illegalGenericArray(leafComponentType, this);
 				}
 			}
-			this.resolvedType = this.binding = (ArrayBinding) expectedType;
+			//cym 2014-12-18
+//			this.resolvedType = this.binding = (ArrayBinding) expectedType;
+			this.resolvedType = this.binding = (ParameterizedTypeBinding) expectedType;
+			
 			if (this.expressions == null)
 				return this.binding;
 			TypeBinding elementType = this.binding.elementsType();
@@ -255,14 +260,14 @@ public class ArrayInitializer extends Expression {
 		visitor.endVisit(this, scope);
 	}
 
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 
 		output.append('[');
 		if (this.expressions != null) {
 			int j = 20 ;
 			for (int i = 0 ; i < this.expressions.length ; i++) {
 				if (i > 0) output.append(", "); //$NON-NLS-1$
-				this.expressions[i].generateExpression(scope, 0, output);
+				this.expressions[i].doGenerateExpression(scope, dependency, 0, output);
 				j -- ;
 				if (j == 0) {
 					output.append('\n');

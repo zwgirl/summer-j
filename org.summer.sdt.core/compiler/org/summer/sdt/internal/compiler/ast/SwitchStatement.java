@@ -29,7 +29,7 @@ import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.SwitchFlowContext;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
@@ -308,10 +308,7 @@ public class SwitchStatement extends Statement {
 				defaultBranchLabel.place();
 			}
 			codeStream.recordPositionsFrom(pc, this.sourceStart);
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			if (this.scope != null) this.scope.enclosingCase = null; // no longer inside switch case block
 		}
 	}
@@ -646,18 +643,40 @@ public class SwitchStatement extends Statement {
 			label.becomeDelegateFor(this.breakLabel);
 		}
 	}
+
+	@Override
+	public boolean doesNotCompleteNormally() {
+		if (this.statements == null || this.statements.length == 0)
+			return false;
+		for (int i = 0, length = this.statements.length; i < length; i++) {
+			if (this.statements[i].breaksOut(null))
+				return false;
+		}
+		return this.statements[this.statements.length - 1].doesNotCompleteNormally();
+	}
 	
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+	@Override
+	public boolean completesByContinue() {
+		if (this.statements == null || this.statements.length == 0)
+			return false;
+		for (int i = 0, length = this.statements.length; i < length; i++) {
+			if (this.statements[i].completesByContinue())
+				return true;
+		}
+		return false;
+	}
+	
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 
 		output.append("switch ("); //$NON-NLS-1$
-		this.expression.generateExpression(scope, 0, output).append(") {"); //$NON-NLS-1$
+		this.expression.doGenerateExpression(scope, dependency, 0, output).append(") {"); //$NON-NLS-1$
 		if (this.statements != null) {
 			for (int i = 0; i < this.statements.length; i++) {
 				output.append('\n');
 				if (this.statements[i] instanceof CaseStatement) {
-					this.statements[i].generateStatement(scope, indent, output);
+					this.statements[i].generateStatement(scope, dependency, indent, output);
 				} else {
-					this.statements[i].generateStatement(scope, indent+2, output);
+					this.statements[i].generateStatement(scope, dependency, indent+2, output);
 				}
 			}
 		}
@@ -666,9 +685,8 @@ public class SwitchStatement extends Statement {
 	}
 	
 	@Override
-	public StringBuffer generateStatement(Scope scope, int indent,
-			StringBuffer output) {
+	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		return this.generateExpression(scope, indent, output);
+		return this.generateExpression(scope, dependency, indent, output);
 	}
 }

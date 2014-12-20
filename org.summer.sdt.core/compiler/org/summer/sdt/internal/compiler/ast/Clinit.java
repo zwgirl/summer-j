@@ -23,6 +23,7 @@ import org.summer.sdt.internal.compiler.codegen.Opcodes;
 import org.summer.sdt.internal.compiler.flow.ExceptionHandlingFlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.InitializationFlowContext;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
@@ -115,6 +116,15 @@ public class Clinit extends AbstractMethodDeclaration {
 			// should never have to add any <clinit> problem method
 			return;
 		}
+		CompilationResult unitResult = null;
+		int problemCount = 0;
+		if (classScope != null) {
+			TypeDeclaration referenceContext = classScope.referenceContext;
+			if (referenceContext != null) {
+				unitResult = referenceContext.compilationResult();
+				problemCount = unitResult.problemCount;
+			}
+		}
 		boolean restart = false;
 		do {
 			try {
@@ -134,12 +144,20 @@ public class Clinit extends AbstractMethodDeclaration {
 					classFile.contentsOffset = clinitOffset;
 					classFile.methodCount--;
 					classFile.codeStream.resetInWideMode(); // request wide mode
+					// reset the problem count to prevent reporting the same warning twice
+					if (unitResult != null) {
+						unitResult.problemCount = problemCount;
+					}
 					// restart method generation
 					restart = true;
 				} else if (e.compilationResult == CodeStream.RESTART_CODE_GEN_FOR_UNUSED_LOCALS_MODE) {
 					classFile.contentsOffset = clinitOffset;
 					classFile.methodCount--;
 					classFile.codeStream.resetForCodeGenUnusedLocals();
+					// reset the problem count to prevent reporting the same warning twice
+					if (unitResult != null) {
+						unitResult.problemCount = problemCount;
+					}
 					// restart method generation
 					restart = true;
 				} else {
@@ -391,10 +409,10 @@ public class Clinit extends AbstractMethodDeclaration {
 		}
 	}
 	
-	public StringBuffer generateJavascript(Scope scope, int tab, StringBuffer output) {
+	public StringBuffer generateJavascript(Scope scope, Dependency depsManager, int tab, StringBuffer output) {
 
 		printIndent(tab, output).append("<clinit>()"); //$NON-NLS-1$
-		generateBody(scope, tab + 1, output);
+		generateBody(scope, depsManager, tab + 1, output);
 		return output;
 	}
 

@@ -18,6 +18,10 @@
  *								Bug 429958 - [1.8][null] evaluate new DefaultLocation attribute of @NonNullByDefault
  *								Bug 434570 - Generic type mismatch for parametrized class annotation attribute with inner class
  *								Bug 434600 - Incorrect null analysis error reporting on type parameters
+ *								Bug 439516 - [1.8][null] NonNullByDefault wrongly applied to implicit type bound of binary type
+ *								Bug 438458 - [1.8][null] clean up handling of null type annotations wrt type variables
+ *								Bug 435570 - [1.8][null] @NonNullByDefault illegally tries to affect "throws E"
+ *								Bug 435805 - [1.8][compiler][null] Java 8 compiler does not recognize declaration style null annotations
  *        Andy Clement (GoPivotal, Inc) aclement@gopivotal.com - Contributions for
  *                          Bug 383624 - [1.8][compiler] Revive code generation support for type annotations (from Olivier's work)
  *                          Bug 409236 - [1.8][compiler] Type annotations on intersection cast types dropped by code generator
@@ -30,7 +34,6 @@ import java.util.List;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ast.NullAnnotationMatching.CheckMode;
-import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.AnnotationContext;
 import org.summer.sdt.internal.compiler.codegen.AnnotationTargetTypeConstants;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
@@ -42,6 +45,8 @@ import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
+import org.summer.sdt.internal.compiler.lookup.GlobalScope;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
@@ -50,6 +55,7 @@ import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
@@ -297,6 +303,122 @@ public abstract class TypeReference extends Expression {
 				return new ArrayTypeReference(TypeBinding.LONG.simpleName, dim, dimAnnotations, 0);
 		}
 	}
+	
+//	//cym 2014-12-03
+//	/*
+//	 * Answer a base type reference (can be an array of base type).
+//	 */
+//	public static final TypeReference baseTypeReference(int baseType, int dim, Annotation [][] dimAnnotations) {
+//	
+//		if (dim == 0) {
+//			switch (baseType) {
+//				case (TypeIds.T_void) :
+//					return new SingleTypeReference(TypeBinding.VOID.simpleName, 0);
+//				case (TypeIds.T_boolean) :
+//					return new SingleTypeReference(TypeBinding.BOOLEAN.simpleName, 0);
+//				case (TypeIds.T_char) :
+//					return new SingleTypeReference(TypeBinding.CHAR.simpleName, 0);
+//				case (TypeIds.T_float) :
+//					return new SingleTypeReference(TypeBinding.FLOAT.simpleName, 0);
+//				case (TypeIds.T_double) :
+//					return new SingleTypeReference(TypeBinding.DOUBLE.simpleName, 0);
+//				case (TypeIds.T_byte) :
+//					return new SingleTypeReference(TypeBinding.BYTE.simpleName, 0);
+//				case (TypeIds.T_short) :
+//					return new SingleTypeReference(TypeBinding.SHORT.simpleName, 0);
+//				case (TypeIds.T_int) :
+//					return new SingleTypeReference(TypeBinding.INT.simpleName, 0);
+//				default : //T_long
+//					return new SingleTypeReference(TypeBinding.LONG.simpleName, 0);
+//			}
+//		}
+////		switch (baseType) {
+////			case (TypeIds.T_void) :
+////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_VOID, new long[]{0})}}, 0, new long[]{0});
+////			case (TypeIds.T_boolean) :
+////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_BOOLEAN, new long[]{0})}}, 0, new long[]{0});
+////			case (TypeIds.T_char) :
+////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_CHARACTER, new long[]{0})}}, 0, new long[]{0});
+////			case (TypeIds.T_float) :
+////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_FLOAT, new long[]{0})}}, 0, new long[]{0});
+////			case (TypeIds.T_double) :
+////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_DOUBLE, new long[]{0})}}, 0, new long[]{0});
+////			case (TypeIds.T_byte) :
+////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_BYTE, new long[]{0})}}, 0, new long[]{0});
+////			case (TypeIds.T_short) :
+////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_SHORT, new long[]{0})}}, 0, new long[]{0});
+////			case (TypeIds.T_int) :
+////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_INTEGER, new long[]{0})}}, 0, new long[]{0});
+////			default : //T_long
+////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_LONG, new long[]{0})}}, 0, new long[]{0});
+////		}
+//		
+////		switch (baseType) {
+////		case (TypeIds.T_void) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_VOID, new long[]{0})}, 0, 0);
+////		case (TypeIds.T_boolean) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_BOOLEAN, new long[]{0})}, 0, 0);
+////		case (TypeIds.T_char) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_CHARACTER, new long[]{0})}, 0, 0);
+////		case (TypeIds.T_float) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_FLOAT, new long[]{0})}, 0, 0);
+////		case (TypeIds.T_double) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_DOUBLE, new long[]{0})}, 0, 0);
+////		case (TypeIds.T_byte) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_BYTE, new long[]{0})}, 0, 0);
+////		case (TypeIds.T_short) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_SHORT, new long[]{0})}, 0, 0);
+////		case (TypeIds.T_int) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_INTEGER, new long[]{0})}, 0, 0);
+////		default : //T_long
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_LONG, new long[]{0})}, 0, 0);
+////		}
+//		
+////		switch (baseType) {
+////		case (TypeIds.T_void) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.VOID.simpleName, 0)}, 0, 0);
+////		case (TypeIds.T_boolean) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.BOOLEAN.simpleName, 0)}, 0, 0);
+////		case (TypeIds.T_char) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.CHAR.simpleName, 0)}, 0, 0);
+////		case (TypeIds.T_float) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.FLOAT.simpleName, 0)}, 0, 0);
+////		case (TypeIds.T_double) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.DOUBLE.simpleName, 0)}, 0, 0);
+////		case (TypeIds.T_byte) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.BYTE.simpleName, 0)}, 0, 0);
+////		case (TypeIds.T_short) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.SHORT.simpleName, 0)}, 0, 0);
+////		case (TypeIds.T_int) :
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.INT.simpleName, 0)}, 0, 0);
+////		default : //T_long
+////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.LONG.simpleName, 0)}, 0, 0);
+////		}
+//		
+//		for(int i = 0; i < dim; i++){
+//			
+//		}
+//		switch (baseType) {
+//		case (TypeIds.T_void) :
+//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Void".toCharArray(), 0)}, 0, 0);
+//		case (TypeIds.T_boolean) :
+//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Boolean".toCharArray(), 0)}, 0, 0);
+//		case (TypeIds.T_char) :
+//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Character".toCharArray(), 0)}, 0, 0);
+//		case (TypeIds.T_float) :
+//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Float".toCharArray(), 0)}, 0, 0);
+//		case (TypeIds.T_double) :
+//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Double".toCharArray(), 0)}, 0, 0);
+//		case (TypeIds.T_byte) :
+//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Byte".toCharArray(), 0)}, 0, 0);
+//		case (TypeIds.T_short) :
+//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Short".toCharArray(), 0)}, 0, 0);
+//		case (TypeIds.T_int) :
+//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Integer".toCharArray(), 0)}, 0, 0);
+//		default : //T_long
+//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Long".toCharArray(), 0)}, 0, 0);
+//		}
+//	}
 	
 	public static final TypeReference baseTypeReference(int baseType, int dim) {
 		return baseTypeReference(baseType, dim, null);
@@ -563,6 +685,16 @@ public abstract class TypeReference extends Expression {
 		return internalResolveType(scope, location);
 	}
 	
+	//cym 2014-12-11
+	public TypeBinding resolveType(CompilationUnitScope scope) {
+		return internalResolveType(scope, 0);
+	}
+	
+	//cym 2014-12-12
+	public TypeBinding resolveType(GlobalScope scope) {
+		return internalResolveType(scope, 0);
+	}
+	
 	public TypeBinding resolveType(ClassScope scope) {
 		return resolveType(scope, 0);
 	}
@@ -631,12 +763,16 @@ public abstract class TypeReference extends Expression {
 				&& (this.resolvedType.tagBits & TagBits.AnnotationNullMASK) == 0
 				&& !this.resolvedType.isTypeVariable()
 				&& !this.resolvedType.isWildcard()
-				&& location != 0 
+				&& location != 0
 				&& scope.hasDefaultNullnessFor(location)) 
 		{
-			LookupEnvironment environment = scope.environment();
-			AnnotationBinding[] annots = new AnnotationBinding[]{environment.getNonNullAnnotation()};
-			this.resolvedType = environment.createAnnotatedType(this.resolvedType, annots);
+			if (location == Binding.DefaultLocationTypeBound && this.resolvedType.id == TypeIds.T_JavaLangObject) {
+				scope.problemReporter().implicitObjectBoundNoNullDefault(this);
+			} else {
+				LookupEnvironment environment = scope.environment();
+				AnnotationBinding[] annots = new AnnotationBinding[]{environment.getNonNullAnnotation()};
+				this.resolvedType = environment.createAnnotatedType(this.resolvedType, annots);
+			}
 		}
 	}
 	public int getAnnotatableLevels() {
@@ -644,20 +780,18 @@ public abstract class TypeReference extends Expression {
 	}
 	/** Check all typeArguments against null constraints on their corresponding type variables. */
 	protected void checkNullConstraints(Scope scope, TypeReference[] typeArguments) {
-		CompilerOptions compilerOptions = scope.compilerOptions();
-		if (compilerOptions.isAnnotationBasedNullAnalysisEnabled
-				&& compilerOptions.sourceLevel >= ClassFileConstants.JDK1_8
+		if (scope.environment().usesNullTypeAnnotations()
 				&& typeArguments != null)
 		{
 			TypeVariableBinding[] typeVariables = this.resolvedType.original().typeVariables();
 			for (int i = 0; i < typeArguments.length; i++) {
 				TypeReference arg = typeArguments[i];
-				if (arg.resolvedType != null && arg.resolvedType.hasNullTypeAnnotations())
+				if (arg.resolvedType != null)
 					arg.checkNullConstraints(scope, typeVariables, i);
 			}
 		}
 	}
-	/** Check whether this type reference conforms to all null constraints defined for any of the given type variables. */
+	/** Check whether this type reference conforms to the null constraints defined for the corresponding type variable. */
 	protected void checkNullConstraints(Scope scope, TypeBinding[] variables, int rank) {
 		if (variables != null && variables.length > rank) {
 			TypeBinding variable = variables[rank];
@@ -683,7 +817,31 @@ public abstract class TypeReference extends Expression {
 		}
 		return null;
 	}
+	public boolean hasNullTypeAnnotation() {
+		if (this.annotations != null) {
+			Annotation[] innerAnnotations = this.annotations[this.annotations.length-1];
+			if (containsNullAnnotation(innerAnnotations))
+				return true;
+		}
+		return false;
+	}
+	public static boolean containsNullAnnotation(Annotation[] annotations) {
+		if (annotations != null) {
+			for (int i = 0; i < annotations.length; i++) {
+				if (annotations[i] != null 
+						&& annotations[i].resolvedType != null 
+						&& (annotations[i].resolvedType.id == TypeIds.T_ConfiguredAnnotationNonNull
+							|| annotations[i].resolvedType.id == TypeIds.T_ConfiguredAnnotationNullable))
+					return true;
+			}
+		}
+		return false;	
+	}
 	public TypeReference[] getTypeReferences() {
 		return new TypeReference [] { this };
+	}
+	
+	public boolean isBaseTypeReference() {
+		return false;
 	}
 }

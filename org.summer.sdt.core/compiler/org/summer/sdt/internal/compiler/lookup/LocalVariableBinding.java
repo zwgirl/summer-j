@@ -37,6 +37,10 @@ public class LocalVariableBinding extends VariableBinding {
 	public int useFlag; // for flow analysis (default is UNUSED), values < 0 indicate the number of compound uses (postIncrement or compoundAssignment)
 
 	public BlockScope declaringScope; // back-pointer to its declaring scope
+	
+	//cym 2014-12-12
+	public Scope windowScope; // back-pointer to its declaring scope
+	
 	public LocalDeclaration declaration; // for source-positions
 
 	public int[] initializationPCs;
@@ -270,4 +274,4 @@ public class LocalVariableBinding extends VariableBinding {
 	public boolean isCatchParameter() {
 		return false;
 	}
-}
+} 

@@ -25,12 +25,45 @@ import org.eclipse.text.edits.TextEdit;
 import org.summer.sdt.core.Flags;
 import org.summer.sdt.core.ICompilationUnit;
 import org.summer.sdt.core.IImportDeclaration;
+import org.summer.sdt.core.IType;
 import org.summer.sdt.core.ITypeRoot;
 import org.summer.sdt.core.JavaCore;
 import org.summer.sdt.core.JavaModelException;
 import org.summer.sdt.core.Signature;
 import org.summer.sdt.core.compiler.CharOperation;
-import org.summer.sdt.core.dom.*;
+import org.summer.sdt.core.dom.AST;
+import org.summer.sdt.core.dom.ASTParser;
+import org.summer.sdt.core.dom.AbstractTypeDeclaration;
+import org.summer.sdt.core.dom.AnnotatableType;
+import org.summer.sdt.core.dom.Annotation;
+import org.summer.sdt.core.dom.ArrayInitializer;
+import org.summer.sdt.core.dom.ArrayType;
+import org.summer.sdt.core.dom.CharacterLiteral;
+import org.summer.sdt.core.dom.CompilationUnit;
+import org.summer.sdt.core.dom.Dimension;
+import org.summer.sdt.core.dom.Expression;
+import org.summer.sdt.core.dom.FieldAccess;
+import org.summer.sdt.core.dom.IAnnotationBinding;
+import org.summer.sdt.core.dom.IBinding;
+import org.summer.sdt.core.dom.IMemberValuePairBinding;
+import org.summer.sdt.core.dom.IMethodBinding;
+import org.summer.sdt.core.dom.ITypeBinding;
+import org.summer.sdt.core.dom.IVariableBinding;
+import org.summer.sdt.core.dom.ImportDeclaration;
+import org.summer.sdt.core.dom.MarkerAnnotation;
+import org.summer.sdt.core.dom.MemberValuePair;
+import org.summer.sdt.core.dom.Modifier;
+import org.summer.sdt.core.dom.Name;
+import org.summer.sdt.core.dom.NormalAnnotation;
+import org.summer.sdt.core.dom.ParameterizedType;
+import org.summer.sdt.core.dom.PrimitiveType;
+import org.summer.sdt.core.dom.SimpleName;
+import org.summer.sdt.core.dom.SimpleType;
+import org.summer.sdt.core.dom.SingleMemberAnnotation;
+import org.summer.sdt.core.dom.StringLiteral;
+import org.summer.sdt.core.dom.Type;
+import org.summer.sdt.core.dom.TypeLiteral;
+import org.summer.sdt.core.dom.WildcardType;
 import org.summer.sdt.internal.core.dom.rewrite.ImportRewriteAnalyzer;
 import org.summer.sdt.internal.core.util.Messages;
 import org.summer.sdt.internal.core.util.Util;
@@ -397,15 +430,49 @@ public final class ImportRewrite {
 				}
 			}
 		}
-		if (this.filterImplicitImports && this.useContextToFilterImplicitImports) {
-			String fPackageName= this.compilationUnit.getParent().getElementName();
-			String mainTypeSimpleName= JavaCore.removeJavaLikeExtension(this.compilationUnit.getElementName());
-			String fMainTypeName= Util.concatenateName(fPackageName, mainTypeSimpleName, '.');
-			if (kind == ImportRewriteContext.KIND_TYPE
-					&& (qualifier.equals(fPackageName)
-							|| fMainTypeName.equals(Util.concatenateName(qualifier, name, '.'))))
-				return ImportRewriteContext.RES_NAME_FOUND;
+
+		String packageName= this.compilationUnit.getParent().getElementName();
+		if (kind == ImportRewriteContext.KIND_TYPE) {
+			if (this.filterImplicitImports && this.useContextToFilterImplicitImports) {
+				String mainTypeSimpleName= JavaCore.removeJavaLikeExtension(this.compilationUnit.getElementName());
+				String mainTypeName= Util.concatenateName(packageName, mainTypeSimpleName, '.');
+				if (qualifier.equals(packageName)
+						|| mainTypeName.equals(Util.concatenateName(qualifier, name, '.'))) {
+					return ImportRewriteContext.RES_NAME_FOUND;
+				}
+				
+				if (this.astRoot != null) {
+					List<AbstractTypeDeclaration> types = this.astRoot.types();
+					int nTypes = types.size();
+					for (int i = 0; i < nTypes; i++) {
+						AbstractTypeDeclaration type = types.get(i);
+						SimpleName simpleName = type.getName();
+						if (simpleName.getIdentifier().equals(name)) { 
+							return qualifier.equals(packageName)
+									? ImportRewriteContext.RES_NAME_FOUND
+									: ImportRewriteContext.RES_NAME_CONFLICT;
+						}
+					}
+				} else {
+					try {
+						IType[] types = this.compilationUnit.getTypes();
+						int nTypes = types.length;
+						for (int i = 0; i < nTypes; i++) {
+							IType type = types[i];
+							String typeName = type.getElementName();
+							if (typeName.equals(name)) {
+								return qualifier.equals(packageName)
+										? ImportRewriteContext.RES_NAME_FOUND
+										: ImportRewriteContext.RES_NAME_CONFLICT;
+							}
+						}
+					} catch (JavaModelException e) {
+						// don't want to throw an exception here
+					}
+				}
+			}
 		}
+
 		return ImportRewriteContext.RES_NAME_UNKNOWN;
 	}
 

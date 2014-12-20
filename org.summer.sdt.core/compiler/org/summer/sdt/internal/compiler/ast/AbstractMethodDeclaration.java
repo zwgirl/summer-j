@@ -21,41 +21,24 @@
  *								Bug 403216 - [1.8][null] TypeReference#captureTypeAnnotations treats type annotations as type argument annotations
  *								Bug 417295 - [1.8[[null] Massage type annotated null analysis to gel well with deep encoded type bindings.
  *								Bug 392238 - [1.8][compiler][null] Detect semantically invalid null type annotations
+ *								Bug 435570 - [1.8][null] @NonNullByDefault illegally tries to affect "throws E"
+ *								Bug 435805 - [1.8][compiler][null] Java 8 compiler does not recognize declaration style null annotations
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
 import java.util.List;
 
-import org.summer.sdt.core.compiler.CategorizedProblem;
-import org.summer.sdt.core.compiler.CharOperation;
-import org.summer.sdt.core.compiler.IProblem;
-import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.ClassFile;
-import org.summer.sdt.internal.compiler.CompilationResult;
+import org.summer.sdt.core.compiler.*;
+import org.summer.sdt.internal.compiler.*;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.codegen.*;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.impl.ReferenceContext;
+import org.summer.sdt.internal.compiler.impl.*;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.lookup.AnnotationBinding;
-import org.summer.sdt.internal.compiler.lookup.Binding;
-import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
-import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodBinding;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeIds;
-import org.summer.sdt.internal.compiler.parser.Parser;
-import org.summer.sdt.internal.compiler.problem.AbortCompilation;
-import org.summer.sdt.internal.compiler.problem.AbortCompilationUnit;
-import org.summer.sdt.internal.compiler.problem.AbortMethod;
-import org.summer.sdt.internal.compiler.problem.AbortType;
-import org.summer.sdt.internal.compiler.problem.ProblemReporter;
-import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
+import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.parser.*;
+import org.summer.sdt.internal.compiler.problem.*;
 import org.summer.sdt.internal.compiler.util.Util;
 
 @SuppressWarnings({"rawtypes"})
@@ -117,7 +100,7 @@ public abstract class AbstractMethodDeclaration
 	}
 	// version for invocation from LambdaExpression:
 	static void createArgumentBindings(Argument[] arguments, MethodBinding binding, MethodScope scope) {
-		boolean useTypeAnnotations = scope.compilerOptions().sourceLevel >= ClassFileConstants.JDK1_8;
+		boolean useTypeAnnotations = scope.environment().usesNullTypeAnnotations();
 		if (arguments != null && binding != null) {
 			for (int i = 0, length = arguments.length; i < length; i++) {
 				Argument argument = arguments[i];
@@ -154,11 +137,7 @@ public abstract class AbstractMethodDeclaration
 			AnnotationBinding[][] paramAnnotations = null;
 			for (int i = 0, length = this.arguments.length; i < length; i++) {
 				Argument argument = this.arguments[i];
-				try{
 				this.binding.parameters[i] = argument.bind(this.scope, this.binding.parameters[i], used);
-				}catch(Exception e){
-					e.printStackTrace();
-				}
 				if (argument.annotations != null) {
 					if (paramAnnotations == null) {
 						paramAnnotations = new AnnotationBinding[length][];
@@ -272,7 +251,6 @@ public abstract class AbstractMethodDeclaration
 	 */
 	public void generateCode(ClassScope classScope, ClassFile classFile) {
 
-		int problemResetPC = 0;
 		classFile.codeStream.wideMode = false; // reset wideMode to false
 		if (this.ignoreFurtherInvestigation) {
 			// method is known to have errors, dump a problem method
@@ -285,6 +263,16 @@ public abstract class AbstractMethodDeclaration
 			System.arraycopy(problems, 0, problemsCopy, 0, problemsLength);
 			classFile.addProblemMethod(this, this.binding, problemsCopy);
 			return;
+		}
+		int problemResetPC = 0;
+		CompilationResult unitResult = null;
+		int problemCount = 0;
+		if (classScope != null) {
+			TypeDeclaration referenceContext = classScope.referenceContext;
+			if (referenceContext != null) {
+				unitResult = referenceContext.compilationResult();
+				problemCount = unitResult.problemCount;
+			}
 		}
 		boolean restart = false;
 		boolean abort = false;
@@ -301,11 +289,19 @@ public abstract class AbstractMethodDeclaration
 					classFile.contentsOffset = problemResetPC;
 					classFile.methodCount--;
 					classFile.codeStream.resetInWideMode(); // request wide mode
+					// reset the problem count to prevent reporting the same warning twice
+					if (unitResult != null) {
+						unitResult.problemCount = problemCount;
+					}
 					restart = true;
 				} else if (e.compilationResult == CodeStream.RESTART_CODE_GEN_FOR_UNUSED_LOCALS_MODE) {
 					classFile.contentsOffset = problemResetPC;
 					classFile.methodCount--;
 					classFile.codeStream.resetForCodeGenUnusedLocals();
+					// reset the problem count to prevent reporting the same warning twice
+					if (unitResult != null) {
+						unitResult.problemCount = problemCount;
+					}
 					restart = true;
 				} else {
 					restart = false;
@@ -549,7 +545,7 @@ public abstract class AbstractMethodDeclaration
 			resolveAnnotations(this.scope, this.annotations, this.binding);
 			
 			long sourceLevel = this.scope.compilerOptions().sourceLevel;
-			validateNullAnnotations(sourceLevel);
+			validateNullAnnotations(this.scope.environment().usesNullTypeAnnotations());
 
 			resolveStatements();
 			// check @Deprecated annotation presence
@@ -610,7 +606,7 @@ public abstract class AbstractMethodDeclaration
 			this.scope.problemReporter().illegalTypeForExplicitThis(this.receiver, enclosingReceiver);
 		}
 
-		if (resolvedReceiverType.hasNullTypeAnnotations()) {
+		if (this.receiver.type.hasNullTypeAnnotation()) {
 			this.scope.problemReporter().nullAnnotationUnsupportedLocation(this.receiver.type);
 		}
 	}
@@ -668,10 +664,10 @@ public abstract class AbstractMethodDeclaration
 	    return null;
 	}
 
-	void validateNullAnnotations(long sourceLevel) {
+	void validateNullAnnotations(boolean useTypeAnnotations) {
 		if (this.binding == null) return;
 		// null annotations on parameters?
-		if (sourceLevel < ClassFileConstants.JDK1_8) {
+		if (!useTypeAnnotations) {
 			if (this.binding.parameterNonNullness != null) {
 				int length = this.binding.parameters.length;
 				for (int i=0; i<length; i++) {
@@ -693,31 +689,12 @@ public abstract class AbstractMethodDeclaration
 		}
 	}
 	
-	public StringBuffer generateJavascript(Scope scope, int tab, StringBuffer output) {
+	public StringBuffer generateJavascript(Scope scope, Dependency dependency, int tab, StringBuffer output) {
 
 		if (this.javadoc != null) {
 			this.javadoc.print(tab, output);
 		}
 		printIndent(tab, output);
-//		printModifiers(this.modifiers, output);
-//		if (this.annotations != null) {
-//			printAnnotations(this.annotations, output);
-//			output.append(' ');
-//		}
-//
-//		TypeParameter[] typeParams = typeParameters();
-//		if (typeParams != null) {
-//			output.append('<');
-//			int max = typeParams.length - 1;
-//			for (int j = 0; j < max; j++) {
-//				typeParams[j].print(0, output);
-//				output.append(", ");//$NON-NLS-1$
-//			}
-//			typeParams[max].print(0, output);
-//			output.append('>');
-//		}
-
-//		printReturnType(0, output).
 		output.append(Javascript.FUNCTION).append(Javascript.WHITESPACE);
 		output.append(this.selector).append('(');
 		if (this.receiver != null) {
@@ -726,31 +703,24 @@ public abstract class AbstractMethodDeclaration
 		if (this.arguments != null) {
 			for (int i = 0; i < this.arguments.length; i++) {
 				if (i > 0 || this.receiver != null) output.append(", "); //$NON-NLS-1$
-				this.arguments[i].generateJavascript(scope, 0, output);
+				this.arguments[i].generateJavascript(scope, dependency, 0, output);
 			}
 		}
 		output.append(')');
-//		if (this.thrownExceptions != null) {
-//			output.append(" throws "); //$NON-NLS-1$
-//			for (int i = 0; i < this.thrownExceptions.length; i++) {
-//				if (i > 0) output.append(", "); //$NON-NLS-1$
-//				this.thrownExceptions[i].print(0, output);
-//			}
-//		}
-		generateBody(scope, tab + 1, output);
+		generateBody(scope, dependency, tab + 1, output);
 		return output;
 	}
 
-	public StringBuffer generateBody(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateBody(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 
 		if (isAbstract() || (this.modifiers & ExtraCompilerModifiers.AccSemicolonBody) != 0)
-			return output.append(';');
+			return output.append("{}");
 
 		output.append(" {"); //$NON-NLS-1$
 		if (this.statements != null) {
 			for (int i = 0; i < this.statements.length; i++) {
 				output.append('\n');
-				this.statements[i].generateStatement(scope, indent, output);
+				this.statements[i].generateStatement(scope, dependency, indent, output);
 			}
 		}
 		output.append('\n');

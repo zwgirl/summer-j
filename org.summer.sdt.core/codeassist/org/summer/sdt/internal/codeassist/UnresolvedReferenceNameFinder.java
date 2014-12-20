@@ -11,6 +11,8 @@
 package org.summer.sdt.internal.codeassist;
 
 import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.codeassist.complete.CompletionParser;
+import org.summer.sdt.internal.codeassist.complete.CompletionScanner;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -29,8 +31,6 @@ import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.util.SimpleSetOfCharArray;
 import org.summer.sdt.internal.compiler.util.Util;
-import org.summer.sdt.internal.codeassist.complete.CompletionParser;
-import org.summer.sdt.internal.codeassist.complete.CompletionScanner;
 
 public class UnresolvedReferenceNameFinder extends ASTVisitor {
 	private static final int MAX_LINE_COUNT = 100;

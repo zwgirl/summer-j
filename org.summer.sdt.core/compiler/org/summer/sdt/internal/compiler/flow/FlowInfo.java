@@ -176,505 +176,505 @@ abstract public FlowInfo initsWhenFalse();
 	 */
 	public abstract boolean isDefinitelyAssigned(LocalVariableBinding local);
 
-/**
- * Check status of definite non-null value for a given local variable.
- * @param local the variable to ckeck
- * @return true iff local is definitely non null for this flow info
- */
-	public abstract boolean isDefinitelyNonNull(LocalVariableBinding local);
-
-/**
- * Check status of definite null value for a given local variable.
- * @param local the variable to ckeck
- * @return true iff local is definitely null for this flow info
- */
-public abstract boolean isDefinitelyNull(LocalVariableBinding local);
-
-/**
- * Check status of definite unknown value for a given local variable.
- * @param local the variable to ckeck
- * @return true iff local is definitely unknown for this flow info
- */
-public abstract boolean isDefinitelyUnknown(LocalVariableBinding local);
-
-/**
- * Check if any null info has been recorded for a given local variable.
- * Here even recording of 'UNKNOWN' is considered as null info.
- */
-public abstract boolean hasNullInfoFor(LocalVariableBinding local);
-
 	/**
-	 * Check status of potential assignment for a field.
+	 * Check status of definite non-null value for a given local variable.
+	 * @param local the variable to ckeck
+	 * @return true iff local is definitely non null for this flow info
 	 */
-	 abstract public boolean isPotentiallyAssigned(FieldBinding field);
-
+		public abstract boolean isDefinitelyNonNull(LocalVariableBinding local);
+	
 	/**
-	 * Check status of potential assignment for a local variable.
+	 * Check status of definite null value for a given local variable.
+	 * @param local the variable to ckeck
+	 * @return true iff local is definitely null for this flow info
 	 */
-
-	 abstract public boolean isPotentiallyAssigned(LocalVariableBinding field);
-
-/**
- * Check status of potential null assignment for a local. Return true if there
- * is a reasonable expectation that the variable be non null at this point.
- * @param local LocalVariableBinding - the binding for the checked local
- * @return true if there is a reasonable expectation that local be non null at
- * this point
- */
-public abstract boolean isPotentiallyNonNull(LocalVariableBinding local);
-
-/**
- * Check status of potential null assignment for a local. Return true if there
- * is a reasonable expectation that the variable be null at this point. This
- * includes the protected null case, so as to augment diagnostics, but does not
- * really check that someone deliberately assigned to null on any specific
- * path
- * @param local LocalVariableBinding - the binding for the checked local
- * @return true if there is a reasonable expectation that local be null at
- * this point
- */
-public abstract boolean isPotentiallyNull(LocalVariableBinding local);
-
-/**
- * Return true if the given local may have been assigned to an unknown value.
- * @param local the local to check
- * @return true if the given local may have been assigned to an unknown value
- */
-public abstract boolean isPotentiallyUnknown(LocalVariableBinding local);
-
-/**
- * Return true if the given local is protected by a test against a non null
- * value.
- * @param local the local to check
- * @return true if the given local is protected by a test against a non null
- */
-public abstract boolean isProtectedNonNull(LocalVariableBinding local);
-
-/**
- * Return true if the given local is protected by a test against null.
- * @param local the local to check
- * @return true if the given local is protected by a test against null
- */
-public abstract boolean isProtectedNull(LocalVariableBinding local);
-
-/**
- * Record that a local variable got checked to be non null.
- * @param local the checked local variable
- */
-abstract public void markAsComparedEqualToNonNull(LocalVariableBinding local);
-
-/**
- * Record that a local variable got checked to be null.
- * @param local the checked local variable
- */
-abstract public void markAsComparedEqualToNull(LocalVariableBinding local);
-
+	public abstract boolean isDefinitelyNull(LocalVariableBinding local);
+	
 	/**
-	 * Record a field got definitely assigned.
+	 * Check status of definite unknown value for a given local variable.
+	 * @param local the variable to ckeck
+	 * @return true iff local is definitely unknown for this flow info
 	 */
-	abstract public void markAsDefinitelyAssigned(FieldBinding field);
-
+	public abstract boolean isDefinitelyUnknown(LocalVariableBinding local);
+	
 	/**
-	 * Record a local got definitely assigned to a non-null value.
+	 * Check if any null info has been recorded for a given local variable.
+	 * Here even recording of 'UNKNOWN' is considered as null info.
 	 */
-	abstract public void markAsDefinitelyNonNull(LocalVariableBinding local);
-
+	public abstract boolean hasNullInfoFor(LocalVariableBinding local);
+	
+		/**
+		 * Check status of potential assignment for a field.
+		 */
+		 abstract public boolean isPotentiallyAssigned(FieldBinding field);
+	
+		/**
+		 * Check status of potential assignment for a local variable.
+		 */
+	
+		 abstract public boolean isPotentiallyAssigned(LocalVariableBinding field);
+	
 	/**
-	 * Record a local got definitely assigned to null.
+	 * Check status of potential null assignment for a local. Return true if there
+	 * is a reasonable expectation that the variable be non null at this point.
+	 * @param local LocalVariableBinding - the binding for the checked local
+	 * @return true if there is a reasonable expectation that local be non null at
+	 * this point
 	 */
-	abstract public void markAsDefinitelyNull(LocalVariableBinding local);
-
+	public abstract boolean isPotentiallyNonNull(LocalVariableBinding local);
+	
 	/**
-	 * Reset all null-information about a given local.
+	 * Check status of potential null assignment for a local. Return true if there
+	 * is a reasonable expectation that the variable be null at this point. This
+	 * includes the protected null case, so as to augment diagnostics, but does not
+	 * really check that someone deliberately assigned to null on any specific
+	 * path
+	 * @param local LocalVariableBinding - the binding for the checked local
+	 * @return true if there is a reasonable expectation that local be null at
+	 * this point
 	 */
-	abstract public void resetNullInfo(LocalVariableBinding local);
-
+	public abstract boolean isPotentiallyNull(LocalVariableBinding local);
+	
 	/**
-	 * Record a local may have got assigned to unknown (set the bit on existing info).
+	 * Return true if the given local may have been assigned to an unknown value.
+	 * @param local the local to check
+	 * @return true if the given local may have been assigned to an unknown value
 	 */
-	abstract public void markPotentiallyUnknownBit(LocalVariableBinding local);
-
+	public abstract boolean isPotentiallyUnknown(LocalVariableBinding local);
+	
 	/**
-	 * Record a local may have got assigned to null (set the bit on existing info).
+	 * Return true if the given local is protected by a test against a non null
+	 * value.
+	 * @param local the local to check
+	 * @return true if the given local is protected by a test against a non null
 	 */
-	abstract public void markPotentiallyNullBit(LocalVariableBinding local);
-
+	public abstract boolean isProtectedNonNull(LocalVariableBinding local);
+	
 	/**
-	 * Record a local may have got assigned to non-null (set the bit on existing info).
+	 * Return true if the given local is protected by a test against null.
+	 * @param local the local to check
+	 * @return true if the given local is protected by a test against null
 	 */
-	abstract public void markPotentiallyNonNullBit(LocalVariableBinding local);
-
+	public abstract boolean isProtectedNull(LocalVariableBinding local);
+	
 	/**
-	 * Record a local got definitely assigned.
+	 * Record that a local variable got checked to be non null.
+	 * @param local the checked local variable
 	 */
-	abstract public void markAsDefinitelyAssigned(LocalVariableBinding local);
-
-/**
- * Record a local got definitely assigned to an unknown value.
- */
-abstract public void markAsDefinitelyUnknown(LocalVariableBinding local);
-
-/**
- * Mark the null status of the given local according to the given status
- * @param local
- * @param nullStatus bitset of FLowInfo.UNKNOWN ... FlowInfo.POTENTIALLY_NON_NULL
- */
-public void markNullStatus(LocalVariableBinding local, int nullStatus) {
-	switch(nullStatus) {
-		// definite status?
-		case FlowInfo.UNKNOWN :
-			markAsDefinitelyUnknown(local);
-			break;
-		case FlowInfo.NULL :
-			markAsDefinitelyNull(local);
-			break;
-		case FlowInfo.NON_NULL :
-			markAsDefinitelyNonNull(local);
-			break;
-		default:
-			// collect potential status:
-			resetNullInfo(local);
-			if ((nullStatus & FlowInfo.POTENTIALLY_UNKNOWN) != 0)
-				markPotentiallyUnknownBit(local);
-			if ((nullStatus & FlowInfo.POTENTIALLY_NULL) != 0)
-				markPotentiallyNullBit(local);
-			if ((nullStatus & FlowInfo.POTENTIALLY_NON_NULL) != 0)
-				markPotentiallyNonNullBit(local);
-			if ((nullStatus & (FlowInfo.POTENTIALLY_NULL|FlowInfo.POTENTIALLY_NON_NULL|FlowInfo.POTENTIALLY_UNKNOWN)) == 0)
+	abstract public void markAsComparedEqualToNonNull(LocalVariableBinding local);
+	
+	/**
+	 * Record that a local variable got checked to be null.
+	 * @param local the checked local variable
+	 */
+	abstract public void markAsComparedEqualToNull(LocalVariableBinding local);
+	
+		/**
+		 * Record a field got definitely assigned.
+		 */
+		abstract public void markAsDefinitelyAssigned(FieldBinding field);
+	
+		/**
+		 * Record a local got definitely assigned to a non-null value.
+		 */
+		abstract public void markAsDefinitelyNonNull(LocalVariableBinding local);
+	
+		/**
+		 * Record a local got definitely assigned to null.
+		 */
+		abstract public void markAsDefinitelyNull(LocalVariableBinding local);
+	
+		/**
+		 * Reset all null-information about a given local.
+		 */
+		abstract public void resetNullInfo(LocalVariableBinding local);
+	
+		/**
+		 * Record a local may have got assigned to unknown (set the bit on existing info).
+		 */
+		abstract public void markPotentiallyUnknownBit(LocalVariableBinding local);
+	
+		/**
+		 * Record a local may have got assigned to null (set the bit on existing info).
+		 */
+		abstract public void markPotentiallyNullBit(LocalVariableBinding local);
+	
+		/**
+		 * Record a local may have got assigned to non-null (set the bit on existing info).
+		 */
+		abstract public void markPotentiallyNonNullBit(LocalVariableBinding local);
+	
+		/**
+		 * Record a local got definitely assigned.
+		 */
+		abstract public void markAsDefinitelyAssigned(LocalVariableBinding local);
+	
+	/**
+	 * Record a local got definitely assigned to an unknown value.
+	 */
+	abstract public void markAsDefinitelyUnknown(LocalVariableBinding local);
+	
+	/**
+	 * Mark the null status of the given local according to the given status
+	 * @param local
+	 * @param nullStatus bitset of FLowInfo.UNKNOWN ... FlowInfo.POTENTIALLY_NON_NULL
+	 */
+	public void markNullStatus(LocalVariableBinding local, int nullStatus) {
+		switch(nullStatus) {
+			// definite status?
+			case FlowInfo.UNKNOWN :
 				markAsDefinitelyUnknown(local);
+				break;
+			case FlowInfo.NULL :
+				markAsDefinitelyNull(local);
+				break;
+			case FlowInfo.NON_NULL :
+				markAsDefinitelyNonNull(local);
+				break;
+			default:
+				// collect potential status:
+				resetNullInfo(local);
+				if ((nullStatus & FlowInfo.POTENTIALLY_UNKNOWN) != 0)
+					markPotentiallyUnknownBit(local);
+				if ((nullStatus & FlowInfo.POTENTIALLY_NULL) != 0)
+					markPotentiallyNullBit(local);
+				if ((nullStatus & FlowInfo.POTENTIALLY_NON_NULL) != 0)
+					markPotentiallyNonNullBit(local);
+				if ((nullStatus & (FlowInfo.POTENTIALLY_NULL|FlowInfo.POTENTIALLY_NON_NULL|FlowInfo.POTENTIALLY_UNKNOWN)) == 0)
+					markAsDefinitelyUnknown(local);
+		}
 	}
-}
-
-/**
- * Answer the null status of the given local
- * @param local
- * @return bitset of FlowInfo.UNKNOWN ... FlowInfo.POTENTIALLY_NON_NULL
- */
-public int nullStatus(LocalVariableBinding local) {
-	if (isDefinitelyUnknown(local))
+	
+	/**
+	 * Answer the null status of the given local
+	 * @param local
+	 * @return bitset of FlowInfo.UNKNOWN ... FlowInfo.POTENTIALLY_NON_NULL
+	 */
+	public int nullStatus(LocalVariableBinding local) {
+		if (isDefinitelyUnknown(local))
+			return FlowInfo.UNKNOWN;
+		if (isDefinitelyNull(local))
+			return FlowInfo.NULL;
+		if (isDefinitelyNonNull(local))
+			return FlowInfo.NON_NULL;
+		int status = 0;
+		if (isPotentiallyUnknown(local))
+			status |= FlowInfo.POTENTIALLY_UNKNOWN;
+		if (isPotentiallyNull(local))
+			status |= FlowInfo.POTENTIALLY_NULL;
+		if (isPotentiallyNonNull(local))
+			status |= FlowInfo.POTENTIALLY_NON_NULL;
+		if (status > 0)
+			return status;
 		return FlowInfo.UNKNOWN;
-	if (isDefinitelyNull(local))
-		return FlowInfo.NULL;
-	if (isDefinitelyNonNull(local))
-		return FlowInfo.NON_NULL;
-	int status = 0;
-	if (isPotentiallyUnknown(local))
-		status |= FlowInfo.POTENTIALLY_UNKNOWN;
-	if (isPotentiallyNull(local))
-		status |= FlowInfo.POTENTIALLY_NULL;
-	if (isPotentiallyNonNull(local))
-		status |= FlowInfo.POTENTIALLY_NON_NULL;
-	if (status > 0)
-		return status;
-	return FlowInfo.UNKNOWN;
-}
-
-/**
- * Merge two single bits (NULL, NON_NULL, POTENTIALLY*..) into one.
- * This method implements a simpler logic than the 4-bit encoding used in FlowInfo instances.
- */
-public static int mergeNullStatus(int nullStatus1, int nullStatus2) {
-	boolean canBeNull = false;
-	boolean canBeNonNull = false;
-	switch (nullStatus1) {
-		case POTENTIALLY_NULL:
-			canBeNonNull = true;
-			//$FALL-THROUGH$
-		case NULL:
-			canBeNull = true;
-			break;
-		case POTENTIALLY_NON_NULL:
-			canBeNull = true;
-			//$FALL-THROUGH$
-		case NON_NULL:
-			canBeNonNull = true;
-			break;
 	}
-	switch (nullStatus2) {
-		case POTENTIALLY_NULL:
-			canBeNonNull = true;
-			//$FALL-THROUGH$
-		case NULL:
-			canBeNull = true;
-			break;
-		case POTENTIALLY_NON_NULL:
-			canBeNull = true;
-			//$FALL-THROUGH$
-		case NON_NULL:
-			canBeNonNull = true;
-			break;
-	}
-	if (canBeNull) {
-		if (canBeNonNull)
-			return POTENTIALLY_NULL;
-		else
-			return NULL;
-	} else {
-		if (canBeNonNull)
-			return NON_NULL;
-		else
-			return UNKNOWN;
-	}
-}
-
-/**
- * Merge branches using optimized boolean conditions
- */
-public static UnconditionalFlowInfo mergedOptimizedBranches(
-		FlowInfo initsWhenTrue, boolean isOptimizedTrue,
-		FlowInfo initsWhenFalse, boolean isOptimizedFalse,
-		boolean allowFakeDeadBranch) {
-	UnconditionalFlowInfo mergedInfo;
-	if (isOptimizedTrue){
-		if (initsWhenTrue == FlowInfo.DEAD_END && allowFakeDeadBranch) {
-			mergedInfo = initsWhenFalse.setReachMode(FlowInfo.UNREACHABLE_OR_DEAD).
-				unconditionalInits();
+	
+	/**
+	 * Merge two single bits (NULL, NON_NULL, POTENTIALLY*..) into one.
+	 * This method implements a simpler logic than the 4-bit encoding used in FlowInfo instances.
+	 */
+	public static int mergeNullStatus(int nullStatus1, int nullStatus2) {
+		boolean canBeNull = false;
+		boolean canBeNonNull = false;
+		switch (nullStatus1) {
+			case POTENTIALLY_NULL:
+				canBeNonNull = true;
+				//$FALL-THROUGH$
+			case NULL:
+				canBeNull = true;
+				break;
+			case POTENTIALLY_NON_NULL:
+				canBeNull = true;
+				//$FALL-THROUGH$
+			case NON_NULL:
+				canBeNonNull = true;
+				break;
 		}
-		else {
-			mergedInfo =
-				initsWhenTrue.addPotentialInitializationsFrom(initsWhenFalse.
-					nullInfoLessUnconditionalCopy()).
-				unconditionalInits();
+		switch (nullStatus2) {
+			case POTENTIALLY_NULL:
+				canBeNonNull = true;
+				//$FALL-THROUGH$
+			case NULL:
+				canBeNull = true;
+				break;
+			case POTENTIALLY_NON_NULL:
+				canBeNull = true;
+				//$FALL-THROUGH$
+			case NON_NULL:
+				canBeNonNull = true;
+				break;
+		}
+		if (canBeNull) {
+			if (canBeNonNull)
+				return POTENTIALLY_NULL;
+			else
+				return NULL;
+		} else {
+			if (canBeNonNull)
+				return NON_NULL;
+			else
+				return UNKNOWN;
 		}
 	}
-	else if (isOptimizedFalse) {
-		if (initsWhenFalse == FlowInfo.DEAD_END && allowFakeDeadBranch) {
-			mergedInfo = initsWhenTrue.setReachMode(FlowInfo.UNREACHABLE_OR_DEAD).
-				unconditionalInits();
-		}
-		else {
-			mergedInfo =
-				initsWhenFalse.addPotentialInitializationsFrom(initsWhenTrue.
-					nullInfoLessUnconditionalCopy()).
-				unconditionalInits();
-		}
-	}
-	else {
-		mergedInfo = initsWhenTrue.
-			mergedWith(initsWhenFalse.unconditionalInits());
-	}
-	return mergedInfo;
-}
-
-/**
- * Merge if-else branches using optimized boolean conditions
- */
-public static UnconditionalFlowInfo mergedOptimizedBranchesIfElse(
-		FlowInfo initsWhenTrue, boolean isOptimizedTrue,
-		FlowInfo initsWhenFalse, boolean isOptimizedFalse,
-		boolean allowFakeDeadBranch, FlowInfo flowInfo, IfStatement ifStatement,
-		boolean reportDeadCodeInKnownPattern) {
-	UnconditionalFlowInfo mergedInfo;
-	if (isOptimizedTrue){
-		if (initsWhenTrue == FlowInfo.DEAD_END && allowFakeDeadBranch) {
-			if (!reportDeadCodeInKnownPattern) {
-				// https://bugs.eclipse.org/bugs/show_bug.cgi?id=256796
-				// do not report code even after if-else as dead as a consequence of analysis done in known dead code pattern
-				// when the CompilerOptions$reportDeadCodeInTrivialIfStatement option is disabled
-				if (ifStatement.elseStatement == null) {
-					mergedInfo = flowInfo.unconditionalInits();
-				} else {
-					mergedInfo = initsWhenFalse.unconditionalInits();
-					if (initsWhenFalse != FlowInfo.DEAD_END) {
-						// let the definitely true status of known dead code pattern not affect the reachability
-						mergedInfo.setReachMode(flowInfo.reachMode());
-					}
-				}
-			} else {
+	
+	/**
+	 * Merge branches using optimized boolean conditions
+	 */
+	public static UnconditionalFlowInfo mergedOptimizedBranches(
+			FlowInfo initsWhenTrue, boolean isOptimizedTrue,
+			FlowInfo initsWhenFalse, boolean isOptimizedFalse,
+			boolean allowFakeDeadBranch) {
+		UnconditionalFlowInfo mergedInfo;
+		if (isOptimizedTrue){
+			if (initsWhenTrue == FlowInfo.DEAD_END && allowFakeDeadBranch) {
 				mergedInfo = initsWhenFalse.setReachMode(FlowInfo.UNREACHABLE_OR_DEAD).
 					unconditionalInits();
 			}
+			else {
+				mergedInfo =
+					initsWhenTrue.addPotentialInitializationsFrom(initsWhenFalse.
+						nullInfoLessUnconditionalCopy()).
+					unconditionalInits();
+			}
 		}
-		else {
-			mergedInfo =
-				initsWhenTrue.addPotentialInitializationsFrom(initsWhenFalse.
-					nullInfoLessUnconditionalCopy()).
-				unconditionalInits();
-		}
-	}
-	else if (isOptimizedFalse) {
-		if (initsWhenFalse == FlowInfo.DEAD_END && allowFakeDeadBranch) {
-			if (!reportDeadCodeInKnownPattern) {
-				// https://bugs.eclipse.org/bugs/show_bug.cgi?id=256796
-				// do not report code even after if-else as dead as a consequence of analysis done in known dead code pattern
-				// when the CompilerOptions$reportDeadCodeInTrivialIfStatement option is disabled
-				if (ifStatement.thenStatement == null) {
-					mergedInfo = flowInfo.unconditionalInits();
-				} else {
-					mergedInfo = initsWhenTrue.unconditionalInits();
-					if (initsWhenTrue != FlowInfo.DEAD_END) {
-						// let the definitely false status of known dead code pattern not affect the reachability
-						mergedInfo.setReachMode(flowInfo.reachMode());
-					}
-				}
-			} else {
+		else if (isOptimizedFalse) {
+			if (initsWhenFalse == FlowInfo.DEAD_END && allowFakeDeadBranch) {
 				mergedInfo = initsWhenTrue.setReachMode(FlowInfo.UNREACHABLE_OR_DEAD).
+					unconditionalInits();
+			}
+			else {
+				mergedInfo =
+					initsWhenFalse.addPotentialInitializationsFrom(initsWhenTrue.
+						nullInfoLessUnconditionalCopy()).
 					unconditionalInits();
 			}
 		}
 		else {
+			mergedInfo = initsWhenTrue.
+				mergedWith(initsWhenFalse.unconditionalInits());
+		}
+		return mergedInfo;
+	}
+	
+	/**
+	 * Merge if-else branches using optimized boolean conditions
+	 */
+	public static UnconditionalFlowInfo mergedOptimizedBranchesIfElse(
+			FlowInfo initsWhenTrue, boolean isOptimizedTrue,
+			FlowInfo initsWhenFalse, boolean isOptimizedFalse,
+			boolean allowFakeDeadBranch, FlowInfo flowInfo, IfStatement ifStatement,
+			boolean reportDeadCodeInKnownPattern) {
+		UnconditionalFlowInfo mergedInfo;
+		if (isOptimizedTrue){
+			if (initsWhenTrue == FlowInfo.DEAD_END && allowFakeDeadBranch) {
+				if (!reportDeadCodeInKnownPattern) {
+					// https://bugs.eclipse.org/bugs/show_bug.cgi?id=256796
+					// do not report code even after if-else as dead as a consequence of analysis done in known dead code pattern
+					// when the CompilerOptions$reportDeadCodeInTrivialIfStatement option is disabled
+					if (ifStatement.elseStatement == null) {
+						mergedInfo = flowInfo.unconditionalInits();
+					} else {
+						mergedInfo = initsWhenFalse.unconditionalInits();
+						if (initsWhenFalse != FlowInfo.DEAD_END) {
+							// let the definitely true status of known dead code pattern not affect the reachability
+							mergedInfo.setReachMode(flowInfo.reachMode());
+						}
+					}
+				} else {
+					mergedInfo = initsWhenFalse.setReachMode(FlowInfo.UNREACHABLE_OR_DEAD).
+						unconditionalInits();
+				}
+			}
+			else {
+				mergedInfo =
+					initsWhenTrue.addPotentialInitializationsFrom(initsWhenFalse.
+						nullInfoLessUnconditionalCopy()).
+					unconditionalInits();
+			}
+		}
+		else if (isOptimizedFalse) {
+			if (initsWhenFalse == FlowInfo.DEAD_END && allowFakeDeadBranch) {
+				if (!reportDeadCodeInKnownPattern) {
+					// https://bugs.eclipse.org/bugs/show_bug.cgi?id=256796
+					// do not report code even after if-else as dead as a consequence of analysis done in known dead code pattern
+					// when the CompilerOptions$reportDeadCodeInTrivialIfStatement option is disabled
+					if (ifStatement.thenStatement == null) {
+						mergedInfo = flowInfo.unconditionalInits();
+					} else {
+						mergedInfo = initsWhenTrue.unconditionalInits();
+						if (initsWhenTrue != FlowInfo.DEAD_END) {
+							// let the definitely false status of known dead code pattern not affect the reachability
+							mergedInfo.setReachMode(flowInfo.reachMode());
+						}
+					}
+				} else {
+					mergedInfo = initsWhenTrue.setReachMode(FlowInfo.UNREACHABLE_OR_DEAD).
+						unconditionalInits();
+				}
+			}
+			else {
+				mergedInfo =
+					initsWhenFalse.addPotentialInitializationsFrom(initsWhenTrue.
+						nullInfoLessUnconditionalCopy()).
+					unconditionalInits();
+			}
+		}
+		else if ((flowInfo.tagBits & FlowInfo.UNREACHABLE) == 0 &&
+					(ifStatement.bits & ASTNode.IsElseStatementUnreachable) != 0 &&
+					initsWhenTrue != FlowInfo.DEAD_END &&
+					initsWhenFalse != FlowInfo.DEAD_END) {
+			// Done when the then branch will always be executed but the condition does not have a boolean
+			// true or false (i.e if(true), etc) for sure
+			// We don't do this if both if and else branches themselves are in an unreachable code
+			// or if any of them is a DEAD_END (e.g. contains 'return' or 'throws')
 			mergedInfo =
+				initsWhenTrue.addPotentialInitializationsFrom(initsWhenFalse.
+					nullInfoLessUnconditionalCopy()).
+				unconditionalInits();
+			// if a variable is only initialized in one branch and not initialized in the other,
+			// then we need to cast a doubt on its initialization in the merged info
+			mergedInfo.definiteInits &= initsWhenFalse.unconditionalCopy().definiteInits;
+			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=415997, classify unreachability precisely, IsElseStatementUnreachable could be due to null analysis
+			if ((mergedInfo.tagBits & FlowInfo.UNREACHABLE_OR_DEAD) != 0 && (initsWhenFalse.tagBits & FlowInfo.UNREACHABLE) == FlowInfo.UNREACHABLE_BY_NULLANALYSIS) {
+				mergedInfo.tagBits &= ~UNREACHABLE_OR_DEAD;
+				mergedInfo.tagBits |= UNREACHABLE_BY_NULLANALYSIS;
+			}
+		}
+		else if ((flowInfo.tagBits & FlowInfo.UNREACHABLE) == 0 &&
+				(ifStatement.bits & ASTNode.IsThenStatementUnreachable) != 0 && initsWhenTrue != FlowInfo.DEAD_END
+				&& initsWhenFalse != FlowInfo.DEAD_END) {
+			// Done when the else branch will always be executed but the condition does not have a boolean
+			// true or false (i.e if(true), etc) for sure
+			// We don't do this if both if and else branches themselves are in an unreachable code
+			// or if any of them is a DEAD_END (e.g. contains 'return' or 'throws')
+			mergedInfo = 
 				initsWhenFalse.addPotentialInitializationsFrom(initsWhenTrue.
 					nullInfoLessUnconditionalCopy()).
 				unconditionalInits();
+			// if a variable is only initialized in one branch and not initialized in the other,
+			// then we need to cast a doubt on its initialization in the merged info
+			mergedInfo.definiteInits &= initsWhenTrue.unconditionalCopy().definiteInits;
+			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=415997, classify unreachability precisely, IsThenStatementUnreachable could be due to null analysis
+			if ((mergedInfo.tagBits & FlowInfo.UNREACHABLE_OR_DEAD) != 0 && (initsWhenTrue.tagBits & FlowInfo.UNREACHABLE) == FlowInfo.UNREACHABLE_BY_NULLANALYSIS) {
+				mergedInfo.tagBits &= ~UNREACHABLE_OR_DEAD;
+				mergedInfo.tagBits |= UNREACHABLE_BY_NULLANALYSIS;
+			}
 		}
-	}
-	else if ((flowInfo.tagBits & FlowInfo.UNREACHABLE) == 0 &&
-				(ifStatement.bits & ASTNode.IsElseStatementUnreachable) != 0 &&
-				initsWhenTrue != FlowInfo.DEAD_END &&
-				initsWhenFalse != FlowInfo.DEAD_END) {
-		// Done when the then branch will always be executed but the condition does not have a boolean
-		// true or false (i.e if(true), etc) for sure
-		// We don't do this if both if and else branches themselves are in an unreachable code
-		// or if any of them is a DEAD_END (e.g. contains 'return' or 'throws')
-		mergedInfo =
-			initsWhenTrue.addPotentialInitializationsFrom(initsWhenFalse.
-				nullInfoLessUnconditionalCopy()).
-			unconditionalInits();
-		// if a variable is only initialized in one branch and not initialized in the other,
-		// then we need to cast a doubt on its initialization in the merged info
-		mergedInfo.definiteInits &= initsWhenFalse.unconditionalCopy().definiteInits;
-		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=415997, classify unreachability precisely, IsElseStatementUnreachable could be due to null analysis
-		if ((mergedInfo.tagBits & FlowInfo.UNREACHABLE_OR_DEAD) != 0 && (initsWhenFalse.tagBits & FlowInfo.UNREACHABLE) == FlowInfo.UNREACHABLE_BY_NULLANALYSIS) {
-			mergedInfo.tagBits &= ~UNREACHABLE_OR_DEAD;
-			mergedInfo.tagBits |= UNREACHABLE_BY_NULLANALYSIS;
+		else {
+			mergedInfo = initsWhenTrue.
+				mergedWith(initsWhenFalse.unconditionalInits());
 		}
+		return mergedInfo;
 	}
-	else if ((flowInfo.tagBits & FlowInfo.UNREACHABLE) == 0 &&
-			(ifStatement.bits & ASTNode.IsThenStatementUnreachable) != 0 && initsWhenTrue != FlowInfo.DEAD_END
-			&& initsWhenFalse != FlowInfo.DEAD_END) {
-		// Done when the else branch will always be executed but the condition does not have a boolean
-		// true or false (i.e if(true), etc) for sure
-		// We don't do this if both if and else branches themselves are in an unreachable code
-		// or if any of them is a DEAD_END (e.g. contains 'return' or 'throws')
-		mergedInfo = 
-			initsWhenFalse.addPotentialInitializationsFrom(initsWhenTrue.
-				nullInfoLessUnconditionalCopy()).
-			unconditionalInits();
-		// if a variable is only initialized in one branch and not initialized in the other,
-		// then we need to cast a doubt on its initialization in the merged info
-		mergedInfo.definiteInits &= initsWhenTrue.unconditionalCopy().definiteInits;
-		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=415997, classify unreachability precisely, IsThenStatementUnreachable could be due to null analysis
-		if ((mergedInfo.tagBits & FlowInfo.UNREACHABLE_OR_DEAD) != 0 && (initsWhenTrue.tagBits & FlowInfo.UNREACHABLE) == FlowInfo.UNREACHABLE_BY_NULLANALYSIS) {
-			mergedInfo.tagBits &= ~UNREACHABLE_OR_DEAD;
-			mergedInfo.tagBits |= UNREACHABLE_BY_NULLANALYSIS;
+	
+	/**
+	 * Find out the reachability mode of this flowInfo.
+	 * @return REACHABLE if this flow info is reachable, otherwise
+	 *         either UNREACHABLE_OR_DEAD or UNREACHABLE_BY_NULLANALYSIS.
+	 */
+	public int reachMode() {
+		return this.tagBits & UNREACHABLE;
+	}
+	
+	/**
+	 * Return a flow info that carries the same information as the result of
+	 * {@link #initsWhenTrue() initsWhenTrue}, but warrantied to be different
+	 * from this.<br>
+	 * Caveat: side effects on the result may affect components of this.
+	 * @return the result of initsWhenTrue or a copy of it
+	 */
+	abstract public FlowInfo safeInitsWhenTrue();
+	
+	/**
+	 * Set this flow info reach mode and return this.
+	 * @param reachMode one of {@link #REACHABLE REACHABLE}, {@link #UNREACHABLE_OR_DEAD UNREACHABLE_OR_DEAD},
+	 * {@link #UNREACHABLE_BY_NULLANALYSIS UNREACHABLE_BY_NULLANALYSIS} or {@link #UNREACHABLE UNREACHABLE}
+	 * @return this, with the reach mode set to reachMode
+	 */
+	abstract public FlowInfo setReachMode(int reachMode);
+	
+	/**
+	 * Return the intersection of this and otherInits, that is
+	 * one of:<ul>
+	 *   <li>the receiver updated in the following way:<ul>
+	 *     <li>intersection of definitely assigned variables,
+	 *     <li>union of potentially assigned variables,
+	 *     <li>similar operations for null,</ul>
+	 *   <li>or the receiver or otherInits if the other one is non
+	 *       reachable.</ul>
+	 * otherInits is not affected, and is not returned either (no
+	 * need to protect the result).
+	 * @param otherInits the flow info to merge with this
+	 * @return the intersection of this and otherInits.
+	 */
+	abstract public UnconditionalFlowInfo mergedWith(
+			UnconditionalFlowInfo otherInits);
+	
+	/**
+	 * Return a copy of this unconditional flow info, deprived from its null
+	 * info. {@link #DEAD_END DEAD_END} is returned unmodified.
+	 * @return a copy of this unconditional flow info deprived from its null info
+	 */
+	abstract public UnconditionalFlowInfo nullInfoLessUnconditionalCopy();
+	
+		public String toString(){
+	
+			if (this == DEAD_END){
+				return "FlowInfo.DEAD_END"; //$NON-NLS-1$
+			}
+			return super.toString();
 		}
+	
+	/**
+	 * Return a new flow info that holds the same information as this would after
+	 * a call to unconditionalInits, but leaving this info unaffected. Moreover,
+	 * the result can be modified without affecting this.
+	 * @return a new flow info carrying this unconditional flow info
+	 */
+	abstract public UnconditionalFlowInfo unconditionalCopy();
+	
+	/**
+	 * Return a new flow info that holds the same information as this would after
+	 * a call to {@link #unconditionalInits() unconditionalInits} followed by the
+	 * erasure of fields specific information, but leaving this flow info unaffected.
+	 * @return a new flow info carrying the unconditional flow info for local variables
+	 */
+	abstract public UnconditionalFlowInfo unconditionalFieldLessCopy();
+	
+	/**
+	 * Return a flow info that merges the possible paths of execution described by
+	 * this flow info. In case of an unconditional flow info, return this. In case
+	 * of a conditional flow info, merge branches recursively. Caveat: this may
+	 * be affected, and modifying the result may affect this.
+	 * @return a flow info that merges the possible paths of execution described by
+	 * 			this
+	 */
+	abstract public UnconditionalFlowInfo unconditionalInits();
+	
+	/**
+	 * Return a new flow info that holds the same information as this would after
+	 * a call to {@link #unconditionalInits() unconditionalInits}, but leaving
+	 * this info unaffected. Side effects on the result might affect this though
+	 * (consider it as read only).
+	 * @return a flow info carrying this unconditional flow info
+	 */
+	abstract public UnconditionalFlowInfo unconditionalInitsWithoutSideEffect();
+	
+	/**
+	 * Resets the definite and potential initialization info for the given local variable
+	 * @param local
+	 */
+	abstract public void resetAssignmentInfo(LocalVariableBinding local);
+	
+	/**
+	 * Check whether 'tagBits' contains either {@link TagBits#AnnotationNonNull} or {@link TagBits#AnnotationNullable},
+	 * and answer the corresponding null status ({@link #NON_NULL} etc.).
+	 */
+	public static int tagBitsToNullStatus(long tagBits) {
+		if ((tagBits & TagBits.AnnotationNonNull) != 0)
+			return NON_NULL;
+		if ((tagBits & TagBits.AnnotationNullable) != 0)
+			return POTENTIALLY_NULL | POTENTIALLY_NON_NULL;
+		return UNKNOWN;
 	}
-	else {
-		mergedInfo = initsWhenTrue.
-			mergedWith(initsWhenFalse.unconditionalInits());
-	}
-	return mergedInfo;
-}
-
-/**
- * Find out the reachability mode of this flowInfo.
- * @return REACHABLE if this flow info is reachable, otherwise
- *         either UNREACHABLE_OR_DEAD or UNREACHABLE_BY_NULLANALYSIS.
- */
-public int reachMode() {
-	return this.tagBits & UNREACHABLE;
-}
-
-/**
- * Return a flow info that carries the same information as the result of
- * {@link #initsWhenTrue() initsWhenTrue}, but warrantied to be different
- * from this.<br>
- * Caveat: side effects on the result may affect components of this.
- * @return the result of initsWhenTrue or a copy of it
- */
-abstract public FlowInfo safeInitsWhenTrue();
-
-/**
- * Set this flow info reach mode and return this.
- * @param reachMode one of {@link #REACHABLE REACHABLE}, {@link #UNREACHABLE_OR_DEAD UNREACHABLE_OR_DEAD},
- * {@link #UNREACHABLE_BY_NULLANALYSIS UNREACHABLE_BY_NULLANALYSIS} or {@link #UNREACHABLE UNREACHABLE}
- * @return this, with the reach mode set to reachMode
- */
-abstract public FlowInfo setReachMode(int reachMode);
-
-/**
- * Return the intersection of this and otherInits, that is
- * one of:<ul>
- *   <li>the receiver updated in the following way:<ul>
- *     <li>intersection of definitely assigned variables,
- *     <li>union of potentially assigned variables,
- *     <li>similar operations for null,</ul>
- *   <li>or the receiver or otherInits if the other one is non
- *       reachable.</ul>
- * otherInits is not affected, and is not returned either (no
- * need to protect the result).
- * @param otherInits the flow info to merge with this
- * @return the intersection of this and otherInits.
- */
-abstract public UnconditionalFlowInfo mergedWith(
-		UnconditionalFlowInfo otherInits);
-
-/**
- * Return a copy of this unconditional flow info, deprived from its null
- * info. {@link #DEAD_END DEAD_END} is returned unmodified.
- * @return a copy of this unconditional flow info deprived from its null info
- */
-abstract public UnconditionalFlowInfo nullInfoLessUnconditionalCopy();
-
-	public String toString(){
-
-		if (this == DEAD_END){
-			return "FlowInfo.DEAD_END"; //$NON-NLS-1$
-		}
-		return super.toString();
-	}
-
-/**
- * Return a new flow info that holds the same information as this would after
- * a call to unconditionalInits, but leaving this info unaffected. Moreover,
- * the result can be modified without affecting this.
- * @return a new flow info carrying this unconditional flow info
- */
-abstract public UnconditionalFlowInfo unconditionalCopy();
-
-/**
- * Return a new flow info that holds the same information as this would after
- * a call to {@link #unconditionalInits() unconditionalInits} followed by the
- * erasure of fields specific information, but leaving this flow info unaffected.
- * @return a new flow info carrying the unconditional flow info for local variables
- */
-abstract public UnconditionalFlowInfo unconditionalFieldLessCopy();
-
-/**
- * Return a flow info that merges the possible paths of execution described by
- * this flow info. In case of an unconditional flow info, return this. In case
- * of a conditional flow info, merge branches recursively. Caveat: this may
- * be affected, and modifying the result may affect this.
- * @return a flow info that merges the possible paths of execution described by
- * 			this
- */
-abstract public UnconditionalFlowInfo unconditionalInits();
-
-/**
- * Return a new flow info that holds the same information as this would after
- * a call to {@link #unconditionalInits() unconditionalInits}, but leaving
- * this info unaffected. Side effects on the result might affect this though
- * (consider it as read only).
- * @return a flow info carrying this unconditional flow info
- */
-abstract public UnconditionalFlowInfo unconditionalInitsWithoutSideEffect();
-
-/**
- * Resets the definite and potential initialization info for the given local variable
- * @param local
- */
-abstract public void resetAssignmentInfo(LocalVariableBinding local);
-
-/**
- * Check whether 'tagBits' contains either {@link TagBits#AnnotationNonNull} or {@link TagBits#AnnotationNullable},
- * and answer the corresponding null status ({@link #NON_NULL} etc.).
- */
-public static int tagBitsToNullStatus(long tagBits) {
-	if ((tagBits & TagBits.AnnotationNonNull) != 0)
-		return NON_NULL;
-	if ((tagBits & TagBits.AnnotationNullable) != 0)
-		return POTENTIALLY_NULL | POTENTIALLY_NON_NULL;
-	return UNKNOWN;
-}
 }

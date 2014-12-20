@@ -32,10 +32,9 @@ import org.summer.sdt.internal.compiler.IErrorHandlingPolicy;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
-import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
-import org.summer.sdt.internal.compiler.lookup.IntersectionCastTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.IntersectionTypeBinding18;
 import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
@@ -57,11 +56,8 @@ public abstract class FunctionalExpression extends Expression {
 	protected MethodBinding actualMethodBinding;  // void of synthetics.
 	boolean ignoreFurtherInvestigation;
 	protected ExpressionContext expressionContext = VANILLA_CONTEXT;
-	static Expression [] NO_EXPRESSIONS = new Expression[0];
-	protected Expression [] resultExpressions = NO_EXPRESSIONS;
 	public CompilationResult compilationResult;
 	public BlockScope enclosingScope;
-	protected boolean ellipsisArgument;
 	public int bootstrapMethodNumber = -1;
 	protected static IErrorHandlingPolicy silentErrorHandlingPolicy = DefaultErrorHandlingPolicies.ignoreAllProblems();
 	private boolean hasReportedSamProblem = false;
@@ -74,9 +70,8 @@ public abstract class FunctionalExpression extends Expression {
 		super();
 	}
 	
-	// for lambda's and reference expressions boxing compatibility is same as vanilla compatibility.
 	public boolean isBoxingCompatibleWith(TypeBinding targetType, Scope scope) {
-		return isCompatibleWith(targetType, scope);
+		return false;
 	}
 	
 	public void setCompilationResult(CompilationResult compilationResult) {
@@ -87,19 +82,19 @@ public abstract class FunctionalExpression extends Expression {
 	public MethodBinding getMethodBinding() {
 		return null;
 	}
+
 	public void setExpectedType(TypeBinding expectedType) {
-		this.expectedType = this.ellipsisArgument ? ((ArrayBinding) expectedType).elementsType() : expectedType;
+		this.expectedType = expectedType;
 	}
 	
 	public void setExpressionContext(ExpressionContext context) {
 		this.expressionContext = context;
 	}
+
 	public ExpressionContext getExpressionContext() {
 		return this.expressionContext;
 	}
-	public void tagAsEllipsisArgument() {
-		this.ellipsisArgument = true;
-	}
+
 	public boolean isPolyExpression(MethodBinding candidate) {
 		return true;
 	}
@@ -107,15 +102,20 @@ public abstract class FunctionalExpression extends Expression {
 		return true; // always as per introduction of part D, JSR 335
 	}
 
+	@Override
+	public boolean isFunctionalType() {
+		return true;
+	}
+	
 	public boolean isPertinentToApplicability(TypeBinding targetType, MethodBinding method) {
 		if (targetType instanceof TypeVariableBinding) {
+			TypeVariableBinding typeVariable = (TypeVariableBinding) targetType;
 			if (method != null) { // when called from type inference
-				if (((TypeVariableBinding)targetType).declaringElement == method)
+				if (typeVariable.declaringElement == method)
 					return false;
-				if (method.isConstructor() && ((TypeVariableBinding)targetType).declaringElement == method.declaringClass)
+				if (method.isConstructor() && typeVariable.declaringElement == method.declaringClass)
 					return false;
 			} else { // for internal calls
-				TypeVariableBinding typeVariable = (TypeVariableBinding) targetType;
 				if (typeVariable.declaringElement instanceof MethodBinding)
 					return false;
 			}
@@ -205,11 +205,6 @@ public abstract class FunctionalExpression extends Expression {
 		return null;
 	}
 
-	public TypeBinding checkAgainstFinalTargetType(TypeBinding targetType, Scope scope) {
-		targetType = targetType.uncapture(this.enclosingScope);
-		return resolveTypeExpecting(this.enclosingScope, targetType);
-	}
-
 	class VisibilityInspector extends TypeBindingVisitor {
 
 		private Scope scope;
@@ -264,14 +259,14 @@ public abstract class FunctionalExpression extends Expression {
 		VisibilityInspector inspector = new VisibilityInspector(this, scope, shouldChatter);
 		
 		boolean status = true;
-		
 		if (!inspector.visible(sam.returnType))
 			status = false;
 		if (!inspector.visible(sam.parameters))
 			status = false;
 		if (!inspector.visible(sam.thrownExceptions))
 			status = false;
-		
+		if (!inspector.visible(sam.declaringClass))
+			status = false;
 		return status;
 	}
 
@@ -345,8 +340,8 @@ public abstract class FunctionalExpression extends Expression {
 		}
 		
 		ReferenceBinding functionalType;
-		if (this.expectedType instanceof IntersectionCastTypeBinding) {
-			functionalType = (ReferenceBinding) ((IntersectionCastTypeBinding)this.expectedType).getSAMType(this.enclosingScope);
+		if (this.expectedType instanceof IntersectionTypeBinding18) {
+			functionalType = (ReferenceBinding) ((IntersectionTypeBinding18)this.expectedType).getSAMType(this.enclosingScope);
 		} else {
 			functionalType = (ReferenceBinding) this.expectedType;
 		}
