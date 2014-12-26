@@ -19,7 +19,7 @@ import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IntConstant;
 import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
+import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
@@ -148,10 +148,10 @@ public class CaseStatement extends Statement {
 	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 		printIndent(indent, output);
 		if (this.constantExpression == null) {
-			output.append(Javascript.DEFAULT).append(Javascript.WHITESPACE).append(Javascript.COLON);
+			output.append(JsConstant.DEFAULT).append(JsConstant.WHITESPACE).append(JsConstant.COLON);
 		} else {
-			output.append(Javascript.CASE).append(Javascript.WHITESPACE);
-			this.constantExpression.doGenerateExpression(scope, dependency, 0, output).append(Javascript.WHITESPACE).append(Javascript.COLON);
+			output.append(JsConstant.CASE).append(JsConstant.WHITESPACE);
+			this.constantExpression.doGenerateExpression(scope, dependency, 0, output).append(JsConstant.WHITESPACE).append(JsConstant.COLON);
 		}
 		return output;
 	}

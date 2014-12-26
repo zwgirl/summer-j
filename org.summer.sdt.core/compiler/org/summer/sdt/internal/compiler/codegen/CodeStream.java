@@ -2803,7 +2803,7 @@ public class CodeStream {
 		arraylength();
 		dup();
 		istore_1();
-//		newArray((ArrayBinding) enumArray);   //cym 2014-12-18
+		newArray((ArrayBinding) enumArray);
 		dup();
 		astore_2();
 		iconst_0();

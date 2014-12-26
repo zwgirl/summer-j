@@ -35,7 +35,7 @@ import org.summer.sdt.internal.compiler.codegen.*;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.*;
 import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
+import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.*;
 import org.summer.sdt.internal.compiler.parser.*;
 import org.summer.sdt.internal.compiler.problem.*;
@@ -634,7 +634,6 @@ public abstract class AbstractMethodDeclaration
 	}
 
 	public void resolveStatements() {
-
 		if (this.statements != null) {
 			for (int i = 0, length = this.statements.length; i < length; i++) {
 				this.statements[i].resolve(this.scope);
@@ -695,7 +694,7 @@ public abstract class AbstractMethodDeclaration
 			this.javadoc.print(tab, output);
 		}
 		printIndent(tab, output);
-		output.append(Javascript.FUNCTION).append(Javascript.WHITESPACE);
+		output.append(JsConstant.FUNCTION).append(JsConstant.WHITESPACE);
 		output.append(this.selector).append('(');
 		if (this.receiver != null) {
 			this.receiver.print(0, output);

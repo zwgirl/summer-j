@@ -182,13 +182,13 @@ public class CompilationUnitScope extends Scope {
 			
 			//cym 2014-12-11
 			Scope parent = this;
-//			if(this.referenceContext.currentPackage != null &&
-//					typeDecl.name.length == 5 && typeDecl.name[0] == 'W' && CharOperation.equals(TypeConstants.WINDOW, typeDecl.name)
-//					&& CharOperation.equals(TypeConstants.JAVA_LANG_WINDOW, this.referenceContext.currentPackage.tokens)){
-//			} else {
-//				GlobalScope global = new GlobalScope(this);
-//				parent = new WindowScope(global);
-//			}
+			if(this.referenceContext.currentPackage != null &&
+					typeDecl.name.length == 5 && typeDecl.name[0] == 'W' && CharOperation.equals(TypeConstants.WINDOW, typeDecl.name)
+					&& CharOperation.equals(TypeConstants.JAVA_LANG_WINDOW, this.referenceContext.currentPackage.tokens)){
+			} else {
+				GlobalScope global = new GlobalScope(this);
+				parent = new WindowScope(global);
+			}
 			
 			ClassScope child = new ClassScope(parent, typeDecl);
 			SourceTypeBinding type = child.buildType(null, this.fPackage, accessRestriction);
@@ -790,7 +790,6 @@ public class CompilationUnitScope extends Scope {
 			ReferenceBinding type = (ReferenceBinding) this.referencedSuperTypes.elementAt(i);
 			if (!this.referencedTypes.containsIdentical(type))
 				this.referencedTypes.add(type);
-	
 			if (!type.isLocalType()) {
 				ReferenceBinding enclosing = type.enclosingType();
 				if (enclosing != null)
@@ -807,8 +806,10 @@ public class CompilationUnitScope extends Scope {
 	
 		for (int i = 0, l = this.referencedTypes.size; i < l; i++) {
 			ReferenceBinding type = (ReferenceBinding) this.referencedTypes.elementAt(i);
-			if (!type.isLocalType())
-				recordQualifiedReference(type.isMemberType()
+			//cym 2014-12-23
+//			if (!type.isLocalType())
+			if (!type.isLocalType() && !type.isTypeVariable())
+				recordQualifiedReference(type.isMemberType()  
 					? CharOperation.splitOn('.', type.readableName())
 					: type.compoundName);
 		}
@@ -835,16 +836,11 @@ public class CompilationUnitScope extends Scope {
 		return "--- CompilationUnit Scope : " + new String(this.referenceContext.getFileName()); //$NON-NLS-1$
 	}
 	private ReferenceBinding typeToRecord(TypeBinding type) {
-		TypeBinding old = type;
-//		System.out.println(old);
 		if (type == null)
 			return null;
-		//cym 2014-12-18
-//		while (type.isArrayType())
-//			type = ((ArrayBinding) type).leafComponentType();
 		while (type.isArrayType())
-			type = type.leafComponentType();
-		
+			type = ((ArrayBinding) type).leafComponentType();
+	
 		switch (type.kind()) {
 			case Binding.BASE_TYPE :
 			case Binding.TYPE_PARAMETER :

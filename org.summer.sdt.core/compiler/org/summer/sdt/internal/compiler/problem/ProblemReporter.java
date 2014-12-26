@@ -152,6 +152,7 @@ import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.CaptureBinding;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
 import org.summer.sdt.internal.compiler.lookup.InvocationSite;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
@@ -3799,6 +3800,75 @@ public class ProblemReporter extends ProblemHandler {
 			expression.sourceStart,
 			expression.sourceEnd);
 	}
+	//cym 2014-12-23
+	public void invalidIndexer(ArrayReference arrayRef, TypeBinding searchedType) {
+	
+		int id = IProblem.UndefinedField;
+		IndexerBinding indexer = arrayRef.binding;
+		switch (indexer.problemId()) {
+			case ProblemReasons.NotFound :
+				if ((searchedType.tagBits & TagBits.HasMissingType) != 0) {
+					this.handle(
+							IProblem.UndefinedType,
+							new String[] {new String(searchedType.leafComponentType().readableName())},
+							new String[] {new String(searchedType.leafComponentType().shortReadableName())},
+							arrayRef.receiver.sourceStart,
+							arrayRef.receiver.sourceEnd);
+						return;
+				}
+				id = IProblem.UndefinedField;
+	/* also need to check that the searchedType is the receiver type
+				if (searchedType.isHierarchyInconsistent())
+					severity = SecondaryError;
+	*/
+				break;
+			case ProblemReasons.NotVisible :
+				this.handle(
+					IProblem.NotVisibleField,
+					new String[] {new String(ArrayReference.indexer), new String(indexer.declaringClass.readableName())},
+					new String[] {new String(ArrayReference.indexer), new String(indexer.declaringClass.shortReadableName())},
+					nodeSourceStart(indexer, arrayRef),
+					nodeSourceEnd(indexer, arrayRef));
+				return;
+			case ProblemReasons.Ambiguous :
+				id = IProblem.AmbiguousField;
+				break;
+			case ProblemReasons.NoProperEnclosingInstance:
+				noSuchEnclosingInstance(arrayRef.resolvedType, arrayRef.receiver, false);
+				return;
+			case ProblemReasons.NonStaticReferenceInStaticContext :
+				id = IProblem.NonStaticFieldFromStaticInvocation;
+				break;
+			case ProblemReasons.NonStaticReferenceInConstructorInvocation :
+				id = IProblem.InstanceFieldDuringConstructorInvocation;
+				break;
+			case ProblemReasons.InheritedNameHidesEnclosingName :
+				id = IProblem.InheritedFieldHidesEnclosingName;
+				break;
+			case ProblemReasons.ReceiverTypeNotVisible :
+				this.handle(
+					IProblem.NotVisibleType, // cannot occur in javadoc comments
+					new String[] {new String(searchedType.leafComponentType().readableName())},
+					new String[] {new String(searchedType.leafComponentType().shortReadableName())},
+					arrayRef.receiver.sourceStart,
+					arrayRef.receiver.sourceEnd);
+				return;
+	
+			case ProblemReasons.NoError : // 0
+			default :
+				needImplementation(arrayRef); // want to fail to see why we were here...
+				break;
+		}
+	
+		String[] arguments = new String[] {new String(indexer.readableName())};
+		this.handle(
+			id,
+			arguments,
+			arguments,
+			nodeSourceStart(indexer, arrayRef),
+			nodeSourceEnd(indexer, arrayRef));
+	}
+	
 	public void invalidField(FieldReference fieldRef, TypeBinding searchedType) {
 		if(isRecoveredName(fieldRef.token)) return;
 	
@@ -7945,7 +8015,8 @@ public class ProblemReporter extends ProblemHandler {
 				TypeBinding type = types[i];
 				boolean isVarargType = i == length-1;
 				if (isVarargType) {
-					type = ((ArrayBinding)type).elementsType();
+//					type = ((ArrayBinding)type).elementsType();
+					type = ((ParameterizedTypeBinding)type).elementsType();
 				}
 				if (showNullAnnotations)
 					buffer.append(new String(type.nullAnnotatedReadableName(this.options, makeShort)));
@@ -7965,9 +8036,9 @@ public class ProblemReporter extends ProblemHandler {
 			TypeBinding type = parameters[i];
 			boolean isVarargType = methodBinding.isVarargs() && i == length-1;
 			if (isVarargType) {
-				//cym 2014-12-06
+				//cym 2014-12-23
 //				type = ((ArrayBinding)type).elementsType();
-				type = ((ParameterizedTypeBinding)type).arguments[0];
+				type = ((ParameterizedTypeBinding)type).elementsType();
 			}
 			if (showNullAnnotations)
 				buffer.append(new String(type.nullAnnotatedReadableName(this.options, makeShort)));

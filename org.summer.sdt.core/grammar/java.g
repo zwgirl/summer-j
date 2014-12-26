@@ -54,8 +54,9 @@ $Terminals
 	--assert 
 	boolean break byte case catch char class 
 	continue const 
---	debugger 
-	default do double else enum event 
+	--debugger 
+	default do double else enum 
+	--event 
 	export 
 	extends false final finally float
 	for function goto if implements import in instanceof int 
@@ -789,7 +790,11 @@ EventDeclaration ::= EventHeader ';'
 /.$putCase consumeEventDeclarationNoAccessor(); $break./
 /:$readableName EventDeclaration:/
 
-EventHeader ::= Modifiersopt 'event' Type 'Identifier'
+--EventHeader ::= Modifiersopt 'event' Type 'Identifier'
+--/.$putCase consumeEventHeader(); $break./
+--/:$readableName EventHeader:/
+
+EventHeader ::= Modifiersopt * Type 'Identifier'
 /.$putCase consumeEventHeader(); $break./
 /:$readableName EventHeader:/
 

@@ -130,7 +130,34 @@ public class InstanceOfExpression extends OperatorExpression {
 
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
-		// TODO Auto-generated method stub
-		return null;
+		if(type.resolvedType == null){
+			return output;
+		}
+		int id = type.resolvedType.id;
+		if(id != TypeIds.NoId){
+			switch(id){
+				case TypeIds.T_char:
+				case TypeIds.T_JavaLangCharacter:
+				case TypeIds.T_byte:
+				case TypeIds.T_JavaLangByte:
+				case TypeIds.T_short:
+				case TypeIds.T_JavaLangShort:
+				case TypeIds.T_int:
+				case TypeIds.T_JavaLangInteger:
+				case TypeIds.T_long:
+				case TypeIds.T_JavaLangLong:
+				case TypeIds.T_float:
+				case TypeIds.T_JavaLangFloat:
+				case TypeIds.T_double:
+				case TypeIds.T_JavaLangDouble:
+					output.append("Number");
+			}
+		} else {
+			this.type.generateExpression(scope, dependency, indent, output);
+		}
+		output.append(".__class.isInstance(");
+		this.expression.generateExpression(scope, dependency, indent, output);
+		output.append(")");
+		return output;
 	}
 }

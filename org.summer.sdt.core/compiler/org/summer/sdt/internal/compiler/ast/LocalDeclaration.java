@@ -247,7 +247,7 @@ public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext, Fl
 			if (this.initialization instanceof ArrayInitializer) {
 				TypeBinding initializationType = this.initialization.resolveTypeExpecting(scope, variableType);
 				if (initializationType != null) {
-					//cym 2014-12-18
+					//cym 2014-12-23
 //					((ArrayInitializer) this.initialization).binding = (ArrayBinding) initializationType;
 					((ArrayInitializer) this.initialization).binding = (ParameterizedTypeBinding) initializationType;
 					this.initialization.computeConversion(scope, variableType, initializationType);

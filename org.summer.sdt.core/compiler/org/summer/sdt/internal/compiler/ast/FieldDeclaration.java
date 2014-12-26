@@ -259,7 +259,7 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 				if (this.initialization instanceof ArrayInitializer) {
 	
 					if ((initializationType = this.initialization.resolveTypeExpecting(initializationScope, fieldType)) != null) {
-						//cym 2014-12-18
+						//cym 2014-12-23
 //						((ArrayInitializer) this.initialization).binding = (ArrayBinding) initializationType;
 						((ArrayInitializer) this.initialization).binding = (ParameterizedTypeBinding) initializationType;
 						this.initialization.computeConversion(initializationScope, fieldType, initializationType);

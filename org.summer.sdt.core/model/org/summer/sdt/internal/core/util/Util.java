@@ -1459,9 +1459,7 @@ public class Util {
 			return null;
 		switch (typeBinding.kind()) {
 			case Binding.ARRAY_TYPE :
-				//cym 2014-12-19
-//				typeBinding = ((org.summer.sdt.internal.compiler.lookup.ArrayBinding) typeBinding).leafComponentType();
-				typeBinding = ((org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding) typeBinding).leafComponentType();
+				typeBinding = ((org.summer.sdt.internal.compiler.lookup.ArrayBinding) typeBinding).leafComponentType();
 				return getUnresolvedJavaElement(typeBinding, workingCopyOwner, bindingsToNodes);
 			case Binding.BASE_TYPE :
 			case Binding.WILDCARD_TYPE :

@@ -127,7 +127,7 @@ public abstract class Dependency {
 			if(comma){
 				output.append(", ");
 			}
-			output.append("[").append(key);
+			output.append("[").append(CharOperation.concatWith(key, '.'));
 			for(ReferenceBinding type : types){
 				output.append(", \"").append(CharOperation.concatWith(type.compoundName, '.')).append("\"");
 			}
@@ -208,19 +208,19 @@ public abstract class Dependency {
 	abstract protected char[] getAMDModuleId();
 	
 	public void generateAMDHeader(char[] mid, int indent, StringBuffer output, String funcName) {
-		output.append(funcName).append(Javascript.LPAREN).append(Javascript.DOUBLE_QUOTE)
-		.append(mid).append(Javascript.DOUBLE_QUOTE);
-		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
-		output.append(Javascript.LBRACKET);
+		output.append(funcName).append(JsConstant.LPAREN).append(JsConstant.DOUBLE_QUOTE)
+		.append(mid).append(JsConstant.DOUBLE_QUOTE);
+		output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE);
+		output.append(JsConstant.LBRACKET);
 		
 		this.generateDependency(indent, output);
 
-		output.append(Javascript.RBRACKET);
-		output.append(Javascript.COMMA).append(Javascript.WHITESPACE);;
-		output.append(Javascript.FUNCTION).append(Javascript.LPAREN);
+		output.append(JsConstant.RBRACKET);
+		output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE);;
+		output.append(JsConstant.FUNCTION).append(JsConstant.LPAREN);
 		
 		this.generateParameters(indent, output);
-		output.append(Javascript.RPAREN).append(Javascript.LBRACE);
+		output.append(JsConstant.RPAREN).append(JsConstant.LBRACE);
 	}
 	
 	public abstract void collect();

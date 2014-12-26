@@ -6627,7 +6627,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			    consumeEventDeclarationNoAccessor();  
 				break;
 
-	    case 221 : if (DEBUG) { System.out.println("EventHeader ::= Modifiersopt event Type Identifier"); }  //$NON-NLS-1$
+	    case 221 : if (DEBUG) { System.out.println("EventHeader ::= Modifiersopt MULTIPLY Type Identifier"); }  //$NON-NLS-1$
 			    consumeEventHeader();  
 				break;
 
@@ -8349,6 +8349,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	 
 		}
 	}
+
 
 	protected void consumeEmptyAccessor(){
 		pushOnAstLengthStack(0);
@@ -10348,7 +10349,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				this.endPosition = this.scanner.currentPosition - 1;
 				pushOnIntStack(this.scanner.startPosition);
 				break;
-			case TokenNameevent:   //cym add
+//			case TokenNameevent:   //cym add
 //			case TokenNameassert :   //cym 2014-12-17
 			case TokenNameimport :
 			case TokenNamepackage :

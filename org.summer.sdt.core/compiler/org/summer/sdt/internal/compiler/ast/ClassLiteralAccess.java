@@ -90,11 +90,8 @@ public class ClassLiteralAccess extends Expression {
 		this.targetType = scope.environment().convertToRawType(this.targetType, true /* force conversion of enclosing types*/);
 
 		if (this.targetType.isArrayType()) {
-//cym 2014-12-18
-//			ArrayBinding arrayBinding = (ArrayBinding) this.targetType;
-//			TypeBinding leafComponentType = arrayBinding.leafComponentType;
-			ParameterizedTypeBinding arrayBinding = (ParameterizedTypeBinding) this.targetType;
-			TypeBinding leafComponentType = arrayBinding.leafComponentType();
+			ArrayBinding arrayBinding = (ArrayBinding) this.targetType;
+			TypeBinding leafComponentType = arrayBinding.leafComponentType;
 			if (leafComponentType == TypeBinding.VOID) {
 				scope.problemReporter().cannotAllocateVoidArray(this);
 				return null;

@@ -335,11 +335,8 @@ public abstract class Expression extends Statement {
 				switch (castType.kind()) {
 					case Binding.ARRAY_TYPE :
 						// ( ARRAY ) ARRAY
-						//cym 2014-12-18
-//						TypeBinding castElementType = ((ArrayBinding) castType).elementsType();
-//						TypeBinding exprElementType = ((ArrayBinding) expressionType).elementsType();
-						TypeBinding castElementType = ((ParameterizedTypeBinding) castType).elementsType();
-						TypeBinding exprElementType = ((ParameterizedTypeBinding) expressionType).elementsType();
+						TypeBinding castElementType = ((ArrayBinding) castType).elementsType();
+						TypeBinding exprElementType = ((ArrayBinding) expressionType).elementsType();
 						if (exprElementType.isBaseType() || castElementType.isBaseType()) {
 							if (TypeBinding.equalsEquals(castElementType, exprElementType)) {
 								tagAsNeedCheckCast();

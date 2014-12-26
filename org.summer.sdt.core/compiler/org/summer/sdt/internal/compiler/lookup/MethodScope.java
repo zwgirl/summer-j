@@ -184,8 +184,12 @@ public class MethodScope extends BlockScope {
 			boolean reportIllegalModifierCombination = false;
 			boolean isJDK18orGreater = false;
 			if (compilerOptions().sourceLevel >= ClassFileConstants.JDK1_8 && !declaringClass.isAnnotationType()) {
+				//cym 2014-12-23
+//				expectedModifiers |= ClassFileConstants.AccStrictfp
+//						| ExtraCompilerModifiers.AccDefaultMethod | ClassFileConstants.AccStatic;
+				
 				expectedModifiers |= ClassFileConstants.AccStrictfp
-						| ExtraCompilerModifiers.AccDefaultMethod | ClassFileConstants.AccStatic;
+						| ExtraCompilerModifiers.AccDefaultMethod | ClassFileConstants.AccStatic | ClassFileConstants.AccNative;
 				isJDK18orGreater = true;
 				if (!methodBinding.isAbstract()) {
 					reportIllegalModifierCombination = isDefaultMethod && methodBinding.isStatic();

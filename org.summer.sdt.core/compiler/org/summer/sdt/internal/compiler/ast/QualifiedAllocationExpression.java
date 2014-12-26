@@ -45,7 +45,7 @@ import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
+import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
@@ -617,7 +617,7 @@ public class QualifiedAllocationExpression extends AllocationExpression {
 	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
 		if(this.anonymousType != null){
 			printIndent(indent, output);
-			output.append(Javascript.NEW).append(Javascript.WHITESPACE); 
+			output.append(JsConstant.NEW).append(JsConstant.WHITESPACE); 
 			
 			output.append("((function() {");
 			anonymousType.generateClass(this.anonymousType, dependency, indent + 1, output);
@@ -627,14 +627,14 @@ public class QualifiedAllocationExpression extends AllocationExpression {
 			printIndent(indent, output);
 			output.append("})())");
 			
-			output.append(Javascript.LPAREN);
+			output.append(JsConstant.LPAREN);
 			if (this.arguments != null) {
 				for (int i = 0; i < this.arguments.length; i++) {
-					if (i > 0) output.append(Javascript.COMMA).append(Javascript.WHITESPACE); 
+					if (i > 0) output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE); 
 					this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
 				}
 			}
-			return output.append(Javascript.RPAREN);
+			return output.append(JsConstant.RPAREN);
 			
 		} else {
 			output.append("(function(){\n");
@@ -645,7 +645,7 @@ public class QualifiedAllocationExpression extends AllocationExpression {
 			if (this.arguments != null) {
 				output.append(", ");
 				for (int i = 0; i < this.arguments.length; i++) {
-					if (i > 0) output.append(Javascript.COMMA).append(Javascript.WHITESPACE); 
+					if (i > 0) output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE); 
 					this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
 				}
 			}

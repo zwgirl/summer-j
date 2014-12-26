@@ -50,7 +50,7 @@ import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.AccessRestriction;
 import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.AnnotationBinding;
-//import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
+import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
@@ -375,7 +375,7 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 		int invocationStatus = INVOCATION_ARGUMENT_OK;
 		if (arguments == null) {
 			if (method.isVarargs()) {
-				//cym 2014-12-18
+				//cym 2014-12-23
 //				TypeBinding parameterType = ((ArrayBinding) params[paramLength-1]).elementsType(); // no element was supplied for vararg parameter
 				TypeBinding parameterType = ((ParameterizedTypeBinding) params[paramLength-1]).elementsType(); // no element was supplied for vararg parameter
 				if (!parameterType.isReifiable()
@@ -397,15 +397,13 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 					TypeBinding originalRawParam = null;
 
 					if (paramLength != argLength || parameterType.dimensions() != argumentTypes[lastIndex].dimensions()) {
-						//cym 2014-12-06
+						//cym 2014-12-23
 //						parameterType = ((ArrayBinding) parameterType).elementsType(); // single element was provided for vararg parameter
 						parameterType = ((ParameterizedTypeBinding) parameterType).elementsType(); // single element was provided for vararg parameter
 						if (!parameterType.isReifiable()
 								&& (!is1_7 || ((method.tagBits & TagBits.AnnotationSafeVarargs) == 0))) {
 							scope.problemReporter().unsafeGenericArrayForVarargs(parameterType, (ASTNode)invocationSite);
 						}
-						//cym 2014-12-18
-//						originalRawParam = rawOriginalGenericMethod == null ? null : ((ArrayBinding)rawOriginalGenericMethod.parameters[lastIndex]).elementsType();
 						originalRawParam = rawOriginalGenericMethod == null ? null : ((ParameterizedTypeBinding)rawOriginalGenericMethod.parameters[lastIndex]).elementsType();
 					}
 					for (int i = lastIndex; i < argLength; i++) {
@@ -414,7 +412,7 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 				} 
 				if (paramLength == argLength) { // 70056
 					int varargsIndex = paramLength - 1;
-					//cym 2014-12-18
+					//cym 2014-12-23
 //					ArrayBinding varargsType = (ArrayBinding) params[varargsIndex];
 					ParameterizedTypeBinding varargsType = (ParameterizedTypeBinding) params[varargsIndex];
 					TypeBinding lastArgType = argumentTypes[varargsIndex];
@@ -422,13 +420,19 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 					if (lastArgType == TypeBinding.NULL) {
 						if (!(varargsType.leafComponentType().isBaseType() && varargsType.dimensions() == 1))
 							scope.problemReporter().varargsArgumentNeedCast(method, lastArgType, invocationSite);
-					} else if (varargsType.dimensions <= (dimensions = lastArgType.dimensions())) {
+					//cym 2014-12-23
+//					} else if (varargsType.dimensions <= (dimensions = lastArgType.dimensions())) {
+					} else if (varargsType.dimensions() <= (dimensions = lastArgType.dimensions())) {
 						if (lastArgType.leafComponentType().isBaseType()) {
 							dimensions--;
 						}
-						if (varargsType.dimensions < dimensions) {
+						//cym 2014-12-23
+//						if (varargsType.dimensions < dimensions) {
+						if (varargsType.dimensions() < dimensions) {
 							scope.problemReporter().varargsArgumentNeedCast(method, lastArgType, invocationSite);
-						} else if (varargsType.dimensions == dimensions
+						//cym 2014-12-23
+//						} else if (varargsType.dimensions == dimensions
+						} else if (varargsType.dimensions() == dimensions
 										&& TypeBinding.notEquals(lastArgType, varargsType)
 										&& TypeBinding.notEquals(lastArgType.leafComponentType().erasure(), varargsType.leafComponentType().erasure())
 										&& lastArgType.isCompatibleWith(varargsType.elementsType())
@@ -575,12 +579,8 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 	*/
 	public final boolean isTypeUseDeprecated(TypeBinding type, Scope scope) {
 
-//		if (type.isArrayType()) {
-//			type = ((ArrayBinding) type).leafComponentType;
-//		}
-		//cym 2014-12-18
 		if (type.isArrayType()) {
-			type = type.leafComponentType();
+			type = ((ArrayBinding) type).leafComponentType;
 		}
 		if (type.isBaseType())
 			return false;

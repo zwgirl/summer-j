@@ -75,17 +75,15 @@ public class ArrayAllocationExpression extends Expression {
 			dimExpression.generateCode(currentScope, codeStream, true);
 			explicitDimCount++;
 		}
-
-		// array allocation
-		if (explicitDimCount == 1) {
-			// Mono-dimensional array
-			//cym 2014-12-06
+		//cym 2014-12-23 comment
+//		// array allocation
+//		if (explicitDimCount == 1) {
+//			// Mono-dimensional array
 //			codeStream.newArray(this.type, this, (ArrayBinding)this.resolvedType);
-			codeStream.new_(this.type, (ParameterizedTypeBinding)this.resolvedType);
-		} else {
-			// Multi-dimensional array
-			codeStream.multianewarray(this.type, this.resolvedType, explicitDimCount, this);
-		}
+//		} else {
+//			// Multi-dimensional array
+//			codeStream.multianewarray(this.type, this.resolvedType, explicitDimCount, this);
+//		}
 		if (valueRequired) {
 			codeStream.generateImplicitConversion(this.implicitConversion);
 		} else {
@@ -180,26 +178,25 @@ public class ArrayAllocationExpression extends Expression {
 			}
 			this.resolvedType = scope.createArrayType(referenceType, this.dimensions.length);
 
-			//cym 2014-12-18
-//			if (this.annotationsOnDimensions != null) {
-//				this.resolvedType = resolveAnnotations(scope, this.annotationsOnDimensions, this.resolvedType);
-//				long[] nullTagBitsPerDimension = ((ArrayBinding)this.resolvedType).nullTagBitsPerDimension;
-//				if (nullTagBitsPerDimension != null) {
-//					for (int i = 0; i < this.annotationsOnDimensions.length; i++) {
-//						if ((nullTagBitsPerDimension[i] & TagBits.AnnotationNullMASK) == TagBits.AnnotationNullMASK) {
-//							scope.problemReporter().contradictoryNullAnnotations(this.annotationsOnDimensions[i]);
-//							nullTagBitsPerDimension[i] = 0;
-//						}
-//					}
-//				}
-//			}
+			if (this.annotationsOnDimensions != null) {
+				this.resolvedType = resolveAnnotations(scope, this.annotationsOnDimensions, this.resolvedType);
+				long[] nullTagBitsPerDimension = ((ArrayBinding)this.resolvedType).nullTagBitsPerDimension;
+				if (nullTagBitsPerDimension != null) {
+					for (int i = 0; i < this.annotationsOnDimensions.length; i++) {
+						if ((nullTagBitsPerDimension[i] & TagBits.AnnotationNullMASK) == TagBits.AnnotationNullMASK) {
+							scope.problemReporter().contradictoryNullAnnotations(this.annotationsOnDimensions[i]);
+							nullTagBitsPerDimension[i] = 0;
+						}
+					}
+				}
+			}
 
 			// check the initializer
 			if (this.initializer != null) {
 				if ((this.initializer.resolveTypeExpecting(scope, this.resolvedType)) != null)
-					//cym 2014-12-18
+					//cym 2014-12-23
 //					this.initializer.binding = (ArrayBinding)this.resolvedType;
-					this.initializer.binding = (ParameterizedTypeBinding) this.resolvedType;
+					this.initializer.binding = (ParameterizedTypeBinding)this.resolvedType;
 			}
 			if ((referenceType.tagBits & TagBits.HasMissingType) != 0) {
 				return null;

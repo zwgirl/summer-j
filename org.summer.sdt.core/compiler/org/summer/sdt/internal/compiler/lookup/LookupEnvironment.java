@@ -664,29 +664,17 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 		return this.typeSystem.getAnnotationType(annotationType, false);
 	}
 	
-//	/*
-//	 *  Used to guarantee array type identity.
-//	 */
-//	public ArrayBinding createArrayType(TypeBinding leafComponentType, int dimensionCount) {
-//		return this.typeSystem.getArrayType(leafComponentType, dimensionCount);
-//	}
-//	
-//	public ArrayBinding createArrayType(TypeBinding leafComponentType, int dimensionCount, AnnotationBinding [] annotations) {
-//		return this.typeSystem.getArrayType(leafComponentType, dimensionCount, annotations);
-//	}
-	
-	//cym 2014-12-18
 	/*
 	 *  Used to guarantee array type identity.
 	 */
-	public ReferenceBinding createArrayType(TypeBinding leafComponentType, int dimensionCount) {
+	public ArrayBinding createArrayType(TypeBinding leafComponentType, int dimensionCount) {
 		return this.typeSystem.getArrayType(leafComponentType, dimensionCount);
 	}
-	//cym 2014-12-18
-	public ReferenceBinding createArrayType(TypeBinding leafComponentType, int dimensionCount, AnnotationBinding [] annotations) {
+	
+	public ArrayBinding createArrayType(TypeBinding leafComponentType, int dimensionCount, AnnotationBinding [] annotations) {
 		return this.typeSystem.getArrayType(leafComponentType, dimensionCount, annotations);
 	}
-	
+
 	public TypeBinding createIntersectionType18(ReferenceBinding[] intersectingTypes) {
 		return this.typeSystem.getIntersectionType18(intersectingTypes);
 	}	

@@ -1327,7 +1327,9 @@ public class InferenceContext18 {
 		TypeBinding[] types = new TypeBinding[k];
 		int declaredLength = parameters.length-1;
 		System.arraycopy(parameters, 0, types, 0, declaredLength);
-		TypeBinding last = ((ArrayBinding)parameters[declaredLength]).elementsType();
+		//cym 2014-12-23
+//		TypeBinding last = ((ArrayBinding)parameters[declaredLength]).elementsType();
+		TypeBinding last = ((ParameterizedTypeBinding)parameters[declaredLength]).elementsType();
 		for (int i = declaredLength; i < k; i++)
 			types[i] = last;
 		return types;
@@ -1399,8 +1401,8 @@ public class InferenceContext18 {
 	public static TypeBinding getParameter(TypeBinding[] parameters, int rank, boolean isVarArgs) {
 		if (isVarArgs) {
 			if (rank >= parameters.length-1)
-				//cym 2014-12-06
-//				return ((ArrayBinding)parameters[parameters.length-1]).elementsType();		
+				//cym 2014-12-23 
+//				return ((ArrayBinding)parameters[parameters.length-1]).elementsType();
 				return ((ParameterizedTypeBinding)parameters[parameters.length-1]).elementsType();
 		} else if (rank >= parameters.length) {
 			return null;

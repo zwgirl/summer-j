@@ -1160,33 +1160,6 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 			this.receiver.doGenerateExpression(scope, dependency, 0, output).append('.');
 		}
 		
-//		if(this.binding.isStatic()){
-//			if(this.binding.declaringClass instanceof MemberTypeBinding){
-//				output.append(CharOperation.concatWith(this.binding.declaringClass.getQualifiedName(), '.')).append('.');
-//			} else{
-//				output.append(this.binding.declaringClass.sourceName);
-//				output.append('.');
-//			}
-//		} else if(this.binding.isDefaultMethod()){
-//			output.append(this.binding.declaringClass.sourceName);
-//			output.append(".prototype.");
-//		} else {
-//			if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0){
-//
-//			} else {
-//				if (this.receiver.isImplicitThis() || receiver.isThis()){ 
-//					if(this.receiver.isImplicitThis()){
-//					} else{
-//						output.append("this.");
-//					}
-//				} else if(this.receiver.isSuper()) {
-//					output.append(this.binding.declaringClass.sourceName()).append(".prototype.");
-//				} else {
-//					this.receiver.generateExpression(scope, depsManager, 0, output).append('.');
-//				}
-//			}
-//		}
-		
 		output.append(this.selector);
 		if((this.binding.tagBits & TagBits.AnnotationOverload) != 0){
 			//first to find methoDeclaration
@@ -1204,9 +1177,6 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 			if (this.receiver.isImplicitThis() || this.receiver.isThis() || this.receiver.isSuper()){ 
 				output.append("this");
 				comma = true;
-//			} else if(this.receiver.isSuper()) {
-//				output.append("this");
-//				comma = true;
 			} else {
 				this.receiver.doGenerateExpression(scope, dependency, 0, output);
 				comma = true;
@@ -1214,11 +1184,30 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 		}
 		
 		if (this.arguments != null) {
-			for (int i = 0; i < this.arguments.length ; i ++) {
-				if (comma) output.append(", "); //$NON-NLS-1$
-				this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
-				comma = true;
+			if(comma) output.append(", "); //$NON-NLS-1$
+			if((this.binding.modifiers & ClassFileConstants.AccNative) != 0 || (this.binding.modifiers & ClassFileConstants.AccVarargs) == 0){
+				for (int i = 0; i < this.arguments.length ; i ++) {
+					if (i > 0) output.append(", "); //$NON-NLS-1$
+					this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+				}
+			} else{
+				if((this.binding.modifiers & ClassFileConstants.AccVarargs) != 0){
+					int argIndex = this.binding.parameters.length - 1;
+					for (int i = 0; i < argIndex ; i ++) {
+						if (i > 0) output.append(", "); //$NON-NLS-1$
+						this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+					}
+					
+					if (argIndex > 0) output.append(",");
+					output.append("["); //$NON-NLS-1$
+					for(int i = argIndex; i < this.arguments.length; i++){
+						if (i > argIndex) output.append(", "); //$NON-NLS-1$
+						this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+					}
+					output.append("]");
+				}
 			}
+
 		}
 		
 		output.append(')');

@@ -27,8 +27,8 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IrritantSet;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
 import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.javascript.JavascriptFile;
+import org.summer.sdt.internal.compiler.javascript.JsConstant;
+import org.summer.sdt.internal.compiler.javascript.JsFile;
 import org.summer.sdt.internal.compiler.javascript.TypeDependency;
 import org.summer.sdt.internal.compiler.javascript.UnitDependency;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
@@ -398,7 +398,7 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	}
 	
 	private void generateModule() {
-		JavascriptFile jsFile = JavascriptFile.getNewInstance(getCompoundName());
+		JsFile jsFile = JsFile.getNewInstance(getCompoundName());
 		if (this.types != null) {
 			for (int i = 0, count = this.types.length; i < count; i++) {
 				this.types[i].ignoreFurtherInvestigation = true;
@@ -420,8 +420,8 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	private void generateMerageModule() {
 		Dependency dependency = new UnitDependency(this, scope);
 		dependency.collect();
-		JavascriptFile jsFile = JavascriptFile.getNewInstance(getCompoundName());
-		dependency.generateAMDHeader(this.compilationResult.getFileName(), 0, jsFile.content, Javascript.DEFINE);
+		JsFile jsFile = JsFile.getNewInstance(getCompoundName());
+		dependency.generateAMDHeader(this.compilationResult.getFileName(), 0, jsFile.content, JsConstant.DEFINE);
 		
 		if(this.types != null){
 			for (int i = 0, count = this.types.length; i < count; i++) {

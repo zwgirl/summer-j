@@ -20,7 +20,7 @@ import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.ICompilationUnit;
 import org.summer.sdt.internal.compiler.html.HtmlFile;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
-import org.summer.sdt.internal.compiler.javascript.JavascriptFile;
+import org.summer.sdt.internal.compiler.javascript.JsFile;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.problem.*;
 import org.summer.sdt.internal.compiler.util.SimpleSet;
@@ -199,10 +199,10 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 			}
 			
 			//cym add 2014-10-18
-			JavascriptFile[] jsFiles = result.getJavascriptFiles();
+			JsFile[] jsFiles = result.getJavascriptFiles();
 			length = jsFiles.length;
 			for (int i = 0; i < length; i++) {
-				JavascriptFile jsFile = jsFiles[i];
+				JsFile jsFile = jsFiles[i];
 	
 				char[][] compoundName = jsFile.getCompoundName();
 				char[] typeName = compoundName[compoundName.length - 1];
@@ -343,12 +343,12 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 		}
 	}
 	
-	protected void acceptSecondaryType(JavascriptFile jsFile) {
+	protected void acceptSecondaryType(JsFile jsFile) {
 		// noop
 	}
 	
 	//cym add 2014-10-18
-	protected char[] writeJavascriptFile(JavascriptFile jsFile, SourceFile compilationUnit) throws CoreException {
+	protected char[] writeJavascriptFile(JsFile jsFile, SourceFile compilationUnit) throws CoreException {
 		String fileName = new String(jsFile.fileName()); // the qualified type name "p1/p2/A"
 		IPath filePath = new Path(fileName);
 		IContainer outputFolder = compilationUnit.sourceLocation.binaryFolder;
@@ -365,7 +365,7 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 	}
 	
 	//cym add 2014-10-18
-	protected void writeJavascriptFileContents(JavascriptFile jsFile, IFile file, String qualifiedFileName, SourceFile compilationUnit) throws CoreException {
+	protected void writeJavascriptFileContents(JsFile jsFile, IFile file, String qualifiedFileName, SourceFile compilationUnit) throws CoreException {
 	//	InputStream input = new SequenceInputStream(
 	//			new ByteArrayInputStream(classFile.header, 0, classFile.headerOffset),
 	//			new ByteArrayInputStream(classFile.contents, 0, classFile.contentsOffset));

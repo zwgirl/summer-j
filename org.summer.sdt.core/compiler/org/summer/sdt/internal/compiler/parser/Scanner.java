@@ -3201,14 +3201,14 @@ public class Scanner implements TerminalTokens {
 							}
 						}
 						return TokenNameIdentifier;
-					case 5 :
-						if ((data[++index] == 'v')
-							&& (data[++index] == 'e')
-							&& (data[++index] == 'n')
-							&& (data[++index] == 't'))
-							return TokenNameevent;
-						else
-							return TokenNameIdentifier;	
+//					case 5 :
+//						if ((data[++index] == 'v')
+//							&& (data[++index] == 'e')
+//							&& (data[++index] == 'n')
+//							&& (data[++index] == 't'))
+//							return TokenNameevent;
+//						else
+//							return TokenNameIdentifier;	
 					case 6 :
 						if ((data[++index] == 'x')
 							&& (data[++index] == 'p')

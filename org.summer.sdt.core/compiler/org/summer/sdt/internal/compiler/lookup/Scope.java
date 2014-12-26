@@ -521,24 +521,14 @@ public abstract class Scope {
 					}
 					break;
 				
-				//cym 2014-12-18
-//				case Binding.ARRAY_TYPE:
-//					ArrayBinding originalArrayType = (ArrayBinding) originalType;
-//					TypeBinding originalLeafComponentType = originalArrayType.leafComponentType;
-//					TypeBinding substitute = substitute(substitution, originalLeafComponentType); // substitute could itself be array type, TODO(Srikanth): need a test case.
-//					if (substitute != originalLeafComponentType) { //$IDENTITY-COMPARISON$
-//						return originalArrayType.environment.createArrayType(substitute.leafComponentType(), substitute.dimensions() + originalType.dimensions(), originalType.getTypeAnnotations());
-//					}
-//					break;
 				case Binding.ARRAY_TYPE:
-					ParameterizedTypeBinding originalArrayType = (ParameterizedTypeBinding) originalType;
-					TypeBinding originalLeafComponentType = originalArrayType.leafComponentType();
+					ArrayBinding originalArrayType = (ArrayBinding) originalType;
+					TypeBinding originalLeafComponentType = originalArrayType.leafComponentType;
 					TypeBinding substitute = substitute(substitution, originalLeafComponentType); // substitute could itself be array type, TODO(Srikanth): need a test case.
 					if (substitute != originalLeafComponentType) { //$IDENTITY-COMPARISON$
 						return originalArrayType.environment.createArrayType(substitute.leafComponentType(), substitute.dimensions() + originalType.dimensions(), originalType.getTypeAnnotations());
 					}
 					break;
-	
 				case Binding.WILDCARD_TYPE:
 				case Binding.INTERSECTION_TYPE:
 			        WildcardBinding wildcard = (WildcardBinding) originalType;
@@ -957,7 +947,7 @@ public abstract class Scope {
 //	public ArrayBinding createArrayType(TypeBinding type, int dimension) {
 //		return createArrayType(type, dimension, Binding.NO_ANNOTATIONS);
 //	}
-	
+//	
 //	public ArrayBinding createArrayType(TypeBinding type, int dimension, AnnotationBinding[] annotations) {
 //		if (type.isValidBinding())
 //			return environment().createArrayType(type, dimension, annotations);
@@ -966,6 +956,9 @@ public abstract class Scope {
 //	}
 	
 	public ReferenceBinding createArrayType(TypeBinding type, int dimension) {
+		if(type.isPrimitiveType()){
+			type = this.environment().computeBoxingType(type);
+		}
 		return createArrayType(type, dimension, Binding.NO_ANNOTATIONS);
 	}
 	
@@ -973,11 +966,9 @@ public abstract class Scope {
 	public ReferenceBinding createArrayType(TypeBinding type, int dimension, AnnotationBinding[] annotations) {
 		ReferenceBinding array = environment().getResolvedType(TypeConstants.JAVA_LANG_ARRAY, null);
 		ReferenceBinding result = environment().createParameterizedType(array, new TypeBinding[]{type}, null);	
-		result.dimensions = 1;
 		
 		for(int dim = 1; dim < dimension; dim++){
 			result = environment().createParameterizedType(array, new TypeBinding[]{result}, null);
-			result.dimensions = dim + 1;
 		}
 		return result;
 	}
@@ -1450,37 +1441,6 @@ public abstract class Scope {
 	public IndexerBinding findIndexer(TypeBinding receiverType, TypeBinding[] argumentTypes, InvocationSite invocationSite, boolean invisibleFieldsOk) {
 		CompilationUnitScope unitScope = compilationUnitScope();
 		unitScope.recordTypeReference(receiverType);
-
-		checkArrayField: {
-			TypeBinding leafType;
-			switch (receiverType.kind()) {
-				case Binding.BASE_TYPE :
-					return null;
-				case Binding.WILDCARD_TYPE :
-				case Binding.INTERSECTION_TYPE:
-				case Binding.TYPE_PARAMETER : // capture
-					TypeBinding receiverErasure = receiverType.erasure();
-					if (!receiverErasure.isArrayType())
-						break checkArrayField;
-					leafType = receiverErasure.leafComponentType();
-					break;
-				case Binding.ARRAY_TYPE :
-					leafType = receiverType.leafComponentType();
-					break;
-				default:
-					break checkArrayField;
-			}
-			if (leafType instanceof ReferenceBinding)
-				if (!((ReferenceBinding) leafType).canBeSeenBy(this))
-					return new ProblemIndexerBinding((ReferenceBinding)leafType, IndexerBinding.THIS, ProblemReasons.ReceiverTypeNotVisible);
-//			if (CharOperation.equals(fieldName, TypeConstants.LENGTH)) {
-//				if ((leafType.tagBits & TagBits.HasMissingType) != 0) {
-//					return new ProblemIndexerBinding(ArrayBinding.ArrayLength, null, fieldName, ProblemReasons.NotFound);
-//				}
-//				return ArrayBinding.ArrayLength;
-//			}
-			return null;
-		}
 
 		ReferenceBinding currentType = (ReferenceBinding) receiverType;
 		if (!currentType.canBeSeenBy(this))
@@ -1972,20 +1932,12 @@ public abstract class Scope {
 		return searchForDefaultAbstractMethod ? findDefaultAbstractMethod(receiverType, selector, argumentTypes, invocationSite, classHierarchyStart, found, candidates)
 											  : mostSpecificMethodBinding(candidates, visiblesCount, argumentTypes, invocationSite, receiverType);
 	}
-//cym 2014-12-18
-//	// Internal use only
-//	public MethodBinding findMethodForArray(
-//		ArrayBinding receiverType,
-//		char[] selector,
-//		TypeBinding[] argumentTypes,
-//		InvocationSite invocationSite) {
-// Internal use only
+	// Internal use only
 	public MethodBinding findMethodForArray(
-		ParameterizedTypeBinding receiverType,
+		ArrayBinding receiverType,
 		char[] selector,
 		TypeBinding[] argumentTypes,
 		InvocationSite invocationSite) {
-
 		TypeBinding leafType = receiverType.leafComponentType();
 		if (leafType instanceof ReferenceBinding) {
 			if (!((ReferenceBinding) leafType).canBeSeenBy(this))
@@ -3390,9 +3342,8 @@ public abstract class Scope {
 				case Binding.BASE_TYPE :
 					return new ProblemMethodBinding(selector, argumentTypes, ProblemReasons.NotFound);
 				case Binding.ARRAY_TYPE :
-					//cym 2014-12-19
-//					unitScope.recordTypeReference(receiverType);
-//					return findMethodForArray((ParameterizedTypeBinding) receiverType, selector, argumentTypes, invocationSite);
+					unitScope.recordTypeReference(receiverType);
+					return findMethodForArray((ArrayBinding) receiverType, selector, argumentTypes, invocationSite);
 			}
 			unitScope.recordTypeReference(receiverType);
 
@@ -5280,7 +5231,7 @@ public abstract class Scope {
 					level = parameterCompatibilityLevel(arg, param, env, tiebreakingVarargsMethods);
 					if (level == NOT_COMPATIBLE) {
 						// expect X[], is it called with X
-						//cym 2014-12-18
+						//cym 2014-12-23 
 //						param = ((ArrayBinding) param).elementsType();
 						param = ((ParameterizedTypeBinding) param).elementsType();
 						if (tiebreakingVarargsMethods) {
@@ -5293,11 +5244,13 @@ public abstract class Scope {
 				}
 			} else {
 				if (paramLength < argLength) { // all remaining argument types must be compatible with the elementsType of varArgType
-					//cym 2014-12-06
+					//cym 2014-12-23
 //					TypeBinding param = ((ArrayBinding) parameters[lastIndex]).elementsType();
 					TypeBinding param = ((ParameterizedTypeBinding) parameters[lastIndex]).elementsType();
 					for (int i = lastIndex; i < argLength; i++) {
-						TypeBinding arg = (tiebreakingVarargsMethods && (i == (argLength - 1))) ? ((ArrayBinding)arguments[i]).elementsType() : arguments[i];
+						//cym 2014-12-23 
+//						TypeBinding arg = (tiebreakingVarargsMethods && (i == (argLength - 1))) ? ((ArrayBinding)arguments[i]).elementsType() : arguments[i];
+						TypeBinding arg = (tiebreakingVarargsMethods && (i == (argLength - 1))) ? ((ParameterizedTypeBinding)arguments[i]).elementsType() : arguments[i];
 						if (TypeBinding.notEquals(param, arg) && parameterCompatibilityLevel(arg, param, env, tiebreakingVarargsMethods) == NOT_COMPATIBLE)
 							return NOT_COMPATIBLE;
 					}
@@ -5312,7 +5265,9 @@ public abstract class Scope {
 		// now compare standard arguments from 0 to lastIndex
 		for (int i = 0; i < lastIndex; i++) {
 			TypeBinding param = parameters[i];
-			TypeBinding arg = (tiebreakingVarargsMethods && (i == (argLength - 1))) ? ((ArrayBinding)arguments[i]).elementsType() : arguments[i];
+			//cym 2014-12-23 
+//			TypeBinding arg = (tiebreakingVarargsMethods && (i == (argLength - 1))) ? ((ArrayBinding)arguments[i]).elementsType() : arguments[i];
+			TypeBinding arg = (tiebreakingVarargsMethods && (i == (argLength - 1))) ? ((ParameterizedTypeBinding)arguments[i]).elementsType() : arguments[i];
 			if (TypeBinding.notEquals(arg,param)) {
 				int newLevel = parameterCompatibilityLevel(arg, param, env, tiebreakingVarargsMethods);
 				if (newLevel == NOT_COMPATIBLE)

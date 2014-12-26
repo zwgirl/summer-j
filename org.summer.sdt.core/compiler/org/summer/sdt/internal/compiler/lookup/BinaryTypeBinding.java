@@ -167,9 +167,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 				return ((WildcardBinding) type).resolve();
 	
 			case Binding.ARRAY_TYPE :
-				//cym 2014-12-18
-//				resolveType(((ArrayBinding) type).leafComponentType, environment, convertGenericToRawType);
-				resolveType(((ParameterizedTypeBinding) type).leafComponentType(), environment, convertGenericToRawType);
+				resolveType(((ArrayBinding) type).leafComponentType, environment, convertGenericToRawType);
 				break;
 	
 			case Binding.TYPE_PARAMETER :

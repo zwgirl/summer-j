@@ -397,7 +397,7 @@ protected void consumeRule(int act) {
 		    consumeEventDeclarationNoAccessor();  
 			break;
 
-    case 221 : if (DEBUG) { System.out.println("EventHeader ::= Modifiersopt event Type Identifier"); }  //$NON-NLS-1$
+    case 221 : if (DEBUG) { System.out.println("EventHeader ::= Modifiersopt MULTIPLY Type Identifier"); }  //$NON-NLS-1$
 		    consumeEventHeader();  
 			break;
 

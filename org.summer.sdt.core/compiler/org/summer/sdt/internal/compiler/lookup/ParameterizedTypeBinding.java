@@ -436,12 +436,8 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
      */
     public TypeBinding erasure() {
     	//cym 2014-12-18
-    	if(isArrayType()){
-    	    TypeBinding erasedType = this.leafComponentType().erasure();
-    	    return erasedType;
-//    	    if (TypeBinding.notEquals(this.leafComponentType(), erasedType))
-//    	        return this.environment.createArrayType(erasedType, this.dimensions);
-//    	    return this;
+		if(this.type.id == TypeIds.T_JavaLangArray){
+			return this.leafComponentType();
     	}
         return this.type.erasure(); // erasure
     }
@@ -959,16 +955,37 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	    	case Binding.RAW_TYPE :
 	            return TypeBinding.equalsEquals(erasure(), otherType.erasure());
 	    }
-	    /* With the hybrid 1.4/1.5+ projects modes, while establishing type equivalence, we need to
-	       be prepared for a type such as Map appearing in one of three forms: As (a) a ParameterizedTypeBinding 
-	       e.g Map<String, String>, (b) as RawTypeBinding Map#RAW and finally (c) as a BinaryTypeBinding 
-	       When the usage of a type lacks type parameters, whether we land up with the raw form or not depends
-	       on whether the underlying type was "seen to be" a generic type in the particular build environment or
-	       not. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=328827 
-	     */
-	    if (TypeBinding.equalsEquals(erasure(), otherType)) {
-	    	return true;
+	    
+	    //cym 2014-12-23
+//	    /* With the hybrid 1.4/1.5+ projects modes, while establishing type equivalence, we need to
+//	       be prepared for a type such as Map appearing in one of three forms: As (a) a ParameterizedTypeBinding 
+//	       e.g Map<String, String>, (b) as RawTypeBinding Map#RAW and finally (c) as a BinaryTypeBinding 
+//	       When the usage of a type lacks type parameters, whether we land up with the raw form or not depends
+//	       on whether the underlying type was "seen to be" a generic type in the particular build environment or
+//	       not. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=328827 
+//	     */
+//	    if (TypeBinding.equalsEquals(erasure(), otherType)) {
+//	    	return true;
+//	    }
+	    
+	    //cym 2014-12-23
+	    if(this.type.id == TypeIds.T_JavaLangArray){
+	    	if (TypeBinding.equalsEquals(this.type, otherType)) {
+	    		return true;
+	    	}
+	    } else {
+		    /* With the hybrid 1.4/1.5+ projects modes, while establishing type equivalence, we need to
+		       be prepared for a type such as Map appearing in one of three forms: As (a) a ParameterizedTypeBinding 
+		       e.g Map<String, String>, (b) as RawTypeBinding Map#RAW and finally (c) as a BinaryTypeBinding 
+		       When the usage of a type lacks type parameters, whether we land up with the raw form or not depends
+		       on whether the underlying type was "seen to be" a generic type in the particular build environment or
+		       not. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=328827 
+		     */
+		    if (TypeBinding.equalsEquals(erasure(), otherType)) {
+		    	return true;
+		    }
 	    }
+
 	    return false;
 	}
 
@@ -1025,9 +1042,6 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	}
 
 	public int kind() {
-		if(isArrayType()){
-			return ARRAY_TYPE;
-		}
 		return PARAMETERIZED_TYPE;
 	}
 
@@ -1640,59 +1654,23 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	}
 	
 	//cym 2014-12-18
-	/* Answer true if the receiver is an array
-	 */
-	public final boolean isArrayType() {
-		if(this.type.id == TypeIds.T_JavaLangArray){
-			return true;
-		}
-		return super.isArrayType();
-	}
-	
-	//cym 2014-12-18
 	public TypeBinding leafComponentType(){
 		if(this.type.id == TypeIds.T_JavaLangArray){
 			if(this.arguments == null){
-				return this.type;
+				return this.environment.getResolvedType(TypeConstants.JAVA_LANG_OBJECT, null);
 			}
 			return this.arguments[0];
 		}
 		return super.leafComponentType();
 	}
 	
-	//cym  2014-12-18
 	/* Answer an array whose dimension size is one less than the receiver.
 	*
 	* When the receiver's dimension size is one then answer the leaf component type.
 	*/
 	
 	public TypeBinding elementsType() {
-		
-		if (this.dimensions() == 1) 
-			return this.leafComponentType();
-		
-		AnnotationBinding [] oldies = getTypeAnnotations();
-		AnnotationBinding [] newbies = Binding.NO_ANNOTATIONS;
-		
-		for (int i = 0, length = oldies == null ? 0 : oldies.length; i < length; i++) {
-			if (oldies[i] == null) {
-				System.arraycopy(oldies, i+1, newbies = new AnnotationBinding[length - i - 1], 0, length - i - 1);
-				break;
-			}
-		}
-//		return this.environment.createArrayType(this.leafComponentType(), this.dimensions() - 1, newbies);
-		return this.arguments[0];
-	}
-	
-	//cym 2014-12-18
-	/*
-	 * Answer the receiver's dimensions - 0 for non-array types
-	 */
-	public int dimensions() {
-		if(this.type.id == TypeIds.T_JavaLangArray){
-			return 1;
-		}
-		return super.dimensions();
+		return this.leafComponentType();
 	}
 
 }

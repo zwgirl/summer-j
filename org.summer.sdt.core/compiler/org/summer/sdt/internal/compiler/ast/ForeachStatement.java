@@ -417,9 +417,7 @@ public class ForeachStatement extends Statement {
 			boolean isTargetJsr14 = this.scope.compilerOptions().targetJDK == ClassFileConstants.JDK1_4;
 			if (collectionType.isArrayType()) { // for(E e : E[])
 				this.kind = ARRAY;
-//				this.collectionElementType = ((ArrayBinding) collectionType).elementsType();
-				//cym 2014-12-18
-				this.collectionElementType = ((ParameterizedTypeBinding) collectionType).elementsType();
+				this.collectionElementType = ((ArrayBinding) collectionType).elementsType();
 				if (!this.collectionElementType.isCompatibleWith(elementType)
 						&& !this.scope.isBoxingCompatibleWith(this.collectionElementType, elementType)) {
 					this.scope.problemReporter().notCompatibleTypesErrorInForeach(this.collection, this.collectionElementType, elementType);

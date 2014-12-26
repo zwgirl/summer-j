@@ -308,10 +308,11 @@ public abstract class Statement extends ASTNode {
 			for (int i = 0; i < varArgIndex; i++) {
 				arguments[i].generateCode(currentScope, codeStream, true);
 			}
-			//cym 2014-12-18
+			//cym 2014-12-23
 //			ArrayBinding varArgsType = (ArrayBinding) params[varArgIndex]; // parameterType has to be an array type
 //			ArrayBinding codeGenVarArgsType = (ArrayBinding) binding.parameters[varArgIndex].erasure();
 			ParameterizedTypeBinding varArgsType = (ParameterizedTypeBinding) params[varArgIndex]; // parameterType has to be an array type
+			TypeBinding codeGenVarArgsType =  binding.parameters[varArgIndex].erasure();
 			int elementsTypeID = varArgsType.elementsType().id;
 			int argLength = arguments == null ? 0 : arguments.length;
 	
@@ -320,7 +321,7 @@ public abstract class Statement extends ASTNode {
 				// called with (argLength - lastIndex) elements : foo(1, 2) or foo(1, 2, 3, 4)
 				// need to gen elements into an array, then gen each remaining element into created array
 				codeStream.generateInlinedValue(argLength - varArgIndex);
-//				codeStream.newArray(codeGenVarArgsType); // create a mono-dimensional array  //cym 2014-12-18
+//				codeStream.newArray(codeGenVarArgsType); // create a mono-dimensional array  //cym 2014-12-23
 				for (int i = varArgIndex; i < argLength; i++) {
 					codeStream.dup();
 					codeStream.generateInlinedValue(i - varArgIndex);
@@ -339,7 +340,7 @@ public abstract class Statement extends ASTNode {
 					// right number but not directly compatible or too many arguments - wrap extra into array
 					// need to gen elements into an array, then gen each remaining element into created array
 					codeStream.generateInlinedValue(1);
-//					codeStream.newArray(codeGenVarArgsType); // create a mono-dimensional array   //cym 2014-12-18
+//					codeStream.newArray(codeGenVarArgsType); // create a mono-dimensional array //cym 2014-12-23
 					codeStream.dup();
 					codeStream.generateInlinedValue(0);
 					arguments[varArgIndex].generateCode(currentScope, codeStream, true);
@@ -349,7 +350,7 @@ public abstract class Statement extends ASTNode {
 				// scenario: foo(1) --> foo(1, new int[0])
 				// generate code for an empty array of parameterType
 				codeStream.generateInlinedValue(0);
-//				codeStream.newArray(codeGenVarArgsType); // create a mono-dimensional array    //cym 2014-12-18
+//				codeStream.newArray(codeGenVarArgsType); // create a mono-dimensional array //cym 2014-12-23
 			}
 		} else if (arguments != null) { // standard generation for method arguments
 			for (int i = 0, max = arguments.length; i < max; i++)

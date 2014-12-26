@@ -42,9 +42,9 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IrritantSet;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
 import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
-import org.summer.sdt.internal.compiler.javascript.JavascriptFile;
-import org.summer.sdt.internal.compiler.javascript.JavascriptTypes;
+import org.summer.sdt.internal.compiler.javascript.JsConstant;
+import org.summer.sdt.internal.compiler.javascript.JsFile;
+import org.summer.sdt.internal.compiler.javascript.JsTypes;
 import org.summer.sdt.internal.compiler.javascript.TypeDependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -746,7 +746,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	
 	private void generateMainBody(CompilationUnitScope unitScope, Dependency dependency, StringBuffer output, int indent, MethodDeclaration method){
 		printIndent(indent + 1, output);
-		dependency.generateAMDHeader(new char[0], 0, output, Javascript.REQUIRE);
+		dependency.generateAMDHeader(new char[0], 0, output, JsConstant.REQUIRE);
 		if(method.statements != null){
 			for(int j = 0, length = method.statements.length; j < length; j++){
 				output.append("\n");
@@ -788,7 +788,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		if(this.binding == null){
 			return;
 		}
-		generateJavascript(unitScope, JavascriptFile.getNewInstance(this.binding.compoundName), new TypeDependency(this));
+		generateJavascript(unitScope, JsFile.getNewInstance(this.binding.compoundName), new TypeDependency(this));
 	}
 	
 	public boolean hasErrors() {
@@ -1905,7 +1905,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	/**
 	 * Generic javascript generation for type
 	 */
-	public void generateJavascript(CompilationUnitScope unitScope, JavascriptFile jsFile, Dependency dependency) {
+	public void generateJavascript(CompilationUnitScope unitScope, JsFile jsFile, Dependency dependency) {
 //		if ((this.bits & ASTNode.HasBeenGenerated) != 0)
 //			return;
 //		this.bits |= ASTNode.HasBeenGenerated;
@@ -1921,22 +1921,22 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			StringBuffer output = jsFile.content;
 			
 			dependency.collect();
-			dependency.generateAMDHeader(CharOperation.concatWith(this.binding.compoundName, '.'), 0, output, Javascript.DEFINE);
+			dependency.generateAMDHeader(CharOperation.concatWith(this.binding.compoundName, '.'), 0, output, JsConstant.DEFINE);
 			
 			generateClass(this, dependency, 1, output);
 			
-			output.append(Javascript.CR);
-			printIndent(1, output).append(Javascript.RETURN).append(Javascript.WHITESPACE);
-			output.append(this.name).append(Javascript.SEMICOLON);
+			output.append(JsConstant.CR);
+			printIndent(1, output).append(JsConstant.RETURN).append(JsConstant.WHITESPACE);
+			output.append(this.name).append(JsConstant.SEMICOLON);
 			
-			output.append(Javascript.CR);
-			output.append(Javascript.RBRACE).append(Javascript.RPAREN).append(Javascript.SEMICOLON);
+			output.append(JsConstant.CR);
+			output.append(JsConstant.RBRACE).append(JsConstant.RPAREN).append(JsConstant.SEMICOLON);
 			
 			this.scope.referenceCompilationUnit().compilationResult.record(this.binding.constantPoolName(), jsFile);
 		} catch (AbortType e) {
 			if (this.binding == null)
 				return;
-			JavascriptFile.createProblemType(
+			JsFile.createProblemType(
 				this,
 				this.scope.referenceCompilationUnit().compilationResult);
 		}
@@ -2201,7 +2201,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			for(AbstractMethodDeclaration method : type.methods){
 				if(method.isConstructor()){
 					if((type.modifiers & ClassFileConstants.AccNative) == 0){  //native type no non-native constructor default
-						constructors.add((ConstructorDeclaration) method);
+						if((method.modifiers & ClassFileConstants.AccNative) == 0){
+							constructors.add((ConstructorDeclaration) method);
+						}
 					}
 				}
 			}
@@ -2357,11 +2359,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		
 		if(type.binding.isArrayType()){
-			flags |= JavascriptTypes.ARRAY;
+			flags |= JsTypes.ARRAY;
 		}
 		
 		if(this.binding.isPrimitiveType()){
-			flags |= JavascriptTypes.PRIMITIVE;
+			flags |= JsTypes.PRIMITIVE;
 		}
 		
 		output.append(flags);

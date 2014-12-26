@@ -246,13 +246,9 @@ class ConstraintTypeFormula extends ConstraintFormula {
 					}
 				}
 			case Binding.ARRAY_TYPE:
-				//cym 2014-12-18
-//				TypeBinding tPrime = ((ArrayBinding)superCandidate).elementsType();
+				TypeBinding tPrime = ((ArrayBinding)superCandidate).elementsType();
 				// let S'[] be the most specific array type that is a supertype of S (or S itself)
-//				ArrayBinding sPrimeArray = null;
-				TypeBinding tPrime =  ((ParameterizedTypeBinding)superCandidate).elementsType();
-				// let S'[] be the most specific array type that is a supertype of S (or S itself)
-				ParameterizedTypeBinding sPrimeArray = null;
+				ArrayBinding sPrimeArray = null;
 				switch(subCandidate.kind()) {
 				case Binding.INTERSECTION_TYPE:
 					{
@@ -261,9 +257,7 @@ class ConstraintTypeFormula extends ConstraintFormula {
 						break;
 					}
 				case Binding.ARRAY_TYPE:
-					//cym 2014-12-18
-//					sPrimeArray = (ArrayBinding) subCandidate;
-					sPrimeArray = (ParameterizedTypeBinding) subCandidate;
+					sPrimeArray = (ArrayBinding) subCandidate;
 					break;
 				case Binding.TYPE_PARAMETER:
 					{
@@ -331,38 +325,16 @@ class ConstraintTypeFormula extends ConstraintFormula {
 		throw new IllegalStateException("Unexpected RHS "+superCandidate); //$NON-NLS-1$
 	}
 	
-//	private ArrayBinding findMostSpecificSuperArray(TypeBinding firstBound, TypeBinding[] otherUpperBounds, TypeBinding theType) {
-//		int numArrayBounds = 0;
-//		ArrayBinding result = null;
-//		if (firstBound != null && firstBound.isArrayType()) {
-//			result = (ArrayBinding) firstBound;
-//			numArrayBounds++;
-//		}
-//		for (int i = 0; i < otherUpperBounds.length; i++) {
-//			if (otherUpperBounds[i].isArrayType()) {
-//				result = (ArrayBinding) otherUpperBounds[i];
-//				numArrayBounds++;
-//			}
-//		}
-//		if (numArrayBounds == 0)
-//			return null;
-//		if (numArrayBounds == 1)
-//			return result;
-//		InferenceContext18.missingImplementation("Extracting array from intersection is not defined"); //$NON-NLS-1$
-//		return null;
-//	}
-	
-	//cym 2014-12-18
-	private ParameterizedTypeBinding findMostSpecificSuperArray(TypeBinding firstBound, TypeBinding[] otherUpperBounds, TypeBinding theType) {
+	private ArrayBinding findMostSpecificSuperArray(TypeBinding firstBound, TypeBinding[] otherUpperBounds, TypeBinding theType) {
 		int numArrayBounds = 0;
-		ParameterizedTypeBinding result = null;
+		ArrayBinding result = null;
 		if (firstBound != null && firstBound.isArrayType()) {
-			result = (ParameterizedTypeBinding) firstBound;
+			result = (ArrayBinding) firstBound;
 			numArrayBounds++;
 		}
 		for (int i = 0; i < otherUpperBounds.length; i++) {
 			if (otherUpperBounds[i].isArrayType()) {
-				result = (ParameterizedTypeBinding) otherUpperBounds[i];
+				result = (ArrayBinding) otherUpperBounds[i];
 				numArrayBounds++;
 			}
 		}

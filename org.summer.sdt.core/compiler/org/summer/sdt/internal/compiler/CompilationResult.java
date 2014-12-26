@@ -46,7 +46,7 @@ import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.env.ICompilationUnit;
 import org.summer.sdt.internal.compiler.html.HtmlFile;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
-import org.summer.sdt.internal.compiler.javascript.JavascriptFile;
+import org.summer.sdt.internal.compiler.javascript.JsFile;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.parser.RecoveryScannerData;
@@ -71,7 +71,7 @@ public class CompilationResult {
 	public int lineSeparatorPositions[];
 	public RecoveryScannerData recoveryScannerData;
 	public Map<char[], ClassFile> compiledTypes = new Hashtable(11);
-	public Map<char[], JavascriptFile> compiledJsFiles = new Hashtable(11);  //cym add 2014-10-18
+	public Map<char[], JsFile> compiledJsFiles = new Hashtable(11);  //cym add 2014-10-18
 	public Map<char[], HtmlFile> compiledHtmlFiles = new Hashtable(11);  //cym add 2014-11-21
 	public int unitIndex, totalUnitsKnown;
 	public boolean hasBeenAccepted = false;
@@ -84,7 +84,7 @@ public class CompilationResult {
 	private boolean hasMandatoryErrors;
 	
 	//cym add
-	public JavascriptFile javascriptFile;   //generate for javascript
+	public JsFile javascriptFile;   //generate for javascript
 
 	private static final int[] EMPTY_LINE_ENDS = Util.EMPTY_INT_ARRAY;
 	private static final Comparator PROBLEM_COMPARATOR = new Comparator() {
@@ -196,8 +196,8 @@ public class CompilationResult {
 	}
 	
 	//cym 2014-11-21
-	public JavascriptFile[] getJavascriptFiles() {
-		JavascriptFile[] jsFiles = new JavascriptFile[this.compiledJsFiles.size()];
+	public JsFile[] getJavascriptFiles() {
+		JsFile[] jsFiles = new JsFile[this.compiledJsFiles.size()];
 		this.compiledJsFiles.values().toArray(jsFiles);
 		return jsFiles;
 	}
@@ -433,7 +433,7 @@ public class CompilationResult {
 	/**
 	 * For now, remember the compiled type using its compound name.
 	 */
-	public void record(char[] compoundName, JavascriptFile jsFile) {
+	public void record(char[] compoundName, JsFile jsFile) {
 //	    SourceTypeBinding sourceType = jsFile.referenceBinding;
 //	    if (!sourceType.isLocalType() && sourceType.isHierarchyInconsistent()) {
 //	        this.hasInconsistentToplevelHierarchies = true;
@@ -456,7 +456,7 @@ public class CompilationResult {
 	/**
 	 * For now, remember the javascript file.
 	 */
-	public void record(JavascriptFile jsFile) {
+	public void record(JsFile jsFile) {
 		this.javascriptFile = jsFile;
 	}
 	

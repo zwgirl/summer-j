@@ -58,9 +58,6 @@ abstract public class TypeBinding extends Binding {
 
 	protected AnnotationBinding [] typeAnnotations = Binding.NO_ANNOTATIONS;
 	
-	//cym 2014-12-18
-	public int dimensions = 0;
-	
 	// jsr 308
 	public static final ReferenceBinding TYPE_USE_BINDING = new ReferenceBinding() { /* used for type annotation resolution. */
 		{ this.id = TypeIds.T_undefined; }
@@ -352,9 +349,7 @@ abstract public class TypeBinding extends Binding {
 		if (otherType == null) return null;
 		switch(kind()) {
 			case Binding.ARRAY_TYPE :
-				//cym 2014-12-18
-//				ArrayBinding arrayType = (ArrayBinding) this;
-				ParameterizedTypeBinding arrayType = (ParameterizedTypeBinding) this;
+				ArrayBinding arrayType = (ArrayBinding) this;
 				int otherDim = otherType.dimensions();
 				if (arrayType.dimensions != otherDim) {
 					switch(otherType.id) {
@@ -369,9 +364,7 @@ abstract public class TypeBinding extends Binding {
 					return null;
 				}
 				
-				//cym 2014-12-18
-//				if (!(arrayType.leafComponentType instanceof ReferenceBinding)) return null;
-				if (!(arrayType.leafComponentType() instanceof ReferenceBinding)) return null;
+				if (!(arrayType.leafComponentType instanceof ReferenceBinding)) return null;
 				TypeBinding leafSuperType = arrayType.leafComponentType().findSuperTypeOriginatingFrom(otherType.leafComponentType());
 				if (leafSuperType == null) return null;
 				return arrayType.environment().createArrayType(leafSuperType, arrayType.dimensions);
@@ -541,10 +534,9 @@ abstract public class TypeBinding extends Binding {
 	}
 	
 	
-	//cym 2014-12-18 remove final
 	/* Answer true if the receiver is an array
 	 */
-	public boolean isArrayType() {
+	public final boolean isArrayType() {
 		return (this.tagBits & TagBits.IsArrayType) != 0;
 	}
 	

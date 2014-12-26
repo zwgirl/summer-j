@@ -156,6 +156,7 @@ public class ClassScope extends Scope {
 					fieldBinding = new PropertyBinding((PropertyDeclaration) field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
 				} else if(field instanceof IndexerDeclaration){
 					fieldBinding = new IndexerBinding((IndexerDeclaration) field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
+					((IndexerBinding)fieldBinding).parameters = Binding.NO_PARAMETERS;
 				} else if(field instanceof EventDeclaration){
 					fieldBinding = new EventBinding((EventDeclaration) field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
 				} else {
@@ -846,7 +847,9 @@ public class ClassScope extends Scope {
 
 		if (declaringClass.isInterface()) {
 			if(!(fieldDecl instanceof PropertyDeclaration || fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof EventDeclaration)){
-				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
+				//cym 2014-12-23
+//				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
+				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccNative;
 				// set the modifiers
 				modifiers |= IMPLICIT_MODIFIERS;
 	

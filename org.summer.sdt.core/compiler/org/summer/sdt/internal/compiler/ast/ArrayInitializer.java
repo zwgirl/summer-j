@@ -32,8 +32,8 @@ import org.summer.sdt.internal.compiler.lookup.*;
 public class ArrayInitializer extends Expression {
 
 	public Expression[] expressions;
-	//cym 2014-12-18
-//	public ArrayBinding binding; //the type of the { , , , }
+	//cym 2014-12-23
+//	public ArrayBinding binding; //the type of the { , , , }1
 	public ParameterizedTypeBinding binding; //the type of the { , , , }
 
 	/**
@@ -77,12 +77,12 @@ public class ArrayInitializer extends Expression {
 		int pc = codeStream.position;
 		int expressionLength = (this.expressions == null) ? 0: this.expressions.length;
 		codeStream.generateInlinedValue(expressionLength);
-//		codeStream.newArray(typeReference, allocationExpression, this.binding);  //cym comment 2014-12-18
+//		codeStream.newArray(typeReference, allocationExpression, this.binding);   //cym 2014-12-23
 		if (this.expressions != null) {
 			// binding is an ArrayType, so I can just deal with the dimension
-			//cym 2014-12-18
-//			int elementsTypeID = this.binding.dimensions > 1 ? -1 : this.binding.leafComponentType();
-			int elementsTypeID = this.binding.dimensions > 1 ? -1 : this.binding.leafComponentType().id;
+			//cym 2014-12-23
+//			int elementsTypeID = this.binding.dimensions > 1 ? -1 : this.binding.leafComponentType.id;
+			int elementsTypeID = this.binding.dimensions() > 1 ? -1 : this.binding.leafComponentType().id;
 			for (int i = 0; i < expressionLength; i++) {
 				Expression expr;
 				if ((expr = this.expressions[i]).constant != Constant.NotAConstant) {
@@ -169,9 +169,9 @@ public class ArrayInitializer extends Expression {
 
 		this.constant = Constant.NotAConstant;
 		
+		//cym 2014-12-23
 //		if (expectedType instanceof ArrayBinding) {
-		//cym 2014-12-18
-		if (expectedType != null && expectedType.isArrayType()) {
+		if (expectedType instanceof ParameterizedTypeBinding) {
 			// allow new List<?>[5]
 			if ((this.bits & IsAnnotationDefaultValue) == 0) { // annotation default value need only to be commensurate JLS9.7
 				// allow new List<?>[5] - only check for generic array when no initializer, since also checked inside initializer resolution
@@ -180,8 +180,6 @@ public class ArrayInitializer extends Expression {
 				    scope.problemReporter().illegalGenericArray(leafComponentType, this);
 				}
 			}
-			//cym 2014-12-18
-//			this.resolvedType = this.binding = (ArrayBinding) expectedType;
 			this.resolvedType = this.binding = (ParameterizedTypeBinding) expectedType;
 			
 			if (this.expressions == null)
@@ -239,7 +237,8 @@ public class ArrayInitializer extends Expression {
 				if (expression != null) {
 					expression.resolveType(scope)	;
 				}
-			}		}
+			}		
+		}
 		if (leafElementType != null) {
 			this.resolvedType = scope.createArrayType(leafElementType, dim);
 			if (expectedType != null)

@@ -64,7 +64,8 @@ import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.javascript.Javascript;
+import org.summer.sdt.internal.compiler.javascript.JsConstant;
+import org.summer.sdt.internal.compiler.lookup.BaseTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
@@ -767,58 +768,90 @@ public class AllocationExpression extends Expression implements Invocation {
 			output.append(CharOperation.concatWith(this.binding.declaringClass.getQualifiedName(), '.')).append(".prototype");
 			output.append("};\n");
 			printIndent(indent + 1, output).append(this.binding.declaringClass.sourceName).append(".apply(r, arguments");
-//			if (this.arguments != null) {
-//				output.append(", ");
-//				for (int i = 0; i < this.arguments.length; i++) {
-//					if (i > 0) output.append(Javascript.COMMA).append(Javascript.WHITESPACE); 
-//					this.arguments[i].generateExpression(scope, dependency, 0, output);
-//				}
-//			}
 			output.append(");\n");
 			printIndent(indent + 1, output).append("return r;\n"); 
 			printIndent(indent, output).append("}).call(this");
-			if (this.arguments != null) {
-				output.append(", ");
-				for (int i = 0; i < this.arguments.length; i++) {
-					if (i > 0) output.append(Javascript.COMMA).append(Javascript.WHITESPACE); 
-					this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
-				}
-			}
+			outputArguments(scope, dependency, indent, output, true);
 			
 			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
 				if(this.arguments != null && this.arguments.length > 0){
-					output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+					output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE);
 				}
 				output.append("\"").append(Annotation.getOverloadPostfix(this.binding.sourceMethod().annotations)).append("\"");
 			}
-			output.append(Javascript.RPAREN);
+			output.append(JsConstant.RPAREN);
 			return output;
 		} else {
-			output.append(Javascript.NEW).append(Javascript.WHITESPACE); 
+			output.append(JsConstant.NEW).append(JsConstant.WHITESPACE); 
 	
 			if (this.type != null) { 
-				this.type.doGenerateExpression(scope, dependency, 0, output);
+				int id = this.binding.declaringClass.id;
+				if(id != TypeIds.NoId){
+					switch(id){
+					case TypeIds.T_char:
+					case TypeIds.T_JavaLangCharacter:
+					case TypeIds.T_byte:
+					case TypeIds.T_JavaLangByte:
+					case TypeIds.T_short:
+					case TypeIds.T_JavaLangShort:
+					case TypeIds.T_int:
+					case TypeIds.T_JavaLangInteger:
+					case TypeIds.T_long:
+					case TypeIds.T_JavaLangLong:
+					case TypeIds.T_float:
+					case TypeIds.T_JavaLangFloat:
+					case TypeIds.T_double:
+					case TypeIds.T_JavaLangDouble:
+						output.append("Number");
+					}
+				} else {
+					this.type.doGenerateExpression(scope, dependency, 0, output);
+				}
 			} else { // type null for enum constant initializations
 				output.append(this.typeExpected.sourceName()); 
 			}
 			
-			output.append(Javascript.LPAREN);
-			if (this.arguments != null) {
-				for (int i = 0; i < this.arguments.length; i++) {
-					if (i > 0) output.append(Javascript.COMMA).append(Javascript.WHITESPACE); 
-					this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
-				}
-			}
+			output.append(JsConstant.LPAREN);
+			outputArguments(scope, dependency, indent, output, false);
 			
 			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
 				if(this.arguments != null && this.arguments.length > 0){
-					output.append(Javascript.COMMA).append(Javascript.WHITESPACE);
+					output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE);
 				}
 				output.append("\"").append(Annotation.getOverloadPostfix(this.binding.sourceMethod().annotations)).append("\"");
 			}
-			output.append(Javascript.RPAREN);
+			output.append(JsConstant.RPAREN);
 		}
 		
 		return output;
+	}
+	
+	private void outputArguments(Scope scope, Dependency dependency, int indent, StringBuffer output, boolean comma){
+		if (this.arguments != null) {
+			if(comma) output.append(", "); //$NON-NLS-1$
+			
+			if((this.binding.modifiers & ClassFileConstants.AccNative) != 0 || (this.binding.modifiers & ClassFileConstants.AccVarargs) == 0){
+				for (int i = 0; i < this.arguments.length ; i ++) {
+					if (i > 0) output.append(", "); //$NON-NLS-1$
+					this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+				}
+			} else{
+				if((this.binding.modifiers & ClassFileConstants.AccVarargs) != 0){
+					int argIndex = this.binding.parameters.length - 1;
+					for (int i = 0; i < argIndex ; i ++) {
+						if (i > 0) output.append(", "); //$NON-NLS-1$
+						this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+					}
+					
+					if (argIndex > 0) output.append(",");
+					output.append("["); //$NON-NLS-1$
+					for(int i = argIndex; i < this.arguments.length; i++){
+						if (i > argIndex) output.append(", "); //$NON-NLS-1$
+						this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+					}
+					output.append("]");
+				}
+			}
+		}
 	}
 }

@@ -1605,9 +1605,7 @@ class DefaultBindingResolver extends BindingResolver {
 						return null;
 					}
 					ArrayType arrayType = (ArrayType) type;
-					//cym 2014-14-18
-//					ArrayBinding arrayBinding = (ArrayBinding) typeBinding;
-					ParameterizedTypeBinding arrayBinding = (ParameterizedTypeBinding) typeBinding;
+					ArrayBinding arrayBinding = (ArrayBinding) typeBinding;
 					int dimensions = arrayType.getDimensions();
 					boolean isVarargs = typeReference.isVarargs();
 					if (dimensions == arrayBinding.dimensions)
@@ -1660,9 +1658,7 @@ class DefaultBindingResolver extends BindingResolver {
 					if (this.scope == null) {
 						return null;
 					}
-					//cym 2014-14-18
-//					ArrayBinding arrayBinding = (ArrayBinding) binding;
-					ParameterizedTypeBinding arrayBinding = (ParameterizedTypeBinding) binding;
+					ArrayBinding arrayBinding = (ArrayBinding) binding;
 					int dimensions = arrayType.getDimensions();
 					boolean isVarargs = node instanceof TypeReference && ((TypeReference) node).isVarargs();
 					if (dimensions == arrayBinding.dimensions)
@@ -1685,9 +1681,7 @@ class DefaultBindingResolver extends BindingResolver {
 		}
 		return null;
 	}
-//cym 2014-14-18
-//	private org.summer.sdt.internal.compiler.lookup.AnnotationBinding[] getTypeAnnotations(int dimensions, ArrayBinding arrayBinding, boolean isVarargs) {
-	private org.summer.sdt.internal.compiler.lookup.AnnotationBinding[] getTypeAnnotations(int dimensions, ParameterizedTypeBinding arrayBinding, boolean isVarargs) {
+	private org.summer.sdt.internal.compiler.lookup.AnnotationBinding[] getTypeAnnotations(int dimensions, ArrayBinding arrayBinding, boolean isVarargs) {
 		org.summer.sdt.internal.compiler.lookup.AnnotationBinding [] oldies = arrayBinding.getTypeAnnotations();
 		org.summer.sdt.internal.compiler.lookup.AnnotationBinding[] newbies = Binding.NO_ANNOTATIONS;
 		// Skip past extended dimensions encoded ahead of base dimensions. Dimension for variable argument array comes after the base dimensions.

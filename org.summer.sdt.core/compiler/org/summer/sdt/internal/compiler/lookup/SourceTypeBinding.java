@@ -1925,13 +1925,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 					fieldDecl.binding = null;
 					return null;
 				}
-//				if (fieldType.isArrayType() && ((ArrayBinding) fieldType).leafComponentType == TypeBinding.VOID) {
-//					this.scope.problemReporter().variableTypeCannotBeVoidArray(fieldDecl);
-//					fieldDecl.binding = null;
-//					return null;
-//				}
-				//cym 2014-12-18
-				if (fieldType.isArrayType() && fieldType.leafComponentType() == TypeBinding.VOID) {
+				if (fieldType.isArrayType() && ((ArrayBinding) fieldType).leafComponentType == TypeBinding.VOID) {
 					this.scope.problemReporter().variableTypeCannotBeVoidArray(fieldDecl);
 					fieldDecl.binding = null;
 					return null;
@@ -2013,13 +2007,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 					propertyDecl.binding = null;
 					return null;
 				}
-//				if (propType.isArrayType() && ((ArrayBinding) propType).leafComponentType == TypeBinding.VOID) {
-//					this.scope.problemReporter().variableTypeCannotBeVoidArray(propertyDecl);
-//					propertyDecl.binding = null;
-//					return null;
-//				}
-				//cym 2014-12-18
-				if (propType.isArrayType() && propType.leafComponentType() == TypeBinding.VOID) {
+				if (propType.isArrayType() && ((ArrayBinding) propType).leafComponentType == TypeBinding.VOID) {
 					this.scope.problemReporter().variableTypeCannotBeVoidArray(propertyDecl);
 					propertyDecl.binding = null;
 					return null;
@@ -2155,7 +2143,6 @@ public class SourceTypeBinding extends ReferenceBinding {
 				Argument[] arguments = indexerDecl.arguments;
 				if (arguments != null) {
 					int size = arguments.length;
-					indexer.parameters = Binding.NO_PARAMETERS;
 					TypeBinding[] newParameters = new TypeBinding[size];
 					for (int i = 0; i < size; i++) {
 						Argument arg = arguments[i];

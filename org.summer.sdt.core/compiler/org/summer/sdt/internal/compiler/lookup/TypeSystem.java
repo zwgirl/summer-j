@@ -201,52 +201,36 @@ public class TypeSystem {
 	   
 	   See ArrayBinding.swapUnresolved for further special case handling if incoming leafType is a URB that would resolve to a raw type later.
 	*/ 
-//	public ArrayBinding getArrayType(TypeBinding leafType, int dimensions) {
-//		if  (leafType instanceof ArrayBinding) {
-//			dimensions += leafType.dimensions();
-//			leafType = leafType.leafComponentType();
-//		}
-//		TypeBinding unannotatedLeafType = getUnannotatedType(leafType);
-//		TypeBinding[] derivedTypes = this.types[unannotatedLeafType.id];
-//		int i, length = derivedTypes.length;
-//		for (i = 0; i < length; i++) {
-//			TypeBinding derivedType = derivedTypes[i];
-//			if (derivedType == null) 
-//				break;
-//			if (!derivedType.isArrayType() || derivedType.hasTypeAnnotations())
-//				continue;
-//			if (derivedType.leafComponentType() == unannotatedLeafType && derivedType.dimensions() == dimensions) //$IDENTITY-COMPARISON$
-//				return (ArrayBinding) derivedType;
-//		}
-//		if (i == length) {
-//			System.arraycopy(derivedTypes, 0, derivedTypes = new TypeBinding[length * 2], 0, length);
-//			this.types[unannotatedLeafType.id] = derivedTypes;
-//		}
-//		TypeBinding arrayType = derivedTypes[i] = new ArrayBinding(unannotatedLeafType, dimensions, this.environment);
-//		int typesLength = this.types.length;
-//		if (this.typeid == typesLength)
-//			System.arraycopy(this.types, 0, this.types = new TypeBinding[typesLength * 2][], 0, typesLength);
-//		this.types[this.typeid] = new TypeBinding[1];
-//		return (ArrayBinding) (this.types[arrayType.id = this.typeid++][0] = arrayType);
-//	}
-//	
-//	public ArrayBinding getArrayType(TypeBinding leafComponentType, int dimensions, AnnotationBinding[] annotations) {
-//	return getArrayType(leafComponentType, dimensions);
-//}
-	//cym 2014-12-18
-	public ReferenceBinding getArrayType(TypeBinding leafType, int dimension) {
-		ReferenceBinding array = environment.getResolvedType(TypeConstants.JAVA_LANG_ARRAY, null);
-		ReferenceBinding result = environment.createParameterizedType(array, new TypeBinding[]{leafType}, null);	
-		result.dimensions = 1;
-		
-		for(int dim = 1; dim < dimension; dim++){
-			result = environment.createParameterizedType(array, new TypeBinding[]{result}, null);
-			result.dimensions = dim + 1;
+	public ArrayBinding getArrayType(TypeBinding leafType, int dimensions) {
+		if  (leafType instanceof ArrayBinding) {
+			dimensions += leafType.dimensions();
+			leafType = leafType.leafComponentType();
 		}
-		return result;
+		TypeBinding unannotatedLeafType = getUnannotatedType(leafType);
+		TypeBinding[] derivedTypes = this.types[unannotatedLeafType.id];
+		int i, length = derivedTypes.length;
+		for (i = 0; i < length; i++) {
+			TypeBinding derivedType = derivedTypes[i];
+			if (derivedType == null) 
+				break;
+			if (!derivedType.isArrayType() || derivedType.hasTypeAnnotations())
+				continue;
+			if (derivedType.leafComponentType() == unannotatedLeafType && derivedType.dimensions() == dimensions) //$IDENTITY-COMPARISON$
+				return (ArrayBinding) derivedType;
+		}
+		if (i == length) {
+			System.arraycopy(derivedTypes, 0, derivedTypes = new TypeBinding[length * 2], 0, length);
+			this.types[unannotatedLeafType.id] = derivedTypes;
+		}
+		TypeBinding arrayType = derivedTypes[i] = new ArrayBinding(unannotatedLeafType, dimensions, this.environment);
+		int typesLength = this.types.length;
+		if (this.typeid == typesLength)
+			System.arraycopy(this.types, 0, this.types = new TypeBinding[typesLength * 2][], 0, typesLength);
+		this.types[this.typeid] = new TypeBinding[1];
+		return (ArrayBinding) (this.types[arrayType.id = this.typeid++][0] = arrayType);
 	}
-	//cym 2014-12-18
-	public ReferenceBinding getArrayType(TypeBinding leafComponentType, int dimensions, AnnotationBinding[] annotations) {
+	
+	public ArrayBinding getArrayType(TypeBinding leafComponentType, int dimensions, AnnotationBinding[] annotations) {
 		return getArrayType(leafComponentType, dimensions);
 	}
 

@@ -225,11 +225,7 @@ class TypeBinding implements ITypeBinding {
 			return null;
 		}
 		
-		//cym 2014-12-18
-//		ArrayBinding arrayBinding = (ArrayBinding) this.binding;
-//		return this.resolver.getTypeBinding(arrayBinding.elementsType());
-		
-		ParameterizedTypeBinding arrayBinding = (ParameterizedTypeBinding) this.binding;
+		ArrayBinding arrayBinding = (ArrayBinding) this.binding;
 		return this.resolver.getTypeBinding(arrayBinding.elementsType());
 	}
 
@@ -452,10 +448,8 @@ class TypeBinding implements ITypeBinding {
 		if (!isArray()) {
 			return 0;
 		}
-//		ArrayBinding arrayBinding = (ArrayBinding) this.binding;
-//		return arrayBinding.dimensions;
-		//cym 2014-12-18
-		return this.binding.dimensions();
+		ArrayBinding arrayBinding = (ArrayBinding) this.binding;
+		return arrayBinding.dimensions;
 	}
 
 	/*
@@ -465,10 +459,8 @@ class TypeBinding implements ITypeBinding {
 		if (!isArray()) {
 			return null;
 		}
-//		ArrayBinding arrayBinding = (ArrayBinding) this.binding;
-//		return this.resolver.getTypeBinding(arrayBinding.leafComponentType);
-		//cym 2014-12-18
-		return this.resolver.getTypeBinding(this.binding.leafComponentType());
+		ArrayBinding arrayBinding = (ArrayBinding) this.binding;
+		return this.resolver.getTypeBinding(arrayBinding.leafComponentType);
 	}
 
 	/* (non-Javadoc)
