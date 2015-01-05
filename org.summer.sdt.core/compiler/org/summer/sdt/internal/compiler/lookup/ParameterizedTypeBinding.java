@@ -1672,5 +1672,10 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	public TypeBinding elementsType() {
 		return this.leafComponentType();
 	}
+	
+	public boolean isArrayType2(){
+		if(this.type.id == TypeIds.T_JavaLangArray) return true;
+		return false;
+	}
 
 }

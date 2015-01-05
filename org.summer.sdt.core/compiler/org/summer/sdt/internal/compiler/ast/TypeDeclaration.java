@@ -50,6 +50,7 @@ import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
+import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
@@ -691,8 +692,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		generateCode((ClassFile) null);
 	}
 	
-	public void generateHtml(CompilationUnitScope unitScope, Dependency dependency){
-		generateHtml(unitScope, null);
+	public void generateHtml(CompilationUnitScope unitScope){
+		generateHtml(unitScope, null, null);
 	}
 	
 	/**
@@ -709,10 +710,10 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			return;
 		}
 		try {
-			MethodDeclaration method = getMainMethod();
-			if(method == null){
-				return;
-			}
+//			MethodDeclaration method = getMainMethod();
+//			if(method == null){
+//				return;
+//			}
 			
 			// create the result for a compiled type
 			HtmlFile htmlFile = HtmlFile.getNewInstance(this.binding);
@@ -722,15 +723,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			StringBuffer output = htmlFile.content;
 			
 			output.append("<!DOCTYPE HTML>").append('\n');
-			output.append("<html>").append('\n');
-			output.append("<body>").append('\n');
-			output.append("<script>").append('\n');
-			output.append("alert('hello world!');").append('\n');
-			generateMainBody(unitScope, dependency, output, 0, method);
-			output.append("\n");
-			output.append("</script>").append('\n');
-			output.append("</body>").append('\n');
-			output.append("</html>").append('\n');
+			if(this.element != null){
+				html(element, unitScope, dependency, 0, output);
+			}
 			
 			this.scope.referenceCompilationUnit().compilationResult.record(
 				this.binding.constantPoolName(),
@@ -744,6 +739,10 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 	}
 	
+	private void html(XAMLElement element, Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		element.generateExpression(initializerScope, dependency, indent, output);
+	}
+
 	private void generateMainBody(CompilationUnitScope unitScope, Dependency dependency, StringBuffer output, int indent, MethodDeclaration method){
 		printIndent(indent + 1, output);
 		dependency.generateAMDHeader(new char[0], 0, output, JsConstant.REQUIRE);
@@ -1411,7 +1410,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			
 			//check element cym 2014-12-09
 			if(this.element != null){
-				this.element.resolve(this.initializerScope);
+				this.element.resolve(new ElementScope(this.element, this.scope));
 			}
 			
 			//check property  cym add 2014-11-03

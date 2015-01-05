@@ -102,6 +102,8 @@ import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.summer.sdt.internal.compiler.ast.CompoundAssignment;
 import org.summer.sdt.internal.compiler.ast.ConditionalExpression;
 import org.summer.sdt.internal.compiler.ast.ConstructorDeclaration;
+import org.summer.sdt.internal.compiler.ast.PropertyReference;
+import org.summer.sdt.internal.compiler.ast.StringLiteral;
 import org.summer.sdt.internal.compiler.ast.XAMLElement;
 import org.summer.sdt.internal.compiler.ast.EqualExpression;
 import org.summer.sdt.internal.compiler.ast.ExplicitConstructorCall;
@@ -1809,7 +1811,7 @@ public class ProblemReporter extends ProblemHandler {
 	 * @param type
 	 * @param fieldDecl
 	 */
-	public void duplicateNamedElementInType(XAMLElement type, FieldReference fieldDecl) {
+	public void duplicateNamedElementInType(XAMLElement type, PropertyReference fieldDecl) {
 		this.handle(
 			IProblem.DuplicateField,
 			new String[] {new String("element"), new String(fieldDecl.token)},
@@ -2091,6 +2093,29 @@ public class ProblemReporter extends ProblemHandler {
 				nodeSourceStart(field, reference),
 				nodeSourceEnd(field, reference));
 	}
+	
+	//cym 2015-01-01
+	public void errorNoMethodFor(StringLiteral selector, TypeBinding recType, TypeBinding[] params) {
+		StringBuffer buffer = new StringBuffer();
+		StringBuffer shortBuffer = new StringBuffer();
+		for (int i = 0, length = params.length; i < length; i++) {
+			if (i != 0){
+				buffer.append(", "); //$NON-NLS-1$
+				shortBuffer.append(", "); //$NON-NLS-1$
+			}
+			buffer.append(new String(params[i].readableName()));
+			shortBuffer.append(new String(params[i].shortReadableName()));
+		}
+	
+		int id = recType.isArrayType() ? IProblem.NoMessageSendOnArrayType : IProblem.NoMessageSendOnBaseType;
+		this.handle(
+			id,
+			new String[] {new String(recType.readableName()), new String(selector.source()), buffer.toString()},
+			new String[] {new String(recType.shortReadableName()), new String(selector.source()), shortBuffer.toString()},
+			selector.sourceStart,
+			selector.sourceEnd);
+	}
+	
 	public void errorNoMethodFor(MessageSend messageSend, TypeBinding recType, TypeBinding[] params) {
 		StringBuffer buffer = new StringBuffer();
 		StringBuffer shortBuffer = new StringBuffer();
@@ -2111,6 +2136,7 @@ public class ProblemReporter extends ProblemHandler {
 			messageSend.sourceStart,
 			messageSend.sourceEnd);
 	}
+	
 	public void errorNoMethodFor(Expression expression, TypeBinding recType, char [] selector, TypeBinding[] params) {
 		StringBuffer buffer = new StringBuffer();
 		StringBuffer shortBuffer = new StringBuffer();
@@ -3869,6 +3895,76 @@ public class ProblemReporter extends ProblemHandler {
 			nodeSourceEnd(indexer, arrayRef));
 	}
 	
+	//cym 2014-12-26
+	public void invalidProperty(PropertyReference fieldRef, TypeBinding searchedType) {
+		if(isRecoveredName(fieldRef.token)) return;
+	
+		int id = IProblem.UndefinedField;
+		FieldBinding field = fieldRef.binding;
+		switch (field.problemId()) {
+			case ProblemReasons.NotFound :
+				if ((searchedType.tagBits & TagBits.HasMissingType) != 0) {
+					this.handle(
+							IProblem.UndefinedType,
+							new String[] {new String(searchedType.leafComponentType().readableName())},
+							new String[] {new String(searchedType.leafComponentType().shortReadableName())},
+							fieldRef./*receiver.*/sourceStart,
+							fieldRef./*receiver.*/sourceEnd);
+						return;
+				}
+				id = IProblem.UndefinedField;
+	/* also need to check that the searchedType is the receiver type
+				if (searchedType.isHierarchyInconsistent())
+					severity = SecondaryError;
+	*/
+				break;
+			case ProblemReasons.NotVisible :
+				this.handle(
+					IProblem.NotVisibleField,
+					new String[] {new String(fieldRef.token), new String(field.declaringClass.readableName())},
+					new String[] {new String(fieldRef.token), new String(field.declaringClass.shortReadableName())},
+					nodeSourceStart(field, fieldRef),
+					nodeSourceEnd(field, fieldRef));
+				return;
+			case ProblemReasons.Ambiguous :
+				id = IProblem.AmbiguousField;
+				break;
+			case ProblemReasons.NoProperEnclosingInstance:
+				noSuchEnclosingInstance(fieldRef.actualReceiverType, fieldRef/*.receiver*/, false);
+				return;
+			case ProblemReasons.NonStaticReferenceInStaticContext :
+				id = IProblem.NonStaticFieldFromStaticInvocation;
+				break;
+			case ProblemReasons.NonStaticReferenceInConstructorInvocation :
+				id = IProblem.InstanceFieldDuringConstructorInvocation;
+				break;
+			case ProblemReasons.InheritedNameHidesEnclosingName :
+				id = IProblem.InheritedFieldHidesEnclosingName;
+				break;
+			case ProblemReasons.ReceiverTypeNotVisible :
+				this.handle(
+					IProblem.NotVisibleType, // cannot occur in javadoc comments
+					new String[] {new String(searchedType.leafComponentType().readableName())},
+					new String[] {new String(searchedType.leafComponentType().shortReadableName())},
+					fieldRef./*receiver.*/sourceStart,
+					fieldRef./*receiver.*/sourceEnd);
+				return;
+	
+			case ProblemReasons.NoError : // 0
+			default :
+				needImplementation(fieldRef); // want to fail to see why we were here...
+				break;
+		}
+	
+		String[] arguments = new String[] {new String(field.readableName())};
+		this.handle(
+			id,
+			arguments,
+			arguments,
+			nodeSourceStart(field, fieldRef),
+			nodeSourceEnd(field, fieldRef));
+	}
+	
 	public void invalidField(FieldReference fieldRef, TypeBinding searchedType) {
 		if(isRecoveredName(fieldRef.token)) return;
 	
@@ -4803,7 +4899,7 @@ public class ProblemReporter extends ProblemHandler {
 			case TerminalTokens.TokenNamedouble:
 			case TerminalTokens.TokenNamedefault:
 			case TerminalTokens.TokenNameelse:			
-			case TerminalTokens.TokenNameexport:   //cym 2014-12-17
+//			case TerminalTokens.TokenNameexport:   //cym 2014-12-17
 			case TerminalTokens.TokenNameextends:
 			case TerminalTokens.TokenNamefor:
 			case TerminalTokens.TokenNamefinal:
@@ -4817,7 +4913,7 @@ public class ProblemReporter extends ProblemHandler {
 			case TerminalTokens.TokenNameinterface:
 			case TerminalTokens.TokenNameimplements:
 			case TerminalTokens.TokenNameinstanceof:
-			case TerminalTokens.TokenNamelet:   //cym 2014-12-17
+//			case TerminalTokens.TokenNamelet:   //cym 2014-12-17
 			case TerminalTokens.TokenNamelong:
 			case TerminalTokens.TokenNamemodule:   //cym 2014-12-17
 			case TerminalTokens.TokenNamenew:

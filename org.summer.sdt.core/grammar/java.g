@@ -53,23 +53,29 @@ $Terminals
 	abstract 
 	--assert 
 	boolean break byte case catch char class 
-	continue const 
-	--debugger 
+	continue 
+	const 
+--	debugger 
 	default do double else enum 
 	--event 
 	export 
 	extends false final finally float
-	for function goto if implements import in instanceof int 
+	for function goto if implements import 
+	in 
+	instanceof int 
 	interface 
 	let 
 	long 
 	module 
 	native new null package private
 	protected public return short static strictfp super switch
-	synchronized this throw throws transient true try typeof void
+	synchronized this throw throws transient true try 
+	typeof 
+	void
 	volatile while
 
-	PCDATA
+	PCDATA	--cym
+		
 	IntegerLiteral
 	LongLiteral
 	FloatingPointLiteral
@@ -77,7 +83,7 @@ $Terminals
 	CharacterLiteral
 	StringLiteral
 	
-	CODE_DATA
+	CODE_DATA  --cym
 
 	PLUS_PLUS
 	MINUS_MINUS
@@ -137,7 +143,9 @@ $Terminals
 	CLOSE_ELEMENT
 	AT308
 --	AT308DOTDOTDOT
-
+	SCRIPT_START  --cym 2015-01-03
+	SCRIPT_END  --cym 2015-01-03
+--	XML_COMMENT  --cym 2015-01-04
 --    BodyMarker
 
 $Alias
@@ -195,6 +203,9 @@ $Alias
 	'/>' ::= CLOSE_TAG
 	'</' ::= CLOSE_ELEMENT
 	'@308' ::= AT308
+	'<%' ::= SCRIPT_START   --cym 2015-01-03
+	'%>' ::= SCRIPT_END  --cym 2015-01-03
+	
 --	'@308...' ::= AT308DOTDOTDOT
 	
 $Start
@@ -452,6 +463,8 @@ Element -> EmptyElement
 Element -> SimpleElement
 Element -> AttributeElement
 Element -> PCDATANode
+Element -> Script
+--Element -> COMMENTNode
 /:$readableName ElementDeclaration:/
 
 ElementListopt ::= $empty
@@ -464,19 +477,31 @@ ElementList ::= ElementList Element
 /.$putCase consumeElementList(); $break ./
 /:$readableName ElementList:/
 
+Script -> '<%' BlockStatementsopt  '%>'
+/.$putCase consumeScript(); $break ./
+/:$readableName Script:/
+
 PCDATANode ::= PCDATA
 /.$putCase consumePCDATANode(); $break ./
 /:$readableName PCDATANode:/
 
-EmptyElement ::=  ElementTag  EnterPCADATA '/>' 
+--COMMENTNode ::= XML_COMMENT
+--/.$putCase consumeCOMMENTNode(); $break ./
+--/:$readableName COMMENTNode:/
+
+EmptyElement ::=  ElementTag  EnterCloseTag EnterPCADATA '/>' 
 /.$putCase consumeEmptyElement(); $break ./
-SimpleElement ::=  ElementTag AttributeList  EnterPCADATA '/>'
+SimpleElement ::=  ElementTag AttributeList  EnterCloseTag EnterPCADATA '/>'
 /.$putCase consumeSimpleElement(); $break ./
 ComplexElement ::= ElementTag AttributeListopt EnterPCADATA '>' 
     	ElementListopt
-	 '</' SimpleName EnterPCADATA '>' 
+	 '</' EnterCloseTag SimpleName EnterPCADATA '>' 
 /.$putCase consumeComplexElement(); $break ./
 /:$readableName ObjectElement:/
+
+EnterCloseTag ::= $empty
+/.$putCase consumeEnterCloseTag(); $break ./
+/:$readableName EnterCloseTag:/
 
 EnterPCADATA ::= $empty
 /.$putCase consumeEnterPCADATA(); $break ./
@@ -527,8 +552,11 @@ MarkupExtensionTag ::= $empty
 /.$putCase consumeMarkupExtensionTag(); $break ./
 /:$readableName MarkupExtensionTag:/
 
+MarkupExtenson ::= '{' SimpleName MarkupExtensionTag '}'
+/.$putCase consumeMarkupExtenson(false); $break ./
+
 MarkupExtenson ::= '{' SimpleName MarkupExtensionTag AttributeList '}'
-/.$putCase consumeMarkupExtenson(); $break ./
+/.$putCase consumeMarkupExtenson(true); $break ./
 /:$readableName MarkupExtenson:/
 ----------------------------------------------
 -- xaml end
@@ -3025,6 +3053,9 @@ CLOSE_ELEMENT ::= '</'
 ELLIPSIS ::=    '...'    
 ARROW ::= '->'
 COLON_COLON ::= '::'
+
+SCRIPT_START ::= '<%'  --cym 2015-01-03
+SCRIPT_END ::= '%>'  --cym 2015-01-03
 
 $end
 -- need a carriage return after the $end

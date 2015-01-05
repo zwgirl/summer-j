@@ -361,18 +361,13 @@ public abstract class Annotation extends Expression {
 				break;
 			//cym add 2014-11-20
 			// overload annotation
-			case TypeIds.T_JavaLangAnnotationOverload :
+			case TypeIds.T_JavaLangOverload:
 				tagBits |= TagBits.AnnotationOverload; // target specified (could be empty)
-//					if (valueAttribute != null) {
-//						Expression expr = valueAttribute.value;
-//						if ((expr.bits & Binding.VARIABLE) == Binding.FIELD) {
-//							FieldBinding field = ((Reference) expr).fieldBinding();
-//							if (field != null && field.declaringClass.id == T_JavaLangString) {
-//								tagBits |= getTargetElementType(field.name);
-//							}
-//						}
-//					}
 				break;
+			// event hanlder annotation
+			case TypeIds.T_JavaLangEventCallback:
+				tagBits |= TagBits.AnnotationEventCallback; // target specified (could be empty)
+				break;	
 			// marker annotations
 			case TypeIds.T_JavaLangDeprecated :
 				tagBits |= TagBits.AnnotationDeprecated;
@@ -542,8 +537,11 @@ public abstract class Annotation extends Expression {
 			MethodBinding method = annotationMethods[i];
 			if (CharOperation.equals(method.selector, TypeConstants.VALUE)) {
 				sawValue = true;
-				if (method.returnType.isArrayType() && method.returnType.dimensions() == 1) {
-					ArrayBinding array = (ArrayBinding) method.returnType;
+				//cym 2015-01-01
+//				if (method.returnType.isArrayType() && method.returnType.dimensions() == 1) {
+//					ArrayBinding array = (ArrayBinding) method.returnType;
+				if (method.returnType instanceof ParameterizedTypeBinding && ((ParameterizedTypeBinding)method.returnType).isArrayType2()) {
+					ParameterizedTypeBinding array = (ParameterizedTypeBinding) method.returnType;
 					if (TypeBinding.equalsEquals(array.elementsType(), repeatableAnnotationType)) continue;
 				}
 				repeatableAnnotationType.tagAsHavingDefectiveContainerType();
@@ -1194,7 +1192,7 @@ public abstract class Annotation extends Expression {
 			if(annotation.resolvedType == null){
 				continue;
 			}
-			if(annotation.resolvedType.id == TypeIds.T_JavaLangAnnotationOverload){
+			if(annotation.resolvedType.id == TypeIds.T_JavaLangOverload){
 				overload = annotation;
 				break;
 			}

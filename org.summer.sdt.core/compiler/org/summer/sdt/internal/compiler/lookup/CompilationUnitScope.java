@@ -173,25 +173,25 @@ public class CompilationUnitScope extends Scope {
 //					// tolerate faulty main type name (91091), allow to proceed into type construction
 //				}
 //			}
-//			ClassScope child = new ClassScope(this, typeDecl);
-//			SourceTypeBinding type = child.buildType(null, this.fPackage, accessRestriction);
-//			if (firstIsSynthetic && i == 0)
-//				type.modifiers |= ClassFileConstants.AccSynthetic;
+			ClassScope child = new ClassScope(this, typeDecl);
+			SourceTypeBinding type = child.buildType(null, this.fPackage, accessRestriction);
+			if (firstIsSynthetic && i == 0)
+				type.modifiers |= ClassFileConstants.AccSynthetic;
 //			if (type != null)
 //				this.topLevelTypes[count++] = type;
 			
-			//cym 2014-12-11
-			Scope parent = this;
-			if(this.referenceContext.currentPackage != null &&
-					typeDecl.name.length == 5 && typeDecl.name[0] == 'W' && CharOperation.equals(TypeConstants.WINDOW, typeDecl.name)
-					&& CharOperation.equals(TypeConstants.JAVA_LANG_WINDOW, this.referenceContext.currentPackage.tokens)){
-			} else {
-				GlobalScope global = new GlobalScope(this);
-				parent = new WindowScope(global);
-			}
-			
-			ClassScope child = new ClassScope(parent, typeDecl);
-			SourceTypeBinding type = child.buildType(null, this.fPackage, accessRestriction);
+//			//cym 2014-12-11
+//			Scope parent = this;
+//			if(this.referenceContext.currentPackage != null &&
+//					typeDecl.name.length == 5 && typeDecl.name[0] == 'W' && CharOperation.equals(TypeConstants.WINDOW, typeDecl.name)
+//					&& CharOperation.equals(TypeConstants.JAVA_LANG_WINDOW, this.referenceContext.currentPackage.tokens)){
+//			} else {
+//				GlobalScope global = new GlobalScope(this);
+//				parent = new WindowScope(global);
+//			}
+//			
+//			ClassScope child = new ClassScope(parent, typeDecl);
+//			SourceTypeBinding type = child.buildType(null, this.fPackage, accessRestriction);
 			if (firstIsSynthetic && i == 0)
 				type.modifiers |= ClassFileConstants.AccSynthetic;
 			//cym 2014-12-13

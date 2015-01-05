@@ -364,13 +364,19 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 				generateMerageModule();
 			} else {
 				generateModule();
-			}	
+			}
+			
+			if (this.types != null) {
+				for (int i = 0, count = this.types.length; i < count; i++) {
+					this.types[i].generateHtml(this.scope);
+				}
+			}
 		} else {
 			if (this.types != null) {
 				for (int i = 0, count = this.types.length; i < count; i++) {
 					this.types[i].generateJavascript(this.scope);
 					
-	//				this.types[i].generateHtml(this.scope);
+					this.types[i].generateHtml(this.scope);
 				}
 			}
 		}

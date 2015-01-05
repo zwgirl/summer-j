@@ -33,6 +33,7 @@ import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;

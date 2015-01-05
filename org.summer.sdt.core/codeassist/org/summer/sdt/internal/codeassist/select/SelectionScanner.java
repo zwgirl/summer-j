@@ -22,50 +22,50 @@ public class SelectionScanner extends Scanner {
 
 	public char[] selectionIdentifier;
 	public int selectionStart, selectionEnd;
-/*
- * Truncate the current identifier if it is containing the cursor location. Since completion is performed
- * on an identifier prefix.
- *
- */
-
-public SelectionScanner(long sourceLevel) {
-	super(false /*comment*/, false /*whitespace*/, false /*nls*/, sourceLevel, null /*taskTags*/, null/*taskPriorities*/, true/*taskCaseSensitive*/);
-}
-
-protected boolean isAtAssistIdentifier() {
-	return this.selectionStart == this.startPosition && this.selectionEnd == this.currentPosition - 1;
-}
-
-public char[] getCurrentIdentifierSource() {
-
-	if (this.selectionIdentifier == null){
-		if (this.selectionStart == this.startPosition && this.selectionEnd == this.currentPosition-1){
-			if (this.withoutUnicodePtr != 0){			// check unicode scenario
-				System.arraycopy(this.withoutUnicodeBuffer, 1, this.selectionIdentifier = new char[this.withoutUnicodePtr], 0, this.withoutUnicodePtr);
-			} else {
-				int length = this.currentPosition - this.startPosition;
-				// no char[] sharing around completionIdentifier, we want it to be unique so as to use identity checks
-				System.arraycopy(this.source, this.startPosition, (this.selectionIdentifier = new char[length]), 0, length);
+	/*
+	 * Truncate the current identifier if it is containing the cursor location. Since completion is performed
+	 * on an identifier prefix.
+	 *
+	 */
+	
+	public SelectionScanner(long sourceLevel) {
+		super(false /*comment*/, false /*whitespace*/, false /*nls*/, sourceLevel, null /*taskTags*/, null/*taskPriorities*/, true/*taskCaseSensitive*/);
+	}
+	
+	protected boolean isAtAssistIdentifier() {
+		return this.selectionStart == this.startPosition && this.selectionEnd == this.currentPosition - 1;
+	}
+	
+	public char[] getCurrentIdentifierSource() {
+	
+		if (this.selectionIdentifier == null){
+			if (this.selectionStart == this.startPosition && this.selectionEnd == this.currentPosition-1){
+				if (this.withoutUnicodePtr != 0){			// check unicode scenario
+					System.arraycopy(this.withoutUnicodeBuffer, 1, this.selectionIdentifier = new char[this.withoutUnicodePtr], 0, this.withoutUnicodePtr);
+				} else {
+					int length = this.currentPosition - this.startPosition;
+					// no char[] sharing around completionIdentifier, we want it to be unique so as to use identity checks
+					System.arraycopy(this.source, this.startPosition, (this.selectionIdentifier = new char[length]), 0, length);
+				}
+				return this.selectionIdentifier;
 			}
-			return this.selectionIdentifier;
 		}
+		return super.getCurrentIdentifierSource();
 	}
-	return super.getCurrentIdentifierSource();
-}
-/*
- * In case we actually read a keyword which corresponds to the selected
- * range, we pretend we read an identifier.
- */
-public int scanIdentifierOrKeyword() {
-
-	int id = super.scanIdentifierOrKeyword();
-
-	// convert completed keyword into an identifier
-	if (id != TokenNameIdentifier
-		&& this.startPosition == this.selectionStart
-		&& this.currentPosition == this.selectionEnd+1){
-		return TokenNameIdentifier;
+	/*
+	 * In case we actually read a keyword which corresponds to the selected
+	 * range, we pretend we read an identifier.
+	 */
+	public int scanIdentifierOrKeyword() {
+	
+		int id = super.scanIdentifierOrKeyword();
+	
+		// convert completed keyword into an identifier
+		if (id != TokenNameIdentifier
+			&& this.startPosition == this.selectionStart
+			&& this.currentPosition == this.selectionEnd+1){
+			return TokenNameIdentifier;
+		}
+		return id;
 	}
-	return id;
-}
 }

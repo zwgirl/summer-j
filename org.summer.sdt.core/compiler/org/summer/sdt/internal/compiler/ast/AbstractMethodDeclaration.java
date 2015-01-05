@@ -69,6 +69,10 @@ public abstract class AbstractMethodDeclaration
 	public int bodyStart;
 	public int bodyEnd = -1;
 	public CompilationResult compilationResult;
+	
+	//cym 2015-01-05
+	public char[] codeData;
+	public long codeDataPos;
 
 	AbstractMethodDeclaration(CompilationResult compilationResult){
 		this.compilationResult = compilationResult;

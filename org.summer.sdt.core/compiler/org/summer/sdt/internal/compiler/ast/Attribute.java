@@ -2,7 +2,16 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ElementScope;
+import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
+import org.summer.sdt.internal.compiler.lookup.InvocationSite;
+import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 /**
  * 
@@ -10,16 +19,17 @@ import org.summer.sdt.internal.compiler.lookup.BlockScope;
  * 
  *         using by XAML
  */
-public abstract class Attribute extends XAMLNode{
-	public FieldReference field;
+public abstract class Attribute extends XAMLNode implements InvocationSite{
+	public PropertyReference property;
 	public Expression value;
+	public MethodBinding method;
 	
 	public final static char[] NAME = "name".toCharArray();
 	
 	public static final int NamedFlag = 1;
 	
-	protected Attribute(SingleNameReference namespace) {
-		super(namespace);
+	protected Attribute() {
+		super();
 	}
 
 	@Override
@@ -39,7 +49,7 @@ public abstract class Attribute extends XAMLNode{
 
 	public void resolve(BlockScope scope) {
 		this.constant = Constant.NotAConstant;
-		field.resolveType(scope);
+		property.resolveType(scope);
 //		TypeBinding receiverType = scope.context.resolvedType;
 //		if(receiverType == null){
 ////			return new ProblemFieldBinding(
@@ -89,6 +99,27 @@ public abstract class Attribute extends XAMLNode{
 //		return fieldBinding;
 	}
 	
+	public void resolve(ElementScope scope){
+		property.resolveType(scope);
+
+		if(this.value instanceof MarkupExtension){
+			MarkupExtension markExt = (MarkupExtension) this.value;
+			markExt.resolve(scope);
+		} else {
+			if(property.binding == null || property.binding.type == null){
+				return;
+			}
+			
+			if((property.binding.type.tagBits & TagBits.AnnotationEventCallback) != 0){
+				StringLiteral str = (StringLiteral) this.value;
+				this.method = scope.findMethod(scope.classScope().referenceContext.binding, str.source, new TypeBinding[0], this, false);
+				if(this.method == null){
+					scope.problemReporter().errorNoMethodFor(str, property.binding.type, new TypeBinding[0]); 
+				}
+			}
+		}
+	}
+	
 	/**
 	 * Every expression is responsible for generating its implicit conversion when necessary.
 	 *
@@ -107,4 +138,40 @@ public abstract class Attribute extends XAMLNode{
 //			throw new ShouldNotImplement(Messages.ast_missingCode);
 //		}
 	}
+	
+	@Override
+	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		output.append(property.token).append("=");
+		value.generateExpression(scope, dependency, indent, output);
+		
+		return output;
+	}
+	
+	@Override
+	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		generateExpression(scope, dependency, indent, output);
+		return output;
+	}
+	
+	@Override
+	public StringBuffer generateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		return doGenerateExpression(scope, dependency, indent, output);
+	}
+	
+	public TypeBinding[] genericTypeArguments() { return null;}
+	public boolean isSuperAccess() {return false;}
+	public boolean isTypeAccess() {return false;}
+	public void setActualReceiverType(ReferenceBinding receiverType) {/* empty */}
+	public void setDepth(int depth) {/* empty */ }
+	public void setFieldIndex(int depth) {/* empty */ }
+	public int sourceEnd() {return this.sourceEnd; }
+	public int sourceStart() {return this.sourceStart; }
+	public TypeBinding invocationTargetType() { return null; }
+	public boolean receiverIsImplicitThis() { return false; }
+	public InferenceContext18 freshInferenceContext(Scope scope) { return null; }
+	public ExpressionContext getExpressionContext() { return ExpressionContext.VANILLA_CONTEXT; }
+	@Override
+	public boolean isQualifiedSuper() { return false; }
+	public boolean checkingPotentialCompatibility() { return false; }
+	public void acceptPotentiallyCompatibleMethods(MethodBinding[] methods) { /* ignore */ }
 }

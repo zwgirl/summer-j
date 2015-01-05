@@ -4,6 +4,7 @@ import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -39,11 +40,9 @@ public abstract class XAMLElement extends XAMLNode {
 	public int bodyEnd; // doesn't include the trailing comment if any.
 	public ElementScope scope;
 	
-	public Initializer initializer;
-	public MethodScope initializeScope;
 	
-	protected XAMLElement(SingleNameReference namespace){
-		super(namespace);
+	protected XAMLElement(){
+		super();
 	}
 	
 
@@ -175,28 +174,28 @@ public abstract class XAMLElement extends XAMLNode {
 	public void resolve(ClassScope scope) {
 		this.constant = Constant.NotAConstant;
 		this.resolvedType = type.resolveType(scope);
-//		resolveType(scope);
-//		resolveAttribute(scope);
-//		resolveChild(scope);
+		ElementScope eleScope = new ElementScope(this, scope);
+		resolveAttribute(eleScope);
+		resolveChild(eleScope);
 	}
 	
-//	public TypeBinding resolveType(BlockScope scope) {
-//		this.constant = Constant.NotAConstant;
-//		if(this.actualReceiverType != null){
-//			return this.actualReceiverType;
-//		}
-//		return this.actualReceiverType = this.resolvedType; //scope.enclosingSourceType();
-//	}
+	public void resolve(ElementScope scope) {
+		this.constant = Constant.NotAConstant;
+		this.resolvedType = type.resolveType(scope);
+		ElementScope eleScope = new ElementScope(this, scope);
+		resolveAttribute(eleScope);
+		resolveChild(eleScope);
+	}
 	
-	protected void resolveChild(ClassScope scope){
+	protected void resolveChild(ElementScope scope){
 		for(XAMLElement child: children){
 			child.resolve(scope);
 		}
 	}
 	
-	protected void resolveAttribute(ClassScope scope){
+	protected void resolveAttribute(ElementScope scope){
 		for(Attribute attr : attributes){
-			attr.resolve(new ElementScope(Scope.BLOCK_SCOPE, scope));
+			attr.resolve(scope);
 		}
 	}
 
@@ -204,6 +203,11 @@ public abstract class XAMLElement extends XAMLNode {
 	public StringBuffer printExpression(int indent, StringBuffer output) {
 		// TODO Auto-generated method stub
 		return output;
+	}
+	
+	protected StringBuffer generateDynamicScript(Scope scope, Dependency dependency, int indent, StringBuffer output){
+		return output;
+		
 	}
 	
 	/**

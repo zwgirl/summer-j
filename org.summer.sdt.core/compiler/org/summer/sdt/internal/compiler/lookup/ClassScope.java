@@ -42,6 +42,7 @@ import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeParameter;
 import org.summer.sdt.internal.compiler.ast.TypeReference;
+import org.summer.sdt.internal.compiler.ast.XAMLElement;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.AccessRestriction;
 import org.summer.sdt.internal.compiler.problem.AbortCompilation;
@@ -234,7 +235,7 @@ public class ClassScope extends Scope {
 	void buildFieldsAndMethods() {
 		buildFields();
 		buildMethods();
-
+		
 		SourceTypeBinding sourceType = this.referenceContext.binding;
 		if (!sourceType.isPrivate() && sourceType.superclass instanceof SourceTypeBinding && sourceType.superclass.isPrivate())
 			((SourceTypeBinding) sourceType.superclass).tagIndirectlyAccessibleMembers();
@@ -456,10 +457,6 @@ public class ClassScope extends Scope {
 			char[][] className = CharOperation.arrayConcat(packageBinding.compoundName, this.referenceContext.name);
 			this.referenceContext.binding = new SourceTypeBinding(className, packageBinding, this);
 			
-			//cym 2014-12-09
-			if(this.referenceContext.element != null){
-				this.referenceContext.element.initializeScope = this.referenceContext.initializerScope;
-			}
 		} else {
 			char[][] className = CharOperation.deepCopy(enclosingType.compoundName);
 			className[className.length - 1] =
@@ -846,7 +843,23 @@ public class ClassScope extends Scope {
 			problemReporter().duplicateModifierForField(declaringClass, fieldDecl);
 
 		if (declaringClass.isInterface()) {
-			if(!(fieldDecl instanceof PropertyDeclaration || fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof EventDeclaration)){
+			if(fieldDecl instanceof PropertyDeclaration || fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof EventDeclaration){
+				// after this point, tests on the 16 bits reserved.
+				int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
+				//cym modified 2014-11-24
+				final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccNative  
+						| ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer | ClassFileConstants.AccEvent);
+				if ((realModifiers & UNEXPECTED_MODIFIERS) != 0) {
+					problemReporter().illegalModifierForField(declaringClass, fieldDecl);
+				}
+				
+				//cym 2014-12-30
+				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic;
+				// set the modifiers
+				modifiers |= IMPLICIT_MODIFIERS;
+				fieldBinding.modifiers = modifiers;
+				return;
+			} else {
 				//cym 2014-12-23
 //				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
 				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccNative;
@@ -862,7 +875,7 @@ public class ClassScope extends Scope {
 				}
 				fieldBinding.modifiers = modifiers;
 				return;
-			}
+			} 
 		} else if (fieldDecl.getKind() == AbstractVariableDeclaration.ENUM_CONSTANT) {
 			// check that they are not modifiers in source
 			if ((modifiers & ExtraCompilerModifiers.AccJustFlag) != 0)

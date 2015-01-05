@@ -7,10 +7,10 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class AttributeElement extends XAMLElement{
 	public AttributeElement() {
-		super(null);
+		super();
 	}
 
-	public FieldReference field;
+	public PropertyReference property;
 
 	@Override
 	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
@@ -21,7 +21,7 @@ public class AttributeElement extends XAMLElement{
 	@Override
 	public void resolve(BlockScope scope) {
 		type.resolve(scope);
-		field.resolve(scope);
+		property.resolve(scope);
 		for(XAMLElement child : children){
 			child.resolve(scope);
 		}
@@ -38,7 +38,7 @@ public class AttributeElement extends XAMLElement{
 	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
 			StringBuffer output) {
 		printIndent(indent, output);
-		output.append("this.").append(field.token).append(" = ");
+		output.append("this.").append(property.token).append(" = ");
 		
 //		if(type.){
 //			

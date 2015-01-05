@@ -1167,8 +1167,9 @@ public class Scanner implements TerminalTokens {
 	}
 	
 	//cym add 2014-11-04
-	protected void pcdata() throws InvalidInputException{
+	protected boolean pcdata() throws InvalidInputException{
 		try {
+			boolean hasContent = false;
 			while (true) {
 				if (this.currentPosition >= this.eofPosition) {
 					throw new InvalidInputException(UNTERMINATED_STRING);
@@ -1182,26 +1183,40 @@ public class Scanner implements TerminalTokens {
 						if (this.currentCharacter == '<') {
 							this.currentPosition = temp;
 							this.withoutUnicodePtr--;
-							return;
+							return hasContent;
 						}
 					} //-------------end unicode traitement--------------
 					else {
 						if (this.currentCharacter == '<') {
 							this.currentPosition = temp;
-							return;
+							return hasContent;
 						}
 						this.unicodeAsBackSlash = false;
 						if (this.withoutUnicodePtr != 0)
 							unicodeStore();
 					}
+					
+					// inline version of:
+					//isWhiteSpace =
+					//	(this.currentCharacter == ' ') || ScannerHelper.isWhitespace(this.currentCharacter);
+					switch (this.currentCharacter) {
+						case 10 : /* \ u000a: LINE FEED               */
+						case 12 : /* \ u000c: FORM FEED               */
+						case 13 : /* \ u000d: CARRIAGE RETURN         */
+						case 32 : /* \ u0020: SPACE                   */
+						case 9 : /* \ u0009: HORIZONTAL TABULATION   */
+							break;
+						default :
+							hasContent = true;
+					}
 				} catch (IndexOutOfBoundsException e) {
 					this.unicodeAsBackSlash = false;
 					this.currentPosition = temp;
-					return;
+					return hasContent;
 				} catch(InvalidInputException e) {
 					this.unicodeAsBackSlash = false;
 					this.currentPosition = temp;
-					return;
+					return hasContent;
 				}
 			}
 		} finally{
@@ -1211,16 +1226,12 @@ public class Scanner implements TerminalTokens {
 	}
 	
 	protected int getNextToken0() throws InvalidInputException {
-//		if(this.PCDATA){
-//			if(getNextChar('<')){
-//				this.PCDATA = false;
-//			} else{
-//				this.startPosition = this.currentPosition;
-//				pcdata();
-//				System.out.println("PCADAT : " + new String(this.getCurrentIdentifierSource()));
-//				return TokenNamePCDATA;
-//			}
-//		}
+		if(this.PCDATA){
+			this.startPosition = this.currentPosition;
+			if(pcdata()){
+				return TokenNamePCDATA;
+			}
+		}
 		
 		this.wasAcr = false;
 		if (this.diet) {
@@ -1385,6 +1396,11 @@ public class Scanner implements TerminalTokens {
 					case '%' :
 						if (getNextChar('='))
 							return TokenNameREMAINDER_EQUAL;
+						//cym add 2015-01-03
+						if(getNextChar('>')){
+							return TokenNameSCRIPT_END;
+						}
+						
 						return TokenNameREMAINDER;
 					case '<' :
 						{
@@ -1400,6 +1416,11 @@ public class Scanner implements TerminalTokens {
 							//cym add
 							if(getNextChar('/')){
 								return TokenNameCLOSE_ELEMENT;
+							}
+							
+							//cym add 2015-01-03
+							if(getNextChar('%')){
+								return TokenNameSCRIPT_START;
 							}
 							
 							return TokenNameLESS;
@@ -1422,6 +1443,7 @@ public class Scanner implements TerminalTokens {
 								}
 								return TokenNameRIGHT_SHIFT;
 							}
+							
 							return TokenNameGREATER;
 						}
 					case '=' :
@@ -1738,8 +1760,8 @@ public class Scanner implements TerminalTokens {
 									boolean isUnicode = false;
 									int previous;
 									
-									//cym 2014-12-17
-									boolean isCodeData = false;
+//									//cym 2014-12-17
+//									boolean isCodeData = false;
 									// consume next character
 									this.unicodeAsBackSlash = false;
 									if (((this.currentCharacter = this.source[this.currentPosition++]) == '\\')
@@ -1753,10 +1775,10 @@ public class Scanner implements TerminalTokens {
 										}
 									}
 									
-									//cym 2014-12-17
-									if(this.currentCharacter == '-'){
-										isCodeData = true;
-									}
+//									//cym 2014-12-17
+//									if(this.currentCharacter == '-'){
+//										isCodeData = true;
+//									}
 	
 									if (this.currentCharacter == '*') {
 										isJavadoc = true;
@@ -1835,8 +1857,8 @@ public class Scanner implements TerminalTokens {
 												this.currentPosition++;
 										} //jump over the \\
 									}
-									if(isCodeData) 
-										return TokenNameCODE_DATA;
+//									if(isCodeData) 
+//										return TokenNameCODE_DATA;
 									int token = isJavadoc ? TokenNameCOMMENT_JAVADOC : TokenNameCOMMENT_BLOCK;
 									recordComment(token);
 									this.commentTagStarts[this.commentPtr] = firstTag;
@@ -3209,15 +3231,15 @@ public class Scanner implements TerminalTokens {
 //							return TokenNameevent;
 //						else
 //							return TokenNameIdentifier;	
-					case 6 :
-						if ((data[++index] == 'x')
-							&& (data[++index] == 'p')
-							&& (data[++index] == 'o')
-							&& (data[++index] == 'r')
-							&& (data[++index] == 't'))
-							return TokenNameexport;
-						else
-							return TokenNameIdentifier;
+//					case 6 :
+//						if ((data[++index] == 'x')
+//							&& (data[++index] == 'p')
+//							&& (data[++index] == 'o')
+//							&& (data[++index] == 'r')
+//							&& (data[++index] == 't'))
+//							return TokenNameexport;
+//						else
+//							return TokenNameIdentifier;
 					case 7 :
 						if ((data[++index] == 'x')
 							&& (data[++index] == 't')

@@ -451,7 +451,7 @@ public final class CompletionEngine
 	public HashtableOfObject typeCache;
 	public int openedBinaryTypes; // used during InternalCompletionProposal#findConstructorParameterNames()
 	
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	public static boolean PERF = true;
 	
 	private static final char[] KNOWN_TYPE_WITH_UNKNOWN_CONSTRUCTORS = new char[]{};
@@ -7154,6 +7154,9 @@ public final class CompletionEngine
 			}
 		}
 	}
+	
+	
+	
 	private void findFieldsAndMethodsFromFavorites(
 			char[] token,
 			Scope scope,

@@ -1,21 +1,22 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class PCDATA  extends XAMLElement {
 	char[] source;
 
 	public PCDATA(char[] source, long pos) {
-		super(null);
+		super();
 		this.source = source;
 		//by default the position are the one of the field (not true for super access)
 		this.sourceStart = (int) (pos >>> 32);
 		this.sourceEnd = (int) (pos & 0x00000000FFFFFFFFL);
-//		this.bits |= Binding.FIELD;
 		
 	}
 
@@ -32,10 +33,15 @@ public class PCDATA  extends XAMLElement {
 	public void resolve(BlockScope scope) {
 		
 	}
+	
+	public void resolve(ElementScope scope) {
+
+	}
 
 	@Override
 	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
 			StringBuffer output) {
+		output.append(source);
 		return output;
 	}
 

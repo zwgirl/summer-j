@@ -29,6 +29,7 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.EventBinding;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
@@ -706,6 +707,80 @@ public class FieldReference extends Reference implements InvocationSite {
 					scope.problemReporter().enumStaticFieldUsedDuringInitialization(this.binding, this);
 				}
 			}
+		}
+		TypeBinding fieldType = fieldBinding.type;
+		if (fieldType != null) {
+			if ((this.bits & ASTNode.IsStrictlyAssigned) == 0) {
+				fieldType = fieldType.capture(scope, this.sourceStart, this.sourceEnd);	// perform capture conversion if read access
+			}
+			this.resolvedType = fieldType;
+			if ((fieldType.tagBits & TagBits.HasMissingType) != 0) {
+				scope.problemReporter().invalidType(this, fieldType);
+				return null;
+			}
+		}
+		return fieldType;
+	}
+	
+	public TypeBinding resolveType(ElementScope scope) {
+		// Answer the signature type of the field.
+		// constants are propaged when the field is final
+		// and initialized with a (compile time) constant
+	
+		//always ignore receiver cast, since may affect constant pool reference
+		this.actualReceiverType = scope.context.resolvedType;
+		if (this.actualReceiverType == null) {
+			this.constant = Constant.NotAConstant;
+			return null;
+		}
+		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
+		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.token, this);
+		if (!fieldBinding.isValidBinding()) {
+			this.constant = Constant.NotAConstant;
+			if (this.actualReceiverType instanceof ProblemReferenceBinding) {
+				// problem already got signaled on receiver, do not report secondary problem
+				return null;
+			}
+			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=245007 avoid secondary errors in case of
+			// missing super type for anonymous classes ... 
+			ReferenceBinding declaringClass = fieldBinding.declaringClass;
+			boolean avoidSecondary = declaringClass != null &&
+									 declaringClass.isAnonymousType() &&
+									 declaringClass.superclass() instanceof MissingTypeBinding;
+			if (!avoidSecondary) {
+				scope.problemReporter().invalidField(this, this.actualReceiverType);
+			}
+			if (fieldBinding instanceof ProblemFieldBinding) {
+				ProblemFieldBinding problemFieldBinding = (ProblemFieldBinding) fieldBinding;
+				FieldBinding closestMatch = problemFieldBinding.closestMatch;
+				switch(problemFieldBinding.problemId()) {
+					case ProblemReasons.InheritedNameHidesEnclosingName :
+					case ProblemReasons.NotVisible :
+					case ProblemReasons.NonStaticReferenceInConstructorInvocation :
+					case ProblemReasons.NonStaticReferenceInStaticContext :
+						if (closestMatch != null) {
+							fieldBinding = closestMatch;
+						}
+				}
+			}
+			if (!fieldBinding.isValidBinding()) {
+				return null;
+			}
+		}
+		// handle indirect inheritance thru variable secondary bound
+		// receiver may receive generic cast, as part of implicit conversion
+		TypeBinding oldReceiverType = this.actualReceiverType;
+		this.actualReceiverType = this.actualReceiverType.getErasureCompatibleType(fieldBinding.declaringClass);
+//		this.receiver.computeConversion(scope, this.actualReceiverType, this.actualReceiverType);
+//		if (TypeBinding.notEquals(this.actualReceiverType, oldReceiverType) && TypeBinding.notEquals(this.receiver.postConversionType(scope), this.actualReceiverType)) { // record need for explicit cast at codegen since receiver could not handle it
+//			this.bits |= NeedReceiverGenericCast;
+//		}
+		if (isFieldUseDeprecated(fieldBinding, scope, this.bits)) {
+			scope.problemReporter().deprecatedField(fieldBinding, this);
+		}
+		this.constant = Constant.NotAConstant;
+		if (fieldBinding.isStatic()) {
+			scope.problemReporter().indirectAccessToStaticField(this, fieldBinding);
 		}
 		TypeBinding fieldType = fieldBinding.type;
 		if (fieldType != null) {

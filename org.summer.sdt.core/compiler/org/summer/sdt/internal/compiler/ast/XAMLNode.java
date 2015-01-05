@@ -1,5 +1,9 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.lookup.ElementScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+
 /**
  * 
  * @author cym
@@ -16,10 +20,21 @@ public abstract class XAMLNode extends Expression {
 	public static final int ATTACH_ATTRIBUTE = 8;	
 	
 	public int kind;
-	public final SingleNameReference namespace;
+	public ElementScope scope;
 	
-	protected XAMLNode(SingleNameReference namespace){
-		this.namespace = namespace;
+	protected XAMLNode(){
+	}
+	
+	@Override
+	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		printIndent(indent, output);
+		generateExpression(scope, dependency, indent, output);
+		return output;
+	}
+	
+	@Override
+	public StringBuffer generateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		return this.doGenerateExpression(scope, dependency, indent, output);
 	}
 	
 }

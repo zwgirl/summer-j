@@ -1105,7 +1105,7 @@ class ASTConverter {
 		if (this.resolveBindings) {
 			recordNodes(assignment, expression);
 		}
-		Expression lhs = convert(expression.field);
+		Expression lhs = convert(expression.property);
 		assignment.setLeftHandSide(lhs);
 		assignment.setOperator(Assignment.Operator.ASSIGN);
 		Expression rightHandSide = convert(expression.value);
@@ -1122,7 +1122,7 @@ class ASTConverter {
 		if (this.resolveBindings) {
 			recordNodes(assignment, expression);
 		}
-		Expression lhs = convert(expression.field);
+		Expression lhs = convert(expression.property);
 		assignment.setLeftHandSide(lhs);
 		assignment.setOperator(Assignment.Operator.ASSIGN);
 		Expression rightHandSide = convert(expression.value);
@@ -1144,51 +1144,6 @@ class ASTConverter {
 		literal.internalSetEscapedValue(new String(this.compilationUnitSource, sourceStart, length));
 		literal.setSourceRange(expression.sourceStart, expression.sourceEnd - expression.sourceStart + 1);
 		return literal;
-	}
-	
-	//cym add 2014-11-11
-	public Expression convert(org.summer.sdt.internal.compiler.ast.ObjectElement expression) {
-//		int length = expression.sourceEnd - expression.sourceStart + 1;
-//		int sourceStart = expression.sourceStart;
-//		StringLiteral literal = new StringLiteral(this.ast);
-//		if (this.resolveBindings) {
-//			this.recordNodes(literal, expression);
-//		}
-//		literal.internalSetEscapedValue(new String(this.compilationUnitSource, sourceStart, length));
-//		literal.setSourceRange(expression.sourceStart, expression.sourceEnd - expression.sourceStart + 1);
-		NullLiteral nil = new NullLiteral(ast);
-		nil.setSourceRange(expression.sourceStart, expression.sourceEnd - expression.sourceStart + 1);
-		return nil;
-	}
-	
-	//cym add 2014-11-11
-	public Expression convert(org.summer.sdt.internal.compiler.ast.AttributeElement expression) {
-//		int length = expression.sourceEnd - expression.sourceStart + 1;
-//		int sourceStart = expression.sourceStart;
-//		StringLiteral literal = new StringLiteral(this.ast);
-//		if (this.resolveBindings) {
-//			this.recordNodes(literal, expression);
-//		}
-//		literal.internalSetEscapedValue(new String(this.compilationUnitSource, sourceStart, length));
-//		literal.setSourceRange(expression.sourceStart, expression.sourceEnd - expression.sourceStart + 1);
-		NullLiteral nil = new NullLiteral(ast);
-		nil.setSourceRange(expression.sourceStart, expression.sourceEnd - expression.sourceStart + 1);
-		return nil;
-	}
-	
-	//cym add 2014-11-11
-	public Expression convert(org.summer.sdt.internal.compiler.ast.MarkupExtension expression) {
-//		int length = expression.sourceEnd - expression.sourceStart + 1;
-//		int sourceStart = expression.sourceStart;
-//		StringLiteral literal = new StringLiteral(this.ast);
-//		if (this.resolveBindings) {
-//			this.recordNodes(literal, expression);
-//		}
-//		literal.internalSetEscapedValue(new String(this.compilationUnitSource, sourceStart, length));
-//		literal.setSourceRange(expression.sourceStart, expression.sourceEnd - expression.sourceStart + 1);
-		NullLiteral nil = new NullLiteral(ast);
-		nil.setSourceRange(expression.sourceStart, expression.sourceEnd - expression.sourceStart + 1);
-		return nil;
 	}
 	
 	/*
@@ -1893,22 +1848,7 @@ class ASTConverter {
 		if (expression instanceof org.summer.sdt.internal.compiler.ast.AttachAttribute) {
 			return convert((org.summer.sdt.internal.compiler.ast.AttachAttribute) expression);
 		} 
-		//cym add 2014-11-11
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.ObjectElement) {
-			return convert((org.summer.sdt.internal.compiler.ast.ObjectElement) expression);
-		} 
-		//cym add 2014-11-11
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.AttributeElement) {
-			return convert((org.summer.sdt.internal.compiler.ast.AttributeElement) expression);
-		} 
-		//cym add 2014-11-11
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.PCDATA) {
-			return convert((org.summer.sdt.internal.compiler.ast.PCDATA) expression);
-		} 
-		//cym add 2014-11-11
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.MarkupExtension) {
-			return convert((org.summer.sdt.internal.compiler.ast.MarkupExtension) expression);
-		} 
+
 		return null;
 	}
 

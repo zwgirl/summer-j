@@ -17,14 +17,14 @@ public class AttachAttribute extends Attribute {
 	public char[] PROPERTY = "Property".toCharArray();
 
 	public AttachAttribute() {
-		super(null);
+		super();
 	}
 
 	@Override
 	protected void printPropertyName(int indent, StringBuffer output) {
 		output.append(type.getLastToken());
 		output.append(".");
-		output.append(field.token);
+		output.append(property.token);
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class AttachAttribute extends Attribute {
 	@Override
 	public void resolve(BlockScope scope) {
 //		this.type.resolve(scope);
-		this.field.resolve(scope);
+		this.property.resolve(scope);
 		this.value.resolve(scope);
 	}
 
@@ -50,11 +50,11 @@ public class AttachAttribute extends Attribute {
 		printIndent(indent, output);
 		output.append(type.getLastToken()).append(".");
 		output.append("set");
-		if(CharOperation.endsWith(field.token, PROPERTY)){
-			char[] name = CharOperation.subarray(field.token, 0, field.token.length - PROPERTY.length);
+		if(CharOperation.endsWith(property.token, PROPERTY)){
+			char[] name = CharOperation.subarray(property.token, 0, property.token.length - PROPERTY.length);
 			output.append(name);
 		} else {
-			output.append(field.token);
+			output.append(property.token);
 		}
 		output.append("(this, ");
 		value.doGenerateExpression(scope, dependency, indent, output);

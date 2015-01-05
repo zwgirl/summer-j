@@ -23,6 +23,7 @@ import org.summer.sdt.internal.compiler.lookup.ElementValuePair;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 /**
@@ -110,8 +111,22 @@ public class MemberValuePair extends ASTNode {
 			public void run() {
 				if (!(MemberValuePair.this.value.isConstantValueOfTypeAssignableToType(valueType, requiredType)
 						|| valueType.isCompatibleWith(requiredType))) {
-					if (!(requiredType.isArrayType()
-							&& requiredType.dimensions() == 1
+					//cym 2015-01-01
+//					if (!(requiredType.isArrayType()
+//							&& requiredType.dimensions() == 1
+//							&& (MemberValuePair.this.value.isConstantValueOfTypeAssignableToType(valueType, leafType)
+//									|| valueType.isCompatibleWith(leafType)))) {
+//						
+//						if (leafType.isAnnotationType() && !valueType.isAnnotationType()) {
+//							scope.problemReporter().annotationValueMustBeAnnotation(MemberValuePair.this.binding.declaringClass,
+//									MemberValuePair.this.name, MemberValuePair.this.value, leafType);
+//						} else {
+//							scope.problemReporter().typeMismatchError(valueType, requiredType, MemberValuePair.this.value, null);
+//						}
+//						shouldExit[0] = true; // TODO may allow to proceed to find more errors at once
+//					}
+					
+					if (!(requiredType instanceof ParameterizedTypeBinding && ((ParameterizedTypeBinding)requiredType).isArrayType2()
 							&& (MemberValuePair.this.value.isConstantValueOfTypeAssignableToType(valueType, leafType)
 									|| valueType.isCompatibleWith(leafType)))) {
 						

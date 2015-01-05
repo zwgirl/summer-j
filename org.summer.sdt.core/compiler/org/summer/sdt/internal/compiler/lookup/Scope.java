@@ -91,6 +91,9 @@ public abstract class Scope {
 	//cym 2014-12-11
 	public final static int WINDOW_SCOPE = 5;
 	public final static int GLOBAL_SCOPE = 6;
+	
+	//cym 2014-12-26
+	public final static int ELEMENT_SCOPE = 7;
 
 	/* Argument Compatibilities */
 	public final static int NOT_COMPATIBLE = -1;

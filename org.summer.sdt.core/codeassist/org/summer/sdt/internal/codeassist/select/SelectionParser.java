@@ -296,36 +296,35 @@ public class SelectionParser extends AssistParser {
 		
 		GeneralAttribute generalAttr = new GeneralAttribute(namespace);
 
-		SelectionOnFieldReference fr = new SelectionOnFieldReference(token, positions);
+		SelectionOnPropertyReference fr = new SelectionOnPropertyReference(token, positions);
 		this.assistNode = fr;
 		this.lastCheckPoint = fr.sourceEnd + 1;
 		
-		generalAttr.field = fr;
+		generalAttr.property = fr;
 		
-		generalAttr.field.receiver = new ThisReference(0,0); //ThisReference.implicitThis();
 		this.identifierLengthPtr--;
 		generalAttr.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
 		
 		generalAttr.sourceStart = (int) (positions >>> 32);
 		
-		//check named attribute
-		if(CharOperation.equals(generalAttr.field.token, Attribute.NAME)){
-			generalAttr.bits |= ASTNode.IsNamedAttribute;
-			if(element.name != null){
-				problemReporter().duplicateNamedElementInType(element, element.name.field);
-			}
-			element.name = generalAttr;
-			StringLiteral str = (StringLiteral) generalAttr.value;
-			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
-			fieldDecl.type = element.type;
-			fieldDecl.bits |= ClassFileConstants.AccPrivate;
-//			pushOnAstStack(fieldDecl);
-//			if(xamlFlag){
-//				concatNodeLists();
+//		//check named attribute
+//		if(CharOperation.equals(generalAttr.property.token, Attribute.NAME)){
+//			generalAttr.bits |= ASTNode.IsNamedAttribute;
+//			if(element.name != null){
+//				problemReporter().duplicateNamedElementInType(element, element.name.property);
 //			}
-//			xamlFlag = true ;
-		}
+//			element.name = generalAttr;
+//			StringLiteral str = (StringLiteral) generalAttr.value;
+//			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
+//			fieldDecl.type = element.type;
+//			fieldDecl.bits |= ClassFileConstants.AccPrivate;
+////			pushOnAstStack(fieldDecl);
+////			if(xamlFlag){
+////				concatNodeLists();
+////			}
+////			xamlFlag = true ;
+//		}
 		
 		pushOnAttributeStack(generalAttr);
 	}

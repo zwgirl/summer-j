@@ -11,11 +11,9 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
  *         using by XAML
  */
 public class MarkupExtension extends XAMLElement {
-	public TypeReference type;
-	public AllocationExpression allocation;
 	
 	public MarkupExtension() {
-		super(null);
+		super();
 	}
 
 	@Override
@@ -40,9 +38,6 @@ public class MarkupExtension extends XAMLElement {
 	@Override
 	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
 			StringBuffer output) {
-		if(allocation != null){
-			return allocation.doGenerateExpression(scope, depsManager, indent, output);
-		}
 		return output;
 	}
 
@@ -55,12 +50,6 @@ public class MarkupExtension extends XAMLElement {
 	@Override
 	public void resolve(BlockScope scope) {
 		this.type.resolve(scope);
-//		for(Attribute attr : this.attributes){
-//			attr.resolve(scope);
-//		}
-		if(allocation != null){
-			allocation.resolve(scope);
-		}
 	}
 
 }

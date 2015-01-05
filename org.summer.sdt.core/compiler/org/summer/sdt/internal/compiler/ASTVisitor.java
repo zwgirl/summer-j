@@ -158,6 +158,15 @@ public abstract class ASTVisitor {
 	public void endVisit(FieldReference fieldReference, ClassScope scope) {
 		// do nothing by default
 	}
+	//cym 2014-12-26
+	public void endVisit(PropertyReference propertyReference, BlockScope scope) {
+		// do nothing by default
+	}
+	//cym 2014-12-26
+	public void endVisit(PropertyReference propertyReference, ClassScope scope) {
+		// do nothing by default
+	}
+	
 	public void endVisit(FloatLiteral floatLiteral, BlockScope scope) {
 		// do nothing by default
 	}
@@ -667,6 +676,16 @@ public abstract class ASTVisitor {
 	public boolean visit(FieldReference fieldReference, ClassScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
+	
+	//cym 2014-12-26
+	public boolean visit(PropertyReference propertyReference, BlockScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+	public boolean visit(PropertyReference propertyReference, ClassScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+	//cym 2014-12-26 end
+	
 	public boolean visit(FloatLiteral floatLiteral, BlockScope scope) {
 		return true; // do nothing by default, keep traversing
 	}

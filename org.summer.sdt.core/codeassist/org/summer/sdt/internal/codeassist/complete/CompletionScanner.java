@@ -113,7 +113,17 @@ public class CompletionScanner extends Scanner {
 		return super.getCurrentTokenSourceString();
 	}
 	protected int getNextToken0() throws InvalidInputException {
-	
+		if(this.PCDATA){
+			if(getNextChar('<')){
+				this.PCDATA = false;
+			} else{
+				this.startPosition = this.currentPosition;
+				if(pcdata()){
+					return TokenNamePCDATA;
+				}
+			}
+		}
+		
 		this.wasAcr = false;
 		this.unicodeCharSize = 0;
 		if (this.diet) {

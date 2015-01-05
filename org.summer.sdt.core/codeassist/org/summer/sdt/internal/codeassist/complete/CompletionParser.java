@@ -2116,31 +2116,30 @@ public class CompletionParser extends AssistParser {
 		
 		GeneralAttribute attr = new GeneralAttribute(null);
 		
-		CompletionOnMemberAccess fr = new CompletionOnMemberAccess(token, positions, false);
+		CompletionOnPropertyAccess fr = new CompletionOnPropertyAccess(token, positions, false);
 		this.assistNode = fr;
 		this.lastCheckPoint = fr.sourceEnd + 1;
 		
-		attr.field = fr;
+		attr.property = fr;
 		
-		attr.field.receiver = new ThisReference(0,0); //ThisReference.implicitThis();
 		this.identifierLengthPtr--;
 		attr.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
 		
 		attr.sourceStart = (int) (positions >>> 32);
 		
-		//check named attribute
-		if(CharOperation.equals(attr.field.token, Attribute.NAME)){
-			attr.bits |= ASTNode.IsNamedAttribute;
-			if(element.name != null){
-				problemReporter().duplicateNamedElementInType(element, element.name.field);
-			}
-			element.name = attr;
-			StringLiteral str = (StringLiteral) attr.value;
-			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
-			fieldDecl.type = element.type;
-			fieldDecl.bits |= ClassFileConstants.AccPrivate;
-		}
+//		//check named attribute
+//		if(CharOperation.equals(attr.property.token, Attribute.NAME)){
+//			attr.bits |= ASTNode.IsNamedAttribute;
+//			if(element.name != null){
+//				problemReporter().duplicateNamedElementInType(element, element.name.property);
+//			}
+//			element.name = attr;
+//			StringLiteral str = (StringLiteral) attr.value;
+//			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
+//			fieldDecl.type = element.type;
+//			fieldDecl.bits |= ClassFileConstants.AccPrivate;
+//		}
 		
 		pushOnAttributeStack(attr);
 	}
@@ -2171,10 +2170,9 @@ public class CompletionParser extends AssistParser {
 				AttributeElement element = new AttributeElement();
 				element.sourceStart = this.intStack[this.intPtr--];
 				
-				element.field = new FieldReference(
+				element.property = new PropertyReference(
 						this.identifierStack[this.identifierPtr],
 						this.identifierPositionStack[this.identifierPtr--]);
-				element.field.receiver = new ThisReference(0,0);
 				this.identifierLengthPtr--;
 				
 				element.type = new CompletionOnSingleTypeReference(
@@ -2188,10 +2186,9 @@ public class CompletionParser extends AssistParser {
 			AttributeElement element = new AttributeElement();
 			element.sourceStart = this.intStack[this.intPtr--];
 			
-			element.field = new CompletionOnMemberAccess(
+			element.property = new CompletionOnPropertyAccess(
 					this.identifierStack[this.identifierPtr],
 					this.identifierPositionStack[this.identifierPtr--], false);
-			element.field.receiver = new ThisReference(0,0);
 			this.identifierLengthPtr--;
 			
 			element.type = new SingleTypeReference(
