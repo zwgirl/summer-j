@@ -49,8 +49,8 @@ public interface ClassFileConstants {
 	
 	//cym 2014-12-12
 	int AccModule       = AccBridge;
-	int AccModuleMerge		= AccNative;
-	int AccCompleteNative = AccTransient;
+//	int AccModuleMerge		= AccNative;
+//	int AccCompleteNative = AccTransient;
 	/**
 	 * From classfile version 52 (compliance 1.8 up), meaning that a formal parameter is mandated
 	 * by a language specification, so all compilers for the language must emit it.

@@ -1204,8 +1204,8 @@ public static void resolveDeprecatedAnnotations(BlockScope scope, Annotation[] a
 		// do nothing by default
 	}
 	
-	public StringBuffer generateJavascript(Scope scope, Dependency depsManager, int indent,
-			StringBuffer output) {
-		return output;
-	}
+//	public StringBuffer generateJavascript(Scope scope, Dependency depsManager, int indent,
+//			StringBuffer output) {
+//		return output;
+//	}
 }

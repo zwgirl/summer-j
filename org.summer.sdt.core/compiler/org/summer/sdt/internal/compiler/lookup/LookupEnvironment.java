@@ -511,6 +511,16 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 				dimension = type.dimensions();
 				originalType = type.leafComponentType();
 				break;
+			case Binding.PARAMETERIZED_TYPE:  //cym 2015-01-10
+				ParameterizedTypeBinding pType = (ParameterizedTypeBinding)type;
+				if(pType.isArrayType2()){
+					dimension = type.dimensions();
+					originalType = type.leafComponentType();
+				} else {
+					dimension = 0;
+					originalType = type;
+				}
+				break;
 			default:
 				if (type.id == TypeIds.T_JavaLangObject)
 					return type; // Object is not generic

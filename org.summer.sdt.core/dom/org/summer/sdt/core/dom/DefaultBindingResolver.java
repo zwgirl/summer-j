@@ -1658,12 +1658,19 @@ class DefaultBindingResolver extends BindingResolver {
 					if (this.scope == null) {
 						return null;
 					}
-					ArrayBinding arrayBinding = (ArrayBinding) binding;
+					//cym 2015-01-09
+//					ArrayBinding arrayBinding = (ArrayBinding) binding;
+					ParameterizedTypeBinding arrayBinding = (ParameterizedTypeBinding) binding;
 					int dimensions = arrayType.getDimensions();
 					boolean isVarargs = node instanceof TypeReference && ((TypeReference) node).isVarargs();
-					if (dimensions == arrayBinding.dimensions)
+					//cym 2015-01-09
+//					if (dimensions == arrayBinding.dimensions)
+					if (dimensions == arrayBinding.dimensions())
 						return getTypeBinding(arrayBinding); // reuse
-					return getTypeBinding(this.scope.createArrayType(arrayBinding.leafComponentType(), dimensions, getTypeAnnotations(dimensions, arrayBinding, isVarargs)));
+					//cym 2015-01-09
+//					return getTypeBinding(this.scope.createArrayType(arrayBinding.leafComponentType(), dimensions, getTypeAnnotations(dimensions, arrayBinding, isVarargs)));
+					return getTypeBinding(this.scope.createArrayType(arrayBinding.leafComponentType(), dimensions, Binding.NO_ANNOTATIONS));
+					
 				} else if (binding.isArrayType()) {
 					// 'binding' can still be an array type because 'node' may be "larger" than 'type' (see comment of newAstToOldAst).
 					ArrayBinding arrayBinding = (ArrayBinding) binding;

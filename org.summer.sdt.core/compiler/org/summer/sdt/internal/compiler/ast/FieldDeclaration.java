@@ -345,8 +345,8 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 	}
 	
 	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
-		if (this.javadoc != null) {
-			this.javadoc.generateJavascript(scope, depsManager, indent, output);
+		if(this.binding == null){
+			return output;
 		}
 		printIndent(indent, output);
 		if(isStatic()){

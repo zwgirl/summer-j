@@ -275,11 +275,15 @@ public abstract class Engine implements ITypeRequestor {
 	
 	private ASTNode parserElement(XAMLElement element, int position){
 		for(Attribute attribute : element.attributes){
-			if(attribute.value instanceof MarkupExtension){
-				
-			}
-			if(attribute.sourceStart <= position && attribute.sourceEnd >= position){
-				return attribute;
+			if(attribute.property.sourceStart < position && attribute.property.sourceEnd >= position){
+				return attribute.property;
+			} 
+			if(attribute.value.sourceStart < position && attribute.value.sourceEnd >= position){
+				if(attribute.value instanceof MarkupExtension){
+					MarkupExtension markup = (MarkupExtension) attribute.value;
+					return parserElement(markup, position);
+				}
+				return attribute.value;
 			}
 		}
 		

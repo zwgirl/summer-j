@@ -196,14 +196,7 @@ public class CompilationUnitScope extends Scope {
 				type.modifiers |= ClassFileConstants.AccSynthetic;
 			//cym 2014-12-13
 			if(this.referenceContext.currentPackage != null && (this.referenceContext.currentPackage.modifiers & ClassFileConstants.AccModule) != 0){
-				if((this.referenceContext.currentPackage.modifiers & ClassFileConstants.AccNative) != 0){
-					type.modifiers |= ClassFileConstants.AccModuleMerge;
-				}
 				type.modifiers |= ClassFileConstants.AccModule;
-			}
-			//cym 2014-12-13
-			if((type.modifiers & ClassFileConstants.AccNative) != 0){
-				type.modifiers |= ClassFileConstants.AccCompleteNative;
 			}
 			
 			if (type != null)
@@ -838,8 +831,11 @@ public class CompilationUnitScope extends Scope {
 	private ReferenceBinding typeToRecord(TypeBinding type) {
 		if (type == null)
 			return null;
-		while (type.isArrayType())
-			type = ((ArrayBinding) type).leafComponentType();
+		//cym 2015-01-10
+//		while (type.isArrayType())
+//			type = ((ArrayBinding) type).leafComponentType();
+		while (type instanceof ParameterizedTypeBinding && ((ParameterizedTypeBinding)type).isArrayType2())
+			type = ((ParameterizedTypeBinding) type).leafComponentType();
 	
 		switch (type.kind()) {
 			case Binding.BASE_TYPE :

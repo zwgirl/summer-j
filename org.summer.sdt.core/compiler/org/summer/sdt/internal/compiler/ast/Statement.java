@@ -434,10 +434,6 @@ public abstract class Statement extends ASTNode {
 		return ctorBinding;
 	}
 	
-	public StringBuffer generateJavascript(Scope scope, Dependency dependency, int indent, StringBuffer output) {
-		return generateStatement(scope, dependency, indent, output);
-	}
-	
 	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output){
 		printIndent(indent, output);
 		generateExpression(scope, dependency, indent, output);

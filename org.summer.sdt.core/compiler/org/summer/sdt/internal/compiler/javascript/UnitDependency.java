@@ -23,10 +23,4 @@ public class UnitDependency extends Dependency {
 		TypeReferenceCollecor collector = new TypeReferenceCollecor();
 		collector.collect(unit, scope);
 	}
-
-	@Override
-	protected char[] getAMDModuleId() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

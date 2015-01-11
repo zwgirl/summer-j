@@ -4943,10 +4943,6 @@ public class ClassFile implements TypeConstants, TypeIds {
 			accessFlags &= ~finalAbstract;
 		}
 		
-		if((accessFlags & ClassFileConstants.AccCompleteNative) != 0){
-			System.err.println("class is complete native!");
-		}
-		
 		this.enclosingClassFile = parentClassFile;
 		// innerclasses get their names computed at code gen time
 

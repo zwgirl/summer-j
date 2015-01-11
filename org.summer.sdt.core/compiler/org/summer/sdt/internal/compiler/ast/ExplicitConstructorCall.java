@@ -32,6 +32,7 @@ package org.summer.sdt.internal.compiler.ast;
 
 import static org.summer.sdt.internal.compiler.ast.ExpressionContext.INVOCATION_CONTEXT;
 
+import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
@@ -39,6 +40,7 @@ import org.summer.sdt.internal.compiler.codegen.Opcodes;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
@@ -517,8 +519,104 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 		return new InferenceContext18(scope, this.arguments, this, null);
 	}
 
-	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+		if(this.binding == null){
+			return output;
+		}
+		if(this.binding.declaringClass.isMemberType()){
+			output.append("(function(){\n");
+			printIndent(indent + 1, output).append("var r = {__enclosing : this, __proto__: ");
+			output.append(CharOperation.concatWith(this.binding.declaringClass.getQualifiedName(), '.')).append(".prototype");
+			output.append("};\n");
+			printIndent(indent + 1, output).append(this.binding.declaringClass.sourceName).append(".apply(r, arguments");
+			output.append(");\n");
+			printIndent(indent + 1, output).append("return r;\n"); 
+			printIndent(indent, output).append("}).call(this");
+			outputArguments(scope, dependency, indent, output, true);
+			
+			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
+				if(this.arguments != null && this.arguments.length > 0){
+					output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE);
+				}
+				output.append("\"").append(Annotation.getOverloadPostfix(this.binding.sourceMethod().annotations)).append("\"");
+			}
+			output.append(JsConstant.RPAREN);
+			return output;
+		} else {
+			output.append(JsConstant.NEW).append(JsConstant.WHITESPACE); 
+	
+			if((this.binding.declaringClass.modifiers & ClassFileConstants.AccNative) !=0){
+					int id = this.binding.declaringClass.id;
+					if(id != TypeIds.NoId){
+						switch(id){
+						case TypeIds.T_char:
+						case TypeIds.T_JavaLangCharacter:
+						case TypeIds.T_byte:
+						case TypeIds.T_JavaLangByte:
+						case TypeIds.T_short:
+						case TypeIds.T_JavaLangShort:
+						case TypeIds.T_int:
+						case TypeIds.T_JavaLangInteger:
+						case TypeIds.T_long:
+						case TypeIds.T_JavaLangLong:
+						case TypeIds.T_float:
+						case TypeIds.T_JavaLangFloat:
+						case TypeIds.T_double:
+						case TypeIds.T_JavaLangDouble:
+							output.append("Number");
+						}
+					} else { // type null for enum constant initializations
+					output.append(this.binding.declaringClass.sourceName()); 
+				}
+			} else {
+				output.append("__cache[\"").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("\"]");
+			}
+			
+			output.append('(');
+			outputArguments(scope, dependency, indent, output, false);
+			
+			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
+				if(this.arguments != null && this.arguments.length > 0){
+					output.append(", ");
+				}
+				AbstractMethodDeclaration method = this.binding.sourceMethod();
+				if(method!=null){
+					output.append("\"").append(Annotation.getOverloadPostfix(method.annotations)).append("\"");
+				}
+				
+			}
+			output.append(')');
+		}
+		
 		return output;
+	}
+	
+	private void outputArguments(Scope scope, Dependency dependency, int indent, StringBuffer output, boolean comma){
+		if (this.arguments != null) {
+			if(comma) output.append(", "); //$NON-NLS-1$
+			
+			if((this.binding.modifiers & ClassFileConstants.AccNative) != 0 || (this.binding.modifiers & ClassFileConstants.AccVarargs) == 0){
+				for (int i = 0; i < this.arguments.length ; i ++) {
+					if (i > 0) output.append(", "); //$NON-NLS-1$
+					this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+				}
+			} else{
+				if((this.binding.modifiers & ClassFileConstants.AccVarargs) != 0){
+					int argIndex = this.binding.parameters.length - 1;
+					for (int i = 0; i < argIndex ; i ++) {
+						if (i > 0) output.append(", "); //$NON-NLS-1$
+						this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+					}
+					
+					if (argIndex > 0) output.append(",");
+					output.append("["); //$NON-NLS-1$
+					for(int i = argIndex; i < this.arguments.length; i++){
+						if (i > argIndex) output.append(", "); //$NON-NLS-1$
+						this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+					}
+					output.append("]");
+				}
+			}
+		}
 	}
 }

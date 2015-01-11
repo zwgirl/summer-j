@@ -706,7 +706,7 @@ public abstract class AbstractMethodDeclaration
 		if (this.arguments != null) {
 			for (int i = 0; i < this.arguments.length; i++) {
 				if (i > 0 || this.receiver != null) output.append(", "); //$NON-NLS-1$
-				this.arguments[i].generateJavascript(scope, dependency, 0, output);
+				this.arguments[i].generateExpression(scope, dependency, 0, output);
 			}
 		}
 		output.append(')');

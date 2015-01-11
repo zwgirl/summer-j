@@ -1,18 +1,11 @@
 package org.summer.sdt.internal.compiler.javascript;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.ast.ASTNode;
-import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
-import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
-import org.summer.sdt.internal.compiler.ast.Initializer;
-import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.QualifiedTypeReference;
 import org.summer.sdt.internal.compiler.ast.SingleTypeReference;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
@@ -21,18 +14,13 @@ import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
 
 public abstract class Dependency {
 	private Map<char[][], ReferenceBinding> typeMaps = new HashMap<char[][], ReferenceBinding>();
 	private Map<Integer, TypeBinding> baseTypes = new HashMap<Integer, TypeBinding>();
-	private Map<char[][], List<ReferenceBinding>> moduleTypes = new HashMap<char[][], List<ReferenceBinding>>();
-	private Map<char[][], List<ReferenceBinding>> mergeToduleTypes = new HashMap<char[][], List<ReferenceBinding>>();
-	private Map<char[][], String> parameters = new HashMap<char[][], String>();
 	
 	public Dependency(){
 	}
@@ -48,26 +36,6 @@ public abstract class Dependency {
 		}
 		
 		ReferenceBinding refBinding = (ReferenceBinding) binding;
-		
-		if((refBinding.modifiers & ClassFileConstants.AccModule) != 0){
-			char[][] key = CharOperation.arrayConcat(refBinding.fPackage.compoundName, getFileName(refBinding.getFileName()));
-			if((refBinding.modifiers & ClassFileConstants.AccModuleMerge) != 0){
-				List<ReferenceBinding> types = mergeToduleTypes.get(key);
-				if(types == null){	
-					types = new LinkedList<ReferenceBinding>();
-					mergeToduleTypes.put(key, types);
-				}
-				types.add(refBinding);
-			} else {
-				List<ReferenceBinding> types = moduleTypes.get(key);
-				if(types == null){	
-					types = new LinkedList<ReferenceBinding>();
-					moduleTypes.put(key, types);
-				}
-				types.add(refBinding);
-			}
-			return;
-		}
 		
 		if(refBinding.isMemberType()){
 			refBinding = outestEnclosingType(refBinding);
@@ -97,131 +65,61 @@ public abstract class Dependency {
 		}
 		return enclosing;
 	}
-
-	private StringBuffer generateDependency(int indent, StringBuffer output) {
+	
+	public static StringBuffer printIndent(int indent, StringBuffer output) {
+		for (int i = indent; i > 0; i--) output.append("  "); //$NON-NLS-1$
+		return output;
+	}
+	
+	public StringBuffer generateDependency(int indent, StringBuffer output) {
+		if(typeMaps.size() <= 0){
+			return output;
+		}
+		
+		printIndent(indent, output);
+		output.append("var __deps = Object.defineProperties({}, {");
 		boolean comma = false;
 		for (ReferenceBinding binding : typeMaps.values()) {
-			if((binding.modifiers & ClassFileConstants.AccCompleteNative) != 0){
-				continue;
+			if(comma) output.append(", ");
+			
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append(binding.sourceName).append(": { \n");
+			
+			printIndent(indent + 2, output);
+			
+			output.append("get : function(){ \n");
+			
+			printIndent(indent + 3, output);
+			output.append("if(this._" ).append(binding.sourceName).append(") return this._").append(binding.sourceName).append("; \n");
+			
+			printIndent(indent + 3, output);
+			output.append("else return this._").append(binding.sourceName).append(" = ")
+				.append("_loadClass(").append("\"");
+			
+			char[][] classFileName = null;
+			if((binding.modifiers & ClassFileConstants.AccModule) != 0){
+				classFileName = CharOperation.arrayConcat(binding.fPackage.compoundName, getFileName(binding.getFileName()));
+			} else{
+				classFileName = binding.compoundName;
 			}
 			
-			if(comma){
-				output.append(", ");
-			}
-
+			output.append(CharOperation.concatWith(classFileName, '.')).append("\"); \n");
+			printIndent(indent + 2, output);
+			output.append("} \n");
 			
-			output.append("\"");
-			output.append(CharOperation.concatWith(binding.compoundName, '.'));
-			output.append("\"");
+			printIndent(indent + 1, output);
+			output.append("} ");
 			
 			comma = true;
 		}
-		
-		for(char[][] key : moduleTypes.keySet()){
-			List<ReferenceBinding> types = moduleTypes.get(key);
-			
-			if(types.isEmpty()){
-				continue;
-			}
-			
-			if(comma){
-				output.append(", ");
-			}
-			output.append("[").append(CharOperation.concatWith(key, '.'));
-			for(ReferenceBinding type : types){
-				output.append(", \"").append(CharOperation.concatWith(type.compoundName, '.')).append("\"");
-			}
-			
-			output.append("]");
-			comma = true;
-		}
-		
-		for(char[][] key : moduleTypes.keySet()){
-			List<ReferenceBinding> types = moduleTypes.get(key);
-			
-			if(types.isEmpty()){
-				continue;
-			}
-			
-			if(comma){
-				output.append(", ");
-			}
-			
-			output.append("\"").append(CharOperation.concatWith(key, '.')).append("\"");
-			comma = true;
-		}
-		
+		output.append("\n");
+		printIndent(indent, output);
+		output.append("});");
 		return output;
-
-	}
 	
-	private StringBuffer generateParameters(int indent, StringBuffer output) {
-		boolean comma = false;
-		for (ReferenceBinding binding : typeMaps.values()) {
-			if((binding.modifiers & ClassFileConstants.AccCompleteNative) != 0){
-				continue;
-			}
-			
-			if(comma){
-				output.append(", ");
-			}
-			
-			output.append(binding.sourceName);
-			comma = true;
-		}
-		
-		for(char[][] key : moduleTypes.keySet()){
-			List<ReferenceBinding> types = moduleTypes.get(key);
-			
-			if(types.isEmpty()){
-				continue;
-			}
-			
-			for(ReferenceBinding type : types){
-				if(comma){
-					output.append(", ");
-				}
-				output.append(type.sourceName);
-				comma = true;
-			}
-		}
-		
-		for(char[][] key : moduleTypes.keySet()){
-			List<ReferenceBinding> types = moduleTypes.get(key);
-			
-			if(types.isEmpty()){
-				continue;
-			}
-			
-			if(comma){
-				output.append(", ");
-			}
-			
-			output.append(key);
-			comma = true;
-		}
-		
-		return output;
-
 	}
-	
-	abstract protected char[] getAMDModuleId();
-	
-	public void generateAMDHeader(char[] mid, int indent, StringBuffer output, String funcName) {
-		output.append(funcName).append(JsConstant.LPAREN).append(JsConstant.DOUBLE_QUOTE)
-		.append(mid).append(JsConstant.DOUBLE_QUOTE);
-		output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE);
-		output.append(JsConstant.LBRACKET);
-		
-		this.generateDependency(indent, output);
 
-		output.append(JsConstant.RBRACKET);
-		output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE);;
-		output.append(JsConstant.FUNCTION).append(JsConstant.LPAREN);
-		
-		this.generateParameters(indent, output);
-		output.append(JsConstant.RPAREN).append(JsConstant.LBRACE);
-	}
 	
 	public abstract void collect();
 	

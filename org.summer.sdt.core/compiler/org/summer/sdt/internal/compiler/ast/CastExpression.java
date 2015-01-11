@@ -458,9 +458,10 @@ public class CastExpression extends Expression {
 			return;
 		}
 		this.expression.generateCode(currentScope, codeStream, annotatedCast || valueRequired || needRuntimeCheckcast);
-		if (annotatedCast || (needRuntimeCheckcast && TypeBinding.notEquals(this.expression.postConversionType(currentScope), this.resolvedType.erasure()))) { // no need to issue a checkcast if already done as genericCast
-			codeStream.checkcast(this.type, this.resolvedType);
-		}
+		//cym 2015-01-10
+//		if (annotatedCast || (needRuntimeCheckcast && TypeBinding.notEquals(this.expression.postConversionType(currentScope), this.resolvedType.erasure()))) { // no need to issue a checkcast if already done as genericCast
+//			codeStream.checkcast(this.type, this.resolvedType);
+//		}
 		if (valueRequired) {
 			codeStream.generateImplicitConversion(this.implicitConversion);
 		} else if (annotatedCast || needRuntimeCheckcast) {

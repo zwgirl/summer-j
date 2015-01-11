@@ -1059,12 +1059,17 @@ public class SingleNameReference extends NameReference implements OperatorIds {
 	}
 	
 	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output){
-		if(this.binding instanceof LocalVariableBinding){
-			LocalVariableBinding local = (LocalVariableBinding) this.binding;
-			if(binding.isParameter() && (local.modifiers & ClassFileConstants.AccSynchronized )!= 0 || (local.modifiers & ClassFileConstants.AccVolatile) !=0){
-				return output.append(this.token).append(".").append(this.token);
+		if(this.binding instanceof FieldBinding){
+			FieldBinding field = (FieldBinding) this.binding;
+			if(field.isStatic()){
+				output.append(field.declaringClass.sourceName).append(".").append(this.token);
+			} else {
+				output.append("this.").append(this.token);
 			}
+		} else {
+			output.append(this.token);
 		}
-		return output.append(this.token);
+		
+		return output;
 	}
 }

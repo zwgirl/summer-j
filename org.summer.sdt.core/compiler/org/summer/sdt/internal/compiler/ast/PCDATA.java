@@ -9,7 +9,7 @@ import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class PCDATA  extends XAMLElement {
-	char[] source;
+	public char[] source;
 
 	public PCDATA(char[] source, long pos) {
 		super();

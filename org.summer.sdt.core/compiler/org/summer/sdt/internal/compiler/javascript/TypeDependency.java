@@ -1,6 +1,5 @@
 package org.summer.sdt.internal.compiler.javascript;
 
-import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 
 /**
@@ -19,10 +18,5 @@ public class TypeDependency extends Dependency {
 	public void collect() {
 		TypeReferenceCollecor collector = new TypeReferenceCollecor();
 		collector.collect(type, type.scope);
-	}
-
-	@Override
-	protected char[] getAMDModuleId() {
-		return CharOperation.concatWith(type.binding.compoundName, '.');
 	}
 }

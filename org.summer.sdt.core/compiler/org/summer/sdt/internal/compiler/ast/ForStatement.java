@@ -463,7 +463,7 @@ public class ForStatement extends Statement {
 		if (this.increments != null) {
 			for (int i = 0; i < this.increments.length; i++) {
 				if (i > 0) output.append(", "); //$NON-NLS-1$
-				this.increments[i].generateJavascript(scope, dependency, 0, output);
+				this.increments[i].generateExpression(scope, dependency, 0, output);
 			}
 		}
 		output.append(") "); //$NON-NLS-1$

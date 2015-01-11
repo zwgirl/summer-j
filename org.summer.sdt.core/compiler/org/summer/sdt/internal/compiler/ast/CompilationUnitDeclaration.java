@@ -360,25 +360,7 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	 */
 	public void generateCode() {
 		if(this.currentPackage != null && (this.currentPackage.modifiers & ClassFileConstants.AccModule) != 0 ){
-			if((this.currentPackage.modifiers & ClassFileConstants.AccModuleMerge) != 0){
-				generateMerageModule();
-			} else {
-				generateModule();
-			}
-			
-			if (this.types != null) {
-				for (int i = 0, count = this.types.length; i < count; i++) {
-					this.types[i].generateHtml(this.scope);
-				}
-			}
-		} else {
-			if (this.types != null) {
-				for (int i = 0, count = this.types.length; i < count; i++) {
-					this.types[i].generateJavascript(this.scope);
-					
-					this.types[i].generateHtml(this.scope);
-				}
-			}
+			generateJavascriptModule();
 		}
 		
 		if (this.ignoreFurtherInvestigation) {
@@ -403,16 +385,15 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		}
 	}
 	
-	private void generateModule() {
+	private void generateJavascriptModule() {
 		JsFile jsFile = JsFile.getNewInstance(getCompoundName());
 		if (this.types != null) {
 			for (int i = 0, count = this.types.length; i < count; i++) {
 				this.types[i].ignoreFurtherInvestigation = true;
 				// propagate the flag to request problem type creation
 				this.types[i].generateJavascript(this.scope, jsFile, new TypeDependency(this.types[i]));
+				jsFile.content.append(";");
 				jsFile.content.append("\n");
-				
-	//			this.types[i].generateHtml(this.scope);
 			}
 		}
 		this.compilationResult.record(CharOperation.concatWith(getCompoundName(), '/'), jsFile);
@@ -421,36 +402,6 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	private char[][] getCompoundName(){
 		char[][] compoundName = this.currentPackage == null ? CharOperation.NO_CHAR_CHAR : this.currentPackage.tokens;
 		return CharOperation.arrayConcat(compoundName, Dependency.getFileName(this.compilationResult.fileName));
-	}
-
-	private void generateMerageModule() {
-		Dependency dependency = new UnitDependency(this, scope);
-		dependency.collect();
-		JsFile jsFile = JsFile.getNewInstance(getCompoundName());
-		dependency.generateAMDHeader(this.compilationResult.getFileName(), 0, jsFile.content, JsConstant.DEFINE);
-		
-		if(this.types != null){
-			for (int i = 0, count = this.types.length; i < count; i++) {
-				this.types[i].generateClass(this.types[i], dependency, 1, jsFile.content);
-			}
-		}
-		
-		//generate export object
-		StringBuffer output = jsFile.content;
-		output.append("\n");
-		printIndent(1, output);
-		output.append("return {");
-		for (int i = 0, count = this.types.length; i < count; i++) {
-			output.append("\n");
-			printIndent(2, output);
-			output.append(this.types[i].name).append(" : ").append(this.types[i].name);
-		}
-		output.append("\n");
-		printIndent(1, output).append("};");
-		output.append("\n").append("}");
-		
-		
-		this.compilationResult.record(CharOperation.concatWith(getCompoundName(), '/'), jsFile);
 	}
 
 	public CompilationUnitDeclaration getCompilationUnitDeclaration() {
@@ -834,12 +785,5 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		} catch (AbortCompilationUnit e) {
 			// ignore
 		}
-	}
-
-	@Override
-	public StringBuffer generateJavascript(Scope scope, Dependency depsManager, int indent,
-			StringBuffer output) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

@@ -11,27 +11,27 @@
 	<script>
 		//console.log(require);
 		// using the class elsewhere...
-/*
+
 		require("sas", ["js/Type.js", "js/Second.js"], function(Type, Second){
 			var type = new Type("String", String, [Object.Type]);
 
-			alert("first require! ");
+			console.log("first require! ");
 			
 			var second = new Second();
-			alert("second： " + second);
+			console.log("second" + second);
 		});
 		
 		require("sas", ["js/Type.js", "js/Second.js"], function(Type, Second){
 			var type = new Type("String", String, [Object.Type]);
 
-			alert("second require！");
+			console.log("second require");
 			
 			var second = new Second();
-			alert("second： " + second);
+			console.log("second" + second);
 		});
-		*/
+		
 		require("sas", [], function(){
-			alert("my dojo!");
+			console.log("my dojo!");
 		});
 
 	</script>

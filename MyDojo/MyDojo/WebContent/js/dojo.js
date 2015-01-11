@@ -309,7 +309,9 @@
 					checkComplete();
 				};
 				injectingModule = module;
+				console.log("injectModule injectUrl 1");
 				req.injectUrl(mid, onLoadCallback, module);
+				console.log("after injectModule injectUrl");
 				injectingModule = 0;
 			},
 
@@ -394,6 +396,7 @@
 						if(e.type === "load" || /complete|loaded/.test(node.readyState)){
 							loadDisconnector();
 							errorDisconnector();
+							console.log("injectUrl callback! 4");
 							callback && callback();
 						}
 					},
@@ -407,7 +410,9 @@
 				node.type = "text/javascript";
 				node.charset = "utf-8";
 				node.src = url;
+				console.log("before parentNode.insertBefore! 2");
 				insertPointSibling.parentNode.insertBefore(node, insertPointSibling);
+				console.log("after parentNode.insertBefore! 3");
 				return node;
 			};
 

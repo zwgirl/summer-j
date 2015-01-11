@@ -1099,6 +1099,9 @@ ConstructorDeclaration ::= ConstructorHeader MethodBody
 -- These rules are added to be able to parse constructors with no body
 ConstructorDeclaration ::= ConstructorHeader ';'
 /.$putCase consumeInvalidConstructorDeclaration() ; $break ./ 
+ConstructorDeclaration ::= ConstructorHeader CODE_DATA ';'  --cym 2015-01-06  
+/.$putCase consumeInvalidConstructorDeclarationWithJSNI(); $break ./ --cym 2015-01-06
+
 /:$readableName ConstructorDeclaration:/
 
 -- the rules ExplicitConstructorInvocationopt has been expanded
@@ -1350,10 +1353,10 @@ StatementWithoutTrailingSubstatement -> DoStatement
 StatementWithoutTrailingSubstatement -> BreakStatement
 StatementWithoutTrailingSubstatement -> ContinueStatement
 StatementWithoutTrailingSubstatement -> ReturnStatement
-StatementWithoutTrailingSubstatement -> SynchronizedStatement
+--StatementWithoutTrailingSubstatement -> SynchronizedStatement  //cym 2015-01-06
 StatementWithoutTrailingSubstatement -> ThrowStatement
 StatementWithoutTrailingSubstatement -> TryStatement
-StatementWithoutTrailingSubstatement -> TryStatementWithResources
+--StatementWithoutTrailingSubstatement -> TryStatementWithResources //cym 2015-01-06
 /:$readableName Statement:/
 
 EmptyStatement ::= ';'
@@ -1498,13 +1501,14 @@ ThrowStatement ::= 'throw' Expression ';'
 /.$putCase consumeStatementThrow(); $break ./
 /:$readableName ThrowStatement:/
 
-SynchronizedStatement ::= OnlySynchronized '(' Expression ')' Block
-/.$putCase consumeStatementSynchronized(); $break ./
-/:$readableName SynchronizedStatement:/
-
-OnlySynchronized ::= 'synchronized'
-/.$putCase consumeOnlySynchronized(); $break ./
-/:$readableName OnlySynchronized:/
+--cym 2015-01-06
+--SynchronizedStatement ::= OnlySynchronized '(' Expression ')' Block
+--/.$putCase consumeStatementSynchronized(); $break ./
+--/:$readableName SynchronizedStatement:/
+--
+--OnlySynchronized ::= 'synchronized'
+--/.$putCase consumeOnlySynchronized(); $break ./
+--/:$readableName OnlySynchronized:/
 
 TryStatement ::= 'try' TryBlock Catches
 /.$putCase consumeStatementTry(false, false); $break ./
@@ -1512,46 +1516,47 @@ TryStatement ::= 'try' TryBlock Catchesopt Finally
 /.$putCase consumeStatementTry(true, false); $break ./
 /:$readableName TryStatement:/
 
-TryStatementWithResources ::= 'try' ResourceSpecification TryBlock Catchesopt
-/.$putCase consumeStatementTry(false, true); $break ./
-TryStatementWithResources ::= 'try' ResourceSpecification TryBlock Catchesopt Finally
-/.$putCase consumeStatementTry(true, true); $break ./
-/:$readableName TryStatementWithResources:/
-/:$compliance 1.7:/
-
-ResourceSpecification ::= '(' Resources ;opt ')'
-/.$putCase consumeResourceSpecification(); $break ./
-/:$readableName ResourceSpecification:/
-/:$compliance 1.7:/
-
-;opt ::= $empty
-/.$putCase consumeResourceOptionalTrailingSemiColon(false); $break ./
-;opt ::= ';'
-/.$putCase consumeResourceOptionalTrailingSemiColon(true); $break ./
-/:$readableName ;:/
-/:$compliance 1.7:/
-
-Resources ::= Resource
-/.$putCase consumeSingleResource(); $break ./
-Resources ::= Resources TrailingSemiColon Resource
-/.$putCase consumeMultipleResources(); $break ./
-/:$readableName Resources:/
-/:$compliance 1.7:/
-
-TrailingSemiColon ::= ';'
-/.$putCase consumeResourceOptionalTrailingSemiColon(true); $break ./
-/:$readableName ;:/
-/:$compliance 1.7:/
-
-Resource ::= Type PushModifiers VariableDeclaratorId EnterVariable '=' ForceNoDiet VariableInitializer RestoreDiet ExitVariableWithInitialization
-/.$putCase consumeResourceAsLocalVariableDeclaration(); $break ./
-/:$readableName Resource:/
-/:$compliance 1.7:/
-
-Resource ::= Modifiers Type PushRealModifiers VariableDeclaratorId EnterVariable '=' ForceNoDiet VariableInitializer RestoreDiet ExitVariableWithInitialization
-/.$putCase consumeResourceAsLocalVariableDeclaration(); $break ./
-/:$readableName Resource:/
-/:$compliance 1.7:/
+--cym 2015-01-06
+--TryStatementWithResources ::= 'try' ResourceSpecification TryBlock Catchesopt
+--/.$putCase consumeStatementTry(false, true); $break ./
+--TryStatementWithResources ::= 'try' ResourceSpecification TryBlock Catchesopt Finally
+--/.$putCase consumeStatementTry(true, true); $break ./
+--/:$readableName TryStatementWithResources:/
+--/:$compliance 1.7:/
+--
+--ResourceSpecification ::= '(' Resources ;opt ')'
+--/.$putCase consumeResourceSpecification(); $break ./
+--/:$readableName ResourceSpecification:/
+--/:$compliance 1.7:/
+--
+--;opt ::= $empty
+--/.$putCase consumeResourceOptionalTrailingSemiColon(false); $break ./
+--;opt ::= ';'
+--/.$putCase consumeResourceOptionalTrailingSemiColon(true); $break ./
+--/:$readableName ;:/
+--/:$compliance 1.7:/
+--
+--Resources ::= Resource
+--/.$putCase consumeSingleResource(); $break ./
+--Resources ::= Resources TrailingSemiColon Resource
+--/.$putCase consumeMultipleResources(); $break ./
+--/:$readableName Resources:/
+--/:$compliance 1.7:/
+--
+--TrailingSemiColon ::= ';'
+--/.$putCase consumeResourceOptionalTrailingSemiColon(true); $break ./
+--/:$readableName ;:/
+--/:$compliance 1.7:/
+--
+--Resource ::= Type PushModifiers VariableDeclaratorId EnterVariable '=' ForceNoDiet VariableInitializer RestoreDiet ExitVariableWithInitialization
+--/.$putCase consumeResourceAsLocalVariableDeclaration(); $break ./
+--/:$readableName Resource:/
+--/:$compliance 1.7:/
+--
+--Resource ::= Modifiers Type PushRealModifiers VariableDeclaratorId EnterVariable '=' ForceNoDiet VariableInitializer RestoreDiet ExitVariableWithInitialization
+--/.$putCase consumeResourceAsLocalVariableDeclaration(); $break ./
+--/:$readableName Resource:/
+--/:$compliance 1.7:/
 
 TryBlock ::= Block ExitTryBlock
 /:$readableName Block:/

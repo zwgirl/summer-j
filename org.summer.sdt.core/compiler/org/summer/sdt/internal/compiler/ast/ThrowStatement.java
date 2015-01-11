@@ -95,7 +95,7 @@ public class ThrowStatement extends Statement {
 	}
 	
 	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
-		printIndent(indent, output).append("throw "); //$NON-NLS-1$
+		output.append("throw "); //$NON-NLS-1$
 		this.exception.generateExpression(scope, dependency, 0, output);
 		return output;
 	}

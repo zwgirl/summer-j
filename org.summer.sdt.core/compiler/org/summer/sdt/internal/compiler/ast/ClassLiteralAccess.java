@@ -135,7 +135,7 @@ public class ClassLiteralAccess extends Expression {
 			return output;
 		}
 		
-		output.append(this.targetType.sourceName()).append(".__class");
+		output.append(this.targetType.sourceName()).append(".prototype.__class");
 		return output;
 	}
 }

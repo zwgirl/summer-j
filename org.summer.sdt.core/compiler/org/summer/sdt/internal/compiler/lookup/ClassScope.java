@@ -135,11 +135,6 @@ public class ClassScope extends Scope {
 				case AbstractVariableDeclaration.ENUM_CONSTANT:
 					count++;
 			}
-			
-			//cym 2014-12-13
-			if((fields[i].modifiers & ClassFileConstants.AccNative) == 0){
-				this.referenceContext.binding.modifiers &= ~ClassFileConstants.AccCompleteNative;
-			}
 		}
 
 		// iterate the field declarations to create the bindings, lose all duplicates
@@ -401,11 +396,6 @@ public class ClassScope extends Scope {
 					if (methodBinding != null) { // is null if binding could not be created
 						methodBindings[count++] = methodBinding;
 						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
-						
-						//cym 2014-12-13
-						if(!methodBinding.isNative()){
-							this.referenceContext.binding.modifiers &= ~ClassFileConstants.AccCompleteNative;
-						}
 					}
 				}
 			}
@@ -419,11 +409,6 @@ public class ClassScope extends Scope {
 						methodBindings[count++] = methodBinding;
 						hasAbstractMethods = hasAbstractMethods || methodBinding.isAbstract();
 						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
-						
-						//cym 2014-12-13
-						if(!methodBinding.isNative()){
-							this.referenceContext.binding.modifiers &= ~ClassFileConstants.AccCompleteNative;
-						}
 					}
 				}
 			}

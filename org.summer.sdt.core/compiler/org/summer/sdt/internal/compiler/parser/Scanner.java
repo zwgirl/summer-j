@@ -1761,7 +1761,7 @@ public class Scanner implements TerminalTokens {
 									int previous;
 									
 //									//cym 2014-12-17
-//									boolean isCodeData = false;
+									boolean isCodeData = false;
 									// consume next character
 									this.unicodeAsBackSlash = false;
 									if (((this.currentCharacter = this.source[this.currentPosition++]) == '\\')
@@ -1775,10 +1775,10 @@ public class Scanner implements TerminalTokens {
 										}
 									}
 									
-//									//cym 2014-12-17
-//									if(this.currentCharacter == '-'){
-//										isCodeData = true;
-//									}
+									//cym 2014-12-17
+									if(this.currentCharacter == '-'){
+										isCodeData = true;
+									}
 	
 									if (this.currentCharacter == '*') {
 										isJavadoc = true;
@@ -1857,8 +1857,8 @@ public class Scanner implements TerminalTokens {
 												this.currentPosition++;
 										} //jump over the \\
 									}
-//									if(isCodeData) 
-//										return TokenNameCODE_DATA;
+									if(isCodeData) 
+										return TokenNameCODE_DATA;
 									int token = isJavadoc ? TokenNameCOMMENT_JAVADOC : TokenNameCOMMENT_BLOCK;
 									recordComment(token);
 									this.commentTagStarts[this.commentPtr] = firstTag;

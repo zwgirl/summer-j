@@ -1187,21 +1187,44 @@ public class MethodBinding extends Binding {
 		}
 		return method.sourceEnd;
 	}
+//	public AbstractMethodDeclaration sourceMethod() {
+//		if (isSynthetic()) {
+//			return null;
+//		}
+//		SourceTypeBinding sourceType;
+//		try {
+//			sourceType = (SourceTypeBinding) this.declaringClass;
+//		} catch (ClassCastException e) {
+//			return null;
+//		}
+//	
+//		AbstractMethodDeclaration[] methods = sourceType.scope != null ? sourceType.scope.referenceContext.methods : null;
+//		if (methods != null) {
+//			for (int i = methods.length; --i >= 0;)
+//				if (this == methods[i].binding)
+//					return methods[i];
+//		}
+//		return null;
+//	}
+	
+	//cym  2015-01-10
 	public AbstractMethodDeclaration sourceMethod() {
 		if (isSynthetic()) {
 			return null;
 		}
 		SourceTypeBinding sourceType;
 		try {
-			sourceType = (SourceTypeBinding) this.declaringClass;
+
+			ReferenceBinding rType =this.declaringClass instanceof ParameterizedTypeBinding ? ((ParameterizedTypeBinding)this.declaringClass).type : this.declaringClass;
+			sourceType = (SourceTypeBinding) rType;
 		} catch (ClassCastException e) {
 			return null;
 		}
 	
 		AbstractMethodDeclaration[] methods = sourceType.scope != null ? sourceType.scope.referenceContext.methods : null;
 		if (methods != null) {
-			for (int i = methods.length; --i >= 0;)
-				if (this == methods[i].binding)
+			for (int i = methods.length; --i >= 0;) 
+				if (this.original() == methods[i].binding)
 					return methods[i];
 		}
 		return null;

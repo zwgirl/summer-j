@@ -76,12 +76,6 @@ public class SourceTypeBinding extends ReferenceBinding {
 	public ReferenceBinding[] superInterfaces;             // MUST NOT be modified directly, use setter !
 	private FieldBinding[] fields;                         // MUST NOT be modified directly, use setter !
 	
-	//XAML
-//	private FieldBinding element;						   // MUST NOT be modified directly, use setter !
-	
-	//Property
-	private PropertyBinding[] properties;						   // MUST NOT be modified directly, use setter !
-	
 	private MethodBinding[] methods;                       // MUST NOT be modified directly, use setter !
 	public ReferenceBinding[] memberTypes;                 // MUST NOT be modified directly, use setter !
 	public TypeVariableBinding[] typeVariables;            // MUST NOT be modified directly, use setter !
@@ -120,7 +114,6 @@ public class SourceTypeBinding extends ReferenceBinding {
 		// expect the fields & methods to be initialized correctly later
 		this.fields = Binding.UNINITIALIZED_FIELDS;
 		this.methods = Binding.UNINITIALIZED_METHODS;
-		this.properties = Binding.UNINITIALIZED_PROPERTIES;
 		this.prototype = this;
 		computeId();
 	}
@@ -801,12 +794,6 @@ public class SourceTypeBinding extends ReferenceBinding {
 		if (!isPrototype())
 			return this.prototype.areMethodsInitialized();
 		return this.methods != Binding.UNINITIALIZED_METHODS;
-	}
-	
-	boolean arePropertiesInitialized() {
-		if (!isPrototype())
-			return this.prototype.arePropertiesInitialized();
-		return this.properties != Binding.UNINITIALIZED_PROPERTIES;
 	}
 	
 	public int kind() {
@@ -3314,10 +3301,5 @@ public class SourceTypeBinding extends ReferenceBinding {
 		if (this.superclass.isPrivate()) 
 			if (this.superclass instanceof SourceTypeBinding)  // should always be true because private super type can only be accessed in same CU
 				((SourceTypeBinding) this.superclass).tagIndirectlyAccessibleMembers();
-	}
-
-	public PropertyBinding[] setProperties(PropertyBinding[] properties) {
-		return this.properties = properties;
-		
 	}
 }

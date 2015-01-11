@@ -620,7 +620,7 @@ public class QualifiedAllocationExpression extends AllocationExpression {
 			output.append(JsConstant.NEW).append(JsConstant.WHITESPACE); 
 			
 			output.append("((function() {");
-			anonymousType.generateClass(this.anonymousType, dependency, indent + 1, output);
+			anonymousType.generateClassContent(this.anonymousType, dependency, indent + 1, output);
 			output.append('\n');
 			printIndent(indent + 1, output).append("return ").append(anonymousType.binding.constantPoolName()).append(";");
 			output.append('\n');

@@ -1,5 +1,7 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import java.util.List;
+
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
@@ -205,7 +207,7 @@ public abstract class XAMLElement extends XAMLNode {
 		return output;
 	}
 	
-	protected StringBuffer generateDynamicScript(Scope scope, Dependency dependency, int indent, StringBuffer output){
+	protected StringBuffer buildDOMScript(Scope scope, Dependency dependency, int indent, StringBuffer output, String parent){
 		return output;
 		
 	}

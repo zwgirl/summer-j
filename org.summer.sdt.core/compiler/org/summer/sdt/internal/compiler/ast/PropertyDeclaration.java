@@ -237,9 +237,6 @@ public class PropertyDeclaration extends FieldDeclaration {
 	
 	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
 		output.append("\n");
-		if (this.javadoc != null) {
-			this.javadoc.generateJavascript(scope, depsManager, indent, output);
-		}
 		
 		printIndent(indent, output);
 		output.append("Object.defineProperty(");

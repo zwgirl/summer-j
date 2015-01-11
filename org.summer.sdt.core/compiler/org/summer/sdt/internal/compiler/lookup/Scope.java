@@ -959,9 +959,10 @@ public abstract class Scope {
 //	}
 	
 	public ReferenceBinding createArrayType(TypeBinding type, int dimension) {
-		if(type.isPrimitiveType()){
-			type = this.environment().computeBoxingType(type);
-		}
+		//cym 2015-01-10
+//		if(type.isPrimitiveType()){
+//			type = this.environment().computeBoxingType(type);
+//		}
 		return createArrayType(type, dimension, Binding.NO_ANNOTATIONS);
 	}
 	

@@ -829,6 +829,19 @@ public class FieldReference extends Reference implements InvocationSite {
 	}
 	
 	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
-		return this.receiver.doGenerateExpression(scope, depsManager, 0, output).append('.').append(this.token);
+		if(this.binding == null){
+			return output;
+		}
+		
+		if(this.binding.isStatic()){
+			output.append(this.binding.declaringClass.sourceName);
+			output.append('.').append(this.token);
+		} else if(this.receiver.isThis() || this.receiver.isSuper()){
+			output.append("this.").append(this.token);
+		} else {
+			this.receiver.doGenerateExpression(scope, depsManager, 0, output).append('.').append(this.token);
+		}
+		
+		return output;
 	}
 }
