@@ -1,7 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
 
 /**

@@ -1,6 +1,5 @@
 package org.summer.sdt.internal.compiler.ast;
 
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -33,10 +32,9 @@ public class GeneralAttribute extends Attribute{
 	}
 
 	@Override
-	public StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent,
-			StringBuffer output) {
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append(property.token).append(" = ");
-		value.doGenerateExpression(scope, dependency, indent, output);
+		value.doGenerateExpression(scope, indent, output);
 		return output;
 	}
 }

@@ -15,8 +15,13 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
+import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class QualifiedSuperReference extends QualifiedThisReference {
 
@@ -115,7 +120,7 @@ public class QualifiedSuperReference extends QualifiedThisReference {
 	}
 	
 	@Override
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
-		return super.doGenerateExpression(scope, dependency, indent, output);
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+		return super.doGenerateExpression(scope, indent, output);
 	}
 }

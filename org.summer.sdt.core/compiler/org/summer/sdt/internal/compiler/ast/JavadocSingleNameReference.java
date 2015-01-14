@@ -11,7 +11,11 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.MethodScope;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
 
 public class JavadocSingleNameReference extends SingleNameReference {
 

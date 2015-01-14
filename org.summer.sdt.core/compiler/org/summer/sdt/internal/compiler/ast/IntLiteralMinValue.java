@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
-import org.summer.sdt.internal.compiler.impl.*;
+import org.summer.sdt.internal.compiler.impl.IntConstant;
 
 public class IntLiteralMinValue extends IntLiteral {
 

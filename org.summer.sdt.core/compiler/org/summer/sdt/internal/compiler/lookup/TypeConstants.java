@@ -42,7 +42,12 @@ public interface TypeConstants {
 	char[] GETCLASS = "getClass".toCharArray(); //$NON-NLS-1$
 	char[] HASHCODE = "hashCode".toCharArray(); //$NON-NLS-1$
 	char[] OBJECT = "Object".toCharArray(); //$NON-NLS-1$
+	char[] GLOBAL = "Global".toCharArray(); //$NON-NLS-1$  //cym 2015-01-11
 	char[] WINDOW = "Window".toCharArray(); //$NON-NLS-1$  //cym 2014-12-13
+	char[] TEMPLATE = "Template".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
+	char[] COMPONENT = "Component".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
+	char[] ANONYM = "Anonym".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
+	char[] HTML = "html".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] ARRAY = "Array".toCharArray(); //$NON-NLS-1$  //cym 2014-12-03
 	char[] MAIN = "main".toCharArray(); //$NON-NLS-1$
 	char[] SERIALVERSIONUID = "serialVersionUID".toCharArray(); //$NON-NLS-1$
@@ -121,6 +126,8 @@ public interface TypeConstants {
     char[] TYPEBINDING = "TypeBinding".toCharArray(); //$NON-NLS-1$
     char[] DOM = "dom".toCharArray(); //$NON-NLS-1$
     char[] ITYPEBINDING = "ITypeBinding".toCharArray(); //$NON-NLS-1$
+    char[] W3C = "w3c".toCharArray();  //$NON-NLS-1$  //cym 2015-01-13
+    char[] HTMLPKG = "html".toCharArray();  //$NON-NLS-1$  //cym 2015-01-13
     
 	// Constant compound names
 	char[][] JAVA_LANG = {JAVA, LANG};
@@ -138,7 +145,11 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_ITERABLE = {JAVA, LANG, "Iterable".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_NOCLASSDEFERROR = {JAVA, LANG, "NoClassDefError".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_OBJECT = {JAVA, LANG, OBJECT};
+	char[][] JAVA_LANG_GLOBAL = {JAVA, LANG, GLOBAL};  //cym 2015-01-11
 	char[][] JAVA_LANG_WINDOW = {JAVA, LANG, WINDOW};  //cym 2014-12-13
+	char[][] JAVA_LANG_TEMPLATE = {JAVA, LANG, TEMPLATE};  //cym 2015-01-13
+	char[][] JAVA_LANG_COMPONENT = {JAVA, LANG, COMPONENT};  //cym 2015-01-13
+	char[][] ORG_W3C_HTML_HTML = {ORG, W3C, HTMLPKG, HTML};  //cym 2015-01-13
 	char[][] JAVA_LANG_STRING = {JAVA, LANG, "String".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_STRINGBUFFER = {JAVA, LANG, "StringBuffer".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_STRINGBUILDER = {JAVA, LANG, "StringBuilder".toCharArray()}; //$NON-NLS-1$

@@ -27,15 +27,28 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
-import static org.summer.sdt.internal.compiler.ast.ExpressionContext.*;
+import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_CONTEXT;
+import static org.summer.sdt.internal.compiler.ast.ExpressionContext.INVOCATION_CONTEXT;
+import static org.summer.sdt.internal.compiler.ast.ExpressionContext.VANILLA_CONTEXT;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.flow.*;
-import org.summer.sdt.internal.compiler.impl.*;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.codegen.BranchLabel;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.flow.FlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
+import org.summer.sdt.internal.compiler.impl.CompilerOptions;
+import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.lookup.BaseTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.Binding;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
+import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.PolyTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeIds;
 
 public class ConditionalExpression extends OperatorExpression implements IPolyExpression {
 
@@ -805,11 +818,11 @@ public class ConditionalExpression extends OperatorExpression implements IPolyEx
 		visitor.endVisit(this, scope);
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 
-		this.condition.generateExpression(scope, dependency, indent, output).append(" ? "); //$NON-NLS-1$
-		this.valueIfTrue.generateExpression(scope, dependency, 0, output).append(" : "); //$NON-NLS-1$
-		return this.valueIfFalse.generateExpression(scope, dependency, 0, output);
+		this.condition.generateExpression(scope, indent, output).append(" ? "); //$NON-NLS-1$
+		this.valueIfTrue.generateExpression(scope, 0, output).append(" : "); //$NON-NLS-1$
+		return this.valueIfFalse.generateExpression(scope, 0, output);
 	}
 }
 

@@ -23,7 +23,6 @@ import org.summer.sdt.internal.compiler.codegen.Opcodes;
 import org.summer.sdt.internal.compiler.flow.ExceptionHandlingFlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.InitializationFlowContext;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
@@ -409,10 +408,10 @@ public class Clinit extends AbstractMethodDeclaration {
 		}
 	}
 	
-	public StringBuffer generateJavascript(Scope scope, Dependency depsManager, int tab, StringBuffer output) {
+	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
 
-		printIndent(tab, output).append("<clinit>()"); //$NON-NLS-1$
-		generateBody(scope, depsManager, tab + 1, output);
+		printIndent(indent, output).append("<clinit>()"); //$NON-NLS-1$
+		generateBody(scope, indent + 1, output);
 		return output;
 	}
 

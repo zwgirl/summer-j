@@ -12,11 +12,18 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.flow.FlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
 
 public class ClassLiteralAccess extends Expression {
 
@@ -129,8 +136,7 @@ public class ClassLiteralAccess extends Expression {
 	}
 
 	@Override
-	public StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent,
-			StringBuffer output) {
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		if(this.targetType == null){
 			return output;
 		}

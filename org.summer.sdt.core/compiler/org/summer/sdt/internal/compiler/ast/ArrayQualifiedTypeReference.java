@@ -14,7 +14,11 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.problem.AbortCompilation;
 
 public class ArrayQualifiedTypeReference extends QualifiedTypeReference {

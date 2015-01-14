@@ -26,17 +26,11 @@ import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IrritantSet;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.javascript.JsFile;
-import org.summer.sdt.internal.compiler.javascript.TypeDependency;
-import org.summer.sdt.internal.compiler.javascript.UnitDependency;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
 import org.summer.sdt.internal.compiler.lookup.ImportBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.parser.NLSTag;
@@ -391,7 +385,7 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 			for (int i = 0, count = this.types.length; i < count; i++) {
 				this.types[i].ignoreFurtherInvestigation = true;
 				// propagate the flag to request problem type creation
-				this.types[i].generateJavascript(this.scope, jsFile, new TypeDependency(this.types[i]));
+				this.types[i].generateJavascript(this.scope, jsFile);
 				jsFile.content.append(";");
 				jsFile.content.append("\n");
 			}
@@ -401,7 +395,13 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	
 	private char[][] getCompoundName(){
 		char[][] compoundName = this.currentPackage == null ? CharOperation.NO_CHAR_CHAR : this.currentPackage.tokens;
-		return CharOperation.arrayConcat(compoundName, Dependency.getFileName(this.compilationResult.fileName));
+		return CharOperation.arrayConcat(compoundName, getFileName(this.compilationResult.fileName));
+	}
+	
+	public static char[] getFileName(char[] fileName){
+		char[] fileNameWithExtension = CharOperation.lastSegment(fileName, '/');
+		char[] result = CharOperation.splitOn('.', fileNameWithExtension)[0];
+		return result;
 	}
 
 	public CompilationUnitDeclaration getCompilationUnitDeclaration() {

@@ -1,7 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -35,8 +34,7 @@ public class AttributeElement extends XAMLElement{
 	}
 
 	@Override
-	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
-			StringBuffer output) {
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
 		output.append("this.").append(property.token).append(" = ");
 		

@@ -20,8 +20,6 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
 import org.summer.sdt.internal.compiler.lookup.MissingTypeBinding;
@@ -268,8 +266,8 @@ public class ArrayReference extends Reference {
 		visitor.endVisit(this, scope);
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
-		this.receiver.doGenerateExpression(scope, dependency, 0, output).append('[');
-		return this.position.doGenerateExpression(scope, dependency, 0, output).append(']');
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+		this.receiver.doGenerateExpression(scope, 0, output).append('[');
+		return this.position.doGenerateExpression(scope, 0, output).append(']');
 	}
 }

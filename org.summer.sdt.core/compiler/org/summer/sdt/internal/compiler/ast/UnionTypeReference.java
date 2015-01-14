@@ -13,7 +13,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -160,11 +159,11 @@ public class UnionTypeReference extends TypeReference {
 	/* (non-Javadoc)
 	 * @see org.summer.sdt.internal.compiler.ast.Expression#printExpression(int, java.lang.StringBuffer)
 	 */
-	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		int length = this.typeReferences == null ? 0 : this.typeReferences.length;
 		printIndent(indent, output);
 		for (int i = 0; i < length; i++) {
-			this.typeReferences[i].doGenerateExpression(scope, depsManager, 0, output);
+			this.typeReferences[i].doGenerateExpression(scope, 0, output);
 			if (i != length - 1) {
 				output.append(" | "); //$NON-NLS-1$
 			}

@@ -1405,14 +1405,15 @@ public class ClassFile implements TypeConstants, TypeIds {
 			attributesNumber += generateLocalVariableTableAttribute(code_length, methodDeclarationIsStatic, false);
 		}
 
-		if (addStackMaps) {
-			attributesNumber += generateStackMapTableAttribute(
-					this.codeStream.methodDeclaration != null ? this.codeStream.methodDeclaration.binding : this.codeStream.lambdaExpression.binding,
-					code_length,
-					codeAttributeOffset,
-					max_locals,
-					false);
-		}
+		//cym 2015-01-11
+//		if (addStackMaps) {
+//			attributesNumber += generateStackMapTableAttribute(
+//					this.codeStream.methodDeclaration != null ? this.codeStream.methodDeclaration.binding : this.codeStream.lambdaExpression.binding,
+//					code_length,
+//					codeAttributeOffset,
+//					max_locals,
+//					false);
+//		}
 
 		if ((this.produceAttributes & ClassFileConstants.ATTR_STACK_MAP) != 0) {
 			attributesNumber += generateStackMapAttribute(

@@ -2114,7 +2114,7 @@ public class CompletionParser extends AssistParser {
 		char[] token = this.identifierStack[this.identifierPtr];
 		long positions = this.identifierPositionStack[this.identifierPtr--];
 		
-		GeneralAttribute attr = new GeneralAttribute(null);
+		GeneralAttribute attr = new GeneralAttribute();
 		
 		CompletionOnPropertyAccess fr = new CompletionOnPropertyAccess(token, positions, false);
 		this.assistNode = fr;

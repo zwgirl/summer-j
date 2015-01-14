@@ -40,7 +40,6 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.BaseTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
@@ -50,7 +49,6 @@ import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
-import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
@@ -1257,8 +1255,8 @@ public abstract class Expression extends Statement {
 	}
 	
 	
-	public StringBuffer generateJavascript(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		return generateExpression(scope, dependency, indent, output);
+		return generateExpression(scope, indent, output);
 	}
 }

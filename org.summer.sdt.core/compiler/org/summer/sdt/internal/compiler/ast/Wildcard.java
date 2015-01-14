@@ -20,7 +20,14 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.Binding;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.WildcardBinding;
 
 /**
  * Node to represent Wildcard

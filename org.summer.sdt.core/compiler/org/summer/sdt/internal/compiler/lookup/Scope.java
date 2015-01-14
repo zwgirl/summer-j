@@ -55,7 +55,6 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.lookup;
 
-import java.awt.GraphicsDevice.WindowTranslucency;
 import java.util.*;
 
 import org.summer.sdt.core.compiler.CharOperation;

@@ -23,11 +23,16 @@ import java.util.List;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ast.TypeReference.AnnotationCollector;
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.flow.*;
-import org.summer.sdt.internal.compiler.impl.*;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.flow.FlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 @SuppressWarnings({"rawtypes"})
 public class ArrayAllocationExpression extends Expression {
@@ -244,25 +249,25 @@ public class ArrayAllocationExpression extends Expression {
 		return this.annotationsOnDimensions;
 	}
 
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 
-		if (this.initializer != null) return this.initializer.generateExpression(scope, dependency, 0, output);
+		if (this.initializer != null) return this.initializer.generateExpression(scope, 0, output);
 		
 		if(this.dimensions.length == 1){
 			output.append("new Array(");
-			this.dimensions[0].generateExpression(scope, dependency, 0, output);
+			this.dimensions[0].generateExpression(scope, 0, output);
 			output.append(")");
 			return output;
 		}
-		generateArray(scope, dependency, indent, output, 0);
+		generateArray(scope, indent, output, 0);
 		return output;
 	}
 	
-	private void  generateArray(Scope scope, Dependency dependency, int indent, StringBuffer output, int currentDim){
+	private void  generateArray(Scope scope, int indent, StringBuffer output, int currentDim){
 		if(currentDim + 1 == this.dimensions.length){
 			if(this.dimensions[currentDim] != null){
 				output.append("new Array(");
-				this.dimensions[currentDim].doGenerateExpression(scope, dependency, 0, output);
+				this.dimensions[currentDim].doGenerateExpression(scope, 0, output);
 				output.append(");");
 			} else {
 				output.append("new Array();");
@@ -274,21 +279,21 @@ public class ArrayAllocationExpression extends Expression {
 		output.append("(function(){").append('\n');
 		printIndent(indent + 1, output);
 		output.append("var result = new Array(");
-		this.dimensions[currentDim].doGenerateExpression(scope, dependency, 0, output);
+		this.dimensions[currentDim].doGenerateExpression(scope, 0, output);
 		output.append(");");
 		
 		output.append('\n');
 		printIndent(indent + 1, output);
 		
 		output.append("for(var i = 0; i < ");
-		this.dimensions[currentDim].doGenerateExpression(scope, dependency, 0, output);
+		this.dimensions[currentDim].doGenerateExpression(scope, 0, output);
 		output.append("; i++) {");
 		
 		output.append('\n');
 		printIndent(indent + 2, output);
 		
 		output.append("result[i] = ");
-		generateArray(scope, dependency, indent + 2, output, currentDim + 1);
+		generateArray(scope, indent + 2, output, currentDim + 1);
 		output.append(";");
 
 		output.append('\n');

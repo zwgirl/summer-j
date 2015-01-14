@@ -57,7 +57,6 @@ import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -1029,8 +1028,8 @@ public class ReferenceExpression extends FunctionalExpression implements IPolyEx
 	}
 
 	@Override
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
-		lhs.generateExpression(scope, dependency, indent, output);
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+		lhs.generateExpression(scope, indent, output);
 		output.append(".").append(selector);
 		return output;
 	}

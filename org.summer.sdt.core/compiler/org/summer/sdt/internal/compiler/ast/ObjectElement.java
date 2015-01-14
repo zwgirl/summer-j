@@ -2,8 +2,6 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.javascript.TypeDependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
@@ -45,11 +43,11 @@ public class ObjectElement extends XAMLElement {
 
 	private static final char[] body = "body".toCharArray();
 	private static final char[] head = "head".toCharArray();
-	public StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append('<').append(type.getLastToken());
 		for(Attribute attr : this.attributes){
 			output.append(" ");
-			attr.generateExpression(scope, dependency, indent, output);
+			attr.generateExpression(scope, indent, output);
 		}
 		output.append('>');
 		
@@ -65,7 +63,7 @@ public class ObjectElement extends XAMLElement {
 			printIndent(indent, output);
 			output.append("var _a = Node.prototype.appendChild;");
 			
-			buildDOMScript(scope, dependency, indent + 1, output, "document.body");
+			buildDOMScript(scope, indent + 1, output, "document.body");
 			output.append("</script>");
 		} else if(CharOperation.endsWith(type.getLastToken(), head)) {
 			output.append("<script type = 'text/javascript' src = 'js/stub.js'> </script>");
@@ -78,7 +76,7 @@ public class ObjectElement extends XAMLElement {
 			output.append("\n");
 			printIndent(indent+1, output);
 			output.append("var __this = new (");
-			typeDecl.generatea(classScope, new TypeDependency(typeDecl), indent + 1, output);
+			typeDecl.generatea(classScope, indent + 1, output);
 			output.append(")();");
 			
 			output.append("\n");
@@ -87,7 +85,7 @@ public class ObjectElement extends XAMLElement {
 		} else {
 			for(XAMLElement child : this.children){
 				output.append("\n");
-				child.generateStatement(scope, dependency, indent + 1, output);
+				child.generateStatement(scope, indent + 1, output);
 			}
 		}
 		output.append("\n");
@@ -96,7 +94,7 @@ public class ObjectElement extends XAMLElement {
 		return output;
 	}
 	
-	protected StringBuffer buildDOMScript(Scope scope, Dependency dependency, int indent, StringBuffer output, String parent){
+	protected StringBuffer buildDOMScript(Scope scope, int indent, StringBuffer output, String parent){
 		//
 		output.append("\n");
 		printIndent(indent, output);
@@ -120,7 +118,7 @@ public class ObjectElement extends XAMLElement {
 				ObjectElement oe = (ObjectElement) child;
 				if(oe.name != null){
 					output.append("var _n = __this[");
-					oe.name.value.doGenerateExpression(scope, dependency, indent, output);
+					oe.name.value.doGenerateExpression(scope, indent, output);
 					output.append("]");
 				} else {
 					output.append("var _n"); 
@@ -132,10 +130,10 @@ public class ObjectElement extends XAMLElement {
 					output.append("\n");
 					printIndent(indent + 1, output);
 					output.append("_n.").append(attr.property.token).append(" = ");
-					attr.value.generateExpression(scope, dependency, indent, output).append(";");
+					attr.value.generateExpression(scope, indent, output).append(";");
 				}
 				if(child.children != null && child.children.length > 0){
-					child.buildDOMScript(scope, dependency, indent + 1, output, "_n");
+					child.buildDOMScript(scope, indent + 1, output, "_n");
 				}
 				output.append('\n');
 				printIndent(indent + 1, output).append("_p.appendChild(_n);");

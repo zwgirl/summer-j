@@ -1,14 +1,10 @@
 package org.summer.sdt.internal.compiler.ast;
 
-import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_CONTEXT;
-
 import org.summer.sdt.core.compiler.IProblem;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -235,7 +231,7 @@ public class PropertyDeclaration extends FieldDeclaration {
 		return output;
 	}
 	
-	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append("\n");
 		
 		printIndent(indent, output);
@@ -254,7 +250,7 @@ public class PropertyDeclaration extends FieldDeclaration {
 			if(this.getter.statements != null){
 				for(int i = 0, length = this.getter.statements.length; i < length; i++){
 					output.append("\n");
-					this.getter.statements[i].generateStatement(scope, depsManager, indent + 2, output);
+					this.getter.statements[i].generateStatement(scope, indent + 2, output);
 				}
 			}
 			output.append("\n");
@@ -275,7 +271,7 @@ public class PropertyDeclaration extends FieldDeclaration {
 			if(this.setter.statements != null){
 				for(int i = 0, length = this.setter.statements.length; i < length; i++){
 					output.append("\n");
-					this.setter.statements[i].generateStatement(scope, depsManager, indent + 2, output);
+					this.setter.statements[i].generateStatement(scope, indent + 2, output);
 				}
 			}
 			output.append("\n");

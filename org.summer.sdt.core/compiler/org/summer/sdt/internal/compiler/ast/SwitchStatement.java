@@ -29,7 +29,6 @@ import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.SwitchFlowContext;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
@@ -666,17 +665,17 @@ public class SwitchStatement extends Statement {
 		return false;
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 
 		output.append("switch ("); //$NON-NLS-1$
-		this.expression.doGenerateExpression(scope, dependency, 0, output).append(") {"); //$NON-NLS-1$
+		this.expression.doGenerateExpression(scope, 0, output).append(") {"); //$NON-NLS-1$
 		if (this.statements != null) {
 			for (int i = 0; i < this.statements.length; i++) {
 				output.append('\n');
 				if (this.statements[i] instanceof CaseStatement) {
-					this.statements[i].generateStatement(scope, dependency, indent, output);
+					this.statements[i].generateStatement(scope, indent, output);
 				} else {
-					this.statements[i].generateStatement(scope, dependency, indent+2, output);
+					this.statements[i].generateStatement(scope, indent+2, output);
 				}
 			}
 		}
@@ -685,8 +684,8 @@ public class SwitchStatement extends Statement {
 	}
 	
 	@Override
-	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		return this.generateExpression(scope, dependency, indent, output);
+		return this.generateExpression(scope, indent, output);
 	}
 }

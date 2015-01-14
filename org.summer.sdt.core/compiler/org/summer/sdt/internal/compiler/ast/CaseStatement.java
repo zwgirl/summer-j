@@ -18,7 +18,6 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IntConstant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -138,20 +137,20 @@ public class CaseStatement extends Statement {
 		return Constant.NotAConstant;
 	}
 	
-	public void traverse(ASTVisitor visitor, 	BlockScope blockScope) {
+	public void traverse(ASTVisitor visitor, BlockScope blockScope) {
 		if (visitor.visit(this, blockScope)) {
 			if (this.constantExpression != null) this.constantExpression.traverse(visitor, blockScope);
 		}
 		visitor.endVisit(this, blockScope);
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
 		if (this.constantExpression == null) {
 			output.append(JsConstant.DEFAULT).append(JsConstant.WHITESPACE).append(JsConstant.COLON);
 		} else {
 			output.append(JsConstant.CASE).append(JsConstant.WHITESPACE);
-			this.constantExpression.doGenerateExpression(scope, dependency, 0, output).append(JsConstant.WHITESPACE).append(JsConstant.COLON);
+			this.constantExpression.doGenerateExpression(scope, 0, output).append(JsConstant.WHITESPACE).append(JsConstant.COLON);
 		}
 		return output;
 	}

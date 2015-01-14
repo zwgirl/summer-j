@@ -1,17 +1,13 @@
 package org.summer.sdt.internal.compiler.ast;
 
-import java.util.List;
-
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
@@ -207,7 +203,7 @@ public abstract class XAMLElement extends XAMLNode {
 		return output;
 	}
 	
-	protected StringBuffer buildDOMScript(Scope scope, Dependency dependency, int indent, StringBuffer output, String parent){
+	protected StringBuffer buildDOMScript(Scope scope, int indent, StringBuffer output, String parent){
 		return output;
 		
 	}

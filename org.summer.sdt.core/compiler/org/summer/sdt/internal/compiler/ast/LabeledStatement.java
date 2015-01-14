@@ -11,10 +11,14 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.flow.*;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.codegen.BranchLabel;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.flow.FlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.flow.LabelFlowContext;
+import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class LabeledStatement extends Statement {
 
@@ -155,11 +159,11 @@ public class LabeledStatement extends Statement {
 	}
 
 	@Override
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 
 		printIndent(indent, output).append(this.label).append(": "); //$NON-NLS-1$
 		if (this.statement != null)
-			this.statement.generateExpression(scope, dependency, 0, output);
+			this.statement.generateExpression(scope, 0, output);
 		return output;
 	}
 }

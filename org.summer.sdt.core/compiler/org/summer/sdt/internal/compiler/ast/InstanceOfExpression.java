@@ -21,11 +21,16 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.flow.FlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class InstanceOfExpression extends OperatorExpression {
 
@@ -129,34 +134,13 @@ public class InstanceOfExpression extends OperatorExpression {
 	}
 
 	@Override
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		if(type.resolvedType == null){
 			return output;
 		}
-		int id = type.resolvedType.id;
-		if(id != TypeIds.NoId){
-			switch(id){
-				case TypeIds.T_char:
-				case TypeIds.T_JavaLangCharacter:
-				case TypeIds.T_byte:
-				case TypeIds.T_JavaLangByte:
-				case TypeIds.T_short:
-				case TypeIds.T_JavaLangShort:
-				case TypeIds.T_int:
-				case TypeIds.T_JavaLangInteger:
-				case TypeIds.T_long:
-				case TypeIds.T_JavaLangLong:
-				case TypeIds.T_float:
-				case TypeIds.T_JavaLangFloat:
-				case TypeIds.T_double:
-				case TypeIds.T_JavaLangDouble:
-					output.append("Number");
-			}
-		} else {
-			this.type.generateExpression(scope, dependency, indent, output);
-		}
+		this.type.generateExpression(scope, indent, output);
 		output.append(".__class.isInstance(");
-		this.expression.generateExpression(scope, dependency, indent, output);
+		this.expression.generateExpression(scope, indent, output);
 		output.append(")");
 		return output;
 	}

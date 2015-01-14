@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.IntersectionTypeBinding18;
@@ -201,8 +200,7 @@ public class IntersectionCastTypeReference extends TypeReference {
 	}
 
 	@Override
-	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent,
-			StringBuffer output) {
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		// TODO Auto-generated method stub
 		return output;
 	}

@@ -2,7 +2,6 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
@@ -140,22 +139,22 @@ public abstract class Attribute extends XAMLNode implements InvocationSite{
 	}
 	
 	@Override
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append(property.token).append("=");
-		value.generateExpression(scope, dependency, indent, output);
+		value.generateExpression(scope, indent, output);
 		
 		return output;
 	}
 	
 	@Override
-	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
-		generateExpression(scope, dependency, indent, output);
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		generateExpression(scope, indent, output);
 		return output;
 	}
 	
 	@Override
-	public StringBuffer generateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
-		return doGenerateExpression(scope, dependency, indent, output);
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
+		return doGenerateExpression(scope, indent, output);
 	}
 	
 	public TypeBinding[] genericTypeArguments() { return null;}

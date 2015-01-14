@@ -13,7 +13,6 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.StringConstant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
@@ -87,8 +86,7 @@ public class StringLiteral extends Literal {
 	}
 	
 	@Override
-	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager,
-			int indent, StringBuffer output) {
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		// handle some special char.....
 		output.append('\"');
 		for (int i = 0; i < this.source.length; i++) {

@@ -3,7 +3,6 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
@@ -188,8 +187,7 @@ public class PropertyReference extends Expression{
 
 
 	@Override
-	protected StringBuffer doGenerateExpression(Scope scope,
-			Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		// TODO Auto-generated method stub
 		return null;
 	}

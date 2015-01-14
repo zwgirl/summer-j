@@ -12,8 +12,17 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.Binding;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
+import org.summer.sdt.internal.compiler.lookup.PackageBinding;
+import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
+import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
 import org.summer.sdt.internal.compiler.problem.AbortCompilation;
 
 public class QualifiedTypeReference extends TypeReference {
@@ -206,7 +215,7 @@ public class QualifiedTypeReference extends TypeReference {
 		return this.tokens.length;
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		for (int i = 0; i < this.tokens.length; i++) {
 			if (i > 0) output.append('.');
 //			if (this.annotations != null && this.annotations[i] != null) {

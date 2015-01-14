@@ -13,10 +13,11 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.flow.*;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.javascript.JsConstant;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.flow.FlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.flow.InsideSubRoutineFlowContext;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class BreakStatement extends BranchStatement {
 
@@ -102,9 +103,9 @@ public class BreakStatement extends BranchStatement {
 		return true;
 	}
 
-	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int tab, StringBuffer output) {
-		printIndent(tab, output).append(JsConstant.BREAK); 
-		if (this.label != null) output.append(JsConstant.WHITESPACE).append(this.label);
+	public StringBuffer doGenerateExpression(Scope scope, int tab, StringBuffer output) {
+		printIndent(tab, output).append("break"); 
+		if (this.label != null) output.append(" ").append(this.label);
 		return output.append(';');
 	}
 }

@@ -55,7 +55,6 @@ import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
@@ -304,121 +303,6 @@ public abstract class TypeReference extends Expression {
 		}
 	}
 	
-//	//cym 2014-12-03
-//	/*
-//	 * Answer a base type reference (can be an array of base type).
-//	 */
-//	public static final TypeReference baseTypeReference(int baseType, int dim, Annotation [][] dimAnnotations) {
-//	
-//		if (dim == 0) {
-//			switch (baseType) {
-//				case (TypeIds.T_void) :
-//					return new SingleTypeReference(TypeBinding.VOID.simpleName, 0);
-//				case (TypeIds.T_boolean) :
-//					return new SingleTypeReference(TypeBinding.BOOLEAN.simpleName, 0);
-//				case (TypeIds.T_char) :
-//					return new SingleTypeReference(TypeBinding.CHAR.simpleName, 0);
-//				case (TypeIds.T_float) :
-//					return new SingleTypeReference(TypeBinding.FLOAT.simpleName, 0);
-//				case (TypeIds.T_double) :
-//					return new SingleTypeReference(TypeBinding.DOUBLE.simpleName, 0);
-//				case (TypeIds.T_byte) :
-//					return new SingleTypeReference(TypeBinding.BYTE.simpleName, 0);
-//				case (TypeIds.T_short) :
-//					return new SingleTypeReference(TypeBinding.SHORT.simpleName, 0);
-//				case (TypeIds.T_int) :
-//					return new SingleTypeReference(TypeBinding.INT.simpleName, 0);
-//				default : //T_long
-//					return new SingleTypeReference(TypeBinding.LONG.simpleName, 0);
-//			}
-//		}
-////		switch (baseType) {
-////			case (TypeIds.T_void) :
-////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_VOID, new long[]{0})}}, 0, new long[]{0});
-////			case (TypeIds.T_boolean) :
-////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_BOOLEAN, new long[]{0})}}, 0, new long[]{0});
-////			case (TypeIds.T_char) :
-////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_CHARACTER, new long[]{0})}}, 0, new long[]{0});
-////			case (TypeIds.T_float) :
-////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_FLOAT, new long[]{0})}}, 0, new long[]{0});
-////			case (TypeIds.T_double) :
-////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_DOUBLE, new long[]{0})}}, 0, new long[]{0});
-////			case (TypeIds.T_byte) :
-////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_BYTE, new long[]{0})}}, 0, new long[]{0});
-////			case (TypeIds.T_short) :
-////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_SHORT, new long[]{0})}}, 0, new long[]{0});
-////			case (TypeIds.T_int) :
-////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_INTEGER, new long[]{0})}}, 0, new long[]{0});
-////			default : //T_long
-////				return new ParameterizedQualifiedTypeReference(TypeConstants.JAVA_LANG_ARRAY, new TypeReference[][]{{new QualifiedTypeReference(TypeConstants.JAVA_LANG_LONG, new long[]{0})}}, 0, new long[]{0});
-////		}
-//		
-////		switch (baseType) {
-////		case (TypeIds.T_void) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_VOID, new long[]{0})}, 0, 0);
-////		case (TypeIds.T_boolean) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_BOOLEAN, new long[]{0})}, 0, 0);
-////		case (TypeIds.T_char) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_CHARACTER, new long[]{0})}, 0, 0);
-////		case (TypeIds.T_float) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_FLOAT, new long[]{0})}, 0, 0);
-////		case (TypeIds.T_double) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_DOUBLE, new long[]{0})}, 0, 0);
-////		case (TypeIds.T_byte) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_BYTE, new long[]{0})}, 0, 0);
-////		case (TypeIds.T_short) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_SHORT, new long[]{0})}, 0, 0);
-////		case (TypeIds.T_int) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_INTEGER, new long[]{0})}, 0, 0);
-////		default : //T_long
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new QualifiedTypeReference(TypeConstants.JAVA_LANG_LONG, new long[]{0})}, 0, 0);
-////		}
-//		
-////		switch (baseType) {
-////		case (TypeIds.T_void) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.VOID.simpleName, 0)}, 0, 0);
-////		case (TypeIds.T_boolean) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.BOOLEAN.simpleName, 0)}, 0, 0);
-////		case (TypeIds.T_char) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.CHAR.simpleName, 0)}, 0, 0);
-////		case (TypeIds.T_float) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.FLOAT.simpleName, 0)}, 0, 0);
-////		case (TypeIds.T_double) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.DOUBLE.simpleName, 0)}, 0, 0);
-////		case (TypeIds.T_byte) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.BYTE.simpleName, 0)}, 0, 0);
-////		case (TypeIds.T_short) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.SHORT.simpleName, 0)}, 0, 0);
-////		case (TypeIds.T_int) :
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.INT.simpleName, 0)}, 0, 0);
-////		default : //T_long
-////			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference(TypeBinding.LONG.simpleName, 0)}, 0, 0);
-////		}
-//		
-//		for(int i = 0; i < dim; i++){
-//			
-//		}
-//		switch (baseType) {
-//		case (TypeIds.T_void) :
-//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Void".toCharArray(), 0)}, 0, 0);
-//		case (TypeIds.T_boolean) :
-//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Boolean".toCharArray(), 0)}, 0, 0);
-//		case (TypeIds.T_char) :
-//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Character".toCharArray(), 0)}, 0, 0);
-//		case (TypeIds.T_float) :
-//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Float".toCharArray(), 0)}, 0, 0);
-//		case (TypeIds.T_double) :
-//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Double".toCharArray(), 0)}, 0, 0);
-//		case (TypeIds.T_byte) :
-//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Byte".toCharArray(), 0)}, 0, 0);
-//		case (TypeIds.T_short) :
-//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Short".toCharArray(), 0)}, 0, 0);
-//		case (TypeIds.T_int) :
-//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Integer".toCharArray(), 0)}, 0, 0);
-//		default : //T_long
-//			return new ParameterizedSingleTypeReference(TypeConstants.ARRAY, new TypeReference[]{new SingleTypeReference("Long".toCharArray(), 0)}, 0, 0);
-//		}
-//	}
 	
 	public static final TypeReference baseTypeReference(int baseType, int dim) {
 		return baseTypeReference(baseType, dim, null);

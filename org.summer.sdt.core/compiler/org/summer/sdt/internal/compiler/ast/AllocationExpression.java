@@ -63,7 +63,6 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -757,104 +756,122 @@ public class AllocationExpression extends Expression implements Invocation {
 		return new InferenceContext18(scope, this.arguments, this, this.outerInferenceContext);
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		if(this.binding == null){
 			return output;
 		}
-		if(this.binding.declaringClass.isMemberType()){
-			output.append("(function(){\n");
-			printIndent(indent + 1, output).append("var r = {__enclosing : this, __proto__: ");
-			output.append(CharOperation.concatWith(this.binding.declaringClass.getQualifiedName(), '.')).append(".prototype");
-			output.append("};\n");
-			printIndent(indent + 1, output).append(this.binding.declaringClass.sourceName).append(".apply(r, arguments");
-			output.append(");\n");
-			printIndent(indent + 1, output).append("return r;\n"); 
-			printIndent(indent, output).append("}).call(this");
-			outputArguments(scope, dependency, indent, output, true);
-			
-			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
-				if(this.arguments != null && this.arguments.length > 0){
-					output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE);
-				}
-				output.append("\"").append(Annotation.getOverloadPostfix(this.binding.sourceMethod().annotations)).append("\"");
-			}
-			output.append(JsConstant.RPAREN);
-			return output;
+		
+		if((this.binding.declaringClass.modifiers & ClassFileConstants.AccNative) != 0){
+			output.append("new ").append(this.binding.declaringClass.sourceName);
 		} else {
-			output.append(JsConstant.NEW).append(JsConstant.WHITESPACE); 
-	
-			if((this.binding.declaringClass.modifiers & ClassFileConstants.AccNative) !=0){
-				if (this.type != null) { 
-					int id = this.binding.declaringClass.id;
-					if(id != TypeIds.NoId){
-						switch(id){
-						case TypeIds.T_char:
-						case TypeIds.T_JavaLangCharacter:
-						case TypeIds.T_byte:
-						case TypeIds.T_JavaLangByte:
-						case TypeIds.T_short:
-						case TypeIds.T_JavaLangShort:
-						case TypeIds.T_int:
-						case TypeIds.T_JavaLangInteger:
-						case TypeIds.T_long:
-						case TypeIds.T_JavaLangLong:
-						case TypeIds.T_float:
-						case TypeIds.T_JavaLangFloat:
-						case TypeIds.T_double:
-						case TypeIds.T_JavaLangDouble:
-							output.append("Number");
-						}
-					} else {
-						this.type.doGenerateExpression(scope, dependency, 0, output);
-					}
-				} else { // type null for enum constant initializations
-					output.append(this.typeExpected.sourceName()); 
-				}
-			} else {
-				output.append("__cache[\"").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("\"]");
-			}
-			
-			output.append('(');
-			outputArguments(scope, dependency, indent, output, false);
-			
-			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
-				if(this.arguments != null && this.arguments.length > 0){
-					output.append(", ");
-				}
-				AbstractMethodDeclaration method = this.binding.sourceMethod();
-				if(method!=null){
-					output.append("\"").append(Annotation.getOverloadPostfix(method.annotations)).append("\"");
-				}
+			if(this.binding.declaringClass.isMemberType()){
+				output.append("(function(){\n");
+				printIndent(indent + 1, output).append("var r = {__enclosing : this, __proto__: ");
+				output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append(".prototype");
+				output.append("};\n");
+				printIndent(indent + 1, output).append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append(".apply(r, arguments");
+				output.append(");\n");
+				printIndent(indent + 1, output).append("return r;\n"); 
+				printIndent(indent, output).append("}).call(this");
+				outputArguments(scope, indent, output, true);
 				
+				if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
+					if(this.arguments != null && this.arguments.length > 0){
+						output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE);
+					}
+					output.append("\"").append(Annotation.getOverloadPostfix(this.binding.sourceMethod().annotations)).append("\"");
+				}
+				output.append(JsConstant.RPAREN);
+				return output;
+			} else {
+				output.append("new "); 
+				if(this.binding.declaringClass.isBaseType()){
+					this.type.doGenerateExpression(scope, 0, output);
+				} else {
+					output.append("(");
+					this.type.doGenerateExpression(scope, 0, output);
+					output.append(")");
+				}
+		
+//				if((this.binding.declaringClass.modifiers & ClassFileConstants.AccNative) !=0){
+//					if (this.type != null) { 
+//						int id = this.binding.declaringClass.id;
+//						if(id != TypeIds.NoId){
+//							switch(id){
+//							case TypeIds.T_char:
+//							case TypeIds.T_JavaLangCharacter:
+//							case TypeIds.T_byte:
+//							case TypeIds.T_JavaLangByte:
+//							case TypeIds.T_short:
+//							case TypeIds.T_JavaLangShort:
+//							case TypeIds.T_int:
+//							case TypeIds.T_JavaLangInteger:
+//							case TypeIds.T_long:
+//							case TypeIds.T_JavaLangLong:
+//							case TypeIds.T_float:
+//							case TypeIds.T_JavaLangFloat:
+//							case TypeIds.T_double:
+//							case TypeIds.T_JavaLangDouble:
+//								output.append("Number");
+//							}
+//						} else {
+//							this.type.doGenerateExpression(scope, dependency, 0, output);
+//						}
+//					} else { // type null for enum constant initializations
+//						output.append(this.typeExpected.sourceName()); 
+//					}
+//				} else {
+//					output.append("(__lc('");
+//					if((binding.modifiers & ClassFileConstants.AccModule) != 0){
+//						output.append(CharOperation.concatWith(binding.declaringClass.compoundName, '.')).append("', ");
+//						output.append("'").append(TypeDeclaration.getFileName(binding.declaringClass)).append("'");
+//					} else {
+//						output.append(CharOperation.concatWith(binding.declaringClass.compoundName, '.')).append("'");
+//					}
+//					output.append("))");
+//				}
 			}
-			output.append(')');
 		}
+		output.append('(');
+		outputArguments(scope, indent, output, false);
+		
+		if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
+			if(this.arguments != null && this.arguments.length > 0){
+				output.append(", ");
+			}
+			AbstractMethodDeclaration method = this.binding.sourceMethod();
+			if(method!=null){
+				output.append("\"").append(Annotation.getOverloadPostfix(method.annotations)).append("\"");
+			}
+			
+		}
+		output.append(')');
 		
 		return output;
 	}
 	
-	private void outputArguments(Scope scope, Dependency dependency, int indent, StringBuffer output, boolean comma){
+	private void outputArguments(Scope scope, int indent, StringBuffer output, boolean comma){
 		if (this.arguments != null) {
 			if(comma) output.append(", "); //$NON-NLS-1$
 			
 			if((this.binding.modifiers & ClassFileConstants.AccNative) != 0 || (this.binding.modifiers & ClassFileConstants.AccVarargs) == 0){
 				for (int i = 0; i < this.arguments.length ; i ++) {
 					if (i > 0) output.append(", "); //$NON-NLS-1$
-					this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+					this.arguments[i].doGenerateExpression(scope, 0, output);
 				}
 			} else{
 				if((this.binding.modifiers & ClassFileConstants.AccVarargs) != 0){
 					int argIndex = this.binding.parameters.length - 1;
 					for (int i = 0; i < argIndex ; i ++) {
 						if (i > 0) output.append(", "); //$NON-NLS-1$
-						this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+						this.arguments[i].doGenerateExpression(scope, 0, output);
 					}
 					
 					if (argIndex > 0) output.append(",");
 					output.append("["); //$NON-NLS-1$
 					for(int i = argIndex; i < this.arguments.length; i++){
 						if (i > argIndex) output.append(", "); //$NON-NLS-1$
-						this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+						this.arguments[i].doGenerateExpression(scope, 0, output);
 					}
 					output.append("]");
 				}

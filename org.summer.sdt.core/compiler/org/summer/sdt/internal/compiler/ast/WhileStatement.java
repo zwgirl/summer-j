@@ -17,11 +17,15 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.flow.*;
-import org.summer.sdt.internal.compiler.impl.*;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.codegen.BranchLabel;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.flow.FlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.flow.LoopingFlowContext;
+import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class WhileStatement extends Statement {
 
@@ -301,26 +305,27 @@ public class WhileStatement extends Statement {
 		return this.action.continuesAtOuterLabel();
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 
 		output.append("while ("); //$NON-NLS-1$
-		this.condition.generateExpression(scope, dependency, 0, output).append(')');
+		this.condition.generateExpression(scope, 0, output).append(')');
 		if (this.action == null)
 			output.append(';');
 		else {
 			if(this.action instanceof Block){
 				output.append("\n");
-				this.action.generateStatement(scope, dependency, indent, output);
+				this.action.generateStatement(scope, indent, output);
 			} else{
-				this.action.generateStatement(scope, dependency, indent + 1, output);
+				output.append("\n");
+				this.action.generateStatement(scope, indent + 1, output);
 			}
 		}
 		return output;
 	}
 	
 	@Override
-	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		return this.generateExpression(scope, dependency, indent, output);
+		return this.generateExpression(scope, indent, output);
 	}
 }

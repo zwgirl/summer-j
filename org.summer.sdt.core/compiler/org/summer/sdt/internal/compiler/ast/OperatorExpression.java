@@ -13,8 +13,6 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.util.Util;
 
 public abstract class OperatorExpression extends Expression implements OperatorIds {

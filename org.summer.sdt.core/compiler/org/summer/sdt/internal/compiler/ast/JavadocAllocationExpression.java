@@ -13,7 +13,17 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.Binding;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.ParameterizedMethodBinding;
+import org.summer.sdt.internal.compiler.lookup.ProblemMethodBinding;
+import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class JavadocAllocationExpression extends AllocationExpression {
 

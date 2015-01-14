@@ -39,12 +39,21 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.codegen.BranchLabel;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.flow.FlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeIds;
 
 public abstract class Statement extends ASTNode {
 
@@ -434,24 +443,24 @@ public abstract class Statement extends ASTNode {
 		return ctorBinding;
 	}
 	
-	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output){
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output){
 		printIndent(indent, output);
-		generateExpression(scope, dependency, indent, output);
+		generateExpression(scope, indent, output);
 		return output.append(";");
 	}
 	
-	public StringBuffer generateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		int parenthesesCount = (this.bits & ASTNode.ParenthesizedMASK) >> ASTNode.ParenthesizedSHIFT;
 		String suffix = ""; //$NON-NLS-1$
 		for(int i = 0; i < parenthesesCount; i++) {
 			output.append('(');
 			suffix += ')';
 		}
-		this.doGenerateExpression(scope, dependency, indent, output);
+		this.doGenerateExpression(scope, indent, output);
 		output.append(suffix);
 		
 		return output;
 	}
 	
-	protected abstract StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output);
+	protected abstract StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output);
 }

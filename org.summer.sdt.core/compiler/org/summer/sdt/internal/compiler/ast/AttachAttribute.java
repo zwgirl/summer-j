@@ -2,7 +2,6 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -46,7 +45,7 @@ public class AttachAttribute extends Attribute {
 		return output;
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
 		output.append(type.getLastToken()).append(".");
 		output.append("set");
@@ -57,7 +56,7 @@ public class AttachAttribute extends Attribute {
 			output.append(property.token);
 		}
 		output.append("(this, ");
-		value.doGenerateExpression(scope, dependency, indent, output);
+		value.doGenerateExpression(scope, indent, output);
 		output.append(")");
 		
 		return output;

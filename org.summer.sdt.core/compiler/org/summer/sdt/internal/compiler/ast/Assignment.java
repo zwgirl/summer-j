@@ -34,12 +34,20 @@ import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.flow.FlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.Binding;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.VariableBinding;
+import org.summer.sdt.internal.compiler.lookup.WildcardBinding;
 
 public class Assignment extends Expression {
 
@@ -269,13 +277,13 @@ public class Assignment extends Expression {
 		return true;
 	}
 	
-	public StringBuffer generateJavascript(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
+	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
 		//no () when used as a statement
 		printIndent(indent, output);
-		return generateExpression(scope, depsManager, indent, output);
+		return generateExpression(scope, indent, output);
 	}
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
-		this.lhs.generateExpression(scope, dependency, indent, output).append(" = "); //$NON-NLS-1$
-		return this.expression.generateExpression(scope, dependency, 0, output);
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+		this.lhs.generateExpression(scope, indent, output).append(" = "); //$NON-NLS-1$
+		return this.expression.generateExpression(scope, indent, output);
 	}
 }

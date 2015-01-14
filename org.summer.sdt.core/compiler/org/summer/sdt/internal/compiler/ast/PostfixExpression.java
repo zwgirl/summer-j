@@ -12,8 +12,6 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -73,7 +71,7 @@ public class PostfixExpression extends CompoundAssignment {
 		visitor.endVisit(this, scope);
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
-		return this.lhs.generateExpression(scope, dependency, indent, output).append(' ').append(operatorToString());
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+		return this.lhs.generateExpression(scope, indent, output).append(' ').append(operatorToString());
 	}
 }

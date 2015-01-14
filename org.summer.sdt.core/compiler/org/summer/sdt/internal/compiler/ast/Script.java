@@ -1,7 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -18,8 +17,7 @@ public class Script extends XAMLElement{
 	}
 
 	@Override
-	protected StringBuffer doGenerateExpression(Scope scope,
-			Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		// TODO Auto-generated method stub
 		return null;
 	}

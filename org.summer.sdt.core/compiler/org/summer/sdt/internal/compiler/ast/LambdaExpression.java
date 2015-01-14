@@ -65,7 +65,6 @@ import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.AnnotationBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -1286,24 +1285,26 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 		return this.classType = new LambdaTypeBinding();
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append("function(");
 		if (this.arguments != null) {
 			for (int i = 0; i < this.arguments.length; i++) {
 				if (i > 0) output.append(", "); //$NON-NLS-1$
-				this.arguments[i].doGenerateExpression(scope, dependency, indent, output);
+				this.arguments[i].doGenerateExpression(scope, indent, output);
 			}
 		}
 		
 		output.append(")");
 		
 		if (this.body != null && this.body instanceof Block){
-			return this.body.doGenerateExpression(scope, dependency, indent, output);
+			return this.body.doGenerateExpression(scope, indent, output);
 		}
 		output.append("{"); //$NON-NLS-1$
 		if (this.body != null){
-			this.body.doGenerateExpression(scope, dependency, indent, output);
+			printIndent(indent, output);
+			this.body.doGenerateExpression(scope, indent + 1, output);
 		}
+		printIndent(indent, output);
 		output.append("}"); //$NON-NLS-1$
 		return output;
 	}

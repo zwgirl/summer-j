@@ -11,8 +11,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -59,8 +57,8 @@ public class PrefixExpression extends CompoundAssignment {
 		visitor.endVisit(this, scope);
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append(operatorToString()).append(' ');
-		return this.lhs.generateExpression(scope, dependency, 0, output);
+		return this.lhs.generateExpression(scope, 0, output);
 	}
 }

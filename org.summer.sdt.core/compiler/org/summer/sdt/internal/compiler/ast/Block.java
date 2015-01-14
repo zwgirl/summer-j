@@ -21,8 +21,6 @@ import org.summer.sdt.internal.compiler.codegen.BranchLabel;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
@@ -175,24 +173,24 @@ public class Block extends Statement {
 		return length > 0 && this.statements[length - 1].completesByContinue();
 	}
 
-	public StringBuffer generateBody(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
+	public StringBuffer generateBody(Scope scope, int indent, StringBuffer output) {
 		if (this.statements == null) return output;
 		for (int i = 0; i < this.statements.length; i++) {
-			this.statements[i].generateStatement(scope, depsManager, indent, output);
+			this.statements[i].generateStatement(scope, indent, output);
 			output.append('\n');
 		}
 		return output;
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append("{\n"); //$NON-NLS-1$
-		generateBody(scope, dependency, indent + 1, output);
+		generateBody(scope, indent + 1, output);
 		return printIndent(indent, output).append('}');
 	}
 	
-	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output){
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output){
 		printIndent(indent, output);
-		generateExpression(scope, dependency, indent, output);
+		generateExpression(scope, indent, output);
 		return output;
 	}
 }

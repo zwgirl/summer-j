@@ -13,10 +13,22 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
+import java.util.Stack;
+
+import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
+import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.MethodScope;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeIds;
+import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 
 public class SingleTypeReference extends TypeReference {
@@ -146,12 +158,106 @@ public class SingleTypeReference extends TypeReference {
 		}
 		visitor.endVisit(this, scope);
 	}
+	
+	public StringBuffer expression(){
+		StringBuffer output = new StringBuffer();
+		int id = this.resolvedType.id;
+		if(id < TypeIds.T_LastWellKnownTypeId){
+			switch(id){
+				case TypeIds.T_char:
+				case TypeIds.T_JavaLangCharacter:
+				case TypeIds.T_byte:
+				case TypeIds.T_JavaLangByte:
+				case TypeIds.T_short:
+				case TypeIds.T_JavaLangShort:
+				case TypeIds.T_int:
+				case TypeIds.T_JavaLangInteger:
+				case TypeIds.T_long:
+				case TypeIds.T_JavaLangLong:
+				case TypeIds.T_float:
+				case TypeIds.T_JavaLangFloat:
+				case TypeIds.T_double:
+				case TypeIds.T_JavaLangDouble:
+					output.append("Number");
+					break;
+				default:
+					output.append(this.token);
+			}
+		} else {
+			ReferenceBinding binding = (ReferenceBinding) this.resolvedType;
+			if(binding.isMemberType()){
+				Stack<ReferenceBinding> outters = new Stack<ReferenceBinding>();
+				ReferenceBinding outter = binding;
+				outters.push(outter);
+				while(outter.enclosingType() != null){
+					outter = outter.enclosingType();
+					outters.push(outter);
+				}
+				output.append("__lc(\"").append(CharOperation.concatWith(outters.pop().compoundName, '.')).append("\").");
+				StringBuffer temp = new StringBuffer();
+				while(!outters.isEmpty()){
+					temp.append(".").append(outters.pop().sourceName);
+				}
+			} else {
+				if((binding.modifiers & ClassFileConstants.AccModule) != 0){
+					output.append("__lc(\"").append(CharOperation.concatWith(binding.compoundName, '.'))
+					.append(", \"").append(TypeDeclaration.getFileName(binding)).append("\")");
+				} else {
+					output.append("__lc(\"").append(CharOperation.concatWith(binding.compoundName, '.')).append("\")");
+				}
+			}
+		}
+		
+		return output;
+	}
 
-	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output){
-//		if (this.annotations != null && this.annotations[0] != null) {
-//			generateAnnotations(this.annotations[0], output);
-//			output.append(' ');
-//		}
-		return output.append(this.token);
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output){
+		int id = this.resolvedType.id;
+		if(id < TypeIds.T_LastWellKnownTypeId){
+			switch(id){
+				case TypeIds.T_char:
+				case TypeIds.T_JavaLangCharacter:
+				case TypeIds.T_byte:
+				case TypeIds.T_JavaLangByte:
+				case TypeIds.T_short:
+				case TypeIds.T_JavaLangShort:
+				case TypeIds.T_int:
+				case TypeIds.T_JavaLangInteger:
+				case TypeIds.T_long:
+				case TypeIds.T_JavaLangLong:
+				case TypeIds.T_float:
+				case TypeIds.T_JavaLangFloat:
+				case TypeIds.T_double:
+				case TypeIds.T_JavaLangDouble:
+					output.append("Number");
+					break;
+				default:
+					output.append(this.token);
+			}
+		} else {
+			ReferenceBinding binding = (ReferenceBinding) this.resolvedType;
+			if(binding.isMemberType()){
+				Stack<ReferenceBinding> outters = new Stack<ReferenceBinding>();
+				ReferenceBinding outter = binding;
+				outters.push(outter);
+				while(outter.enclosingType() != null){
+					outter = outter.enclosingType();
+					outters.push(outter);
+				}
+				output.append("__lc(\"").append(CharOperation.concatWith(outters.pop().compoundName, '.')).append("\").");
+				StringBuffer temp = new StringBuffer();
+				while(!outters.isEmpty()){
+					temp.append(".").append(outters.pop().sourceName);
+				}
+			} else {
+				if((binding.modifiers & ClassFileConstants.AccModule) != 0){
+					output.append("__lc(\"").append(CharOperation.concatWith(binding.compoundName, '.'))
+					.append(", \"").append(TypeDeclaration.getFileName(binding)).append("\")");
+				} else {
+					output.append("__lc(\"").append(CharOperation.concatWith(binding.compoundName, '.')).append("\")");
+				}
+			}
+		}
+		return output;
 	}
 }

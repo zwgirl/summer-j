@@ -36,7 +36,6 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -645,7 +644,7 @@ public class CastExpression extends Expression {
 		visitor.endVisit(this, blockScope);
 	}
 
-	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
-		return this.expression.doGenerateExpression(scope, depsManager, 0, output);
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+		return this.expression.doGenerateExpression(scope, 0, output);
 	}
 }

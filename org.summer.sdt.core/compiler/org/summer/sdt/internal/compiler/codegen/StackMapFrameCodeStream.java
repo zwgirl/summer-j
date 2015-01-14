@@ -361,12 +361,13 @@ public void generateClassLiteralAccessForType(TypeBinding accessedType, FieldBin
 	}
 }
 public void generateOuterAccess(Object[] mappingSequence, ASTNode invocationSite, Binding target, Scope scope) {
-	int currentPosition = this.position;
-	super.generateOuterAccess(mappingSequence, invocationSite, target, scope);
-	if (currentPosition == this.position) {
-		// no code has been generate during outer access => no enclosing instance is available
-		throw new AbortMethod(scope.referenceCompilationUnit().compilationResult, null);
-	}
+	//cym 2015-01-11
+	//	int currentPosition = this.position;
+//	super.generateOuterAccess(mappingSequence, invocationSite, target, scope);
+//	if (currentPosition == this.position) {
+//		// no code has been generate during outer access => no enclosing instance is available
+//		throw new AbortMethod(scope.referenceCompilationUnit().compilationResult, null);
+//	}
 }
 public ExceptionMarker[] getExceptionMarkers() {
 	Set exceptionMarkerSet = this.exceptionMarkers;

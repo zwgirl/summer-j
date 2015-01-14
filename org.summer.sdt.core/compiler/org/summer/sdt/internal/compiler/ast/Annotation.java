@@ -43,8 +43,24 @@ import org.summer.sdt.internal.compiler.impl.BooleanConstant;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IrritantSet;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.AnnotationBinding;
+import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
+import org.summer.sdt.internal.compiler.lookup.Binding;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.ElementValuePair;
+import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.PackageBinding;
+import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeConstants;
+import org.summer.sdt.internal.compiler.lookup.TypeIds;
 
 /**
  * Annotation
@@ -1175,9 +1191,9 @@ public abstract class Annotation extends Expression {
 		this.persistibleAnnotation = container; // will be a legitimate container for the first of the repeating ones and null for the followers.
 	}
 	
-	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append('@');
-		this.type.doGenerateExpression(scope, depsManager, 0, output);
+		this.type.doGenerateExpression(scope, 0, output);
 		return output;
 	}
 

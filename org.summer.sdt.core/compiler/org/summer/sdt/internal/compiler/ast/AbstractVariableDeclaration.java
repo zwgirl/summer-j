@@ -15,7 +15,6 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.InvocationSite;
@@ -147,8 +146,8 @@ public abstract class AbstractVariableDeclaration extends Statement implements I
 		// do nothing by default
 	}
 	
-	public StringBuffer generateStatement(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
-		doGenerateExpression(scope, depsManager, indent, output);
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
+		doGenerateExpression(scope, indent, output);
 		switch(getKind()) {
 			case ENUM_CONSTANT:
 				return output.append(',');
@@ -157,20 +156,20 @@ public abstract class AbstractVariableDeclaration extends Statement implements I
 		}
 	}
 
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
 		output.append("var ");
 		output.append(this.name);
 		switch(getKind()) {
 			case ENUM_CONSTANT:
 				if (this.initialization != null) {
-					this.initialization.doGenerateExpression(scope, depsManager, indent, output);
+					this.initialization.doGenerateExpression(scope, indent, output);
 				}
 				break;
 			default:
 				if (this.initialization != null) {
 					output.append(" = "); //$NON-NLS-1$
-					this.initialization.doGenerateExpression(scope, depsManager, indent, output);
+					this.initialization.doGenerateExpression(scope, indent, output);
 				}
 		}
 		return output;

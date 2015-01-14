@@ -14,8 +14,6 @@ public class GlobalScope extends Scope{
 	protected GlobalScope(Scope parent) {
 		super(GLOBAL_SCOPE, parent);
 	} 
-	
-	public static final char[][] JAVA_LANG_GLOBAL = new char[][] {"java".toCharArray(), "lang".toCharArray(), "Global".toCharArray()};
 
 	@Override
 	public ProblemReporter problemReporter() {
@@ -31,7 +29,7 @@ public class GlobalScope extends Scope{
 
 	public ReferenceBinding global() {
 		if(global == null){
-			QualifiedTypeReference winType = new QualifiedTypeReference(JAVA_LANG_GLOBAL, new long[]{0});
+			QualifiedTypeReference winType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_GLOBAL, new long[]{0});
 			global = (ReferenceBinding) winType.resolveType((CompilationUnitScope)this.parent);
 		}
 		

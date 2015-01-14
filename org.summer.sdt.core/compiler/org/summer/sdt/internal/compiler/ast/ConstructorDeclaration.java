@@ -28,16 +28,43 @@ package org.summer.sdt.internal.compiler.ast;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.summer.sdt.core.compiler.*;
-import org.summer.sdt.internal.compiler.*;
+import org.summer.sdt.core.compiler.CategorizedProblem;
+import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.core.compiler.IProblem;
+import org.summer.sdt.internal.compiler.ASTVisitor;
+import org.summer.sdt.internal.compiler.ClassFile;
+import org.summer.sdt.internal.compiler.CompilationResult;
 import org.summer.sdt.internal.compiler.ast.TypeReference.AnnotationCollector;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.flow.*;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
-import org.summer.sdt.internal.compiler.parser.*;
-import org.summer.sdt.internal.compiler.problem.*;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.codegen.Opcodes;
+import org.summer.sdt.internal.compiler.codegen.StackMapFrameCodeStream;
+import org.summer.sdt.internal.compiler.flow.ExceptionHandlingFlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.flow.InitializationFlowContext;
+import org.summer.sdt.internal.compiler.lookup.Binding;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.EventBinding;
+import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
+import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
+import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.MethodScope;
+import org.summer.sdt.internal.compiler.lookup.NestedTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.PropertyBinding;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.SyntheticArgumentBinding;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
+import org.summer.sdt.internal.compiler.lookup.TypeConstants;
+import org.summer.sdt.internal.compiler.lookup.TypeIds;
+import org.summer.sdt.internal.compiler.parser.Parser;
+import org.summer.sdt.internal.compiler.problem.AbortMethod;
+import org.summer.sdt.internal.compiler.problem.ProblemReporter;
+import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 import org.summer.sdt.internal.compiler.util.Util;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -688,16 +715,16 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 	    return this.typeParameters;
 	}
 	
-	public StringBuffer generateBody(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
+	public StringBuffer generateBody(Scope scope, int indent, StringBuffer output) {
 		output.append(" {"); //$NON-NLS-1$
 		if (this.constructorCall != null) {
 			output.append('\n');
-			this.constructorCall.generateStatement(scope, depsManager, indent, output);
+			this.constructorCall.generateStatement(scope, indent, output);
 		}
 		if (this.statements != null) {
 			for (int i = 0; i < this.statements.length; i++) {
 				output.append('\n');
-				this.statements[i].generateStatement(scope, depsManager, indent, output);
+				this.statements[i].generateStatement(scope, indent, output);
 			}
 		}
 		output.append('\n');

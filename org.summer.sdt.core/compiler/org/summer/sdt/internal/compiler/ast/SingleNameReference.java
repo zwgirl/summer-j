@@ -29,11 +29,9 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
@@ -47,6 +45,7 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.lookup.VariableBinding;
 import org.summer.sdt.internal.compiler.problem.AbortMethod;
@@ -1058,13 +1057,21 @@ public class SingleNameReference extends NameReference implements OperatorIds {
 		return new char[][] {this.token};
 	}
 	
-	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output){
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output){
 		if(this.binding instanceof FieldBinding){
 			FieldBinding field = (FieldBinding) this.binding;
 			if(field.isStatic()){
 				output.append(field.declaringClass.sourceName).append(".").append(this.token);
 			} else {
-				output.append("this.").append(this.token);
+				if(field.declaringClass.sourceName != null && field.declaringClass.sourceName.length > 0 && (field.declaringClass.sourceName[0] == 'W' || field.declaringClass.sourceName[0] == 'G') &&
+						(CharOperation.equals(field.declaringClass.compoundName, TypeConstants.JAVA_LANG_WINDOW) 
+							|| CharOperation.equals(field.declaringClass.compoundName, TypeConstants.JAVA_LANG_GLOBAL))){
+					
+				} else {
+					output.append("this.");
+				}
+				
+				output.append(this.token);
 			}
 		} else {
 			output.append(this.token);

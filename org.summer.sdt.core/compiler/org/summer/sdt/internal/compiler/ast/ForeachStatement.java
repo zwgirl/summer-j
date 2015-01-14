@@ -29,7 +29,6 @@ import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.flow.LoopingFlowContext;
 import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -584,13 +583,13 @@ public class ForeachStatement extends Statement {
 		return false; // may not be entered at all.
 	}
 
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 
 		output.append("for ("); //$NON-NLS-1$
-		this.elementVariable.doGenerateExpression(scope, dependency, 0, output);
+		this.elementVariable.doGenerateExpression(scope, 0, output);
 		output.append(" in ");//$NON-NLS-1$
 		if (this.collection != null) {
-			this.collection.doGenerateExpression(scope, dependency, indent, output).append(") "); //$NON-NLS-1$
+			this.collection.doGenerateExpression(scope, indent, output).append(") "); //$NON-NLS-1$
 		} else {
 			output.append(')');
 		}
@@ -599,17 +598,17 @@ public class ForeachStatement extends Statement {
 			output.append(';');
 		} else if(this.action instanceof Block){
 			output.append('\n');
-			this.action.generateStatement(scope, dependency, indent, output);
+			this.action.generateStatement(scope, indent, output);
 		} else {
-			this.action.doGenerateExpression(scope, dependency, indent, output);
+			this.action.doGenerateExpression(scope, indent, output);
 			output.append(';');
 		}
 		return output;
 	}
 	
 	@Override
-	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		return this.generateExpression(scope, dependency, indent, output);
+		return this.generateExpression(scope, indent, output);
 	}
 }

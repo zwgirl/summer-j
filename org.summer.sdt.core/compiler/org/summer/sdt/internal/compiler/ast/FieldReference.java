@@ -26,7 +26,6 @@ import org.summer.sdt.internal.compiler.codegen.Opcodes;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
@@ -828,7 +827,7 @@ public class FieldReference extends Reference implements InvocationSite {
 		return null;
 	}
 	
-	public StringBuffer doGenerateExpression(Scope scope, Dependency depsManager, int indent, StringBuffer output) {
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		if(this.binding == null){
 			return output;
 		}
@@ -839,7 +838,7 @@ public class FieldReference extends Reference implements InvocationSite {
 		} else if(this.receiver.isThis() || this.receiver.isSuper()){
 			output.append("this.").append(this.token);
 		} else {
-			this.receiver.doGenerateExpression(scope, depsManager, 0, output).append('.').append(this.token);
+			this.receiver.doGenerateExpression(scope, 0, output).append('.').append(this.token);
 		}
 		
 		return output;

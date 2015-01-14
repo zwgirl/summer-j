@@ -15,20 +15,11 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.lookup.AnnotationBinding;
-import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeConstants;
-import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
 
 public class ArrayTypeReference extends SingleTypeReference {
 	public int dimensions;

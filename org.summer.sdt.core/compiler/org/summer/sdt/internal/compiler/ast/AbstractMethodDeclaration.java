@@ -28,17 +28,36 @@ package org.summer.sdt.internal.compiler.ast;
 
 import java.util.List;
 
-import org.summer.sdt.core.compiler.*;
-import org.summer.sdt.internal.compiler.*;
+import org.summer.sdt.core.compiler.CategorizedProblem;
+import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.core.compiler.IProblem;
+import org.summer.sdt.internal.compiler.ASTVisitor;
+import org.summer.sdt.internal.compiler.ClassFile;
+import org.summer.sdt.internal.compiler.CompilationResult;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.*;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.impl.*;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
+import org.summer.sdt.internal.compiler.impl.ReferenceContext;
 import org.summer.sdt.internal.compiler.javascript.JsConstant;
-import org.summer.sdt.internal.compiler.lookup.*;
-import org.summer.sdt.internal.compiler.parser.*;
-import org.summer.sdt.internal.compiler.problem.*;
+import org.summer.sdt.internal.compiler.lookup.AnnotationBinding;
+import org.summer.sdt.internal.compiler.lookup.Binding;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
+import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
+import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.MethodScope;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeIds;
+import org.summer.sdt.internal.compiler.parser.Parser;
+import org.summer.sdt.internal.compiler.problem.AbortCompilation;
+import org.summer.sdt.internal.compiler.problem.AbortCompilationUnit;
+import org.summer.sdt.internal.compiler.problem.AbortMethod;
+import org.summer.sdt.internal.compiler.problem.AbortType;
+import org.summer.sdt.internal.compiler.problem.ProblemReporter;
+import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 import org.summer.sdt.internal.compiler.util.Util;
 
 @SuppressWarnings({"rawtypes"})
@@ -692,12 +711,12 @@ public abstract class AbstractMethodDeclaration
 		}
 	}
 	
-	public StringBuffer generateJavascript(Scope scope, Dependency dependency, int tab, StringBuffer output) {
+	public StringBuffer generateJavascript(Scope scope, int indent, StringBuffer output) {
 
 		if (this.javadoc != null) {
-			this.javadoc.print(tab, output);
+			this.javadoc.print(indent, output);
 		}
-		printIndent(tab, output);
+		printIndent(indent, output);
 		output.append(JsConstant.FUNCTION).append(JsConstant.WHITESPACE);
 		output.append(this.selector).append('(');
 		if (this.receiver != null) {
@@ -706,15 +725,15 @@ public abstract class AbstractMethodDeclaration
 		if (this.arguments != null) {
 			for (int i = 0; i < this.arguments.length; i++) {
 				if (i > 0 || this.receiver != null) output.append(", "); //$NON-NLS-1$
-				this.arguments[i].generateExpression(scope, dependency, 0, output);
+				this.arguments[i].generateExpression(scope, 0, output);
 			}
 		}
 		output.append(')');
-		generateBody(scope, dependency, tab + 1, output);
+		generateBody(scope, indent + 1, output);
 		return output;
 	}
 
-	public StringBuffer generateBody(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	public StringBuffer generateBody(Scope scope, int indent, StringBuffer output) {
 
 		if (isAbstract() || (this.modifiers & ExtraCompilerModifiers.AccSemicolonBody) != 0)
 			return output.append("{}");
@@ -723,7 +742,7 @@ public abstract class AbstractMethodDeclaration
 		if (this.statements != null) {
 			for (int i = 0; i < this.statements.length; i++) {
 				output.append('\n');
-				this.statements[i].generateStatement(scope, dependency, indent, output);
+				this.statements[i].generateStatement(scope, indent, output);
 			}
 		}
 		output.append('\n');

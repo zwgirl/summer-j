@@ -10,8 +10,9 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.codegen.BranchLabel;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
 
 public abstract class BranchStatement extends Statement {
 

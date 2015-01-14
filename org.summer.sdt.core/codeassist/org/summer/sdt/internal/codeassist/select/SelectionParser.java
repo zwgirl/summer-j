@@ -21,7 +21,6 @@ package org.summer.sdt.internal.codeassist.select;
  */
 
 import org.summer.sdt.core.compiler.CharOperation;
-import org.summer.sdt.internal.codeassist.complete.CompletionOnMemberAccess;
 import org.summer.sdt.internal.codeassist.impl.AssistParser;
 import org.summer.sdt.internal.compiler.CompilationResult;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
@@ -30,13 +29,11 @@ import org.summer.sdt.internal.compiler.ast.AllocationExpression;
 import org.summer.sdt.internal.compiler.ast.Annotation;
 import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.ArrayAllocationExpression;
-import org.summer.sdt.internal.compiler.ast.Attribute;
 import org.summer.sdt.internal.compiler.ast.CaseStatement;
 import org.summer.sdt.internal.compiler.ast.CastExpression;
 import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.summer.sdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.summer.sdt.internal.compiler.ast.Expression;
-import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldReference;
 import org.summer.sdt.internal.compiler.ast.GeneralAttribute;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
@@ -54,8 +51,8 @@ import org.summer.sdt.internal.compiler.ast.ReferenceExpression;
 import org.summer.sdt.internal.compiler.ast.ReturnStatement;
 import org.summer.sdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.summer.sdt.internal.compiler.ast.SingleNameReference;
+import org.summer.sdt.internal.compiler.ast.SingleTypeReference;
 import org.summer.sdt.internal.compiler.ast.Statement;
-import org.summer.sdt.internal.compiler.ast.StringLiteral;
 import org.summer.sdt.internal.compiler.ast.SuperReference;
 import org.summer.sdt.internal.compiler.ast.SwitchStatement;
 import org.summer.sdt.internal.compiler.ast.ThisReference;
@@ -63,7 +60,6 @@ import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeReference;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.ICompilationUnit;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
@@ -284,7 +280,7 @@ public class SelectionParser extends AssistParser {
 		}
 	}
 	
-	protected void consumeGeneralAttribute(SingleNameReference namespace) {
+	protected void consumeGeneralAttribute(SingleTypeReference namespace) {
 		if ((indexOfAssistIdentifier(true)) < 0) {
 			super.consumeGeneralAttribute(namespace);
 			return;
@@ -294,7 +290,7 @@ public class SelectionParser extends AssistParser {
 		char[] token = this.identifierStack[this.identifierPtr];
 		long positions = this.identifierPositionStack[this.identifierPtr--];
 		
-		GeneralAttribute generalAttr = new GeneralAttribute(namespace);
+		GeneralAttribute generalAttr = new GeneralAttribute();
 
 		SelectionOnPropertyReference fr = new SelectionOnPropertyReference(token, positions);
 		this.assistNode = fr;
@@ -989,8 +985,7 @@ public class SelectionParser extends AssistParser {
 					return output;
 				}
 				@Override
-				public StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent,
-						StringBuffer output) {
+				public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 					// TODO Auto-generated method stub
 					return null;
 				}
@@ -1044,8 +1039,7 @@ public class SelectionParser extends AssistParser {
 					return output;
 				}
 				@Override
-				public StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent,
-						StringBuffer output) {
+				public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 					// TODO Auto-generated method stub
 					return null;
 				}

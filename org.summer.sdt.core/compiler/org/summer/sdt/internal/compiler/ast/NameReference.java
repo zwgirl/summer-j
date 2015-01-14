@@ -16,7 +16,14 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.Binding;
+import org.summer.sdt.internal.compiler.lookup.FieldBinding;
+import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
+import org.summer.sdt.internal.compiler.lookup.InvocationSite;
+import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.problem.AbortMethod;
 
 public abstract class NameReference extends Reference implements InvocationSite {

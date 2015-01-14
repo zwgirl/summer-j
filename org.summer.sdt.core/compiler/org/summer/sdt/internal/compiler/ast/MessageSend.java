@@ -57,10 +57,11 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
-import static org.summer.sdt.internal.compiler.ast.ExpressionContext.*;
+import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_CONTEXT;
+import static org.summer.sdt.internal.compiler.ast.ExpressionContext.INVOCATION_CONTEXT;
+import static org.summer.sdt.internal.compiler.ast.ExpressionContext.VANILLA_CONTEXT;
 
 import java.util.HashMap;
-import java.util.Stack;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
@@ -73,7 +74,6 @@ import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
@@ -81,11 +81,9 @@ import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.ImplicitNullAnnotationVerifier;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
-import org.summer.sdt.internal.compiler.lookup.MemberTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.MissingTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.NestedTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ParameterizedGenericMethodBinding;
 import org.summer.sdt.internal.compiler.lookup.ParameterizedMethodBinding;
 import org.summer.sdt.internal.compiler.lookup.PolyParameterizedGenericMethodBinding;
@@ -1131,7 +1129,7 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 		return path;
 	}
 	
-	public StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output){
+	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output){
 		if(this.binding == null){
 			return output;
 		}
@@ -1139,17 +1137,24 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 		MethodBinding codegenBinding = this.binding instanceof PolymorphicMethodBinding ? this.binding : this.binding.original();
 		boolean isStatic = codegenBinding.isStatic();
 		if (isStatic) {
-			if(this.binding.declaringClass instanceof MemberTypeBinding){
-				output.append(CharOperation.concatWith(this.binding.declaringClass.getQualifiedName(), '.')).append('.');
-			} else{
-				output.append(this.binding.declaringClass.sourceName);
-				output.append('.');
-			}
+//			if(this.binding.declaringClass.isMemberType()){
+//				output.append(CharOperation.concatWith(this.binding.declaringClass.getQualifiedName(), '.')).append('.');
+//			} else{
+//				output.append(this.binding.declaringClass.sourceName);
+//				output.append('.');
+//			}
+			output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append('.');;
 		} else if ((this.bits & ASTNode.DepthMASK) != 0 && this.receiver.isImplicitThis()) { // outer access ?
-			int depths = (this.bits & ASTNode.DepthMASK) >> ASTNode.DepthSHIFT;
-			output.append("this.");
-			for(int i = 0; i < depths; i++){
-				output.append("__enclosing.");
+			//process GLobal and Window
+			if((this.binding.declaringClass.sourceName[0] == 'W' || this.binding.declaringClass.sourceName[0] == 'G') &&
+					(CharOperation.equals(this.binding.declaringClass.compoundName, TypeConstants.JAVA_LANG_WINDOW) 
+						|| CharOperation.equals(this.binding.declaringClass.compoundName, TypeConstants.JAVA_LANG_GLOBAL))){
+			} else {
+				int depths = (this.bits & ASTNode.DepthMASK) >> ASTNode.DepthSHIFT;
+				output.append("this.");
+				for(int i = 0; i < depths; i++){
+					output.append("__enclosing.");
+				}
 			}
 		} else if(this.binding.isDefaultMethod()){
 			output.append(this.binding.declaringClass.sourceName);
@@ -1157,14 +1162,16 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 		} else if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0){
 			
 		} else {
-			this.receiver.doGenerateExpression(scope, dependency, 0, output).append('.');
+			this.receiver.doGenerateExpression(scope, 0, output).append('.');
 		}
 		
 		output.append(this.selector);
 		if((this.binding.tagBits & TagBits.AnnotationOverload) != 0){
 			//first to find methoDeclaration
 			AbstractMethodDeclaration method = this.binding.sourceMethod();
-			output.append(Annotation.getOverloadPostfix(method.annotations));
+			if(method != null){
+				output.append(Annotation.getOverloadPostfix(method.annotations));
+			}
 		}
 		
 		if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0 || this.receiver instanceof SuperReference){
@@ -1178,7 +1185,7 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 				output.append("this");
 				comma = true;
 			} else {
-				this.receiver.doGenerateExpression(scope, dependency, 0, output);
+				this.receiver.doGenerateExpression(scope, 0, output);
 				comma = true;
 			}
 		}
@@ -1188,21 +1195,21 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 			if((this.binding.modifiers & ClassFileConstants.AccNative) != 0 || (this.binding.modifiers & ClassFileConstants.AccVarargs) == 0){
 				for (int i = 0; i < this.arguments.length ; i ++) {
 					if (i > 0) output.append(", "); //$NON-NLS-1$
-					this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+					this.arguments[i].doGenerateExpression(scope, 0, output);
 				}
 			} else{
 				if((this.binding.modifiers & ClassFileConstants.AccVarargs) != 0){
 					int argIndex = this.binding.parameters.length - 1;
 					for (int i = 0; i < argIndex ; i ++) {
 						if (i > 0) output.append(", "); //$NON-NLS-1$
-						this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+						this.arguments[i].doGenerateExpression(scope, 0, output);
 					}
 					
 					if (argIndex > 0) output.append(",");
 					output.append("["); //$NON-NLS-1$
 					for(int i = argIndex; i < this.arguments.length; i++){
 						if (i > argIndex) output.append(", "); //$NON-NLS-1$
-						this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+						this.arguments[i].doGenerateExpression(scope, 0, output);
 					}
 					output.append("]");
 				}

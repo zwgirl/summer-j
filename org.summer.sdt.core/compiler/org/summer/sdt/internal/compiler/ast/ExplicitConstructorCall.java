@@ -39,7 +39,6 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.codegen.Opcodes;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -519,20 +518,21 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 		return new InferenceContext18(scope, this.arguments, this, null);
 	}
 
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		if(this.binding == null){
 			return output;
 		}
 		if(this.binding.declaringClass.isMemberType()){
 			output.append("(function(){\n");
 			printIndent(indent + 1, output).append("var r = {__enclosing : this, __proto__: ");
-			output.append(CharOperation.concatWith(this.binding.declaringClass.getQualifiedName(), '.')).append(".prototype");
+//			output.append(CharOperation.concatWith(this.binding.declaringClass.getQualifiedName(), '.')).append(".prototype");
+			output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append(".prototype");
 			output.append("};\n");
 			printIndent(indent + 1, output).append(this.binding.declaringClass.sourceName).append(".apply(r, arguments");
 			output.append(");\n");
 			printIndent(indent + 1, output).append("return r;\n"); 
 			printIndent(indent, output).append("}).call(this");
-			outputArguments(scope, dependency, indent, output, true);
+			outputArguments(scope, indent, output, true);
 			
 			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
 				if(this.arguments != null && this.arguments.length > 0){
@@ -573,7 +573,7 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 			}
 			
 			output.append('(');
-			outputArguments(scope, dependency, indent, output, false);
+			outputArguments(scope, indent, output, false);
 			
 			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
 				if(this.arguments != null && this.arguments.length > 0){
@@ -591,28 +591,28 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 		return output;
 	}
 	
-	private void outputArguments(Scope scope, Dependency dependency, int indent, StringBuffer output, boolean comma){
+	private void outputArguments(Scope scope, int indent, StringBuffer output, boolean comma){
 		if (this.arguments != null) {
 			if(comma) output.append(", "); //$NON-NLS-1$
 			
 			if((this.binding.modifiers & ClassFileConstants.AccNative) != 0 || (this.binding.modifiers & ClassFileConstants.AccVarargs) == 0){
 				for (int i = 0; i < this.arguments.length ; i ++) {
 					if (i > 0) output.append(", "); //$NON-NLS-1$
-					this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+					this.arguments[i].doGenerateExpression(scope, 0, output);
 				}
 			} else{
 				if((this.binding.modifiers & ClassFileConstants.AccVarargs) != 0){
 					int argIndex = this.binding.parameters.length - 1;
 					for (int i = 0; i < argIndex ; i ++) {
 						if (i > 0) output.append(", "); //$NON-NLS-1$
-						this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+						this.arguments[i].doGenerateExpression(scope, 0, output);
 					}
 					
 					if (argIndex > 0) output.append(",");
 					output.append("["); //$NON-NLS-1$
 					for(int i = argIndex; i < this.arguments.length; i++){
 						if (i > argIndex) output.append(", "); //$NON-NLS-1$
-						this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+						this.arguments[i].doGenerateExpression(scope, 0, output);
 					}
 					output.append("]");
 				}

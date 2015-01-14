@@ -17,11 +17,17 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.codegen.BranchLabel;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.flow.FlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.flow.LoopingFlowContext;
+import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class ForStatement extends Statement {
 
@@ -444,7 +450,7 @@ public class ForStatement extends Statement {
 		return this.action.continuesAtOuterLabel();
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 
 		output.append("for ("); //$NON-NLS-1$
 		//inits
@@ -452,18 +458,30 @@ public class ForStatement extends Statement {
 			for (int i = 0; i < this.initializations.length; i++) {
 				//nice only with expressions
 				if (i > 0) output.append(", "); //$NON-NLS-1$
-				this.initializations[i].doGenerateExpression(scope, dependency, 0, output);
+				if(i == 0 && this.initializations[0] instanceof LocalDeclaration){
+					output.append("var ");
+				}
+				if(this.initializations[i] instanceof LocalDeclaration){
+					LocalDeclaration local = (LocalDeclaration) this.initializations[i];
+					output.append(local.name);
+					if(local.initialization != null){
+						output.append(" = ");
+						local.initialization.doGenerateExpression(scope, 0, output);
+					}
+				} else {
+					this.initializations[i].doGenerateExpression(scope, 0, output);
+				}
 			}
 		}
 		output.append("; "); //$NON-NLS-1$
 		//cond
-		if (this.condition != null) this.condition.doGenerateExpression(scope, dependency, 0, output);
+		if (this.condition != null) this.condition.doGenerateExpression(scope, 0, output);
 		output.append("; "); //$NON-NLS-1$
 		//updates
 		if (this.increments != null) {
 			for (int i = 0; i < this.increments.length; i++) {
 				if (i > 0) output.append(", "); //$NON-NLS-1$
-				this.increments[i].generateExpression(scope, dependency, 0, output);
+				this.increments[i].generateExpression(scope, 0, output);
 			}
 		}
 		output.append(") "); //$NON-NLS-1$
@@ -472,17 +490,18 @@ public class ForStatement extends Statement {
 			output.append(';');
 		else {
 			if(action instanceof Block){
-				this.action.generateStatement(scope, dependency, indent, output);
+				this.action.generateStatement(scope, indent, output);
 			} else {
-				this.action.generateStatement(scope, dependency, indent + 1, output);
+				output.append("\n");
+				this.action.generateStatement(scope, indent + 1, output);
 			}
 		}
 		return output;
 	}
 	
 	@Override
-	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		return this.generateExpression(scope, dependency, indent, output);
+		return this.generateExpression(scope, indent, output);
 	}
 }

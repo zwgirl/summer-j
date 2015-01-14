@@ -44,7 +44,6 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
 import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -614,15 +613,14 @@ public class QualifiedAllocationExpression extends AllocationExpression {
 		visitor.endVisit(this, scope);
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		if(this.anonymousType != null){
-			printIndent(indent, output);
 			output.append(JsConstant.NEW).append(JsConstant.WHITESPACE); 
 			
 			output.append("((function() {");
-			anonymousType.generateClassContent(this.anonymousType, dependency, indent + 1, output);
+			anonymousType.generateClassContent(this.anonymousType, indent + 1, output);
 			output.append('\n');
-			printIndent(indent + 1, output).append("return ").append(anonymousType.binding.constantPoolName()).append(";");
+			printIndent(indent + 1, output).append("return ").append(anonymousType.binding.sourceName).append(";");
 			output.append('\n');
 			printIndent(indent, output);
 			output.append("})())");
@@ -631,7 +629,7 @@ public class QualifiedAllocationExpression extends AllocationExpression {
 			if (this.arguments != null) {
 				for (int i = 0; i < this.arguments.length; i++) {
 					if (i > 0) output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE); 
-					this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+					this.arguments[i].doGenerateExpression(scope, 0, output);
 				}
 			}
 			return output.append(JsConstant.RPAREN);
@@ -639,20 +637,23 @@ public class QualifiedAllocationExpression extends AllocationExpression {
 		} else {
 			output.append("(function(){\n");
 			printIndent(indent + 1, output).append("var r = {__enclosing : ");
-			enclosingInstance.doGenerateExpression(scope, dependency, indent, output);
+			enclosingInstance.doGenerateExpression(scope, indent, output);
 			output.append("};\n");
-			printIndent(indent + 1, output).append(this.binding.declaringClass.sourceName).append(".call(r");
+			if(this.binding.declaringClass.isNestedType()){
+				printIndent(indent + 1, output).append(this.binding.declaringClass.sourceName).append(".call(r");
+			} else {
+//				printIndent(indent + 1, output).append(this.binding.declaringClass..sourceName).append(".call(r");
+			}
 			if (this.arguments != null) {
 				output.append(", ");
 				for (int i = 0; i < this.arguments.length; i++) {
 					if (i > 0) output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE); 
-					this.arguments[i].doGenerateExpression(scope, dependency, 0, output);
+					this.arguments[i].doGenerateExpression(scope, 0, output);
 				}
 			}
 			output.append(");\n");
 			printIndent(indent + 1, output).append("return r;\n"); 
 			printIndent(indent, output).append("})()");
-//			return type.generateExpression(scope, dependency, indent, output);
 			return output;
 		}
 	}

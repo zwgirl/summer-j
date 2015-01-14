@@ -30,12 +30,33 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.codegen.BranchLabel;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.codegen.ConstantPool;
+import org.summer.sdt.internal.compiler.codegen.ExceptionLabel;
+import org.summer.sdt.internal.compiler.codegen.MultiCatchExceptionLabel;
+import org.summer.sdt.internal.compiler.codegen.StackMapFrameCodeStream;
+import org.summer.sdt.internal.compiler.flow.ExceptionHandlingFlowContext;
+import org.summer.sdt.internal.compiler.flow.FinallyFlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
+import org.summer.sdt.internal.compiler.flow.InsideSubRoutineFlowContext;
+import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.ArrayBinding;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.InvocationSite;
+import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.MethodScope;
+import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
+import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeIds;
 
 public class TryStatement extends SubRoutineStatement {
 
@@ -1242,11 +1263,11 @@ public class TryStatement extends SubRoutineStatement {
 		return this.finallyBlock != null && this.finallyBlock.completesByContinue();
 	}
 	
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		int length = this.resources.length;
 		output.append("try" + (length == 0 ? "\n" : " (")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		for (int i = 0; i < length; i++) {
-			this.resources[i].doGenerateExpression(scope, dependency, 0, output);
+			this.resources[i].doGenerateExpression(scope, 0, output);
 			if (i != length - 1) {
 				output.append(";\n"); //$NON-NLS-1$
 				printIndent(indent + 2, output);
@@ -1255,28 +1276,28 @@ public class TryStatement extends SubRoutineStatement {
 		if (length > 0) {
 			output.append(")\n"); //$NON-NLS-1$
 		}
-		this.tryBlock.generateStatement(scope, dependency, indent, output);
+		this.tryBlock.generateStatement(scope, indent, output);
 	
 		//catches
 		if (this.catchBlocks != null)
 			for (int i = 0; i < this.catchBlocks.length; i++) {
 				output.append('\n');
 				printIndent(indent, output).append("catch ("); //$NON-NLS-1$
-				this.catchArguments[i].generateExpression(scope, dependency, 0, output).append(")\n"); //$NON-NLS-1$
-				this.catchBlocks[i].generateStatement(scope, dependency, indent, output);
+				this.catchArguments[i].generateExpression(scope, 0, output).append(")\n"); //$NON-NLS-1$
+				this.catchBlocks[i].generateStatement(scope, indent, output);
 			}
 		//finally
 		if (this.finallyBlock != null) {
 			output.append('\n');
 			printIndent(indent, output).append("finally\n"); //$NON-NLS-1$
-			this.finallyBlock.generateStatement(scope, dependency, indent, output);
+			this.finallyBlock.generateStatement(scope, indent, output);
 		}
 		return output;
 	}
 	
 	@Override
-	public StringBuffer generateStatement(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		return super.generateExpression(scope, dependency, indent, output);
+		return super.generateExpression(scope, indent, output);
 	}
 }

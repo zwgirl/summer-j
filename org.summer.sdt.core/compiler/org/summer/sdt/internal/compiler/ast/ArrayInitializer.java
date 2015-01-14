@@ -22,12 +22,15 @@ package org.summer.sdt.internal.compiler.ast;
 import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_CONTEXT;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.codegen.*;
-import org.summer.sdt.internal.compiler.flow.*;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.flow.FlowContext;
+import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.Dependency;
-import org.summer.sdt.internal.compiler.lookup.*;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class ArrayInitializer extends Expression {
 
@@ -259,14 +262,14 @@ public class ArrayInitializer extends Expression {
 		visitor.endVisit(this, scope);
 	}
 
-	protected StringBuffer doGenerateExpression(Scope scope, Dependency dependency, int indent, StringBuffer output) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 
 		output.append('[');
 		if (this.expressions != null) {
 			int j = 20 ;
 			for (int i = 0 ; i < this.expressions.length ; i++) {
 				if (i > 0) output.append(", "); //$NON-NLS-1$
-				this.expressions[i].doGenerateExpression(scope, dependency, 0, output);
+				this.expressions[i].doGenerateExpression(scope, 0, output);
 				j -- ;
 				if (j == 0) {
 					output.append('\n');
