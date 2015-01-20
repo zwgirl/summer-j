@@ -18,7 +18,6 @@ import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.AccessRestriction;
-import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.problem.ProblemReporter;
 import org.summer.sdt.internal.compiler.util.*;
 

@@ -88,6 +88,7 @@ $Terminals
 	PLUS_PLUS
 	MINUS_MINUS
 	EQUAL_EQUAL
+	EQUAL_EQUAL_EQUAL  --cym 2015-01-20
 	LESS_EQUAL
 	GREATER_EQUAL
 	NOT_EQUAL
@@ -134,10 +135,10 @@ $Terminals
 	AT
 	ELLIPSIS
 	ARROW
-	COLON_COLON
+--	COLON_COLON   --cym 2015-01-20
 	BeginLambda
 	BeginIntersectionCast
-	BeginTypeArguments
+--	BeginTypeArguments   --cym 2015-01-20
 	ElidedSemicolonAndRightBrace
 	CLOSE_TAG
 	CLOSE_ELEMENT
@@ -150,11 +151,12 @@ $Terminals
 
 $Alias
 
-	'::'   ::= COLON_COLON
+--	'::'   ::= COLON_COLON    --cym 2015-01-20
 	'->'   ::= ARROW
 	'++'   ::= PLUS_PLUS
 	'--'   ::= MINUS_MINUS
 	'=='   ::= EQUAL_EQUAL
+	'==='   ::= EQUAL_EQUAL_EQUAL  --cym 2015-01-20
 	'<='   ::= LESS_EQUAL
 	'>='   ::= GREATER_EQUAL
 	'!='   ::= NOT_EQUAL
@@ -249,7 +251,7 @@ Goal ::= '?' AnnotationTypeMemberDeclaration
 -- JSR 335 Reconnaissance missions.
 Goal ::= '->' ParenthesizedLambdaParameterList
 Goal ::= '(' ParenthesizedCastNameAndBounds
-Goal ::= '<' ReferenceExpressionTypeArgumentsAndTrunk
+--Goal ::= '<' ReferenceExpressionTypeArgumentsAndTrunk
 -- JSR 308 Reconnaissance mission.
 Goal ::= '@' TypeAnnotations
 /:$readableName Goal:/
@@ -668,6 +670,7 @@ TypeDeclaration ::= ';'
 -- 1.5 feature
 -----------------------------------------------
 TypeDeclaration -> EnumDeclaration
+TypeDeclaration -> FunctionTypeDeclaration
 TypeDeclaration -> AnnotationTypeDeclaration
 /:$readableName TypeDeclaration:/
 
@@ -692,6 +695,11 @@ Modifier -> 'strictfp'
 Modifier ::= Annotation
 /.$putCase consumeAnnotationAsModifier(); $break ./
 /:$readableName Modifier:/
+
+--cym 2015-01-20
+FunctionTypeDeclaration ::= Modifiersopt 'function' Type 'Identifier' '(' FormalParameterListopt ')' MethodHeaderThrowsClauseopt
+/.$putCase consumeFunctionTypeDeclaration(); $break ./
+/:$readableName FunctionTypeDeclaration:/
 
 --18.8 Productions from 8: Class Declarations
 --ClassModifier ::=
@@ -1285,6 +1293,23 @@ BlockStatementopt0 -> $empty
 BlockStatementopt0 -> BlockStatement
 /:$readableName BlockStatementopt0:/
 
+--cym 2015-01-20 start
+BlockStatement -> FunctionDeclaration 
+
+FunctionDeclaration ::= FunctionHeader MethodBody 
+/.$putCase 
+ consumeFunctionDeclaration(); $break ./
+/:$readableName FunctionDeclaration:/
+
+FunctionHeader ::= FunctionHeaderName FormalParameterListopt MethodHeaderRightParen
+/.$putCase consumeFunctionHeader(); $break ./
+/:$readableName FunctionHeader:/
+
+FunctionHeaderName ::= Type 'function' 'Identifier' '('
+/.$putCase consumeMethodHeaderName(); $break ./
+/:$readableName FunctionHeaderName:/
+--cym 2015-01-20 end
+
 BlockStatement -> LocalVariableDeclarationStatement
 BlockStatement -> Statement
 --1.1 feature
@@ -1638,60 +1663,76 @@ PrimaryNoNewArray ::= PrimitiveType '.' 'class'
 PrimaryNoNewArray -> MethodInvocation
 PrimaryNoNewArray -> ArrayAccess
 
+--cym 2015-01-20
+PrimaryNoNewArray -> FunctionExpression
+FunctionExpression ::= FunctionHeader1 MethodBody 
+/.$putCase 
+ consumeFunctionExpression(); $break ./
+/:$readableName FunctionExpression:/
+
+FunctionHeader1 ::= FunctionHeaderName1 FormalParameterListopt MethodHeaderRightParen
+/.$putCase consumeFunctionHeader1(); $break ./
+/:$readableName FunctionHeader1:/
+
+FunctionHeaderName1 ::= 'function' '('
+/.$putCase consumeMethodHeaderName1(); $break ./
+/:$readableName FunctionHeaderName1:/
+--cym 2015-01-20 end
+
 -----------------------------------------------------------------------
 --                   Start of rules for JSR 335
 -----------------------------------------------------------------------
 
 PrimaryNoNewArray -> LambdaExpression
-PrimaryNoNewArray -> ReferenceExpression
-/:$readableName Expression:/
-
--- Production name hardcoded in parser. Must be ::= and not -> 
-ReferenceExpressionTypeArgumentsAndTrunk ::= ReferenceExpressionTypeArgumentsAndTrunk0
-/:$readableName ReferenceExpressionTypeArgumentsAndTrunk:/
-
-ReferenceExpressionTypeArgumentsAndTrunk0 ::= OnlyTypeArguments Dimsopt 
-/.$putCase consumeReferenceExpressionTypeArgumentsAndTrunk(false); $break ./
-/:$compliance 1.8:/
-ReferenceExpressionTypeArgumentsAndTrunk0 ::= OnlyTypeArguments '.' ClassOrInterfaceType Dimsopt 
-/.$putCase consumeReferenceExpressionTypeArgumentsAndTrunk(true); $break ./
-/:$readableName ReferenceExpressionTypeArgumentsAndTrunk:/
-/:$compliance 1.8:/
-
-ReferenceExpression ::= PrimitiveType Dims '::' NonWildTypeArgumentsopt IdentifierOrNew
-/.$putCase consumeReferenceExpressionTypeForm(true); $break ./
-/:$compliance 1.8:/
-
-ReferenceExpression ::= Name Dimsopt '::' NonWildTypeArgumentsopt IdentifierOrNew
-/.$putCase consumeReferenceExpressionTypeForm(false); $break ./
-/:$compliance 1.8:/
-
--- BeginTypeArguments is a synthetic token the scanner concocts to help disambiguate
--- between '<' as an operator and '<' in '<' TypeArguments '>'
-ReferenceExpression ::= Name BeginTypeArguments ReferenceExpressionTypeArgumentsAndTrunk '::' NonWildTypeArgumentsopt IdentifierOrNew
-/.$putCase consumeReferenceExpressionGenericTypeForm(); $break ./
-/:$compliance 1.8:/
-
-ReferenceExpression ::= Primary '::' NonWildTypeArgumentsopt Identifier
-/.$putCase consumeReferenceExpressionPrimaryForm(); $break ./
-/:$compliance 1.8:/
-ReferenceExpression ::= 'super' '::' NonWildTypeArgumentsopt Identifier
-/.$putCase consumeReferenceExpressionSuperForm(); $break ./
-/:$readableName ReferenceExpression:/
-/:$compliance 1.8:/
-
-NonWildTypeArgumentsopt ::= $empty
-/.$putCase consumeEmptyTypeArguments(); $break ./
-NonWildTypeArgumentsopt -> OnlyTypeArguments
-/:$readableName NonWildTypeArgumentsopt:/
-/:$compliance 1.8:/
-
-IdentifierOrNew ::= 'Identifier'
-/.$putCase consumeIdentifierOrNew(false); $break ./
-IdentifierOrNew ::= 'new'
-/.$putCase consumeIdentifierOrNew(true); $break ./
-/:$readableName IdentifierOrNew:/
-/:$compliance 1.8:/
+--PrimaryNoNewArray -> ReferenceExpression
+--/:$readableName Expression:/
+--
+---- Production name hardcoded in parser. Must be ::= and not -> 
+--ReferenceExpressionTypeArgumentsAndTrunk ::= ReferenceExpressionTypeArgumentsAndTrunk0
+--/:$readableName ReferenceExpressionTypeArgumentsAndTrunk:/
+--
+--ReferenceExpressionTypeArgumentsAndTrunk0 ::= OnlyTypeArguments Dimsopt 
+--/.$putCase consumeReferenceExpressionTypeArgumentsAndTrunk(false); $break ./
+--/:$compliance 1.8:/
+--ReferenceExpressionTypeArgumentsAndTrunk0 ::= OnlyTypeArguments '.' ClassOrInterfaceType Dimsopt 
+--/.$putCase consumeReferenceExpressionTypeArgumentsAndTrunk(true); $break ./
+--/:$readableName ReferenceExpressionTypeArgumentsAndTrunk:/
+--/:$compliance 1.8:/
+--
+--ReferenceExpression ::= PrimitiveType Dims '::' NonWildTypeArgumentsopt IdentifierOrNew
+--/.$putCase consumeReferenceExpressionTypeForm(true); $break ./
+--/:$compliance 1.8:/
+--
+--ReferenceExpression ::= Name Dimsopt '::' NonWildTypeArgumentsopt IdentifierOrNew
+--/.$putCase consumeReferenceExpressionTypeForm(false); $break ./
+--/:$compliance 1.8:/
+--
+---- BeginTypeArguments is a synthetic token the scanner concocts to help disambiguate
+---- between '<' as an operator and '<' in '<' TypeArguments '>'
+--ReferenceExpression ::= Name BeginTypeArguments ReferenceExpressionTypeArgumentsAndTrunk '::' NonWildTypeArgumentsopt IdentifierOrNew
+--/.$putCase consumeReferenceExpressionGenericTypeForm(); $break ./
+--/:$compliance 1.8:/
+--
+--ReferenceExpression ::= Primary '::' NonWildTypeArgumentsopt Identifier
+--/.$putCase consumeReferenceExpressionPrimaryForm(); $break ./
+--/:$compliance 1.8:/
+--ReferenceExpression ::= 'super' '::' NonWildTypeArgumentsopt Identifier
+--/.$putCase consumeReferenceExpressionSuperForm(); $break ./
+--/:$readableName ReferenceExpression:/
+--/:$compliance 1.8:/
+--
+--NonWildTypeArgumentsopt ::= $empty
+--/.$putCase consumeEmptyTypeArguments(); $break ./
+--NonWildTypeArgumentsopt -> OnlyTypeArguments
+--/:$readableName NonWildTypeArgumentsopt:/
+--/:$compliance 1.8:/
+--
+--IdentifierOrNew ::= 'Identifier'
+--/.$putCase consumeIdentifierOrNew(false); $break ./
+--IdentifierOrNew ::= 'new'
+--/.$putCase consumeIdentifierOrNew(true); $break ./
+--/:$readableName IdentifierOrNew:/
+--/:$compliance 1.8:/
 
 LambdaExpression ::= LambdaParameters '->' LambdaBody
 /.$putCase consumeLambdaExpression(); $break ./
@@ -3012,6 +3053,7 @@ $names
 PLUS_PLUS ::=    '++'   
 MINUS_MINUS ::=    '--'   
 EQUAL_EQUAL ::=    '=='   
+EQUAL_EQUAL_EQUAL ::=    '==='   
 LESS_EQUAL ::=    '<='   
 GREATER_EQUAL ::=    '>='   
 NOT_EQUAL ::=    '!='   
@@ -3062,7 +3104,7 @@ CLOSE_TAG ::= '/>'
 CLOSE_ELEMENT ::= '</'
 ELLIPSIS ::=    '...'    
 ARROW ::= '->'
-COLON_COLON ::= '::'
+--COLON_COLON ::= '::'    --cym 2015-01-20
 
 SCRIPT_START ::= '<%'  --cym 2015-01-03
 SCRIPT_END ::= '%>'  --cym 2015-01-03
