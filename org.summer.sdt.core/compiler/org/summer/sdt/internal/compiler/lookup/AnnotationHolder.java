@@ -52,22 +52,22 @@ public class AnnotationHolder {
 	static class MethodHolder extends AnnotationHolder {
 		AnnotationBinding[][] parameterAnnotations; // is null if empty
 	
-	MethodHolder(AnnotationBinding[] annotations, AnnotationBinding[][] parameterAnnotations) {
-		super();
-		setAnnotations(annotations);
-		this.parameterAnnotations = parameterAnnotations;
-	}
-	public AnnotationBinding[][] getParameterAnnotations() {
-		return this.parameterAnnotations;
-	}
-	AnnotationBinding[] getParameterAnnotations(int paramIndex) {
-		AnnotationBinding[] result = this.parameterAnnotations == null ? null : this.parameterAnnotations[paramIndex];
-		return result == null ? Binding.NO_ANNOTATIONS : result;
-	}
-	AnnotationHolder setAnnotations(AnnotationBinding[] annotations) {
-		this.annotations = annotations == null || annotations.length == 0 ? Binding.NO_ANNOTATIONS : annotations;
-		return this;
-	}
+		MethodHolder(AnnotationBinding[] annotations, AnnotationBinding[][] parameterAnnotations) {
+			super();
+			setAnnotations(annotations);
+			this.parameterAnnotations = parameterAnnotations;
+		}
+		public AnnotationBinding[][] getParameterAnnotations() {
+			return this.parameterAnnotations;
+		}
+		AnnotationBinding[] getParameterAnnotations(int paramIndex) {
+			AnnotationBinding[] result = this.parameterAnnotations == null ? null : this.parameterAnnotations[paramIndex];
+			return result == null ? Binding.NO_ANNOTATIONS : result;
+		}
+		AnnotationHolder setAnnotations(AnnotationBinding[] annotations) {
+			this.annotations = annotations == null || annotations.length == 0 ? Binding.NO_ANNOTATIONS : annotations;
+			return this;
+		}
 	}
 	
 	static class AnnotationMethodHolder extends MethodHolder {

@@ -1,5 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.html.Html2JsAttributeMapping;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -33,8 +34,28 @@ public class GeneralAttribute extends Attribute{
 
 	@Override
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append(property.token).append(" = ");
-		value.doGenerateExpression(scope, indent, output);
+		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.token))).append(" = ");
+		
+		if((this.bits & ASTNode.IsEventCallback) != 0){
+			if(this.method.isStatic()){
+				output.append(this.method.declaringClass.sourceName).append('.');
+				if(value instanceof StringLiteral){
+					output.append(((StringLiteral)value).source).append(".call(").append(this.method.declaringClass.sourceName)
+					.append(", event); \"");
+				}
+			} else {
+				output.append("\"__this.");
+				if(value instanceof StringLiteral){
+					output.append(((StringLiteral)value).source).append(".call(__this, event); \"");
+				}
+			}
+		} else {
+			value.doGenerateExpression(scope, indent, output);
+		}
+		return output;
+	}
+	
+	public StringBuffer generateHTML(Scope initializerScope, int indent, StringBuffer output) {
 		return output;
 	}
 }

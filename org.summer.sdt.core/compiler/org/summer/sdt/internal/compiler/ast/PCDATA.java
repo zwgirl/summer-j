@@ -1,5 +1,9 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -15,7 +19,6 @@ public class PCDATA  extends XAMLElement {
 		//by default the position are the one of the field (not true for super access)
 		this.sourceStart = (int) (pos >>> 32);
 		this.sourceEnd = (int) (pos & 0x00000000FFFFFFFFL);
-		
 	}
 
 	@Override
@@ -50,6 +53,95 @@ public class PCDATA  extends XAMLElement {
 	@Override
 	protected void printTagName(int indent, StringBuffer output) {
 		
+	}
+	
+	public char[] transformEntity(boolean reservedReturn){
+		boolean flag = false;
+		char[] entity = new char[10];
+		int i = 0, length = 0;
+		char[] newSrc = null;
+		if(!reservedReturn){
+			newSrc = CharOperation.replace(source, new char[]{'\r'}, "\\r".toCharArray());
+			newSrc = CharOperation.replace(newSrc, new char[]{'\n'}, "\\n".toCharArray());
+		} else {
+			newSrc = source;
+		}
+
+		char[] result = new char[newSrc.length];
+		for(char currentChar : newSrc){
+			switch(currentChar){
+			case '&':
+				if(flag){
+					System.arraycopy(entity, 0, result, length, i);
+					length += i;
+					i = 0;
+				} else {
+					flag = true;
+				}
+				i = 0;
+				entity[i++] = currentChar;
+				break;
+			case ';':
+				entity[i++] = currentChar;
+				if(flag){
+					char c = trans(CharOperation.subarray(entity, 0, i));
+					if(c != 0){
+						if(c == '"'){
+							result[length++] = '\\';
+							result[length++] = c;
+						} else if(c == '\''){
+							result[length++] = '\\';
+							result[length++] = c;
+						} else {
+							result[length++] = c;
+						}
+					} else {
+						System.arraycopy(entity, 0, result, length, i);
+						length += i;
+					}
+				} else {
+					result[length++] = currentChar;
+				}
+				
+				flag = false;
+				break;
+			default:
+				if(flag){
+					entity[i++] = currentChar;
+				} else {
+					result[length++] = currentChar;
+				}
+			}
+		}
+		System.out.println("transformEntity: " + new String(CharOperation.subarray(result, 0, length)));
+		return CharOperation.subarray(result, 0, length);
+	}
+	
+	private static final Map<String, Character> entityMap = new HashMap<String, Character>();
+	static{
+		entityMap.put("quot", '\"');
+		entityMap.put("apos", '\'');
+		entityMap.put("lt", '<');
+		entityMap.put("gt", '>');
+		entityMap.put("amp", '&');
+		
+		//TODO to be continue
+	}
+
+	private char trans(char[] array) {
+		if(array[1] == '#'){
+			char[] num = CharOperation.subarray(array, 2, array.length-1);
+			return (char) CharOperation.parseInt(num, 0, num.length);
+		} else {
+			char[] name = CharOperation.subarray(array, 1, array.length-1);
+			Character c = entityMap.get(new String(name));
+			return c == null ? 0 : c ;
+		}
+	}
+	
+	@Override
+	public StringBuffer generateHTML(Scope scope, int indent, StringBuffer output) {
+		return output.append(source);
 	}
 
 }

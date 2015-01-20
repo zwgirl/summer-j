@@ -647,7 +647,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 								return;
 							case 13:  //cym 2015-01-01
 								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_EVENTCALLBACK[2]))
-									this.id = TypeIds.T_JavaLangEventCallback;
+									this.id = TypeIds.T_JavaLangAnnotationEventCallback;
 								return;
 						}
 						return;
@@ -691,8 +691,8 @@ abstract public class ReferenceBinding extends TypeBinding {
 								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_OVERRIDE[2])){
 									this.id = TypeIds.T_JavaLangOverride;
 									return;
-								} else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_OVERLOAD[2]))   //cym 2015-01-01
-									this.id = TypeIds.T_JavaLangOverload;
+								} else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_OVERLOAD[3]))   //cym 2015-01-01
+									this.id = TypeIds.T_JavaLangAnnotationOverload;
 								return;
 						}
 						return;
@@ -770,16 +770,18 @@ abstract public class ReferenceBinding extends TypeBinding {
 										this.id = TypeIds.T_JavaLangAnnotationDocumented;
 									return;
 								case 'E' :
-									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_ELEMENTTYPE[3]))
+									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_ELEMENTTYPE[3])){
 										this.id = TypeIds.T_JavaLangAnnotationElementType;
-									return;
+										return;
+									} else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_EVENTCALLBACK[3]))   //cym 2015-01-15
+										this.id = TypeIds.T_JavaLangAnnotationEventCallback;
 								case 'I' :
 									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_INHERITED[3]))
 										this.id = TypeIds.T_JavaLangAnnotationInherited;
 									return;
 								case 'O' :   //cym add 1014-11-20
 									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_OVERLOAD[3]))
-										this.id = TypeIds.T_JavaLangOverload;
+										this.id = TypeIds.T_JavaLangAnnotationOverload;
 									return;
 								case 'R' :
 									switch (typeName.length) {
@@ -2179,7 +2181,8 @@ abstract public class ReferenceBinding extends TypeBinding {
 	}
 	
 	//cym 2014-12-16
-	public char[][] getQualifiedName(){
+	public StringBuffer getMemberTypeName(){
+		
 		ReferenceBinding parent = this;
 		Stack<ReferenceBinding> stack = new Stack<ReferenceBinding>();
 		while(parent != null){
@@ -2187,11 +2190,13 @@ abstract public class ReferenceBinding extends TypeBinding {
 			parent = parent.enclosingType();
 		}
 		
-		char[][] result = null;
+		StringBuffer output = new StringBuffer();
+		ReferenceBinding toplevel = stack.pop();
+		output.append("__lc('").append(CharOperation.concatWith(toplevel.compoundName, '.')).append("')");
 		while(!stack.isEmpty()){
-			result = CharOperation.arrayConcat(result, stack.pop().sourceName);
+			output.append('.').append(stack.pop().sourceName);
 		}
 		
-		return result;
+		return output;
 	}
 }

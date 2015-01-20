@@ -1166,11 +1166,10 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 		}
 		
 		output.append(this.selector);
-		if((this.binding.tagBits & TagBits.AnnotationOverload) != 0){
-			//first to find methoDeclaration
-			AbstractMethodDeclaration method = this.binding.sourceMethod();
-			if(method != null){
-				output.append(Annotation.getOverloadPostfix(method.annotations));
+		if((this.binding instanceof ParameterizedMethodBinding && (((ParameterizedMethodBinding)this.binding).original().tagBits & TagBits.AnnotationOverload) != 0) 
+				|| (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
+			if(this.binding.overload != null){
+				output.append(this.binding.overload);
 			}
 		}
 		

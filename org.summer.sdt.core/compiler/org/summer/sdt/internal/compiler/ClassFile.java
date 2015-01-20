@@ -84,6 +84,7 @@ import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.SyntheticArgumentBinding;
@@ -2583,7 +2584,18 @@ public class ClassFile implements TypeConstants, TypeIds {
 			if (memberValuePairReturnType.isMemberType()) {
 				this.recordInnerClasses(memberValuePairReturnType);
 			}
-			if (memberValuePairReturnType.isArrayType() && !defaultValueBinding.isArrayType()) {
+			//cym 2015-01-14
+//			if (memberValuePairReturnType.isArrayType() && !defaultValueBinding.isArrayType()) {
+//				// automatic wrapping
+//				if (this.contentsOffset + 3 >= this.contents.length) {
+//					resizeContents(3);
+//				}
+//				this.contents[this.contentsOffset++] = (byte) '[';
+//				this.contents[this.contentsOffset++] = (byte) 0;
+//				this.contents[this.contentsOffset++] = (byte) 1;
+//			}
+			if ((memberValuePairReturnType instanceof ParameterizedTypeBinding && ((ParameterizedTypeBinding)memberValuePairReturnType).isArrayType2()) 
+					&& !((ParameterizedTypeBinding)defaultValueBinding).isArrayType2()) {
 				// automatic wrapping
 				if (this.contentsOffset + 3 >= this.contents.length) {
 					resizeContents(3);
@@ -2714,7 +2726,26 @@ public class ClassFile implements TypeConstants, TypeIds {
 				}
 				this.contents[this.contentsOffset++] = (byte) '@';
 				generateAnnotation((Annotation) defaultValue, attributeOffset);
-			} else if (defaultValueBinding.isArrayType()) {
+			//cym 2015-01-15
+//			} else if (defaultValueBinding.isArrayType()) {
+//				// array type
+//				if (this.contentsOffset + 3 >= this.contents.length) {
+//					resizeContents(3);
+//				}
+//				this.contents[this.contentsOffset++] = (byte) '[';
+//				if (defaultValue instanceof ArrayInitializer) {
+//					ArrayInitializer arrayInitializer = (ArrayInitializer) defaultValue;
+//					int arrayLength = arrayInitializer.expressions != null ? arrayInitializer.expressions.length : 0;
+//					this.contents[this.contentsOffset++] = (byte) (arrayLength >> 8);
+//					this.contents[this.contentsOffset++] = (byte) arrayLength;
+//					for (int i = 0; i < arrayLength; i++) {
+//						generateElementValue(arrayInitializer.expressions[i], defaultValueBinding.leafComponentType(), attributeOffset);
+//					}
+//				} else {
+//					this.contentsOffset = attributeOffset;
+//				}
+//			} else {
+			} else if (defaultValueBinding instanceof ParameterizedTypeBinding && ((ParameterizedTypeBinding)defaultValueBinding).isArrayType2()) {
 				// array type
 				if (this.contentsOffset + 3 >= this.contents.length) {
 					resizeContents(3);

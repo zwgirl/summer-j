@@ -1,8 +1,10 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.html.Html2JsAttributeMapping;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.InvocationSite;
@@ -11,6 +13,7 @@ import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 
 /**
  * 
@@ -22,6 +25,7 @@ public abstract class Attribute extends XAMLNode implements InvocationSite{
 	public PropertyReference property;
 	public Expression value;
 	public MethodBinding method;
+	public ReferenceBinding template;
 	
 	public final static char[] NAME = "name".toCharArray();
 	
@@ -49,72 +53,44 @@ public abstract class Attribute extends XAMLNode implements InvocationSite{
 	public void resolve(BlockScope scope) {
 		this.constant = Constant.NotAConstant;
 		property.resolveType(scope);
-//		TypeBinding receiverType = scope.context.resolvedType;
-//		if(receiverType == null){
-////			return new ProblemFieldBinding(
-////					receiverType instanceof ReferenceBinding ? (ReferenceBinding) receiverType : null,
-////							this.field.token,
-////					ProblemReasons.NotFound);
-//			scope.problemReporter().invalidField(field, receiverType);
-//			return null;
-//		}
-//		FieldBinding fieldBinding = field.binding = scope.getField(receiverType, this.field.token, this.field);
-//		if(fieldBinding == null){
-//			scope.problemReporter().invalidField(field, receiverType);
-//			return null;
-//		}
-//		if (!fieldBinding.isValidBinding()) {
-//			field.constant = Constant.NotAConstant;
-//			if (scope.context.type.resolvedType instanceof ProblemReferenceBinding) {
-//				// problem already got signaled on receiver, do not report secondary problem
-//				return null;
-//			}
-//			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=245007 avoid secondary errors in case of
-//			// missing super type for anonymous classes ... 
-//			ReferenceBinding declaringClass = fieldBinding.declaringClass;
-//			boolean avoidSecondary = declaringClass != null &&
-//									 declaringClass.isAnonymousType() &&
-//									 declaringClass.superclass() instanceof MissingTypeBinding;
-//			if (!avoidSecondary) {
-//				scope.problemReporter().invalidField(field, receiverType);
-//			}
-//			if (fieldBinding instanceof ProblemFieldBinding) {
-//				ProblemFieldBinding problemFieldBinding = (ProblemFieldBinding) fieldBinding;
-//				FieldBinding closestMatch = problemFieldBinding.closestMatch;
-//				switch(problemFieldBinding.problemId()) {
-//					case ProblemReasons.InheritedNameHidesEnclosingName :
-//					case ProblemReasons.NotVisible :
-//					case ProblemReasons.NonStaticReferenceInConstructorInvocation :
-//					case ProblemReasons.NonStaticReferenceInStaticContext :
-//						if (closestMatch != null) {
-//							fieldBinding = closestMatch;
-//						}
-//				}
-//			}
-//			if (!fieldBinding.isValidBinding()) {
-//				return null;
-//			}
-//		}
-//		return fieldBinding;
 	}
 	
 	public void resolve(ElementScope scope){
 		property.resolveType(scope);
+		ClassScope classScope = scope.enclosingClassScope();
 
+		if((this.bits & ASTNode.IsNamedAttribute) != 0){
+			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;
+		}
+		
 		if(this.value instanceof MarkupExtension){
 			MarkupExtension markExt = (MarkupExtension) this.value;
 			markExt.resolve(scope);
+			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;
 		} else {
 			if(property.binding == null || property.binding.type == null){
 				return;
 			}
 			
 			if((property.binding.type.tagBits & TagBits.AnnotationEventCallback) != 0){
+				this.bits |= ASTNode.IsEventCallback;
 				StringLiteral str = (StringLiteral) this.value;
 				this.method = scope.findMethod(scope.classScope().referenceContext.binding, str.source, new TypeBinding[0], this, false);
 				if(this.method == null){
 					scope.problemReporter().errorNoMethodFor(str, property.binding.type, new TypeBinding[0]); 
 				}
+			}
+			
+			ReferenceBinding temBinding = scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE);
+			if(property.binding.type.isSubtypeOf(temBinding)) {
+				this.bits |= ASTNode.IsTemplate;
+				StringLiteral str = (StringLiteral) this.value;
+				this.template = (ReferenceBinding) scope.getType(str.source);
+				if(this.template == null){
+					scope.problemReporter().errorNoMethodFor(str, property.binding.type, new TypeBinding[0]); 
+				}
+				
+				classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;
 			}
 		}
 	}
@@ -140,7 +116,7 @@ public abstract class Attribute extends XAMLNode implements InvocationSite{
 	
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append(property.token).append("=");
+		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.token))).append("=");
 		value.generateExpression(scope, indent, output);
 		
 		return output;

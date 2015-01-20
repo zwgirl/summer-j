@@ -777,59 +777,23 @@ public class AllocationExpression extends Expression implements Invocation {
 				
 				if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
 					if(this.arguments != null && this.arguments.length > 0){
-						output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE);
+						output.append(", ");
 					}
-					output.append("\"").append(Annotation.getOverloadPostfix(this.binding.sourceMethod().annotations)).append("\"");
+					if(this.binding.overload != null){
+						output.append("\"").append(this.binding.overload).append("\"");
+					}
 				}
-				output.append(JsConstant.RPAREN);
+				output.append(')');
 				return output;
 			} else {
 				output.append("new "); 
 				if(this.binding.declaringClass.isBaseType()){
-					this.type.doGenerateExpression(scope, 0, output);
+					output.append(binding.declaringClass.sourceName);
 				} else {
-					output.append("(");
-					this.type.doGenerateExpression(scope, 0, output);
-					output.append(")");
+					output.append('(');
+					output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')");
+					output.append(')');
 				}
-		
-//				if((this.binding.declaringClass.modifiers & ClassFileConstants.AccNative) !=0){
-//					if (this.type != null) { 
-//						int id = this.binding.declaringClass.id;
-//						if(id != TypeIds.NoId){
-//							switch(id){
-//							case TypeIds.T_char:
-//							case TypeIds.T_JavaLangCharacter:
-//							case TypeIds.T_byte:
-//							case TypeIds.T_JavaLangByte:
-//							case TypeIds.T_short:
-//							case TypeIds.T_JavaLangShort:
-//							case TypeIds.T_int:
-//							case TypeIds.T_JavaLangInteger:
-//							case TypeIds.T_long:
-//							case TypeIds.T_JavaLangLong:
-//							case TypeIds.T_float:
-//							case TypeIds.T_JavaLangFloat:
-//							case TypeIds.T_double:
-//							case TypeIds.T_JavaLangDouble:
-//								output.append("Number");
-//							}
-//						} else {
-//							this.type.doGenerateExpression(scope, dependency, 0, output);
-//						}
-//					} else { // type null for enum constant initializations
-//						output.append(this.typeExpected.sourceName()); 
-//					}
-//				} else {
-//					output.append("(__lc('");
-//					if((binding.modifiers & ClassFileConstants.AccModule) != 0){
-//						output.append(CharOperation.concatWith(binding.declaringClass.compoundName, '.')).append("', ");
-//						output.append("'").append(TypeDeclaration.getFileName(binding.declaringClass)).append("'");
-//					} else {
-//						output.append(CharOperation.concatWith(binding.declaringClass.compoundName, '.')).append("'");
-//					}
-//					output.append("))");
-//				}
 			}
 		}
 		output.append('(');
@@ -839,11 +803,9 @@ public class AllocationExpression extends Expression implements Invocation {
 			if(this.arguments != null && this.arguments.length > 0){
 				output.append(", ");
 			}
-			AbstractMethodDeclaration method = this.binding.sourceMethod();
-			if(method!=null){
-				output.append("\"").append(Annotation.getOverloadPostfix(method.annotations)).append("\"");
+			if(this.binding.overload != null){
+				output.append("\"").append(this.binding.overload).append("\"");
 			}
-			
 		}
 		output.append(')');
 		

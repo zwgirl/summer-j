@@ -112,6 +112,7 @@ public class Scanner implements TerminalTokens {
 
 	public static final String NULL_SOURCE_STRING = "Null_Source_String"; //$NON-NLS-1$
 	public static final String UNTERMINATED_STRING = "Unterminated_String"; //$NON-NLS-1$
+	public static final String UNTERMINATED_PCDATA = "Unterminated_PCDATA"; //$NON-NLS-1$   //cym 2015-01-18
 	public static final String UNTERMINATED_COMMENT = "Unterminated_Comment"; //$NON-NLS-1$
 	public static final String INVALID_CHAR_IN_STRING = "Invalid_Char_In_String"; //$NON-NLS-1$
 	public static final String INVALID_DIGIT = "Invalid_Digit"; //$NON-NLS-1$
@@ -520,6 +521,29 @@ public class Scanner implements TerminalTokens {
 				this.source,
 				this.startPosition + 1,
 				result = new char[length = this.currentPosition - this.startPosition - 2],
+				0,
+				length);
+		}
+		return result;
+	}
+	
+	//cym 2015-01-18
+	public char[] getCurrentTokenSourceString1() {
+		//return the token REAL source (aka unicodes are precomputed).
+		//REMOVE the two " that are at the beginning and the end.
+	
+		char[] result;
+		if (this.withoutUnicodePtr != 0)
+			//0 is used as a fast test flag so the real first char is in position 1
+			System.arraycopy(this.withoutUnicodeBuffer, 2,
+			//2 is 1 (real start) + 1 (to jump over the ")
+			result = new char[this.withoutUnicodePtr - 2], 0, this.withoutUnicodePtr - 2);
+		else {
+			int length;
+			System.arraycopy(
+				this.source,
+				this.startPosition + 1,
+				result = new char[length = this.currentPosition+1 - this.startPosition - 2],
 				0,
 				length);
 		}
@@ -1177,28 +1201,12 @@ public class Scanner implements TerminalTokens {
 			
 				int temp = this.currentPosition;
 				try {
-					if (((this.currentCharacter = this.source[this.currentPosition++]) == '\\')
-						&& (this.source[this.currentPosition] == 'u')) {
-						getNextUnicodeChar();
-						if (this.currentCharacter == '<') {
-							this.currentPosition = temp;
-							this.withoutUnicodePtr--;
-							return hasContent;
-						}
-					} //-------------end unicode traitement--------------
-					else {
-						if (this.currentCharacter == '<') {
-							this.currentPosition = temp;
-							return hasContent;
-						}
-						this.unicodeAsBackSlash = false;
-						if (this.withoutUnicodePtr != 0)
-							unicodeStore();
+					this.currentCharacter = this.source[this.currentPosition++];
+					if (this.currentCharacter == '<') {
+						this.currentPosition = temp;
+						return hasContent;
 					}
 					
-					// inline version of:
-					//isWhiteSpace =
-					//	(this.currentCharacter == ' ') || ScannerHelper.isWhitespace(this.currentCharacter);
 					switch (this.currentCharacter) {
 						case 10 : /* \ u000a: LINE FEED               */
 						case 12 : /* \ u000c: FORM FEED               */
@@ -1210,11 +1218,6 @@ public class Scanner implements TerminalTokens {
 							hasContent = true;
 					}
 				} catch (IndexOutOfBoundsException e) {
-					this.unicodeAsBackSlash = false;
-					this.currentPosition = temp;
-					return hasContent;
-				} catch(InvalidInputException e) {
-					this.unicodeAsBackSlash = false;
 					this.currentPosition = temp;
 					return hasContent;
 				}
@@ -1227,7 +1230,7 @@ public class Scanner implements TerminalTokens {
 	
 	protected int getNextToken0() throws InvalidInputException {
 		if(this.PCDATA){
-			this.startPosition = this.currentPosition;
+			this.startPosition = this.currentPosition - 1;
 			if(pcdata()){
 				return TokenNamePCDATA;
 			}

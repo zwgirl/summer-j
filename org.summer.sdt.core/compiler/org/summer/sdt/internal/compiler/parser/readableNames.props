@@ -302,6 +302,7 @@ RemoveMethodHeader=RemoveMethodHeader
 RestoreDiet=RestoreDiet
 ReturnStatement=ReturnStatement
 Script=Script
+ScriptMethodHeader=consumeScriptMethodName
 SetAccessorDeclaration=SetAccessorDeclaration
 SetAccessorDeclarationopt=SetAccessorDeclarationopt
 SetterMethodHeader=SetterMethodHeader

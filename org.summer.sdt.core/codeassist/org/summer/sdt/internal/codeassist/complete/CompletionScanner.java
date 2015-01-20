@@ -114,13 +114,9 @@ public class CompletionScanner extends Scanner {
 	}
 	protected int getNextToken0() throws InvalidInputException {
 		if(this.PCDATA){
-			if(getNextChar('<')){
-				this.PCDATA = false;
-			} else{
-				this.startPosition = this.currentPosition;
-				if(pcdata()){
-					return TokenNamePCDATA;
-				}
+			this.startPosition = this.currentPosition - 1;
+			if(pcdata()){
+				return TokenNamePCDATA;
 			}
 		}
 		

@@ -525,8 +525,7 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 		if(this.binding.declaringClass.isMemberType()){
 			output.append("(function(){\n");
 			printIndent(indent + 1, output).append("var r = {__enclosing : this, __proto__: ");
-//			output.append(CharOperation.concatWith(this.binding.declaringClass.getQualifiedName(), '.')).append(".prototype");
-			output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append(".prototype");
+			output.append(this.binding.declaringClass.getMemberTypeName()).append(".prototype");
 			output.append("};\n");
 			printIndent(indent + 1, output).append(this.binding.declaringClass.sourceName).append(".apply(r, arguments");
 			output.append(");\n");
@@ -536,15 +535,16 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 			
 			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
 				if(this.arguments != null && this.arguments.length > 0){
-					output.append(JsConstant.COMMA).append(JsConstant.WHITESPACE);
+					output.append(", ");
 				}
-				output.append("\"").append(Annotation.getOverloadPostfix(this.binding.sourceMethod().annotations)).append("\"");
+				if(this.binding.overload != null){
+					output.append("\"").append(this.binding.overload).append("\"");
+				}
 			}
-			output.append(JsConstant.RPAREN);
+			output.append(')');
 			return output;
 		} else {
-			output.append(JsConstant.NEW).append(JsConstant.WHITESPACE); 
-	
+			output.append("new "); 
 			if((this.binding.declaringClass.modifiers & ClassFileConstants.AccNative) !=0){
 					int id = this.binding.declaringClass.id;
 					if(id != TypeIds.NoId){
@@ -569,7 +569,7 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 					output.append(this.binding.declaringClass.sourceName()); 
 				}
 			} else {
-				output.append("__cache[\"").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("\"]");
+				output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')");
 			}
 			
 			output.append('(');
@@ -579,9 +579,8 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 				if(this.arguments != null && this.arguments.length > 0){
 					output.append(", ");
 				}
-				AbstractMethodDeclaration method = this.binding.sourceMethod();
-				if(method!=null){
-					output.append("\"").append(Annotation.getOverloadPostfix(method.annotations)).append("\"");
+				if(this.binding.overload != null){
+					output.append("\"").append(this.binding.overload).append("\"");
 				}
 				
 			}

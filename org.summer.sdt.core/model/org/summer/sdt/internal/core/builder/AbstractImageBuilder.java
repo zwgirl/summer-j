@@ -324,10 +324,7 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 	
 	//cym add 2014-10-18
 	protected void writeHtmlFileContents(HtmlFile htmlFile, IFile file, String qualifiedFileName, SourceFile compilationUnit) throws CoreException {
-	//	InputStream input = new SequenceInputStream(
-	//			new ByteArrayInputStream(classFile.header, 0, classFile.headerOffset),
-	//			new ByteArrayInputStream(classFile.contents, 0, classFile.contentsOffset));
-		InputStream input = new StringBufferInputStream(htmlFile.content.toString());
+		InputStream input = new ByteArrayInputStream(htmlFile.getBytes());
 		if (file.exists()) {
 			// Deal with shared output folders... last one wins... no collision cases detected
 			if (JavaBuilder.DEBUG)
@@ -366,10 +363,7 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 	
 	//cym add 2014-10-18
 	protected void writeJavascriptFileContents(JsFile jsFile, IFile file, String qualifiedFileName, SourceFile compilationUnit) throws CoreException {
-	//	InputStream input = new SequenceInputStream(
-	//			new ByteArrayInputStream(classFile.header, 0, classFile.headerOffset),
-	//			new ByteArrayInputStream(classFile.contents, 0, classFile.contentsOffset));
-		InputStream input = new StringBufferInputStream(jsFile.content.toString());
+		InputStream input = new ByteArrayInputStream(jsFile.getBytes());
 		if (file.exists()) {
 			// Deal with shared output folders... last one wins... no collision cases detected
 			if (JavaBuilder.DEBUG)

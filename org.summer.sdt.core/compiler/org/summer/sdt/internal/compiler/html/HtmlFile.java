@@ -143,4 +143,8 @@ public class HtmlFile {
 	public char[] fileName() {
 		return CharOperation.concatWith(referenceBinding.compoundName, '/');
 	}
+
+	public byte[] getBytes() {
+		return content.toString().getBytes();
+	}
 }

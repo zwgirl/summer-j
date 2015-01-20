@@ -15,17 +15,17 @@ package org.summer.sdt.internal.compiler.env;
  */
 public interface IBinaryElementValuePair {
 
-/** @return the name of the member */
-char[] getName();
-
-/**
- * Return {@link ClassSignature} for a Class {@link java.lang.Class}.
- * Return {@link org.summer.sdt.internal.compiler.impl.Constant} for compile-time constant of primitive type, as well as String literals.
- * Return {@link EnumConstantSignature} if value is an enum constant.
- * Return {@link IBinaryAnnotation} for annotation type.
- * Return {@link Object}[] for array type.
- *
- * @return the value of this member value pair
- */
-Object getValue();
+	/** @return the name of the member */
+	char[] getName();
+	
+	/**
+	 * Return {@link ClassSignature} for a Class {@link java.lang.Class}.
+	 * Return {@link org.summer.sdt.internal.compiler.impl.Constant} for compile-time constant of primitive type, as well as String literals.
+	 * Return {@link EnumConstantSignature} if value is an enum constant.
+	 * Return {@link IBinaryAnnotation} for annotation type.
+	 * Return {@link Object}[] for array type.
+	 *
+	 * @return the value of this member value pair
+	 */
+	Object getValue();
 }

@@ -55,9 +55,11 @@ import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.summer.sdt.internal.compiler.ast.Annotation;
 import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.EventDeclaration;
+import org.summer.sdt.internal.compiler.ast.Expression;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
+import org.summer.sdt.internal.compiler.ast.MemberValuePair;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
@@ -2302,6 +2304,10 @@ public class SourceTypeBinding extends ReferenceBinding {
 	
 			if ((method.getAnnotationTagBits() & TagBits.AnnotationDeprecated) != 0)
 				method.modifiers |= ClassFileConstants.AccDeprecated;
+			//cym 2015-01-15
+			if ((method.getAnnotationTagBits() & TagBits.AnnotationOverload) != 0)
+				method.overload = "1";
+			
 		}
 		if (isViewedAsDeprecated() && !method.isDeprecated())
 			method.modifiers |= ExtraCompilerModifiers.AccDeprecatedImplicitly;
@@ -2311,6 +2317,29 @@ public class SourceTypeBinding extends ReferenceBinding {
 		AbstractMethodDeclaration methodDecl = method.sourceMethod();
 		if (methodDecl == null) return null; // method could not be resolved in previous iteration
 	
+		//cym 2015-01-15
+		if (sourceLevel >= ClassFileConstants.JDK1_5) {
+			if ((method.getAnnotationTagBits() & TagBits.AnnotationOverload) != 0) {
+				if(methodDecl != null){
+					end: for(Annotation annotation : methodDecl.annotations){
+						if(annotation.resolvedType == null){
+							continue;
+						}
+						if(annotation.resolvedType.id == TypeIds.T_JavaLangAnnotationOverload){
+							for (MemberValuePair pair : annotation.memberValuePairs()) {
+								if (CharOperation.equals(pair.name, TypeConstants.VALUE)) {
+									if (pair.value.constant.typeID() == TypeIds.T_JavaLangString) {
+										method.overload = pair.value.constant.stringValue();
+										break end;
+									}
+								}
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
 	
 		TypeParameter[] typeParameters = methodDecl.typeParameters();
 		if (typeParameters != null) {

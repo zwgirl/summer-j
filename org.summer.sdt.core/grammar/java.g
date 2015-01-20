@@ -477,9 +477,14 @@ ElementList ::= ElementList Element
 /.$putCase consumeElementList(); $break ./
 /:$readableName ElementList:/
 
-Script -> '<%' BlockStatementsopt  '%>'
+Script -> ScriptMethodHeader NestedMethod BlockStatementsopt '%>'
 /.$putCase consumeScript(); $break ./
 /:$readableName Script:/
+
+ScriptMethodHeader ::= '<%'
+/.$putCase consumeScriptMethodName(); $break./
+/:$readableName consumeScriptMethodName:/
+
 
 PCDATANode ::= PCDATA
 /.$putCase consumePCDATANode(); $break ./

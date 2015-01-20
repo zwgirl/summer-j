@@ -706,8 +706,12 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			StringBuffer output = htmlFile.content;
 			
 			output.append("<!DOCTYPE HTML>").append('\n');
-			if(this.element != null){
-				html(element, this.scope, 0, output);
+			if(this.element != null ){
+				if((this.element.bits & ASTNode.HasDynamicContent) != 0){
+					buildDOM(element, this.scope, 0, output);
+				} else {
+					buildHTML(element, this.scope, 0, output);
+				}
 			}
 			
 			this.scope.referenceCompilationUnit().compilationResult.record(
@@ -722,8 +726,12 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 	}
 	
-	private void html(XAMLElement element, Scope scope, int indent, StringBuffer output) {
+	private void buildDOM(XAMLElement element, Scope scope, int indent, StringBuffer output) {
 		element.generateExpression(initializerScope, indent, output);
+	}
+	
+	private void buildHTML(XAMLElement element, Scope scope, int indent, StringBuffer output) {
+		element.generateHTML(initializerScope, indent, output);
 	}
 
 	public void generateJavascript(CompilationUnitScope unitScope) {
@@ -1737,7 +1745,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		return output;
 	}
 	
-	
 	/**
 	 * Generic javascript generation for type
 	 */
@@ -1747,7 +1754,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				return;
 		}
 		try {
-			StringBuffer output = jsFile.content;
 			this.scope.referenceCompilationUnit().compilationResult.record(this.binding.constantPoolName(), jsFile);
 		} catch (AbortType e) {
 			if (this.binding == null)
@@ -1768,9 +1774,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		try {
 			JsFile jsFile = JsFile.getNewInstance(this.binding.compoundName);
 			StringBuffer output = jsFile.content;
-			
 			generatea(scope, 0, output);
-			
+			output.append(";");
 			this.scope.referenceCompilationUnit().compilationResult.record(this.binding.constantPoolName(), jsFile);
 		} catch (AbortType e) {
 			if (this.binding == null)
@@ -1788,7 +1793,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		
 		output.append('\n');
 		printIndent(indent, output);
-		output.append("})();");
+		output.append("})()");
 	}
 	
 	private char[] getTypeName(){
@@ -1855,7 +1860,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						}
 						output.append("\n");
 						printIndent(indent + 1, output);
-						output.append("\"").append(Annotation.getOverloadPostfix(constructor.annotations)).append("\"").append(" : ").append("function(");
+						output.append("\"").append(constructor.binding.overload).append("\"").append(" : ").append("function(");
 						generateConstructor(constructor, constructor.scope, indent, output, type);
 						comma = true;
 					}
@@ -1926,6 +1931,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					continue;
 				}
 				
+				//exclude non default method of interface 
+				if((this.modifiers & ClassFileConstants.AccInterface) != 0 && (method.modifiers & ClassFileConstants.AccDefault) == 0){
+					continue;
+				}
+				
 				output.append("\n");
 				
 				if(type.binding.isAnonymousType()){
@@ -1949,7 +1959,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		
 		//process XAML Element
-		processXAML(type, indent, output);
+		processXAML(type.scope, type, indent, output);
 		
 		if(type.memberTypes != null){
 			for(TypeDeclaration member : type.memberTypes){
@@ -2077,13 +2087,15 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append(";");
 	}
 	
-	private void processXAML(TypeDeclaration type, int indent, StringBuffer output){
-		if(type.element != null && (CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_TEMPLATE) ||
-				CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_COMPONENT))){
+	private void processXAML(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
+		if(type.element != null && (type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE)) ||
+				type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_COMPONENT)))){
 			output.append('\n');
 			printIndent(indent, output);
 			output.append(type.binding.sourceName).append(".prototype.").append("doCreate").append(" = function(parent) {");
-			//TODO create script from XAML
+			output.append('\n');
+			printIndent(indent, output);
+			((ObjectElement)type.element).buildElement(scope, indent, output, "parent");
 			output.append('\n');
 			printIndent(indent, output);
 			output.append("};");
@@ -2108,8 +2120,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	}
 	
 	private char[] getMethodName(AbstractMethodDeclaration method){
-		if((method.bits & TagBits.AnnotationOverload) != 0){
-			return CharOperation.concat(method.selector, Annotation.getOverloadPostfix(method.annotations));
+		if((method.binding.tagBits & TagBits.AnnotationOverload) != 0){
+			return CharOperation.concat(method.selector, method.binding.overload.toCharArray());
 		} else {
 			return method.selector;
 		}
@@ -2225,33 +2237,18 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				ExplicitConstructorCall cstrCall = constructor.constructorCall;
 				if(cstrCall.isImplicitSuper() || cstrCall.isSuperAccess()){
 					if(!CharOperation.equals(TypeConstants.JAVA_LANG_OBJECT, cstrCall.binding.declaringClass.compoundName)){
-						output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
-						if(cstrCall.arguments != null){
-							for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
-								output.append(", ");
-								cstrCall.arguments[j].doGenerateExpression(scope, indent, output);
-							}
-						}
-						output.append(");");
+						cstrCall.generateStatement(scope, indent, output);
 					}
 				} else {   //this()
 					output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
 					if(cstrCall.arguments != null){
 						for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
 							output.append(", ");
-							cstrCall.arguments[j].doGenerateExpression(scope, indent, output);
+							cstrCall.arguments[j].generateExpression(scope, indent, output);
 						}
 					}
 					output.append(");");
 				}
-	//			output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
-	//			if(cstrCall.arguments != null){
-	//				for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
-	//					output.append(", ");
-	//					cstrCall.arguments[j].generateExpression(scope, indent, output);
-	//				}
-	//			}
-	//			output.append(");");
 			}
 			
 			generateFields(scope, indent + 1, output, true, type);

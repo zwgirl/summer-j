@@ -20,6 +20,7 @@ import org.summer.sdt.internal.compiler.codegen.ConstantPool;
 import org.summer.sdt.internal.compiler.env.IBinaryAnnotation;
 import org.summer.sdt.internal.compiler.env.IBinaryMethod;
 import org.summer.sdt.internal.compiler.env.IBinaryTypeAnnotation;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.util.Util;
 
 @SuppressWarnings("rawtypes")
@@ -137,7 +138,7 @@ public class MethodInfo extends ClassFileStruct implements IBinaryMethod, Compar
 		int readOffset = offset;
 		for (int i = 0; i < numberOfAnnotations; i++) {
 			result[i] = new AnnotationInfo(methodInfo.reference, methodInfo.constantPoolOffsets,
-				readOffset + methodInfo.structOffset, runtimeVisible, false);
+				readOffset + methodInfo.structOffset, runtimeVisible, false); 
 			readOffset += result[i].readOffset;
 		}
 		return result;
@@ -151,7 +152,14 @@ public class MethodInfo extends ClassFileStruct implements IBinaryMethod, Compar
 				for( int i=0; i<numberOfAnnotations; i++ ){
 					long standardAnnoTagBits = annos[i].standardAnnotationTagBits;
 					methodInfo.tagBits |= standardAnnoTagBits;
-					if(standardAnnoTagBits != 0){
+					
+					//cym 2015-01-15
+//					if(standardAnnoTagBits != 0){
+//						annos[i] = null;
+//						numStandardAnnotations ++;
+//					}
+					
+					if(standardAnnoTagBits != 0 && (standardAnnoTagBits & TagBits.AnnotationOverload) == 0){
 						annos[i] = null;
 						numStandardAnnotations ++;
 					}

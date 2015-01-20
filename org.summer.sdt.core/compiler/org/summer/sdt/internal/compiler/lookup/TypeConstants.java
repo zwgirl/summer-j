@@ -175,9 +175,9 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_ANNOTATION_DOCUMENTED = {JAVA, LANG, ANNOTATION, "Documented".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ANNOTATION_INHERITED = {JAVA, LANG, ANNOTATION, "Inherited".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ANNOTATION_OVERLOAD = {JAVA, LANG, ANNOTATION, "Overload".toCharArray()}; //$NON-NLS-1$   //cym add 2014-11-20
+	char[][] JAVA_LANG_ANNOTATION_EVENTCALLBACK = {JAVA, LANG, ANNOTATION, "EventCallback".toCharArray()}; //$NON-NLS-1$   //cym add 2015-01-15
 	char[][] JAVA_LANG_ANNOTATION_REPEATABLE = {JAVA, LANG, ANNOTATION, "Repeatable".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_OVERRIDE = {JAVA, LANG, "Override".toCharArray()}; //$NON-NLS-1$
-	char[][] JAVA_LANG_OVERLOAD = {JAVA, LANG, "Overload".toCharArray()}; //$NON-NLS-1$ //cym add 2014-11-24
 	char[][] JAVA_LANG_EVENTCALLBACK = {JAVA, LANG, "EventCallback".toCharArray()}; //$NON-NLS-1$ //cym add 2015-01-01
 	char[][] JAVA_LANG_FUNCTIONAL_INTERFACE = {JAVA, LANG, "FunctionalInterface".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ANNOTATION_RETENTION = {JAVA, LANG, ANNOTATION, "Retention".toCharArray()}; //$NON-NLS-1$

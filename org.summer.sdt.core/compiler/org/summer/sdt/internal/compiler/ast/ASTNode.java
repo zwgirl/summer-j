@@ -327,7 +327,16 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 	//for XAML root element  cym 2014-12-10
 	public static final int IsRootElement = Bit19;
 	
+	//for eventcallback cym 2015-01-15
+	public static final int IsEventCallback = Bit15;
+	
+	public static final int IsTemplate = Bit16;
+	
+	//cym 2015-01-19 for pure html compiler
+	public static final int HasDynamicContent = Bit17;
+	
 	public static final Argument [] NO_ARGUMENTS = new Argument [0];
+
 
 	public ASTNode() {
 

@@ -43,6 +43,7 @@ public class ParameterizedMethodBinding extends MethodBinding {
 				originalMethod.thrownExceptions,
 				parameterizedDeclaringClass);
 		this.originalMethod = originalMethod;
+		this.overload = originalMethod.overload;  //cym 2015-01-15
 		/* missing type bit cannot be copied as is it might come from the return type or a parameter type that
 		 * is substituted by a raw type.
 		 */

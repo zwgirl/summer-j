@@ -49,6 +49,7 @@ import org.summer.sdt.internal.compiler.env.*;
 import org.summer.sdt.internal.compiler.impl.BooleanConstant;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.impl.StringConstant;
 import org.summer.sdt.internal.compiler.problem.AbortCompilation;
 import org.summer.sdt.internal.compiler.util.SimpleLookupTable;
 import org.summer.sdt.internal.compiler.util.Util;
@@ -799,7 +800,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 	
 		if (this.environment.globalOptions.storeAnnotations) {
 			IBinaryAnnotation[] annotations = method.getAnnotations();
-		    if (annotations == null || annotations.length == 0)
+		    if (annotations == null || annotations.length == 0)  
 		    	if (method.isConstructor())
 		    		annotations = walker.toMethodReturn().getAnnotationsAtCursor(0); // FIXME: When both exist, order could become an issue.
 			result.setAnnotations(
@@ -807,6 +808,15 @@ public class BinaryTypeBinding extends ReferenceBinding {
 				paramAnnotations,
 				isAnnotationType() ? convertMemberValue(method.getDefaultValue(), this.environment, missingTypeNames, true) : null,
 				this.environment);
+		}
+		//cym 2015-01-15
+		IBinaryAnnotation[] annotations = method.getAnnotations();
+		if(annotations != null && annotations.length > 0){
+			for(IBinaryAnnotation annotation : annotations){
+				if(annotation.getTypeName().length == 31 && CharOperation.equals(annotation.getTypeName(), ConstantPool.JAVA_LANG_ANNOTATION_OVERLOAD)){
+					result.overload = ((StringConstant)annotation.getElementValuePairs()[0].getValue()).stringValue();
+				}
+			}
 		}
 	
 		if (argumentNames != null) result.parameterNames = argumentNames;

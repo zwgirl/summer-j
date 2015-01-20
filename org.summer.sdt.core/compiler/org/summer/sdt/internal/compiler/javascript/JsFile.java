@@ -12,7 +12,6 @@ import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
  */
 public class JsFile {
 	public final StringBuffer content;
-//	public SourceTypeBinding referenceBinding;
 	private char[][] compoundName;
 	
 	public JsFile(char[][] compoundName){
@@ -129,5 +128,9 @@ public class JsFile {
 
 	public char[] fileName() {
 		return CharOperation.concatWith(this.compoundName, '/');
+	}
+
+	public byte[] getBytes() {
+		return content.toString().getBytes();
 	}
 }

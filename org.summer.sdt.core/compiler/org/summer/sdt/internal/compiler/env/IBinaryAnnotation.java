@@ -15,13 +15,13 @@ package org.summer.sdt.internal.compiler.env;
  */
 public interface IBinaryAnnotation {
 
-/**
- * @return the signature of the annotation type.
- */
-char[] getTypeName();
-
-/**
- * @return the list of element value pairs of the annotation
- */
-IBinaryElementValuePair[] getElementValuePairs();
+	/**
+	 * @return the signature of the annotation type.
+	 */
+	char[] getTypeName();
+	
+	/**
+	 * @return the list of element value pairs of the annotation
+	 */
+	IBinaryElementValuePair[] getElementValuePairs();
 }

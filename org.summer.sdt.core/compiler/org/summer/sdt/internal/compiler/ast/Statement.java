@@ -451,10 +451,10 @@ public abstract class Statement extends ASTNode {
 	
 	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		int parenthesesCount = (this.bits & ASTNode.ParenthesizedMASK) >> ASTNode.ParenthesizedSHIFT;
-		String suffix = ""; //$NON-NLS-1$
+		StringBuffer suffix = new StringBuffer(); //$NON-NLS-1$
 		for(int i = 0; i < parenthesesCount; i++) {
 			output.append('(');
-			suffix += ')';
+			suffix.append(')');
 		}
 		this.doGenerateExpression(scope, indent, output);
 		output.append(suffix);
