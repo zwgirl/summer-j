@@ -139,6 +139,9 @@ public interface TypeIds {
 	//summer cym 2014-12-03
 	final int T_JavaLangArray = 100;
 	
+	//summer cym 2015-02-02
+	final int T_JavaLangFunction = 98;
+	
 	// If you add new type id, make sure to bump up T_LastWellKnownTypeId if there is a cross over.
 	final int T_LastWellKnownTypeId = 128;
 	
