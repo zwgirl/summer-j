@@ -60,6 +60,7 @@ public class FieldInfo extends ClassFileStruct implements IBinaryField, Comparab
 							int entriesNumber = fieldInfo.u2At(readOffset + 6);
 							// place the readOffset at the beginning of the exceptions table
 							int pos = readOffset + 8;
+							
 							if (entriesNumber == 0) {
 								fieldInfo.parameters = noParameters;
 							} else {

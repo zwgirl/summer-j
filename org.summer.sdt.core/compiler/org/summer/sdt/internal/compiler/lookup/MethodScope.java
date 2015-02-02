@@ -266,6 +266,104 @@ public class MethodScope extends BlockScope {
 		methodBinding.modifiers = modifiers;
 	}
 	
+	private void checkAndSetModifiersForMethod1(MethodBinding methodBinding) {
+		int modifiers = methodBinding.modifiers;
+		final ReferenceBinding declaringClass = methodBinding.declaringClass;
+		if ((modifiers & ExtraCompilerModifiers.AccAlternateModifierProblem) != 0)
+			problemReporter().duplicateModifierForMethod(declaringClass, (AbstractMethodDeclaration) this.referenceContext);
+	
+		// after this point, tests on the 16 bits reserved.
+		int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
+	
+		// set the requested modifiers for a method in an interface/annotation
+		if (declaringClass.isInterface()) {
+			int expectedModifiers = ClassFileConstants.AccPublic | ClassFileConstants.AccAbstract | ClassFileConstants.AccStatic | ClassFileConstants.AccNative;
+			boolean isDefaultMethod = (modifiers & ExtraCompilerModifiers.AccDefaultMethod) != 0; // no need to check validity, is done by the parser
+			boolean reportIllegalModifierCombination = false;
+			boolean isJDK18orGreater = false;
+			if (compilerOptions().sourceLevel >= ClassFileConstants.JDK1_8 && !declaringClass.isAnnotationType()) {
+				//cym 2014-12-23
+//				expectedModifiers |= ClassFileConstants.AccStrictfp
+//						| ExtraCompilerModifiers.AccDefaultMethod | ClassFileConstants.AccStatic;
+				
+				expectedModifiers |= ClassFileConstants.AccIndexer | ClassFileConstants.AccProperty
+						| ExtraCompilerModifiers.AccDefaultMethod | ClassFileConstants.AccStatic | ClassFileConstants.AccNative;
+				isJDK18orGreater = true;
+				if (!methodBinding.isAbstract()) {
+					reportIllegalModifierCombination = isDefaultMethod && methodBinding.isStatic();
+				} else {
+					reportIllegalModifierCombination = isDefaultMethod || methodBinding.isStatic();
+					if (methodBinding.isStrictfp()) {
+						problemReporter().illegalAbstractModifierCombinationForMethod((AbstractMethodDeclaration) this.referenceContext);
+					}
+				}
+				if (reportIllegalModifierCombination) {
+					problemReporter().illegalModifierCombinationForInterfaceMethod((AbstractMethodDeclaration) this.referenceContext);
+				}
+				// Kludge - The AccDefaultMethod bit is outside the lower 16 bits and got removed earlier. Putting it back.
+				if (isDefaultMethod) {
+					realModifiers |= ExtraCompilerModifiers.AccDefaultMethod;
+				}
+			}
+			if ((realModifiers & ~expectedModifiers) != 0) {
+				if ((declaringClass.modifiers & ClassFileConstants.AccAnnotation) != 0)
+					problemReporter().illegalModifierForAnnotationMember((AbstractMethodDeclaration) this.referenceContext);
+				else
+					problemReporter().illegalModifierForInterfaceMethod((AbstractMethodDeclaration) this.referenceContext, isJDK18orGreater);
+			}
+			return;
+		}
+	
+		// check for abnormal modifiers
+		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected
+			| ClassFileConstants.AccAbstract | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccSynchronized | ClassFileConstants.AccNative | ClassFileConstants.AccStrictfp
+			| ClassFileConstants.AccEvent | ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer);   //cym 2014-12-04
+		if ((realModifiers & UNEXPECTED_MODIFIERS) != 0) {
+			problemReporter().illegalModifierForMethod((AbstractMethodDeclaration) this.referenceContext);
+			modifiers &= ~ExtraCompilerModifiers.AccJustFlag | ~UNEXPECTED_MODIFIERS;
+		}
+	
+		// check for incompatible modifiers in the visibility bits, isolate the visibility bits
+		int accessorBits = realModifiers & (ClassFileConstants.AccPublic | ClassFileConstants.AccProtected | ClassFileConstants.AccPrivate);
+		if ((accessorBits & (accessorBits - 1)) != 0) {
+			problemReporter().illegalVisibilityModifierCombinationForMethod(declaringClass, (AbstractMethodDeclaration) this.referenceContext);
+	
+			// need to keep the less restrictive so disable Protected/Private as necessary
+			if ((accessorBits & ClassFileConstants.AccPublic) != 0) {
+				if ((accessorBits & ClassFileConstants.AccProtected) != 0)
+					modifiers &= ~ClassFileConstants.AccProtected;
+				if ((accessorBits & ClassFileConstants.AccPrivate) != 0)
+					modifiers &= ~ClassFileConstants.AccPrivate;
+			} else if ((accessorBits & ClassFileConstants.AccProtected) != 0 && (accessorBits & ClassFileConstants.AccPrivate) != 0) {
+				modifiers &= ~ClassFileConstants.AccPrivate;
+			}
+		}
+	
+		// check for modifiers incompatible with abstract modifier
+		if ((modifiers & ClassFileConstants.AccAbstract) != 0) {
+			int incompatibleWithAbstract = ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccSynchronized | ClassFileConstants.AccNative | ClassFileConstants.AccStrictfp;
+			if ((modifiers & incompatibleWithAbstract) != 0)
+				problemReporter().illegalAbstractModifierCombinationForMethod(declaringClass, (AbstractMethodDeclaration) this.referenceContext);
+			if (!methodBinding.declaringClass.isAbstract())
+				problemReporter().abstractMethodInAbstractClass((SourceTypeBinding) declaringClass, (AbstractMethodDeclaration) this.referenceContext);
+		}
+	
+		/* DISABLED for backward compatibility with javac (if enabled should also mark private methods as final)
+		// methods from a final class are final : 8.4.3.3
+		if (methodBinding.declaringClass.isFinal())
+			modifiers |= AccFinal;
+		*/
+		// native methods cannot also be tagged as strictfp
+		if ((modifiers & ClassFileConstants.AccNative) != 0 && (modifiers & ClassFileConstants.AccStrictfp) != 0)
+			problemReporter().nativeMethodsCannotBeStrictfp(declaringClass, (AbstractMethodDeclaration) this.referenceContext);
+	
+		// static members are only authorized in a static member or top level type
+		if (((realModifiers & ClassFileConstants.AccStatic) != 0) && declaringClass.isNestedType() && !declaringClass.isStatic())
+			problemReporter().unexpectedStaticModifierForMethod(declaringClass, (AbstractMethodDeclaration) this.referenceContext);
+	
+		methodBinding.modifiers = modifiers;
+	}
+	
 	public void checkUnusedParameters(MethodBinding method) {
 		if (method.isAbstract()
 				|| (method.isImplementing() && !compilerOptions().reportUnusedParameterWhenImplementingAbstract)
@@ -368,6 +466,78 @@ public class MethodScope extends BlockScope {
 				new MethodBinding(modifiers, method.selector, null, null, null, declaringClass);
 			checkAndSetModifiersForMethod(method.binding);
 		}
+		this.isStatic = method.binding.isStatic();
+	
+		Argument[] argTypes = method.arguments;
+		int argLength = argTypes == null ? 0 : argTypes.length;
+		long sourceLevel = compilerOptions().sourceLevel;
+		if (argLength > 0) {
+			Argument argument = argTypes[--argLength];
+			if (argument.isVarArgs() && sourceLevel >= ClassFileConstants.JDK1_5)
+				method.binding.modifiers |= ClassFileConstants.AccVarargs;
+			if (CharOperation.equals(argument.name, ConstantPool.This)) {
+				problemReporter().illegalThisDeclaration(argument);
+			}
+			while (--argLength >= 0) {
+				argument = argTypes[argLength];
+				if (argument.isVarArgs() && sourceLevel >= ClassFileConstants.JDK1_5)
+					problemReporter().illegalVararg(argument, method);
+				if (CharOperation.equals(argument.name, ConstantPool.This)) {
+					problemReporter().illegalThisDeclaration(argument);
+				}
+			}
+		}
+		if (method.receiver != null) {
+			if (sourceLevel <= ClassFileConstants.JDK1_7) {
+				problemReporter().illegalSourceLevelForThis(method.receiver);
+			}
+			if (method.receiver.annotations != null) {
+				method.bits |= ASTNode.HasTypeAnnotations;
+			}
+		}
+	
+		TypeParameter[] typeParameters = method.typeParameters();
+		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=324850, If they exist at all, process type parameters irrespective of source level.
+	    if (typeParameters == null || typeParameters.length == 0) {
+		    method.binding.typeVariables = Binding.NO_TYPE_VARIABLES;
+		} else {
+			method.binding.typeVariables = createTypeVariables(typeParameters, method.binding);
+			method.binding.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
+		}
+		return method.binding;
+	}
+	
+	//cym for property accessor of interface
+	/**
+	 * Error management:
+	 * 		keep null for all the errors that prevent the method to be created
+	 * 		otherwise return a correct method binding (but without the element
+	 *		that caused the problem) : i.e. Incorrect thrown exception
+	 */
+	MethodBinding createMethod1(AbstractMethodDeclaration method) {
+		// is necessary to ensure error reporting
+		this.referenceContext = method;
+		method.scope = this;
+		SourceTypeBinding declaringClass = referenceType().binding;
+		int modifiers = method.modifiers | ExtraCompilerModifiers.AccUnresolved;
+		//cym 2015-01-28  accessor of Property may be not abstract
+//		if (method.isConstructor()) {
+//			if (method.isDefaultConstructor())
+//				modifiers |= ExtraCompilerModifiers.AccIsDefaultConstructor;
+//			method.binding = new MethodBinding(modifiers, null, null, declaringClass);
+//			checkAndSetModifiersForConstructor(method.binding);
+//		} else {
+//			if (declaringClass.isInterface()) {// interface or annotation type
+//				if (method.isDefaultMethod() || method.isStatic()) {
+//					modifiers |= ClassFileConstants.AccPublic; // default method is not abstract
+//				} else {
+//					modifiers |= ClassFileConstants.AccPublic | ClassFileConstants.AccAbstract;
+//				}
+//			}
+			method.binding =
+				new MethodBinding(modifiers, method.selector, null, null, null, declaringClass);
+			checkAndSetModifiersForMethod1(method.binding);
+//		}
 		this.isStatic = method.binding.isStatic();
 	
 		Argument[] argTypes = method.arguments;

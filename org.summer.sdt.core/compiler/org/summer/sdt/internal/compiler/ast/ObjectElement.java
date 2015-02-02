@@ -6,7 +6,10 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 /**
  * 
@@ -95,7 +98,7 @@ public class ObjectElement extends XAMLElement {
 			output.append("\n");
 			printIndent(indent+1, output);
 			output.append("var __this = new (");
-			typeDecl.generatea(classScope, indent + 1, output);
+			typeDecl.generateInternal(classScope, indent + 1, output);
 			output.append(")();");
 			
 			output.append("\n");
@@ -136,7 +139,7 @@ public class ObjectElement extends XAMLElement {
 				output.append("_p.appendChild(document.createTextNode(");
 				PCDATA pcdata = (PCDATA)child;
 				String data = new String(pcdata.source);
-				output.append("\"").append(pcdata.transformEntity(false)).append("\"));");
+				output.append("\"").append(pcdata.translateEntity(false)).append("\"));");
 				
 			} else {
 				ObjectElement oe = (ObjectElement) child;
@@ -163,11 +166,63 @@ public class ObjectElement extends XAMLElement {
 						continue;
 					}
 					if(attr.value instanceof MarkupExtension){
+						output.append("\n");
+						printIndent(indent + 1, output);
+//						output.append("__this.add(new (__lc('java.lang.BindingExpression'))(_n, null));");
+						output.append("_n.").append(attr.property.token).append(" = ");
+						ReferenceBinding rb = (ReferenceBinding) attr.value.resolvedType;
+						output.append("new (__lc('").append(CharOperation.concatWith(rb.compoundName, '.')).append("', '").append(TypeDeclaration.getFileName(rb)).append("'))(");
+						
+						output.append("{");
+						MarkupExtension markup = (MarkupExtension) attr.value;
+						boolean comma = false;
+						for(Attribute mAttr : markup.attributes){
+							if(comma){
+								output.append(',');
+							}
+							output.append("\"").append(mAttr.property.token).append("\" : ");
+							if(mAttr.value instanceof StringLiteral){
+								StringLiteral s = (StringLiteral) mAttr.value;
+								output.append("\"").append(s.source).append("\"");
+							}
+//							output.append("\n");
+//							printIndent(indent + 2, output);
+							comma = true;
+						}
+						output.append("}");
+						
+						output.append(")");
+						output.append(".providerValue(");
+						output.append("_n, \"").append(attr.property.token).append("\")");
+						output.append(";");
 						continue;
 					}
+					
+					if((attr.bits & TagBits.AnnotationEventCallback) != 0){
+						if(attr.method == null){
+							continue;
+						}
+						output.append("\n");
+						printIndent(indent + 1, output);
+						output.append("_n.").append(attr.property.token).append(" = ");
+						if(attr.method.isStatic()){
+							output.append(attr.method.declaringClass.sourceName).append('.');
+							if(attr.value instanceof StringLiteral){
+								output.append(((StringLiteral)attr.value).source).append(".bind(").append(attr.method.declaringClass.sourceName)
+								.append("); ");
+							}
+						} else {
+							output.append("__this.");
+							if(attr.value instanceof StringLiteral){
+								output.append(((StringLiteral)attr.value).source).append(".bind(__this); ");
+							}
+						}
+						
+						continue;
+					}
+					output.append("_n.").append(attr.property.token).append(" = ");
 					output.append("\n");
 					printIndent(indent + 1, output);
-					output.append("_n.").append(attr.property.token).append(" = ");
 					attr.value.generateExpression(scope, indent, output).append(";");
 				}
 				if(attrHasTem != null){
@@ -335,7 +390,7 @@ public class ObjectElement extends XAMLElement {
 			output.append("\n");
 			printIndent(indent+1, output);
 			output.append("var __this = new (");
-			typeDecl.generatea(classScope, indent + 1, output);
+			typeDecl.generateInternal(classScope, indent + 1, output);
 			output.append(")();");
 			
 			output.append("\n");

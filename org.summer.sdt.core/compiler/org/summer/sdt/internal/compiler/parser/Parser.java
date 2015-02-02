@@ -8542,11 +8542,11 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		MethodDeclaration[] methods = new MethodDeclaration[length];
 		System.arraycopy(this.astStack, this.astPtr + 1, methods, 0, length);
 		
-		length = this.astLengthStack[this.astLengthPtr--];
-		this.astPtr -= length;
-		Argument[] args = new Argument[length];
-		if(length != 0){
-			System.arraycopy(this.astStack, this.astPtr + 1, args, 0, length);
+		int argLength = this.astLengthStack[this.astLengthPtr--];
+		this.astPtr -= argLength;
+		Argument[] args = new Argument[argLength];
+		if(argLength != 0){
+			System.arraycopy(this.astStack, this.astPtr + 1, args, 0, argLength);
 		}
 		
 		IndexerDeclaration indexer = (IndexerDeclaration) this.astStack[this.astPtr];
@@ -8559,10 +8559,9 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				method.arguments = args;
 			} else {
 				method.returnType = new SingleTypeReference(TypeBinding.VOID.simpleName, 0);
-				method.arguments = new Argument[length + 1];
-				System.arraycopy(args, 0, method.arguments, 0, length);
-				method.arguments[length] = new Argument(MethodDeclaration.VALUE, 0, indexer.type, 0);
-				
+				method.arguments = new Argument[argLength + 1];
+				System.arraycopy(args, 0, method.arguments, 0, argLength);
+				method.arguments[argLength] = new Argument(MethodDeclaration.VALUE, 0, indexer.type, 0);
 				indexer.setter = method;
 			}
 		}

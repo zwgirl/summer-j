@@ -187,34 +187,34 @@ public class ClassScope extends Scope {
 						PropertyDeclaration property = (PropertyDeclaration) field;
 						if(property.setter != null){
 							MethodScope scope = new MethodScope(this, property.setter, property.isStatic());
-							scope.createMethod(property.setter);
+							scope.createMethod1(property.setter);
 						}
 						
 						if(property.getter != null){
 							MethodScope scope = new MethodScope(this, property.getter, property.isStatic());
-							scope.createMethod(property.getter);
+							scope.createMethod1(property.getter);
 						}
 					} else if (field instanceof IndexerDeclaration) {
 						IndexerDeclaration indexer = (IndexerDeclaration) field;
 						if(indexer.setter != null){
 							MethodScope scope = new MethodScope(this, indexer.setter, indexer.isStatic());
-							scope.createMethod(indexer.setter);
+							scope.createMethod1(indexer.setter);
 						}
 						
 						if(indexer.getter != null){
 							MethodScope scope = new MethodScope(this, indexer.getter, indexer.isStatic());
-							scope.createMethod(indexer.getter);
+							scope.createMethod1(indexer.getter);
 						}
 					} else if (field instanceof EventDeclaration) {
 						EventDeclaration event = (EventDeclaration) field;
 						if(event.add != null){
 							MethodScope scope = new MethodScope(this, event.add, event.isStatic());
-							scope.createMethod(event.add);
+							scope.createMethod1(event.add);
 						}
 						
 						if(event.remove != null){
 							MethodScope scope = new MethodScope(this, event.remove, event.isStatic());
-							scope.createMethod(event.remove);
+							scope.createMethod1(event.remove);
 						}
 					}
 				}
@@ -912,7 +912,8 @@ public class ClassScope extends Scope {
 			if (fieldDecl.initialization == null && (modifiers & ClassFileConstants.AccFinal) != 0)
 				modifiers |= ExtraCompilerModifiers.AccBlankFinal;
 		}
-		fieldBinding.modifiers = modifiers;
+//		fieldBinding.modifiers = modifiers;
+		fieldBinding.modifiers |= modifiers;
 	}
 
 	public void checkParameterizedSuperTypeCollisions() {

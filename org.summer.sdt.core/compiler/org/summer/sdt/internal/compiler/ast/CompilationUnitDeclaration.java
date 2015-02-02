@@ -383,8 +383,6 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		JsFile jsFile = JsFile.getNewInstance(getCompoundName());
 		if (this.types != null) {
 			for (int i = 0, count = this.types.length; i < count; i++) {
-				this.types[i].ignoreFurtherInvestigation = true;
-				// propagate the flag to request problem type creation
 				this.types[i].generateJavascript(this.scope, jsFile);
 				jsFile.content.append(";");
 				jsFile.content.append("\n");

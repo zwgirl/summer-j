@@ -55,7 +55,7 @@ public class PCDATA  extends XAMLElement {
 		
 	}
 	
-	public char[] transformEntity(boolean reservedReturn){
+	public char[] translateEntity(boolean reservedReturn){
 		boolean flag = false;
 		char[] entity = new char[10];
 		int i = 0, length = 0;

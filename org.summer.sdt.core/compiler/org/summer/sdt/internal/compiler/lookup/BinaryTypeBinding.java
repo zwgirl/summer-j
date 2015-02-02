@@ -46,7 +46,6 @@ import org.summer.sdt.internal.compiler.classfmt.NonNullDefaultAwareTypeAnnotati
 import org.summer.sdt.internal.compiler.classfmt.TypeAnnotationWalker;
 import org.summer.sdt.internal.compiler.codegen.ConstantPool;
 import org.summer.sdt.internal.compiler.env.*;
-import org.summer.sdt.internal.compiler.impl.BooleanConstant;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.StringConstant;
@@ -576,11 +575,19 @@ public class BinaryTypeBinding extends ReferenceBinding {
 							int parSize = parameterTypes.length;
 							if (parSize > 0) {
 								parameters = new TypeBinding[parSize];
-								for (int j = 0; j < parSize; j++)
-//									parameters[j] = this.environment.getTypeFromConstantPoolName(parameterTypes[j], 0, -1, false, missingTypeNames, walker.toMethodParameter((short) j));
-								
-								parameters[j] = this.environment.getTypeFromSignature(parameterTypes[j], 0, -1, false, null, 
-										missingTypeNames, walker.toMethodParameter((short) j));
+								for (int j = 0; j < parSize; j++){
+									parameters[j] = this.environment.getTypeFromConstantPoolName(parameterTypes[j], 0, -1, false, missingTypeNames, walker.toMethodParameter((short) j));
+//									parameters[j] = this.environment.getTypeFromSignature(parameterTypes[j], 0, -1, false, null, 
+//										missingTypeNames, walker.toMethodParameter((short) j));
+//									TypeBinding result = this.environment.getTypeFromSignature(parameterTypes[j], 0, -1, false, null, 
+//											missingTypeNames, walker.toMethodParameter((short) j));
+//											this.environment.getTypeFromConstantPoolName(parameterTypes[j], 0, -1, false, missingTypeNames, walker.toThrows(j));
+//									if(result.isUnresolvedType()){
+//										result = this.environment.getTypeFromSignature(parameterTypes[j], 0, -1, false, null, 
+//												missingTypeNames, walker.toMethodParameter((short) j));
+//									}
+//									parameters[j] = result; //this.environment.getTypeFromConstantPoolName(parameterTypes[j], 0, -1, false, missingTypeNames, walker.toThrows(j));
+								}
 							}
 						}
 						
@@ -975,8 +982,13 @@ public class BinaryTypeBinding extends ReferenceBinding {
 				ReferenceBinding.sortFields(this.fields, 0, length);
 			this.tagBits |= TagBits.AreFieldsSorted;
 		}
-		for (int i = this.fields.length; --i >= 0;)
-			resolveTypeFor(this.fields[i]);
+		for (int i = this.fields.length; --i >= 0;){
+			if(this.fields[i] instanceof IndexerBinding){
+				resolveTypeFor((IndexerBinding)this.fields[i]);
+			} else {
+				resolveTypeFor(this.fields[i]);
+			}
+		}
 		this.tagBits |= TagBits.AreFieldsComplete;
 		return this.fields;
 	}
@@ -1168,7 +1180,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 				FieldBinding field = this.fields[ifield];
 				foundNothing = false; // inner type lookups must know that a method with this name exists
 				if (field instanceof IndexerBinding && ((IndexerBinding)field).parameters.length == argCount) {
-					resolveTypesFor((IndexerBinding)field);
+					resolveTypeFor((IndexerBinding)field);
 					TypeBinding[] toMatch = ((IndexerBinding)field).parameters;
 					for (int iarg = 0; iarg < argCount; iarg++)
 						if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
@@ -1506,10 +1518,10 @@ public class BinaryTypeBinding extends ReferenceBinding {
 	}
 	
 	//cym 2014-11-24
-	private IndexerBinding resolveTypesFor(IndexerBinding indexer) {
+	private IndexerBinding resolveTypeFor(IndexerBinding indexer) {
 		
 		if (!isPrototype())
-			return this.prototype.resolveTypesFor(indexer);
+			return this.prototype.resolveTypeFor(indexer);
 		
 		if ((indexer.modifiers & ExtraCompilerModifiers.AccUnresolved) == 0)
 			return indexer;

@@ -578,8 +578,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		
 		//cym 2015-01-11
-		if((this.bits & (ASTNode.IsAnonymousType | ASTNode.IsLocalType | ASTNode.IsMemberType)) == 0 && (this.modifiers & ClassFileConstants.AccModule) == 0){
-			generateJavascript(scope);
+		if((this.bits & (ASTNode.IsAnonymousType | ASTNode.IsLocalType | ASTNode.IsMemberType)) == 0){
+			if((this.binding.modifiers & ClassFileConstants.AccModule) == 0){
+				generateJavascript(scope);
+			}
+
 			if(this.element != null && CharOperation.equals(((ReferenceBinding)this.element.type.resolvedType).compoundName, TypeConstants.ORG_W3C_HTML_HTML)){
 				generateHtml(this.scope);
 			}
@@ -1754,7 +1757,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				return;
 		}
 		try {
-			this.scope.referenceCompilationUnit().compilationResult.record(this.binding.constantPoolName(), jsFile);
+//			this.scope.referenceCompilationUnit().compilationResult.record(this.binding.constantPoolName(), jsFile);
+			generateInternal(scope, 0, jsFile.content);
 		} catch (AbortType e) {
 			if (this.binding == null)
 				return;
@@ -1774,7 +1778,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		try {
 			JsFile jsFile = JsFile.getNewInstance(this.binding.compoundName);
 			StringBuffer output = jsFile.content;
-			generatea(scope, 0, output);
+			generateInternal(scope, 0, output);
 			output.append(";");
 			this.scope.referenceCompilationUnit().compilationResult.record(this.binding.constantPoolName(), jsFile);
 		} catch (AbortType e) {
@@ -1786,7 +1790,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 	}
 
-	public void generatea(Scope scope, int indent, StringBuffer output) {
+	public void generateInternal(Scope scope, int indent, StringBuffer output) {
 		output.append("(function(){ \n");
 		
 		generateClassContent(this, indent + 1, output);

@@ -55,7 +55,6 @@ import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.summer.sdt.internal.compiler.ast.Annotation;
 import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.EventDeclaration;
-import org.summer.sdt.internal.compiler.ast.Expression;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
@@ -1963,8 +1962,8 @@ public class SourceTypeBinding extends ReferenceBinding {
 		if (!isPrototype())
 			return this.prototype.resolveTypeFor(property);
 	
-		if ((property.modifiers & ExtraCompilerModifiers.AccUnresolved) == 0)
-			return property;
+//		if ((property.modifiers & ExtraCompilerModifiers.AccUnresolved) == 0)
+//			return property;
 	
 		long sourceLevel = this.scope.compilerOptions().sourceLevel;
 		if (sourceLevel >= ClassFileConstants.JDK1_5) {
@@ -2058,8 +2057,8 @@ public class SourceTypeBinding extends ReferenceBinding {
 		if (!isPrototype())
 			return this.prototype.resolveTypeFor(indexer);
 	
-		if ((indexer.modifiers & ExtraCompilerModifiers.AccUnresolved) == 0)
-			return indexer;
+//		if ((indexer.modifiers & ExtraCompilerModifiers.AccUnresolved) == 0)
+//			return indexer;
 	
 		long sourceLevel = this.scope.compilerOptions().sourceLevel;
 		if (sourceLevel >= ClassFileConstants.JDK1_5) {

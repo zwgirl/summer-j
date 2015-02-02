@@ -494,13 +494,13 @@ PCDATANode ::= PCDATA
 --/.$putCase consumeCOMMENTNode(); $break ./
 --/:$readableName COMMENTNode:/
 
-EmptyElement ::=  ElementTag  EnterCloseTag EnterPCADATA '/>' 
+EmptyElement ::=  ElementTag  EnterCloseTag EnterPCDATA '/>' 
 /.$putCase consumeEmptyElement(); $break ./
-SimpleElement ::=  ElementTag AttributeList  EnterCloseTag EnterPCADATA '/>'
+SimpleElement ::=  ElementTag AttributeList  EnterCloseTag EnterPCDATA '/>'
 /.$putCase consumeSimpleElement(); $break ./
-ComplexElement ::= ElementTag AttributeListopt EnterPCADATA '>' 
+ComplexElement ::= ElementTag AttributeListopt EnterPCDATA '>' 
     	ElementListopt
-	 '</' EnterCloseTag SimpleName EnterPCADATA '>' 
+	 '</' EnterCloseTag SimpleName EnterPCDATA '>' 
 /.$putCase consumeComplexElement(); $break ./
 /:$readableName ObjectElement:/
 
@@ -508,7 +508,7 @@ EnterCloseTag ::= $empty
 /.$putCase consumeEnterCloseTag(); $break ./
 /:$readableName EnterCloseTag:/
 
-EnterPCADATA ::= $empty
+EnterPCDATA ::= $empty
 /.$putCase consumeEnterPCADATA(); $break ./
 /:$readableName EnterPCADATA:/
 
@@ -525,9 +525,9 @@ ElementTag ::= '<' SimpleName
 /.$putCase consumeElementTag(); $break ./
 /:$readableName ElementTag:/
 
-AttributeElement ::= '<' SimpleName '.' SimpleName AttributeElementTag EnterPCADATA '>'
+AttributeElement ::= '<' SimpleName '.' SimpleName AttributeElementTag EnterPCDATA '>'
        ElementListopt
-    '</' SimpleName '.' SimpleName EnterPCADATA '>'
+    '</' SimpleName '.' SimpleName EnterPCDATA '>'
 /.$putCase consumeAttributeElement(); $break ./
 /:$readableName AttributeElement:/
 
