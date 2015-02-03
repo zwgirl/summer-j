@@ -278,8 +278,18 @@ public class CompletionScanner extends Scanner {
 					case '~' :
 						return TokenNameTWIDDLE;
 					case '!' :
-						if (getNextChar('='))
+						//cym 2015-02-03
+//						if (getNextChar('='))
+//							return TokenNameNOT_EQUAL;
+//						return TokenNameNOT;
+					
+						if (getNextChar('=')){
+							if(getNextChar('=')){
+								return TokenNameNOT_EQUAL_EQUAL;
+							}
 							return TokenNameNOT_EQUAL;
+						}
+							
 						return TokenNameNOT;
 					case '*' :
 						if (getNextChar('='))
@@ -328,8 +338,18 @@ public class CompletionScanner extends Scanner {
 							return TokenNameGREATER;
 						}
 					case '=' :
-						if (getNextChar('='))
+						//cym 2015-02-03
+//						if (getNextChar('='))
+//							return TokenNameEQUAL_EQUAL;
+//						return TokenNameEQUAL;
+						
+						if (getNextChar('=')){
+							if(getNextChar('=')){
+								return TokenNameEQUAL_EQUAL_EQUAL;
+							}
 							return TokenNameEQUAL_EQUAL;
+						}
+
 						return TokenNameEQUAL;
 					case '&' :
 						{
@@ -355,10 +375,11 @@ public class CompletionScanner extends Scanner {
 						return TokenNameXOR;
 					case '?' :
 						return TokenNameQUESTION;
-					case ':' :
-						if (getNextChar(':'))
-							return TokenNameCOLON_COLON;
-						return TokenNameCOLON;
+					//cym 2015-02-03
+//					case ':' :
+//						if (getNextChar(':'))
+//							return TokenNameCOLON_COLON;
+//						return TokenNameCOLON;
 					case '\'' :
 						{
 							int test;

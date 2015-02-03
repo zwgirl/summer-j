@@ -602,7 +602,8 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 						}
 						break;
 					case TerminalTokens.TokenNameARROW:
-					case TerminalTokens.TokenNameCOLON_COLON:
+					//cym 2015-02-03
+//					case TerminalTokens.TokenNameCOLON_COLON:
 						if (scanner.startPosition <= selectionStart && selectionStart <= scanner.currentPosition) {
 							lastIdentifierStart = scanner.startPosition;
 							lastIdentifierEnd = scanner.currentPosition - 1;
@@ -651,14 +652,15 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 						}
 						expectingIdentifier = false;
 						break;
-					case TerminalTokens.TokenNameCOLON_COLON:	
-						if (selectionStart >= scanner.startPosition && selectionEnd < scanner.currentPosition) {
-							this.actualSelectionStart = selectionStart;
-							this.actualSelectionEnd = selectionEnd;
-							this.selectedIdentifier = CharOperation.NO_CHAR;
-							return true;		
-						}
-						//$FALL-THROUGH$
+					//cym 2015-02-03
+//					case TerminalTokens.TokenNameCOLON_COLON:	
+//						if (selectionStart >= scanner.startPosition && selectionEnd < scanner.currentPosition) {
+//							this.actualSelectionStart = selectionStart;
+//							this.actualSelectionEnd = selectionEnd;
+//							this.selectedIdentifier = CharOperation.NO_CHAR;
+//							return true;		
+//						}
+//						//$FALL-THROUGH$
 					case TerminalTokens.TokenNameDOT :
 						if (expectingIdentifier)
 							return false;

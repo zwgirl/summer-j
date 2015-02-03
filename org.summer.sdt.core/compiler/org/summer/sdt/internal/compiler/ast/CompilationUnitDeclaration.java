@@ -611,9 +611,10 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 				this.javadoc.resolve(this.scope);
 			}
 		}
-		if (this.currentPackage != null && this.currentPackage.annotations != null && !isPackageInfo) {
-			this.scope.problemReporter().invalidFileNameForPackageAnnotations(this.currentPackage.annotations[0]);
-		}
+		//cym 2015-02-03
+//		if (this.currentPackage != null && this.currentPackage.annotations != null && !isPackageInfo) {
+//			this.scope.problemReporter().invalidFileNameForPackageAnnotations(this.currentPackage.annotations[0]);
+//		}
 		try {
 			if (this.types != null) {
 				for (int i = startingTypeIndex, count = this.types.length; i < count; i++) {

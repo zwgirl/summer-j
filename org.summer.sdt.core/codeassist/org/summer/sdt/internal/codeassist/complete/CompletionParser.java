@@ -3710,9 +3710,10 @@ public class CompletionParser extends AssistParser {
 							break;
 					}
 					break;
-				case TokenNameCOLON_COLON:
-					this.inReferenceExpression = true;
-					break;
+				//cym comment 2015-02-03
+//				case TokenNameCOLON_COLON:
+//					this.inReferenceExpression = true;
+//					break;
 				case TokenNameIdentifier:
 					if (this.inReferenceExpression)
 						break;

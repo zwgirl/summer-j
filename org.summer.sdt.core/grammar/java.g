@@ -66,13 +66,14 @@ $Terminals
 	interface 
 	let 
 	long 
-	module 
+--	module 
 	native new null package private
 	protected public return short static strictfp super switch
 	synchronized this throw throws transient true try 
 	typeof 
 	void
-	volatile while
+	volatile 
+	while
 
 	PCDATA	--cym
 		
@@ -134,10 +135,12 @@ $Terminals
 	AT
 	ELLIPSIS
 	ARROW
-	COLON_COLON
+    EQUAL_EQUAL_EQUAL  --cym 2015-02-03
+    NOT_EQUAL_EQUAL  --cym 2015-02-03
+--	COLON_COLON  --cym 2015-02-03
 	BeginLambda
 	BeginIntersectionCast
-	BeginTypeArguments
+	BeginTypeArguments -- cym 2015-02-03
 	ElidedSemicolonAndRightBrace
 	CLOSE_TAG
 	CLOSE_ELEMENT
@@ -150,7 +153,9 @@ $Terminals
 
 $Alias
 
-	'::'   ::= COLON_COLON
+--	'::'   ::= COLON_COLON  --cym 2015-02-03
+    '==='  ::= EQUAL_EQUAL_EQUAL  --cym 2015-02-03
+	'!=='  ::= NOT_EQUAL_EQUAL  --cym 2015-02-03
 	'->'   ::= ARROW
 	'++'   ::= PLUS_PLUS
 	'--'   ::= MINUS_MINUS
@@ -249,7 +254,7 @@ Goal ::= '?' AnnotationTypeMemberDeclaration
 -- JSR 335 Reconnaissance missions.
 Goal ::= '->' ParenthesizedLambdaParameterList
 Goal ::= '(' ParenthesizedCastNameAndBounds
-Goal ::= '<' ReferenceExpressionTypeArgumentsAndTrunk
+--Goal ::= '<' ReferenceExpressionTypeArgumentsAndTrunk  --cym 2015-02-03
 -- JSR 308 Reconnaissance mission.
 Goal ::= '@' TypeAnnotations
 /:$readableName Goal:/
@@ -617,15 +622,15 @@ PackageDeclaration ::= PackageDeclarationName ';'
 PackageDeclarationName ::= Modifiers 'package' PushRealModifiers Name RejectTypeAnnotations
 /.$putCase consumePackageDeclarationNameWithModifiers(); $break ./
 
-PackageDeclarationName ::= Modifiers 'module' PushRealModifiers Name RejectTypeAnnotations --cym 2014-10-16
-/.$putCase consumeModuleDeclarationNameWithModifiers(); $break ./
-/:$readableName PackageDeclarationName:/
-/:$compliance 1.5:/
+--PackageDeclarationName ::= Modifiers 'module' PushRealModifiers Name RejectTypeAnnotations --cym 2014-10-16
+--/.$putCase consumeModuleDeclarationNameWithModifiers(); $break ./
+--/:$readableName PackageDeclarationName:/
+--/:$compliance 1.5:/
 
 PackageDeclarationName ::= PackageComment 'package' Name RejectTypeAnnotations
 /.$putCase consumePackageDeclarationName(); $break ./
-PackageDeclarationName ::= PackageComment 'module' Name  RejectTypeAnnotations  --cym 2014-10-16
-/.$putCase consumeModuleDeclarationName(); $break ./
+--PackageDeclarationName ::= PackageComment 'module' Name  RejectTypeAnnotations  --cym 2014-10-16
+--/.$putCase consumeModuleDeclarationName(); $break ./
 /:$readableName PackageDeclarationName:/
 
 PackageComment ::= $empty
@@ -815,53 +820,53 @@ GetterMethodHeader ::= '&'
 /.$putCase consumeAccessorMethodName(MethodDeclaration.GETTER); $break./
 /:$readableName GetterMethodHeader:/
 
-ClassMemberDeclaration -> EventDeclaration
-EventDeclaration ::= EventHeader '{' EventAccessorDeclaration '}'
-/.$putCase consumeEventDeclaration(); $break./
-
-EventDeclaration ::= EventHeader ';'
-/.$putCase consumeEventDeclarationNoAccessor(); $break./
-/:$readableName EventDeclaration:/
-
---EventHeader ::= Modifiersopt 'event' Type 'Identifier'
+--ClassMemberDeclaration -> EventDeclaration
+--EventDeclaration ::= EventHeader '{' EventAccessorDeclaration '}'
+--/.$putCase consumeEventDeclaration(); $break./
+--
+--EventDeclaration ::= EventHeader ';'
+--/.$putCase consumeEventDeclarationNoAccessor(); $break./
+--/:$readableName EventDeclaration:/
+--
+----EventHeader ::= Modifiersopt 'event' Type 'Identifier'
+----/.$putCase consumeEventHeader(); $break./
+----/:$readableName EventHeader:/
+--
+--EventHeader ::= Modifiersopt * Type 'Identifier'
 --/.$putCase consumeEventHeader(); $break./
 --/:$readableName EventHeader:/
-
-EventHeader ::= Modifiersopt * Type 'Identifier'
-/.$putCase consumeEventHeader(); $break./
-/:$readableName EventHeader:/
-
-EventAccessorDeclaration ::= $empty
-/.$putCase consumeEmptyAccessor(); $break./
-EventAccessorDeclaration ::= AddAccessorDeclaration RemoveAccessorDeclarationopt
-EventAccessorDeclaration ::= RemoveAccessorDeclaration AddAccessorDeclarationopt
-/:$readableName EventAccessorDeclaration:/
-
-AddAccessorDeclarationopt ::= $empty
-AddAccessorDeclarationopt ::= AddAccessorDeclaration
-/.$putCase consumeAccessoropt(); $break./
-/:$readableName AddAccessorDeclarationopt:/
-
-AddAccessorDeclaration ::= AddMethodHeader MethodBody 
-/.$putCase consumeMethodDeclaration(true, false); $break./
-/:$readableName AddAccessorDeclaration:/
-
-AddMethodHeader ::= '+'
-/.$putCase consumeAccessorMethodName(MethodDeclaration.ADD); $break./
-/:$readableName AddMethodHeader:/
-
-RemoveAccessorDeclarationopt ::= $empty
-RemoveAccessorDeclarationopt ::= RemoveAccessorDeclaration
-/.$putCase consumeAccessoropt(); $break./
-/:$readableName RemoveAccessorDeclarationopt:/
-
-RemoveAccessorDeclaration ::= RemoveMethodHeader MethodBody
-/.$putCase consumeMethodDeclaration(true, false); $break./
-/:$readableName RemoveAccessorDeclaration:/
-
-RemoveMethodHeader ::= '-'
-/.$putCase consumeAccessorMethodName(MethodDeclaration.REMOVE); $break./
-/:$readableName RemoveMethodHeader:/
+--
+--EventAccessorDeclaration ::= $empty
+--/.$putCase consumeEmptyAccessor(); $break./
+--EventAccessorDeclaration ::= AddAccessorDeclaration RemoveAccessorDeclarationopt
+--EventAccessorDeclaration ::= RemoveAccessorDeclaration AddAccessorDeclarationopt
+--/:$readableName EventAccessorDeclaration:/
+--
+--AddAccessorDeclarationopt ::= $empty
+--AddAccessorDeclarationopt ::= AddAccessorDeclaration
+--/.$putCase consumeAccessoropt(); $break./
+--/:$readableName AddAccessorDeclarationopt:/
+--
+--AddAccessorDeclaration ::= AddMethodHeader MethodBody 
+--/.$putCase consumeMethodDeclaration(true, false); $break./
+--/:$readableName AddAccessorDeclaration:/
+--
+--AddMethodHeader ::= '+'
+--/.$putCase consumeAccessorMethodName(MethodDeclaration.ADD); $break./
+--/:$readableName AddMethodHeader:/
+--
+--RemoveAccessorDeclarationopt ::= $empty
+--RemoveAccessorDeclarationopt ::= RemoveAccessorDeclaration
+--/.$putCase consumeAccessoropt(); $break./
+--/:$readableName RemoveAccessorDeclarationopt:/
+--
+--RemoveAccessorDeclaration ::= RemoveMethodHeader MethodBody
+--/.$putCase consumeMethodDeclaration(true, false); $break./
+--/:$readableName RemoveAccessorDeclaration:/
+--
+--RemoveMethodHeader ::= '-'
+--/.$putCase consumeAccessorMethodName(MethodDeclaration.REMOVE); $break./
+--/:$readableName RemoveMethodHeader:/
 
 ClassMemberDeclaration -> IndexerDeclaration
 IndexerDeclaration ::= IndexerHeader FormalParameter  ']'  '{' AccessorDeclaration '}'
@@ -1331,6 +1336,7 @@ Statement -> IfThenStatement
 Statement -> IfThenElseStatement
 Statement -> WhileStatement
 Statement -> ForStatement
+Statement -> FunctionDeclaration  --cym 2015-02-03
 -----------------------------------------------
 -- 1.5 feature
 -----------------------------------------------
@@ -1583,6 +1589,21 @@ Finally ::= 'finally' Block
 /:$readableName Finally:/
 /:$recovery_template finally { }:/
 
+--cym 2015-02-03
+FunctionDeclaration ::=  FunctionHeader MethodBody 
+/.$putCase // set to false to consume a method without body
+ consumeFunctionDeclaraton(false, false); $break ./
+/:$readableName MethodDeclaration:/
+
+FunctionHeader ::= function FunctionHeaderName FormalParameterListopt MethodHeaderRightParen --MethodHeaderThrowsClauseopt
+/.$putCase consumeFunctionHeader(); $break ./
+/:$readableName FunctionHeader:/
+
+FunctionHeaderName ::= Type 'Identifier' '('
+/.$putCase consumeFunctionHeaderName(false); $break ./
+/:$readableName FunctionHeaderName:/
+--cym 2015-02-03 end
+
 --18.12 Productions from 14: Expressions
 
 --for source positioning purpose
@@ -1638,60 +1659,78 @@ PrimaryNoNewArray ::= PrimitiveType '.' 'class'
 PrimaryNoNewArray -> MethodInvocation
 PrimaryNoNewArray -> ArrayAccess
 
+--cym 2015-01-20
+PrimaryNoNewArray -> FunctionExpression
+FunctionExpression ::= FunctionExpressionHeader MethodBody 
+/.$putCase 
+ consumeFunctionExpression(); $break ./
+/:$readableName FunctionExpression:/
+
+FunctionExpressionHeader ::= FunctionExpressionHeaderName FormalParameterListopt MethodHeaderRightParen
+/.$putCase consumeFunctionExpressionHeader(); $break ./
+/:$readableName FunctionExpressionHeader:/
+
+FunctionExpressionHeaderName ::= 'function' '('
+/.$putCase consumeFunctionExpressionHeaderName(); $break ./
+/:$readableName FunctionExpressionHeaderName:/
+--cym 2015-01-20 end
+
 -----------------------------------------------------------------------
 --                   Start of rules for JSR 335
 -----------------------------------------------------------------------
 
 PrimaryNoNewArray -> LambdaExpression
-PrimaryNoNewArray -> ReferenceExpression
-/:$readableName Expression:/
-
--- Production name hardcoded in parser. Must be ::= and not -> 
-ReferenceExpressionTypeArgumentsAndTrunk ::= ReferenceExpressionTypeArgumentsAndTrunk0
-/:$readableName ReferenceExpressionTypeArgumentsAndTrunk:/
-
-ReferenceExpressionTypeArgumentsAndTrunk0 ::= OnlyTypeArguments Dimsopt 
-/.$putCase consumeReferenceExpressionTypeArgumentsAndTrunk(false); $break ./
-/:$compliance 1.8:/
-ReferenceExpressionTypeArgumentsAndTrunk0 ::= OnlyTypeArguments '.' ClassOrInterfaceType Dimsopt 
-/.$putCase consumeReferenceExpressionTypeArgumentsAndTrunk(true); $break ./
-/:$readableName ReferenceExpressionTypeArgumentsAndTrunk:/
-/:$compliance 1.8:/
-
-ReferenceExpression ::= PrimitiveType Dims '::' NonWildTypeArgumentsopt IdentifierOrNew
-/.$putCase consumeReferenceExpressionTypeForm(true); $break ./
-/:$compliance 1.8:/
-
-ReferenceExpression ::= Name Dimsopt '::' NonWildTypeArgumentsopt IdentifierOrNew
-/.$putCase consumeReferenceExpressionTypeForm(false); $break ./
-/:$compliance 1.8:/
-
--- BeginTypeArguments is a synthetic token the scanner concocts to help disambiguate
--- between '<' as an operator and '<' in '<' TypeArguments '>'
-ReferenceExpression ::= Name BeginTypeArguments ReferenceExpressionTypeArgumentsAndTrunk '::' NonWildTypeArgumentsopt IdentifierOrNew
-/.$putCase consumeReferenceExpressionGenericTypeForm(); $break ./
-/:$compliance 1.8:/
-
-ReferenceExpression ::= Primary '::' NonWildTypeArgumentsopt Identifier
-/.$putCase consumeReferenceExpressionPrimaryForm(); $break ./
-/:$compliance 1.8:/
-ReferenceExpression ::= 'super' '::' NonWildTypeArgumentsopt Identifier
-/.$putCase consumeReferenceExpressionSuperForm(); $break ./
-/:$readableName ReferenceExpression:/
-/:$compliance 1.8:/
-
-NonWildTypeArgumentsopt ::= $empty
-/.$putCase consumeEmptyTypeArguments(); $break ./
-NonWildTypeArgumentsopt -> OnlyTypeArguments
-/:$readableName NonWildTypeArgumentsopt:/
-/:$compliance 1.8:/
-
-IdentifierOrNew ::= 'Identifier'
-/.$putCase consumeIdentifierOrNew(false); $break ./
-IdentifierOrNew ::= 'new'
-/.$putCase consumeIdentifierOrNew(true); $break ./
-/:$readableName IdentifierOrNew:/
-/:$compliance 1.8:/
+--cym 2015-02-03
+--PrimaryNoNewArray -> ReferenceExpression
+--/:$readableName Expression:/
+--
+---- Production name hardcoded in parser. Must be ::= and not -> 
+--ReferenceExpressionTypeArgumentsAndTrunk ::= ReferenceExpressionTypeArgumentsAndTrunk0
+--/:$readableName ReferenceExpressionTypeArgumentsAndTrunk:/
+--
+--ReferenceExpressionTypeArgumentsAndTrunk0 ::= OnlyTypeArguments Dimsopt 
+--/.$putCase consumeReferenceExpressionTypeArgumentsAndTrunk(false); $break ./
+--/:$compliance 1.8:/
+--ReferenceExpressionTypeArgumentsAndTrunk0 ::= OnlyTypeArguments '.' ClassOrInterfaceType Dimsopt 
+--/.$putCase consumeReferenceExpressionTypeArgumentsAndTrunk(true); $break ./
+--/:$readableName ReferenceExpressionTypeArgumentsAndTrunk:/
+--/:$compliance 1.8:/
+--
+--ReferenceExpression ::= PrimitiveType Dims '::' NonWildTypeArgumentsopt IdentifierOrNew
+--/.$putCase consumeReferenceExpressionTypeForm(true); $break ./
+--/:$compliance 1.8:/
+--
+--ReferenceExpression ::= Name Dimsopt '::' NonWildTypeArgumentsopt IdentifierOrNew
+--/.$putCase consumeReferenceExpressionTypeForm(false); $break ./
+--/:$compliance 1.8:/
+--
+---- BeginTypeArguments is a synthetic token the scanner concocts to help disambiguate
+---- between '<' as an operator and '<' in '<' TypeArguments '>'
+--ReferenceExpression ::= Name BeginTypeArguments ReferenceExpressionTypeArgumentsAndTrunk '::' NonWildTypeArgumentsopt IdentifierOrNew
+--/.$putCase consumeReferenceExpressionGenericTypeForm(); $break ./
+--/:$compliance 1.8:/
+--
+--ReferenceExpression ::= Primary '::' NonWildTypeArgumentsopt Identifier
+--/.$putCase consumeReferenceExpressionPrimaryForm(); $break ./
+--/:$compliance 1.8:/
+--ReferenceExpression ::= 'super' '::' NonWildTypeArgumentsopt Identifier
+--/.$putCase consumeReferenceExpressionSuperForm(); $break ./
+--/:$readableName ReferenceExpression:/
+--/:$compliance 1.8:/
+--
+--NonWildTypeArgumentsopt ::= $empty
+--/.$putCase consumeEmptyTypeArguments(); $break ./
+--NonWildTypeArgumentsopt -> OnlyTypeArguments
+--/:$readableName NonWildTypeArgumentsopt:/
+--/:$compliance 1.8:/
+--
+--IdentifierOrNew ::= 'Identifier'
+--/.$putCase consumeIdentifierOrNew(false); $break ./
+--IdentifierOrNew ::= 'new'
+--/.$putCase consumeIdentifierOrNew(true); $break ./
+--/:$readableName IdentifierOrNew:/
+--/:$compliance 1.8:/
+--cym 2015-02-03 end
 
 LambdaExpression ::= LambdaParameters '->' LambdaBody
 /.$putCase consumeLambdaExpression(); $break ./
@@ -1879,19 +1918,6 @@ ArgumentList ::= ArgumentList ',' Expression
 /.$putCase consumeArgumentList(); $break ./
 /:$readableName ArgumentList:/
 
-----cym modified
---ArgumentList ::= Argument   --cym 2014-10-13
---ArgumentList ::= ArgumentList ',' Argument  --cym 2014-10-13
---/.$putCase consumeArgumentList(); $break ./
---/:$readableName ArgumentList:/
---Argument ::= Expression
---Argument ::= 'ref' Expression
---/.$putCase consumeArgument(ASTNode.IsRefArgument); $break ./
---Argument ::= 'out' Expression
---/.$putCase consumeArgument(ASTNode.IsOutArgument); $break ./
---/:$readableName Argument:/
----- cym modified end
-
 ArrayCreationHeader ::= 'new' PrimitiveType DimWithOrWithOutExprs
 /.$putCase consumeArrayCreationHeader(); $break ./
 
@@ -1950,12 +1976,14 @@ MethodInvocation ::= Name '(' ArgumentListopt ')'
 MethodInvocation ::= Name '.' OnlyTypeArguments 'Identifier' '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationNameWithTypeArguments(); $break ./
 
-MethodInvocation ::= MethodInvocation '(' ArgumentListopt ')' --cym add 2014-10-27
-/.$putCase consumeMethodInvocationName(); $break ./   --cym add 2014-10-27
+MethodInvocation ::= MethodInvocation '(' ArgumentListopt ')' --cym add 2015-02-03
+/.$putCase consumeMethodInvocationInvocation(); $break ./  
 
-MethodInvocation ::= ArrayAccess '(' ArgumentListopt ')'  --cym add 2014-10-27
---MethodInvocation ::= FunctionExpression  '(' ArgumentListopt ')'   --cym add 2014-10-27
-MethodInvocation ::= LambdaExpression  '(' ArgumentListopt ')'   --cym add 2014-10-27
+MethodInvocation ::= ArrayAccess '(' ArgumentListopt ')'  --cym add 2015-02-03
+/.$putCase consumeMethodInvocationArraySccess(); $break ./
+
+MethodInvocation ::= FunctionExpression  '(' ArgumentListopt ')'   --cym add 2015-02-03
+/.$putCase consumeMethodInvocationFunctionExpression(); $break ./
 
 MethodInvocation ::= Primary '.' OnlyTypeArguments 'Identifier' '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationPrimaryWithTypeArguments(); $break ./
@@ -2115,6 +2143,15 @@ InstanceofExpression ::= InstanceofExpression 'instanceof' ReferenceType
 EqualityExpression -> InstanceofExpression
 EqualityExpression ::= EqualityExpression '==' InstanceofExpression
 /.$putCase consumeEqualityExpression(OperatorIds.EQUAL_EQUAL); $break ./
+
+--cym 2015-02-03
+EqualityExpression ::= EqualityExpression '===' InstanceofExpression
+/.$putCase consumeEqualityExpression(OperatorIds.EQUAL_EQUAL_EQUAL); $break ./
+
+EqualityExpression ::= EqualityExpression '!==' InstanceofExpression
+/.$putCase consumeEqualityExpression(OperatorIds.NOT_EQUAL_EQUAL); $break ./
+--cym 2015-02-03 end
+
 EqualityExpression ::= EqualityExpression '!=' InstanceofExpression
 /.$putCase consumeEqualityExpression(OperatorIds.NOT_EQUAL); $break ./
 /:$readableName Expression:/
@@ -3062,8 +3099,9 @@ CLOSE_TAG ::= '/>'
 CLOSE_ELEMENT ::= '</'
 ELLIPSIS ::=    '...'    
 ARROW ::= '->'
-COLON_COLON ::= '::'
-
+--COLON_COLON ::= '::'  --cym 2015-02-03
+EQUAL_EQUAL_EQUAL ::= '==='  --cym 2015-02-03
+NOT_EQUAL_EQUAL ::= '!=='  --cym 2015-02-03
 SCRIPT_START ::= '<%'  --cym 2015-01-03
 SCRIPT_END ::= '%>'  --cym 2015-01-03
 

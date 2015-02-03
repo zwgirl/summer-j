@@ -1389,8 +1389,18 @@ public class Scanner implements TerminalTokens {
 					case '~' :
 						return TokenNameTWIDDLE;
 					case '!' :
-						if (getNextChar('='))
+						//cym 2015-02-03
+//						if (getNextChar('='))
+//							return TokenNameNOT_EQUAL;
+//						return TokenNameNOT;
+						
+						if (getNextChar('=')){
+							if(getNextChar('=')){
+								return TokenNameNOT_EQUAL_EQUAL;
+							}
 							return TokenNameNOT_EQUAL;
+						}
+							
 						return TokenNameNOT;
 					case '*' :
 						if (getNextChar('='))
@@ -1450,8 +1460,18 @@ public class Scanner implements TerminalTokens {
 							return TokenNameGREATER;
 						}
 					case '=' :
-						if (getNextChar('='))
+						//cym 2015-02-03
+//						if (getNextChar('='))
+//							return TokenNameEQUAL_EQUAL;
+//						return TokenNameEQUAL;
+						
+						if (getNextChar('=')){
+							if(getNextChar('=')){
+								return TokenNameEQUAL_EQUAL_EQUAL;
+							}
 							return TokenNameEQUAL_EQUAL;
+						}
+
 						return TokenNameEQUAL;
 					case '&' :
 						{
@@ -1478,8 +1498,9 @@ public class Scanner implements TerminalTokens {
 					case '?' :
 						return TokenNameQUESTION;
 					case ':' :
-						if (getNextChar(':'))
-							return TokenNameCOLON_COLON;
+						//cym comment 2015-02-03
+//						if (getNextChar(':'))
+//							return TokenNameCOLON_COLON;
 						return TokenNameCOLON;
 					case '\'' :
 						{
@@ -3409,17 +3430,18 @@ public class Scanner implements TerminalTokens {
 					}
 				}
 				return TokenNameIdentifier;
-			case 'm' : //long
-				if (length == 6) {
-					if ((data[++index] == 'o')
-						&& (data[++index] == 'd')
-						&& (data[++index] == 'u')
-						&& (data[++index] == 'l')
-						&& (data[++index] == 'e')) {
-						return TokenNamemodule;
-					}
-				}
-				return TokenNameIdentifier;
+			//cym 2015-02-03
+//			case 'm' : //long
+//				if (length == 6) {
+//					if ((data[++index] == 'o')
+//						&& (data[++index] == 'd')
+//						&& (data[++index] == 'u')
+//						&& (data[++index] == 'l')
+//						&& (data[++index] == 'e')) {
+//						return TokenNamemodule;
+//					}
+//				}
+//				return TokenNameIdentifier;
 	
 			case 'n' : //native new null
 				switch (length) {
@@ -4288,14 +4310,23 @@ public class Scanner implements TerminalTokens {
 				return "?"; //$NON-NLS-1$
 			case TokenNameCOLON :
 				return ":"; //$NON-NLS-1$
-			case TokenNameCOLON_COLON :
-				return "::"; //$NON-NLS-1$
+			//cym comment 2015-02-03
+//			case TokenNameCOLON_COLON :
+//				return "::"; //$NON-NLS-1$
 			case TokenNameCOMMA :
 				return ","; //$NON-NLS-1$
 			case TokenNameDOT :
 				return "."; //$NON-NLS-1$
 			case TokenNameEQUAL :
 				return "="; //$NON-NLS-1$
+				
+			//cym comment 2015-02-03
+			case TokenNameEQUAL_EQUAL_EQUAL :
+				return "==="; //$NON-NLS-1$
+				
+//			cym comment 2015-02-03
+			case TokenNameNOT_EQUAL_EQUAL :
+				return "!=="; //$NON-NLS-1$
 			
 			//cym add
 			case TokenNameCLOSE_ELEMENT :
@@ -4472,7 +4503,8 @@ public class Scanner implements TerminalTokens {
 			LambdaParameterListGoal =  new Goal(TokenNameARROW, new int[] { TokenNameARROW }, LambdaParameterListRule);
 			IntersectionCastGoal =     new Goal(TokenNameLPAREN, followSetOfCast(), IntersectionCastRule);
 			VarargTypeAnnotationGoal = new Goal(TokenNameAT, new int[] { TokenNameELLIPSIS }, VarargTypeAnnotationsRule);
-			ReferenceExpressionGoal =  new Goal(TokenNameLESS, new int[] { TokenNameCOLON_COLON }, ReferenceExpressionRule);
+			//cym comment 2015-02-03
+//			ReferenceExpressionGoal =  new Goal(TokenNameLESS, new int[] { TokenNameCOLON_COLON }, ReferenceExpressionRule);
 			BlockStatementoptGoal =    new Goal(TokenNameLBRACE, new int [0], BlockStatementoptRule);
 		}
 	

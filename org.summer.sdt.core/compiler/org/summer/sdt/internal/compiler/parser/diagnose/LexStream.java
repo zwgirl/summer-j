@@ -80,8 +80,8 @@ public class LexStream implements TerminalTokens {
 				int tokenKind =  this.scanner.getNextToken();
 				if (tokenKind == TokenNameBeginTypeArguments) {
 					this.awaitingColonColon = true;
-				} else if (tokenKind == TokenNameCOLON_COLON) {
-					this.awaitingColonColon = false;
+//				} else if (tokenKind == TokenNameCOLON_COLON) {  //cym 2015-02-03
+//					this.awaitingColonColon = false;
 				}
 				if(tokenKind != TokenNameEOF) {
 					int start = this.scanner.getCurrentTokenStartPosition();

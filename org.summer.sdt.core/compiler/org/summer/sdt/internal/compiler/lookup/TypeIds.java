@@ -133,6 +133,10 @@ public interface TypeIds {
 	// new in 3.9 to identify known @Inject annotations
 	final int T_JavaxInjectInject = 80;
 	final int T_ComGoogleInjectInject = 81;
+	
+	//summer cym 2015-02-03
+	final int T_JavaLangAnnotationModule = 83;
+	
 	// Java 8 - JEP 120
 	final int T_JavaLangAnnotationRepeatable = 90;
 	

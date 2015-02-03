@@ -159,6 +159,9 @@ public interface TagBits {
 	/** summer cym 2014-11-20*/
 	long AnnotationOverload = ASTNode.Bit63L;
 	
+	/** summer cym 2015-02-03*/
+	long AnnotationModule = ASTNode.Bit63L;
+	
 	long AllStandardAnnotationsMask =
 				  AnnotationTargetMASK
 				| AnnotationRetentionMASK
@@ -174,6 +177,7 @@ public interface TagBits {
 				| AnnotationNonNullByDefault
 				| AnnotationNullUnspecifiedByDefault
 				| AnnotationRepeatable
+				| AnnotationModule  //cym add 2015-02-03
 				| AnnotationEventCallback  //cym add 2015-01-01
 				| AnnotationOverload;    //cym add 2014-11-20
 	

@@ -40,4 +40,8 @@ public interface OperatorIds {
 	public static final int INSTANCEOF = 31;
 	public static final int PLUS_PLUS = 32;
 	public static final int MINUS_MINUS = 33;
+	
+	//cym 2015-02-03
+	public static final int NOT_EQUAL_EQUAL = 34;
+	public static final int EQUAL_EQUAL_EQUAL = 35;
 }

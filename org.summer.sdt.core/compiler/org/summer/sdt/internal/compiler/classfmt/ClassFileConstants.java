@@ -47,6 +47,9 @@ public interface ClassFileConstants {
 	int AccIndexer   	= AccInterface;
 	int AccEvent        = AccEnum;
 	
+	//2015-02-02  cym
+	int AccFunction     = AccSynchronized;
+	
 	//cym 2014-12-12
 	int AccModule       = AccBridge;
 //	int AccModuleMerge		= AccNative;

@@ -4915,7 +4915,8 @@ public class ProblemReporter extends ProblemHandler {
 			case TerminalTokens.TokenNameinstanceof:
 //			case TerminalTokens.TokenNamelet:   //cym 2014-12-17
 			case TerminalTokens.TokenNamelong:
-			case TerminalTokens.TokenNamemodule:   //cym 2014-12-17
+			//cym 2015-02-03 comment
+//			case TerminalTokens.TokenNamemodule:   //cym 2014-12-17
 			case TerminalTokens.TokenNamenew:
 			case TerminalTokens.TokenNamenull:
 			case TerminalTokens.TokenNamenative:
