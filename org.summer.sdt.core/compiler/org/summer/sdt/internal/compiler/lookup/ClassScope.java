@@ -681,6 +681,11 @@ public class ClassScope extends Scope {
 					modifiers |= ClassFileConstants.AccFinal;
 				}
 			}
+		} else if((realModifiers & ClassFileConstants.AccFunction) != 0){
+			//cym modidied 2015-02-03
+			final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccFunction);
+			if ((realModifiers & UNEXPECTED_MODIFIERS) != 0)
+				problemReporter().illegalModifierForClass(sourceType);
 		} else {
 			// detect abnormal cases for classes
 			if (isMemberType) { // includes member types defined inside local types

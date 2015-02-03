@@ -662,6 +662,7 @@ TypeImportOnDemandDeclarationName ::= 'import' Name '.' RejectTypeAnnotations '*
 /.$putCase consumeTypeImportOnDemandDeclarationName(); $break ./
 /:$readableName TypeImportOnDemandDeclarationName:/
 
+TypeDeclaration -> FunctionTypeDeclaration  --cym 2015-02-03
 TypeDeclaration -> ClassDeclaration
 TypeDeclaration -> InterfaceDeclaration
 -- this declaration in part of a list od declaration and we will
@@ -697,6 +698,35 @@ Modifier -> 'strictfp'
 Modifier ::= Annotation
 /.$putCase consumeAnnotationAsModifier(); $break ./
 /:$readableName Modifier:/
+
+--cym 2015-02-03
+FunctionTypeDeclaration ::= FunctionTypeHeaderName FormalParameterListopt FunctionTypeHeaderRightParen 
+/.$putCase consumeFunctionTypeDeclaration(); $break ./
+/:$readableName FunctionTypeDeclaration:/
+
+FunctionTypeHeaderName ::= Modifiersopt function Type 'Identifier' TypeParameters '('   --cym 2014-09-29
+/.$putCase consumeFunctionTypeHeaderNameWithTypeParameters(); $break ./
+
+FunctionTypeHeaderName ::= Modifiersopt function Type 'Identifier' '('
+/.$putCase consumeFunctionTypeHeaderName(); $break ./
+/:$readableName FunctionTypeHeaderName:/
+
+FunctionTypeHeaderRightParen ::= ')' ';'
+/.$putCase consumeFunctionTypeHeaderRightParen(); $break ./
+/:$readableName ):/
+/:$recovery_template ):/
+/:$readableName FunctionTypeHeaderRightParen:/
+--cym 2015-02-03
+
+--MethodHeaderRightParen ::= ')'
+--/.$putCase consumeMethodHeaderRightParen(); $break ./
+--/:$readableName ):/
+--/:$recovery_template ):/
+--
+--MethodHeaderThrowsClause ::= 'throws' ClassTypeList
+--/.$putCase consumeMethodHeaderThrowsClause(); $break ./
+--/:$readableName MethodHeaderThrowsClause:/
+--cym 2015-02-03 end
 
 --18.8 Productions from 8: Class Declarations
 --ClassModifier ::=
@@ -1590,17 +1620,18 @@ Finally ::= 'finally' Block
 /:$recovery_template finally { }:/
 
 --cym 2015-02-03
-FunctionDeclaration ::=  FunctionHeader MethodBody 
+FunctionDeclaration ::= FunctionHeader MethodBody 
 /.$putCase // set to false to consume a method without body
- consumeFunctionDeclaraton(false, false); $break ./
+ consumeFunctionDeclaraton(); $break ./
 /:$readableName MethodDeclaration:/
 
 FunctionHeader ::= function FunctionHeaderName FormalParameterListopt MethodHeaderRightParen --MethodHeaderThrowsClauseopt
+--FunctionHeader ::= FunctionHeaderName FormalParameterListopt MethodHeaderRightParen --MethodHeaderThrowsClauseopt
 /.$putCase consumeFunctionHeader(); $break ./
 /:$readableName FunctionHeader:/
 
 FunctionHeaderName ::= Type 'Identifier' '('
-/.$putCase consumeFunctionHeaderName(false); $break ./
+/.$putCase consumeFunctionHeaderName(); $break ./
 /:$readableName FunctionHeaderName:/
 --cym 2015-02-03 end
 
@@ -1659,21 +1690,21 @@ PrimaryNoNewArray ::= PrimitiveType '.' 'class'
 PrimaryNoNewArray -> MethodInvocation
 PrimaryNoNewArray -> ArrayAccess
 
---cym 2015-01-20
-PrimaryNoNewArray -> FunctionExpression
-FunctionExpression ::= FunctionExpressionHeader MethodBody 
-/.$putCase 
- consumeFunctionExpression(); $break ./
-/:$readableName FunctionExpression:/
-
-FunctionExpressionHeader ::= FunctionExpressionHeaderName FormalParameterListopt MethodHeaderRightParen
-/.$putCase consumeFunctionExpressionHeader(); $break ./
-/:$readableName FunctionExpressionHeader:/
-
-FunctionExpressionHeaderName ::= 'function' '('
-/.$putCase consumeFunctionExpressionHeaderName(); $break ./
-/:$readableName FunctionExpressionHeaderName:/
---cym 2015-01-20 end
+----cym 2015-01-20
+--PrimaryNoNewArray -> FunctionExpression
+--FunctionExpression ::= FunctionExpressionHeader MethodBody 
+--/.$putCase 
+-- consumeFunctionExpression(); $break ./
+--/:$readableName FunctionExpression:/
+--
+--FunctionExpressionHeader ::= FunctionExpressionHeaderName FormalParameterListopt MethodHeaderRightParen
+--/.$putCase consumeFunctionExpressionHeader(); $break ./
+--/:$readableName FunctionExpressionHeader:/
+--
+--FunctionExpressionHeaderName ::= 'function' '('
+--/.$putCase consumeFunctionExpressionHeaderName(); $break ./
+--/:$readableName FunctionExpressionHeaderName:/
+----cym 2015-01-20 end
 
 -----------------------------------------------------------------------
 --                   Start of rules for JSR 335
@@ -1982,7 +2013,7 @@ MethodInvocation ::= MethodInvocation '(' ArgumentListopt ')' --cym add 2015-02-
 MethodInvocation ::= ArrayAccess '(' ArgumentListopt ')'  --cym add 2015-02-03
 /.$putCase consumeMethodInvocationArraySccess(); $break ./
 
-MethodInvocation ::= FunctionExpression  '(' ArgumentListopt ')'   --cym add 2015-02-03
+MethodInvocation ::= LambdaExpression  '(' ArgumentListopt ')'   --cym add 2015-02-03
 /.$putCase consumeMethodInvocationFunctionExpression(); $break ./
 
 MethodInvocation ::= Primary '.' OnlyTypeArguments 'Identifier' '(' ArgumentListopt ')'

@@ -731,4 +731,15 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 		printIndent(indent == 0 ? 0 : indent - 1, output).append('}');
 		return output;
 	}
+	@Override
+	public StringBuffer printExpression(int indent, StringBuffer output) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	protected StringBuffer doGenerateExpression(Scope scope, int indent,
+			StringBuffer output) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -1146,6 +1146,11 @@ class ASTConverter {
 		return literal;
 	}
 	
+	//cym add 2015-02-03
+	public Expression convert(org.summer.sdt.internal.compiler.ast.MethodDeclaration expression) {
+		return (Expression) convert(false, expression);
+	}
+	
 	/*
 	 * Internal use only
 	 * Used to convert class body declarations
@@ -1848,6 +1853,11 @@ class ASTConverter {
 		if (expression instanceof org.summer.sdt.internal.compiler.ast.AttachAttribute) {
 			return convert((org.summer.sdt.internal.compiler.ast.AttachAttribute) expression);
 		} 
+		
+		//cym 2015-02-03
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.MethodDeclaration) {
+			return convert((org.summer.sdt.internal.compiler.ast.MethodDeclaration) expression);
+		}
 
 		return null;
 	}

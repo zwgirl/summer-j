@@ -415,4 +415,17 @@ public class Clinit extends AbstractMethodDeclaration {
 		return output;
 	}
 
+	@Override
+	public StringBuffer printExpression(int indent, StringBuffer output) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected StringBuffer doGenerateExpression(Scope scope, int indent,
+			StringBuffer output) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

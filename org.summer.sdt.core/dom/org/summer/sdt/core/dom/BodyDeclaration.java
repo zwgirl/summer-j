@@ -43,7 +43,7 @@ import java.util.List;
  * @since 2.0
  */
 @SuppressWarnings("rawtypes")
-public abstract class BodyDeclaration extends ASTNode {
+public abstract class BodyDeclaration extends Expression /*ASTNode*/ {
 
 	/**
 	 * The doc comment, or <code>null</code> if none.

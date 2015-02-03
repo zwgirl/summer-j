@@ -62,7 +62,7 @@ import org.summer.sdt.internal.compiler.util.Util;
 
 @SuppressWarnings({"rawtypes"})
 public abstract class AbstractMethodDeclaration
-	extends ASTNode
+	extends Expression // ASTNode
 	implements ProblemSeverities, ReferenceContext {
 
 	public MethodScope scope;

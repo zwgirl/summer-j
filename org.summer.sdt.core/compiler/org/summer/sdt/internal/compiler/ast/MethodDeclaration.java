@@ -31,6 +31,7 @@ import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.CompilationResult;
 import org.summer.sdt.internal.compiler.ast.TypeReference.AnnotationCollector;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.flow.ExceptionHandlingFlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
@@ -40,6 +41,7 @@ import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.MemberTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
@@ -369,5 +371,22 @@ public class MethodDeclaration extends AbstractMethodDeclaration {
 	}
 	public TypeParameter[] typeParameters() {
 	    return this.typeParameters;
+	}
+
+	@Override
+	public StringBuffer printExpression(int indent, StringBuffer output) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected StringBuffer doGenerateExpression(Scope scope, int indent,
+			StringBuffer output) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public void generateCode(BlockScope currentScope, CodeStream codeStream, boolean valueRequired) {
+		
 	}
 }
