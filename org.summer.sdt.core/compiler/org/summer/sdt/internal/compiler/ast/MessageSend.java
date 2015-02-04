@@ -131,6 +131,8 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 	public TypeBinding[] argumentTypes = Binding.NO_PARAMETERS;
 	public boolean argumentsHaveErrors = false;
 	
+	//cym 2015-02-04
+	public static final char[] NO_SELECTOR = new char[0];
 
 	public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext, FlowInfo flowInfo) {
 		boolean nonStatic = !this.binding.isStatic();

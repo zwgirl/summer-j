@@ -42,6 +42,7 @@ public interface TypeConstants {
 	char[] GETCLASS = "getClass".toCharArray(); //$NON-NLS-1$
 	char[] HASHCODE = "hashCode".toCharArray(); //$NON-NLS-1$
 	char[] OBJECT = "Object".toCharArray(); //$NON-NLS-1$
+	char[] FUNCTION = "Function".toCharArray(); //$NON-NLS-1$  //cym 2015-02-03
 	char[] GLOBAL = "Global".toCharArray(); //$NON-NLS-1$  //cym 2015-01-11
 	char[] WINDOW = "Window".toCharArray(); //$NON-NLS-1$  //cym 2014-12-13
 	char[] TEMPLATE = "Template".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
@@ -135,7 +136,8 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_ANNOTATION_ANNOTATION = {JAVA, LANG, ANNOTATION, "Annotation".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ASSERTIONERROR = {JAVA, LANG, "AssertionError".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_CLASS = {JAVA, LANG, "Class".toCharArray()}; //$NON-NLS-1$
-	char[][] JAVA_LANG_ARRAY = {JAVA, LANG, "Array".toCharArray()}; //$NON-NLS-1$   --cym 2014-12-03
+	char[][] JAVA_LANG_ARRAY = {JAVA, LANG, ARRAY}; //$NON-NLS-1$   --cym 2014-12-03
+	char[][] JAVA_LANG_FUNCTION = {JAVA, LANG, FUNCTION}; //$NON-NLS-1$   --cym 2015-02-03
 	char[][] JAVA_LANG_CLASSNOTFOUNDEXCEPTION = {JAVA, LANG, "ClassNotFoundException".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_CLONEABLE = {JAVA, LANG, "Cloneable".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ENUM = {JAVA, LANG, "Enum".toCharArray()}; //$NON-NLS-1$

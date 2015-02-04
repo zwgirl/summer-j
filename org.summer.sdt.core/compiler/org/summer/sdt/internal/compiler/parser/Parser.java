@@ -2556,7 +2556,82 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	//cym 2015-02-03
 	protected void consumeFunctionTypeHeaderNameWithTypeParameters() {
 		//FunctionTypeHeaderName ::= Modifiersopt function Type 'Identifier' TypeParameters '('
+		// MethodHeaderName ::= Modifiersopt TypeParameters Type 'Identifier' '('
+		// AnnotationMethodHeaderName ::= Modifiersopt TypeParameters Type 'Identifier' '('
+		// RecoveryMethodHeaderName ::= Modifiersopt TypeParameters Type 'Identifier' '('
+		TypeDeclaration md = null;
+//		if(isAnnotationMethod) {
+//			md = new AnnotationMethodDeclaration(this.compilationUnit.compilationResult);
+//			this.recordStringLiterals = false;
+//		} else {
+			md = new TypeDeclaration(this.compilationUnit.compilationResult);
+//		}
+	
+		//name
+		md.name = this.identifierStack[this.identifierPtr];
+		long selectorSource = this.identifierPositionStack[this.identifierPtr--];
+		this.identifierLengthPtr--;
 		
+		// consume type parameters
+		int length = this.genericsLengthStack[this.genericsLengthPtr--];
+		this.genericsPtr -= length;
+		System.arraycopy(this.genericsStack, this.genericsPtr + 1, md.typeParameters = new TypeParameter[length], 0, length);
+		
+		//type
+		TypeReference returnType = getTypeReference(this.intStack[this.intPtr--]);
+//		if (isAnnotationMethod)
+//			rejectIllegalLeadingTypeAnnotations(returnType);
+		md.returnType = returnType;
+		md.bits |= (returnType.bits & ASTNode.HasTypeAnnotations);
+		
+		
+		md.declarationSourceStart = this.intStack[this.intPtr--];
+		this.intPtr--;   //function
+		this.intPtr--;   //function
+		md.modifiers = this.intStack[this.intPtr--];
+		md.modifiers |= ClassFileConstants.AccFunction;
+	
+//		//modifiers
+//		md.declarationSourceStart = this.intStack[this.intPtr--];
+//		md.modifiers = this.intStack[this.intPtr--];
+		// consume annotations
+		if ((length = this.expressionLengthStack[this.expressionLengthPtr--]) != 0) {
+			System.arraycopy(
+				this.expressionStack,
+				(this.expressionPtr -= length) + 1,
+				md.annotations = new Annotation[length],
+				0,
+				length);
+		}
+		// javadoc
+		md.javadoc = this.javadoc;
+		this.javadoc = null;
+	
+		//highlight starts at selector start
+		md.sourceStart = (int) (selectorSource >>> 32);
+		pushOnAstStack(md);
+		md.sourceEnd = this.lParenPos;
+		md.bodyStart = this.lParenPos+1;
+		this.listLength = 0; // initialize this.listLength before reading parameters/throws
+	
+		// recovery
+		if (this.currentElement != null){
+			boolean isType;
+			if ((isType = this.currentElement instanceof RecoveredType)
+				//|| md.modifiers != 0
+				|| (Util.getLineNumber(md.returnType.sourceStart, this.scanner.lineEnds, 0, this.scanner.linePtr)
+						== Util.getLineNumber(md.sourceStart, this.scanner.lineEnds, 0, this.scanner.linePtr))){
+				if(isType) {
+					((RecoveredType) this.currentElement).pendingTypeParameters = null;
+				}
+				this.lastCheckPoint = md.bodyStart;
+				this.currentElement = this.currentElement.add(md, 0);
+				this.lastIgnoredToken = -1;
+			} else {
+				this.lastCheckPoint = md.sourceStart;
+				this.restartRecovery = true;
+			}
+		}
 	}
 	//cym 2015-02-03
 	protected void consumeFunctionTypeHeaderName() {
@@ -2583,6 +2658,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		
 		typeDecl.returnType = getTypeReference(this.intStack[this.intPtr--]); // type dimension
 		typeDecl.declarationSourceStart = this.intStack[this.intPtr--];
+		this.intPtr--;   //function
 		this.intPtr--;   //function
 		typeDecl.modifiers = this.intStack[this.intPtr--];
 		typeDecl.modifiers |= ClassFileConstants.AccFunction;
@@ -4188,6 +4264,9 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	protected void consumeEqualityExpression(int op) {
 		// EqualityExpression ::= EqualityExpression '==' RelationalExpression
 		// EqualityExpression ::= EqualityExpression '!=' RelationalExpression
+		//cym 2015-02-03
+		// EqualityExpression ::= EqualityExpression '===' InstanceofExpression
+		// EqualityExpression ::= EqualityExpression '!==' InstanceofExpression
 	
 		//optimize the push/pop
 	
@@ -5816,73 +5895,58 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	//cym 2015-02-03
 	protected void consumeMethodInvocationInvocation() {
 		// MethodInvocation ::= MethodInvocation '(' ArgumentListopt ')'
+		
+		//optimize the push/pop
+		//MethodInvocation ::= Primary '.' 'Identifier' '(' ArgumentListopt ')'
 	
-		// when the name is only an identifier...we have a message send to "this" (implicit)
-	
-		MessageSend m = newMessageSendWithTypeArguments();
-		m.sourceEnd = this.rParenPos;
-		m.sourceStart =
-			(int) ((m.nameSourcePosition = this.identifierPositionStack[this.identifierPtr]) >>> 32);
-		m.selector = this.identifierStack[this.identifierPtr--];
-		this.identifierLengthPtr--;
-	
-		// handle type arguments
-		int length = this.genericsLengthStack[this.genericsLengthPtr--];
-		this.genericsPtr -= length;
-		System.arraycopy(this.genericsStack, this.genericsPtr + 1, m.typeArguments = new TypeReference[length], 0, length);
-		this.intPtr--;  // consume position of '<'
-	
-		m.receiver = getUnspecifiedReference();
+		MessageSend m = newMessageSend();
+//		m.sourceStart =
+//			(int) ((m.nameSourcePosition = this.identifierPositionStack[this.identifierPtr]) >>> 32);
+//		m.selector = this.identifierStack[this.identifierPtr--];
+//		this.identifierLengthPtr--;
+		m.selector = MessageSend.NO_SELECTOR;
+		m.receiver = this.expressionStack[this.expressionPtr];
 		m.sourceStart = m.receiver.sourceStart;
-		pushOnExpressionStack(m);
+		m.sourceEnd = this.rParenPos;
+		this.expressionStack[this.expressionPtr] = m;
 		consumeInvocationExpression();
 	}
 	//cym 2015-02-03
 	protected void consumeMethodInvocationArraySccess() {
-		// MethodInvocation ::= ArraySccess'(' ArgumentListopt ')'
+		// MethodInvocation ::= ArraySccess '(' ArgumentListopt ')'
+		
+		//optimize the push/pop
+		//MethodInvocation ::= Primary '.' 'Identifier' '(' ArgumentListopt ')'
 	
-		// when the name is only an identifier...we have a message send to "this" (implicit)
-	
-		MessageSend m = newMessageSendWithTypeArguments();
-		m.sourceEnd = this.rParenPos;
-		m.sourceStart =
-			(int) ((m.nameSourcePosition = this.identifierPositionStack[this.identifierPtr]) >>> 32);
-		m.selector = this.identifierStack[this.identifierPtr--];
-		this.identifierLengthPtr--;
-	
-		// handle type arguments
-		int length = this.genericsLengthStack[this.genericsLengthPtr--];
-		this.genericsPtr -= length;
-		System.arraycopy(this.genericsStack, this.genericsPtr + 1, m.typeArguments = new TypeReference[length], 0, length);
-		this.intPtr--;  // consume position of '<'
-	
-		m.receiver = getUnspecifiedReference();
+		MessageSend m = newMessageSend();
+//		m.sourceStart =
+//			(int) ((m.nameSourcePosition = this.identifierPositionStack[this.identifierPtr]) >>> 32);
+//		m.selector = this.identifierStack[this.identifierPtr--];
+//		this.identifierLengthPtr--;
+		m.selector = MessageSend.NO_SELECTOR;
+		m.receiver = this.expressionStack[this.expressionPtr];
 		m.sourceStart = m.receiver.sourceStart;
-		pushOnExpressionStack(m);
+		m.sourceEnd = this.rParenPos;
+		this.expressionStack[this.expressionPtr] = m;
 		consumeInvocationExpression();
 	}
 	//cym 2015-02-03
-	protected void consumeMethodInvocationFunctionExpression() {
-		// MethodInvocation ::= FunctionExpression '(' ArgumentListopt ')'
+	protected void consumeMethodInvocationLambdaExpression() {
+		// MethodInvocation ::= LambdaExpression '(' ArgumentListopt ')'
 	
-		// when the name is only an identifier...we have a message send to "this" (implicit)
+		//optimize the push/pop
+		//MethodInvocation ::= Primary '.' 'Identifier' '(' ArgumentListopt ')'
 	
-		MessageSend m = newMessageSendWithTypeArguments();
-		m.sourceEnd = this.rParenPos;
-		m.sourceStart =
-			(int) ((m.nameSourcePosition = this.identifierPositionStack[this.identifierPtr]) >>> 32);
-		m.selector = this.identifierStack[this.identifierPtr--];
-		this.identifierLengthPtr--;
-	
-		// handle type arguments
-		int length = this.genericsLengthStack[this.genericsLengthPtr--];
-		this.genericsPtr -= length;
-		System.arraycopy(this.genericsStack, this.genericsPtr + 1, m.typeArguments = new TypeReference[length], 0, length);
-		this.intPtr--;  // consume position of '<'
-	
-		m.receiver = getUnspecifiedReference();
+		MessageSend m = newMessageSend();
+//		m.sourceStart =
+//			(int) ((m.nameSourcePosition = this.identifierPositionStack[this.identifierPtr]) >>> 32);
+//		m.selector = this.identifierStack[this.identifierPtr--];
+		m.selector = MessageSend.NO_SELECTOR;
+//		this.identifierLengthPtr--;
+		m.receiver = this.expressionStack[this.expressionPtr];
 		m.sourceStart = m.receiver.sourceStart;
-		pushOnExpressionStack(m);
+		m.sourceEnd = this.rParenPos;
+		this.expressionStack[this.expressionPtr] = m;
 		consumeInvocationExpression();
 	}
 	
@@ -7737,7 +7801,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				break;
 	 
 	    case 501 : if (DEBUG) { System.out.println("MethodInvocation ::= LambdaExpression LPAREN..."); }  //$NON-NLS-1$
-			    consumeMethodInvocationFunctionExpression();  
+			    consumeMethodInvocationLambdaExpression();  
 				break;
 	 
 	    case 502 : if (DEBUG) { System.out.println("MethodInvocation ::= Primary DOT OnlyTypeArguments..."); }  //$NON-NLS-1$

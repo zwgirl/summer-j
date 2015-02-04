@@ -3082,13 +3082,6 @@ public class Scanner implements TerminalTokens {
 		switch (data[index]) {
 			case 'a' :
 				switch(length) {
-//					case 3: //add
-//					if ((data[++index] == 'd')
-//						&& (data[++index] == 'd')) {
-//							return TokenNameadd;
-//						} else {
-//							return TokenNameIdentifier;
-//						}
 					case 8: //abstract
 						if ((data[++index] == 'b')
 							&& (data[++index] == 's')
@@ -3247,23 +3240,6 @@ public class Scanner implements TerminalTokens {
 							}
 						}
 						return TokenNameIdentifier;
-//					case 5 :
-//						if ((data[++index] == 'v')
-//							&& (data[++index] == 'e')
-//							&& (data[++index] == 'n')
-//							&& (data[++index] == 't'))
-//							return TokenNameevent;
-//						else
-//							return TokenNameIdentifier;	
-//					case 6 :
-//						if ((data[++index] == 'x')
-//							&& (data[++index] == 'p')
-//							&& (data[++index] == 'o')
-//							&& (data[++index] == 'r')
-//							&& (data[++index] == 't'))
-//							return TokenNameexport;
-//						else
-//							return TokenNameIdentifier;
 					case 7 :
 						if ((data[++index] == 'x')
 							&& (data[++index] == 't')
@@ -3336,13 +3312,6 @@ public class Scanner implements TerminalTokens {
 				}
 			case 'g' :
 				switch (length) {
-//					case 3: 
-//						if ((data[++index] == 'e')
-//							&& (data[++index] == 't')) {
-//							return TokenNameget;
-//						}else
-//							return TokenNameIdentifier;
-					//goto
 					case 4: 
 						if ((data[++index] == 'o')
 							&& (data[++index] == 't')
@@ -3467,16 +3436,6 @@ public class Scanner implements TerminalTokens {
 					default :
 						return TokenNameIdentifier;
 				}
-				
-//			case 'o' : //long
-//				if (length == 3) {
-//					if ((data[++index] == 'u')
-//						&& (data[++index] == 't')) {
-//						return TokenNameout;
-//					}
-//				}
-//				return TokenNameIdentifier;
-	
 			case 'p' : //package private protected public
 				switch (length) {
 					case 6 :
@@ -3527,12 +3486,6 @@ public class Scanner implements TerminalTokens {
 	
 			case 'r' : //return
 				switch(length){
-//					case 3:
-//						if ((data[++index] == 'e')
-//								&& (data[++index] == 'f')) {
-//								return TokenNameref;
-//							} else
-//								return TokenNameIdentifier;
 					case 6:
 						if (data[++index] == 'e'){
 							if((data[++index] == 't')
@@ -3540,11 +3493,6 @@ public class Scanner implements TerminalTokens {
 									&& (data[++index] == 'r')
 									&& (data[++index] == 'n')) {
 								return TokenNamereturn;
-//							} else if((data[index] == 'm')
-//								&& (data[++index] == 'o')
-//								&& (data[++index] == 'v')
-//								&& (data[++index] == 'e')){
-//								return TokenNameremove;
 							} else 
 								return TokenNameIdentifier;
 						} else 
@@ -3555,12 +3503,6 @@ public class Scanner implements TerminalTokens {
 	
 			case 's' : //short static super switch synchronized strictfp
 				switch (length) {
-//					case 3 :
-//						if ((data[++index] == 'e')
-//							&& (data[++index] == 't'))
-//							return TokenNameset;
-//						else
-//							return TokenNameIdentifier;
 					case 5 :
 						if (data[++index] == 'h')
 							if ((data[++index] == 'o') && (data[++index] == 'r') && (data[++index] == 't'))
@@ -4150,6 +4092,8 @@ public class Scanner implements TerminalTokens {
 				return "float"; //$NON-NLS-1$
 			case TokenNamefor :
 				return "for"; //$NON-NLS-1$
+			case TokenNamefunction :  //cym 2015-02-03
+				return "function"; //$NON-NLS-1$
 			case TokenNameif :
 				return "if"; //$NON-NLS-1$
 			case TokenNameimplements :
@@ -4410,6 +4354,7 @@ public class Scanner implements TerminalTokens {
 			case TerminalTokens.TokenNamefloat:
 			case TerminalTokens.TokenNamefalse:
 			case TerminalTokens.TokenNamefinally:
+			case TerminalTokens.TokenNamefunction:  //cym 2015-02-03
 			case TerminalTokens.TokenNameif:
 			case TerminalTokens.TokenNameint:
 			case TerminalTokens.TokenNameimport:

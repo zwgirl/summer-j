@@ -52,7 +52,8 @@ public class EqualExpression extends BinaryExpression {
 		// - method/field annotated @NonNull
 		// - allocation expression, some literals, this reference (see inside expressionNonNullComparison(..))
 		// these checks do not leverage the flowInfo.
-		boolean checkEquality = ((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL;
+		boolean checkEquality = ((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL ||
+				((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL_EQUAL;  //cym 2015-02-03
 		if ((flowContext.tagBits & FlowContext.HIDE_NULL_COMPARISON_WARNING_MASK) == 0) {
 			if (leftStatus == FlowInfo.NON_NULL && rightStatus == FlowInfo.NULL) {
 				leftNonNullChecked = scope.problemReporter().expressionNonNullComparison(this.left, checkEquality);
@@ -140,7 +141,7 @@ public class EqualExpression extends BinaryExpression {
 
 	public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext, FlowInfo flowInfo) {
 		FlowInfo result;
-		if (((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL) {
+		if (((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL || ((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL_EQUAL) {
 			if ((this.left.constant != Constant.NotAConstant) && (this.left.constant.typeID() == T_boolean)) {
 				if (this.left.constant.booleanValue()) { //  true == anything
 					//  this is equivalent to the right argument inits
@@ -208,7 +209,7 @@ public class EqualExpression extends BinaryExpression {
 					leftType.id,
 					this.right.constant,
 					rightType.id);
-			if (((this.bits & OperatorMASK) >> OperatorSHIFT) == NOT_EQUAL)
+			if (((this.bits & OperatorMASK) >> OperatorSHIFT) == NOT_EQUAL || ((this.bits & OperatorMASK) >> OperatorSHIFT) == NOT_EQUAL_EQUAL)
 				this.constant = BooleanConstant.fromValue(!this.constant.booleanValue());
 		} else {
 			this.constant = Constant.NotAConstant;
@@ -252,7 +253,7 @@ public class EqualExpression extends BinaryExpression {
 			super.generateOptimizedBoolean(currentScope, codeStream, trueLabel, falseLabel, valueRequired);
 			return;
 		}
-		if (((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL) {
+		if (((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL || ((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL_EQUAL) {
 			if ((this.left.implicitConversion & COMPILE_TYPE_MASK) /*compile-time*/ == T_boolean) {
 				generateOptimizedBooleanEqual(currentScope, codeStream, trueLabel, falseLabel, valueRequired);
 			} else {
@@ -276,7 +277,7 @@ public class EqualExpression extends BinaryExpression {
 
 		// optimized cases: <something equivalent to true> == x, <something equivalent to false> == x,
 		// optimized cases: <something equivalent to false> != x, <something equivalent to true> != x,
-		boolean isEqualOperator = ((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL;
+		boolean isEqualOperator = ((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL || ((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL_EQUAL;
 		Constant cst = this.left.optimizedBooleanConstant();
 		if (cst != Constant.NotAConstant) {
 			Constant rightCst = this.right.optimizedBooleanConstant();
@@ -460,7 +461,7 @@ public class EqualExpression extends BinaryExpression {
 	 */
 	public void generateNonBooleanEqual(BlockScope currentScope, CodeStream codeStream, boolean valueRequired) {
 
-		boolean isEqualOperator = ((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL;
+		boolean isEqualOperator = ((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL || ((this.bits & OperatorMASK) >> OperatorSHIFT) == EQUAL_EQUAL_EQUAL;
 		if (((this.left.implicitConversion & IMPLICIT_CONVERSION_MASK) >> 4) == T_int) {
 			Constant cst;
 			if ((cst = this.left.constant) != Constant.NotAConstant && cst.intValue() == 0) {

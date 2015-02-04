@@ -1088,6 +1088,14 @@ public class ClassScope extends Scope {
 				problemReporter().objectCannotHaveSuperTypes(sourceType);
 			return true; // do not propagate Object's hierarchy problems down to every subtype
 		}
+		
+		//cym 2015-02-03 
+		//set Function superClass for Function type 
+		if ((sourceType.modifiers & ClassFileConstants.AccFunction) != 0) {
+			sourceType.setSuperClass(getJavaLangFunction());
+			return !detectHierarchyCycle(sourceType, sourceType.superclass, null);
+		}
+		
 		if (this.referenceContext.superclass == null) {
 			if (sourceType.isEnum() && compilerOptions().sourceLevel >= ClassFileConstants.JDK1_5) // do not connect if source < 1.5 as enum already got flagged as syntax error
 				return connectEnumSuperclass();
