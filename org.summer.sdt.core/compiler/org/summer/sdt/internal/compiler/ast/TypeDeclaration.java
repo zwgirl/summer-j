@@ -1042,17 +1042,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					}
 					
 					continue;
-				} 
-				if(fieldDeclaration instanceof EventDeclaration){
-					
-					EventDeclaration event = (EventDeclaration) fieldDeclaration;
-					if(event.add != null){
-						event.add.parseStatements(parser, unit);
-					}
-					
-					if(event.remove != null){
-						event.remove.parseStatements(parser, unit);
-					}
 				}
 			}
 		}
@@ -1393,14 +1382,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						} 
 						if(indexer.setter != null){
 							indexer.setter.resolve(this.scope);
-						}
-					}  else if(fields[i] instanceof EventDeclaration){
-						EventDeclaration event = (EventDeclaration) this.fields[i];
-						if(event.add != null){
-							event.add.resolve(this.scope);
-						} 
-						if(event.remove != null){
-							event.remove.resolve(this.scope);
 						}
 					}
 				}
@@ -2200,8 +2181,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		if(type.fields != null){
 			for(int i = 0, length = type.fields.length; i < length; i++){
 				if(type.fields[i] instanceof PropertyDeclaration 
-						|| type.fields[i] instanceof IndexerDeclaration
-						|| type.fields[i] instanceof EventDeclaration){
+						|| type.fields[i] instanceof IndexerDeclaration){
 					continue;
 				}
 				

@@ -19,7 +19,7 @@ import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.util.SimpleLookupTable;
 import org.summer.sdt.internal.compiler.util.Util;
 
-/* TypeSystem: An abstraction responsible for keeping track of types that undergo "derivation" of some sort and the derived types produced thus.
+/** TypeSystem: An abstraction responsible for keeping track of types that undergo "derivation" of some sort and the derived types produced thus.
    Here we use the term derivation in the Pascal sense and not per object oriented parlance.
    
    As of Java SE8, a type can undergo derivation in a bunch of ways:

@@ -69,7 +69,7 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		// for subtypes or conversion
 	}
 	
-	public FieldDeclaration(	char[] name, int sourceStart, int sourceEnd) {
+	public FieldDeclaration(char[] name, int sourceStart, int sourceEnd) {
 		this.name = name;
 		//due to some declaration like
 		// int x, y = 3, z , x ;

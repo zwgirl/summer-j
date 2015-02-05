@@ -36,7 +36,6 @@ import org.summer.sdt.internal.compiler.ClassFile;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.Argument;
-import org.summer.sdt.internal.compiler.ast.EventDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
@@ -1258,14 +1257,7 @@ public class MethodBinding extends Binding {
 						return indexer.setter;
 					if (indexer.getter != null && indexer.getter.binding == this)
 					return indexer.getter;
-				} else if(fields[i] instanceof EventDeclaration){
-					EventDeclaration event = (EventDeclaration) fields[i];
-					if (event.add != null && event.add.binding == this)
-						return event.add;
-					if (event.remove != null && event.remove.binding == this)
-					return event.remove;
 				}
-
 			}
 		}
 		

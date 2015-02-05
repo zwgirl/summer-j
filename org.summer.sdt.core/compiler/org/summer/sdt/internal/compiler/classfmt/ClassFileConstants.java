@@ -45,7 +45,6 @@ public interface ClassFileConstants {
 	//flag for indexer, property, event
 	int AccProperty    	= AccAnnotation;
 	int AccIndexer   	= AccInterface;
-	int AccEvent        = AccEnum;
 	
 	//2015-02-02  cym
 	int AccFunction     = AccSynchronized;

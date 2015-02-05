@@ -1366,7 +1366,6 @@ Statement -> IfThenStatement
 Statement -> IfThenElseStatement
 Statement -> WhileStatement
 Statement -> ForStatement
-Statement -> FunctionDeclaration  --cym 2015-02-03
 -----------------------------------------------
 -- 1.5 feature
 -----------------------------------------------
@@ -1619,22 +1618,6 @@ Finally ::= 'finally' Block
 /:$readableName Finally:/
 /:$recovery_template finally { }:/
 
---cym 2015-02-03
-FunctionDeclaration ::= FunctionHeader MethodBody 
-/.$putCase // set to false to consume a method without body
- consumeFunctionDeclaraton(); $break ./
-/:$readableName MethodDeclaration:/
-
-FunctionHeader ::= function FunctionHeaderName FormalParameterListopt MethodHeaderRightParen --MethodHeaderThrowsClauseopt
---FunctionHeader ::= FunctionHeaderName FormalParameterListopt MethodHeaderRightParen --MethodHeaderThrowsClauseopt
-/.$putCase consumeFunctionHeader(); $break ./
-/:$readableName FunctionHeader:/
-
-FunctionHeaderName ::= Type 'Identifier' '('
-/.$putCase consumeFunctionHeaderName(); $break ./
-/:$readableName FunctionHeaderName:/
---cym 2015-02-03 end
-
 --18.12 Productions from 14: Expressions
 
 --for source positioning purpose
@@ -1689,22 +1672,6 @@ PrimaryNoNewArray ::= PrimitiveType '.' 'class'
 
 PrimaryNoNewArray -> MethodInvocation
 PrimaryNoNewArray -> ArrayAccess
-
-----cym 2015-01-20
---PrimaryNoNewArray -> FunctionExpression
---FunctionExpression ::= FunctionExpressionHeader MethodBody 
---/.$putCase 
--- consumeFunctionExpression(); $break ./
---/:$readableName FunctionExpression:/
---
---FunctionExpressionHeader ::= FunctionExpressionHeaderName FormalParameterListopt MethodHeaderRightParen
---/.$putCase consumeFunctionExpressionHeader(); $break ./
---/:$readableName FunctionExpressionHeader:/
---
---FunctionExpressionHeaderName ::= 'function' '('
---/.$putCase consumeFunctionExpressionHeaderName(); $break ./
---/:$readableName FunctionExpressionHeaderName:/
-----cym 2015-01-20 end
 
 -----------------------------------------------------------------------
 --                   Start of rules for JSR 335
@@ -2014,7 +1981,7 @@ MethodInvocation ::= ArrayAccess '(' ArgumentListopt ')'  --cym add 2015-02-03
 /.$putCase consumeMethodInvocationArraySccess(); $break ./
 
 MethodInvocation ::= LambdaExpression  '(' ArgumentListopt ')'   --cym add 2015-02-03
-/.$putCase consumeMethodInvocationFunctionExpression(); $break ./
+/.$putCase consumeMethodInvocationLambdaExpression(); $break ./
 
 MethodInvocation ::= Primary '.' OnlyTypeArguments 'Identifier' '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationPrimaryWithTypeArguments(); $break ./

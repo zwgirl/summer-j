@@ -34,7 +34,6 @@ import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
-import org.summer.sdt.internal.compiler.ast.EventDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
@@ -42,7 +41,6 @@ import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeParameter;
 import org.summer.sdt.internal.compiler.ast.TypeReference;
-import org.summer.sdt.internal.compiler.ast.XAMLElement;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.AccessRestriction;
 import org.summer.sdt.internal.compiler.problem.AbortCompilation;
@@ -153,8 +151,6 @@ public class ClassScope extends Scope {
 				} else if(field instanceof IndexerDeclaration){
 					fieldBinding = new IndexerBinding((IndexerDeclaration) field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
 					((IndexerBinding)fieldBinding).parameters = Binding.NO_PARAMETERS;
-				} else if(field instanceof EventDeclaration){
-					fieldBinding = new EventBinding((EventDeclaration) field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
 				} else {
 					fieldBinding = new FieldBinding(field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
 				}
@@ -204,17 +200,6 @@ public class ClassScope extends Scope {
 						if(indexer.getter != null){
 							MethodScope scope = new MethodScope(this, indexer.getter, indexer.isStatic());
 							scope.createMethod1(indexer.getter);
-						}
-					} else if (field instanceof EventDeclaration) {
-						EventDeclaration event = (EventDeclaration) field;
-						if(event.add != null){
-							MethodScope scope = new MethodScope(this, event.add, event.isStatic());
-							scope.createMethod1(event.add);
-						}
-						
-						if(event.remove != null){
-							MethodScope scope = new MethodScope(this, event.remove, event.isStatic());
-							scope.createMethod1(event.remove);
 						}
 					}
 				}
@@ -357,6 +342,82 @@ public class ClassScope extends Scope {
 		sourceType.setMemberTypes(memberTypeBindings);
 	}
 
+//	void buildMethods() {
+//		SourceTypeBinding sourceType = this.referenceContext.binding;
+//		if (sourceType.areMethodsInitialized()) return;
+//
+//		boolean isEnum = TypeDeclaration.kind(this.referenceContext.modifiers) == TypeDeclaration.ENUM_DECL;
+//		if (this.referenceContext.methods == null && !isEnum) {
+//			this.referenceContext.binding.setMethods(Binding.NO_METHODS);
+//			return;
+//		}
+//
+//		// iterate the method declarations to create the bindings
+//		AbstractMethodDeclaration[] methods = this.referenceContext.methods;
+//		int size = methods == null ? 0 : methods.length;
+//		// look for <clinit> method
+//		int clinitIndex = -1;
+//		for (int i = 0; i < size; i++) {
+//			if (methods[i].isClinit()) {
+//				clinitIndex = i;
+//				break;
+//			}
+//		}
+//
+//		int count = isEnum ? 2 : 0; // reserve 2 slots for special enum methods: #values() and #valueOf(String)
+//		MethodBinding[] methodBindings = new MethodBinding[(clinitIndex == -1 ? size : size - 1) + count];
+//		// create special methods for enums
+//		if (isEnum) {
+//			methodBindings[0] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUES); // add <EnumType>[] values()
+//			methodBindings[1] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUEOF); // add <EnumType> valueOf()
+//		}
+//		// create bindings for source methods
+//		boolean hasNativeMethods = false;
+//		if (sourceType.isAbstract()) {
+//			for (int i = 0; i < size; i++) {
+//				if (i != clinitIndex) {
+//					MethodScope scope = new MethodScope(this, methods[i], false);
+//					MethodBinding methodBinding = scope.createMethod(methods[i]);
+//					if (methodBinding != null) { // is null if binding could not be created
+//						methodBindings[count++] = methodBinding;
+//						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
+//					}
+//				}
+//			}
+//		} else {
+//			boolean hasAbstractMethods = false;
+//			for (int i = 0; i < size; i++) {
+//				if (i != clinitIndex) {
+//					MethodScope scope = new MethodScope(this, methods[i], false);
+//					MethodBinding methodBinding = scope.createMethod(methods[i]);
+//					if (methodBinding != null) { // is null if binding could not be created
+//						methodBindings[count++] = methodBinding;
+//						hasAbstractMethods = hasAbstractMethods || methodBinding.isAbstract();
+//						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
+//					}
+//				}
+//			}
+//			if (hasAbstractMethods)
+//				problemReporter().abstractMethodInConcreteClass(sourceType);
+//		}
+//		if (count != methodBindings.length)
+//			System.arraycopy(methodBindings, 0, methodBindings = new MethodBinding[count], 0, count);
+//		sourceType.tagBits &= ~(TagBits.AreMethodsSorted|TagBits.AreMethodsComplete); // in case some static imports reached already into this type
+//		sourceType.setMethods(methodBindings);
+//		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=243917, conservatively tag all methods and fields as
+//		// being in use if there is a native method in the class.
+//		if (hasNativeMethods) {
+//			for (int i = 0; i < methodBindings.length; i++) {
+//				methodBindings[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;
+//			}
+//			FieldBinding[] fields = sourceType.unResolvedFields(); // https://bugs.eclipse.org/bugs/show_bug.cgi?id=301683
+//			for (int i = 0; i < fields.length; i++) {
+//				fields[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;	
+//			}
+//		}
+//	}
+	
+	//cym 2015-02-04
 	void buildMethods() {
 		SourceTypeBinding sourceType = this.referenceContext.binding;
 		if (sourceType.areMethodsInitialized()) return;
@@ -378,14 +439,19 @@ public class ClassScope extends Scope {
 				break;
 			}
 		}
-
+		
 		int count = isEnum ? 2 : 0; // reserve 2 slots for special enum methods: #values() and #valueOf(String)
-		MethodBinding[] methodBindings = new MethodBinding[(clinitIndex == -1 ? size : size - 1) + count];
-		// create special methods for enums
-		if (isEnum) {
-			methodBindings[0] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUES); // add <EnumType>[] values()
-			methodBindings[1] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUEOF); // add <EnumType> valueOf()
-		}
+		int pos = sourceType.fields().length;
+		FieldBinding[] newfields = new FieldBinding[sourceType.fields().length + (clinitIndex == -1 ? size : size - 1) + count];
+		System.arraycopy(sourceType.fields(), 0, newfields, 0, sourceType.fields().length);
+		sourceType.setFields(newfields);
+//		int count = isEnum ? 2 : 0; // reserve 2 slots for special enum methods: #values() and #valueOf(String)
+//		MethodBinding[] methodBindings = new MethodBinding[(clinitIndex == -1 ? size : size - 1) + count];
+//		// create special methods for enums
+//		if (isEnum) {
+//			methodBindings[0] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUES); // add <EnumType>[] values()
+//			methodBindings[1] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUEOF); // add <EnumType> valueOf()
+//		}
 		// create bindings for source methods
 		boolean hasNativeMethods = false;
 		if (sourceType.isAbstract()) {
@@ -393,8 +459,11 @@ public class ClassScope extends Scope {
 				if (i != clinitIndex) {
 					MethodScope scope = new MethodScope(this, methods[i], false);
 					MethodBinding methodBinding = scope.createMethod(methods[i]);
+					FunctionFieldBinding fieldBinding = new FunctionFieldBinding(methods[i].selector, 
+							environment().getType(TypeConstants.JAVA_LANG_FUNCTION), methods[i].modifiers, sourceType, null);
+					fieldBinding.methodBinding = methodBinding;
 					if (methodBinding != null) { // is null if binding could not be created
-						methodBindings[count++] = methodBinding;
+						newfields[pos++] = fieldBinding;
 						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
 					}
 				}
@@ -405,8 +474,11 @@ public class ClassScope extends Scope {
 				if (i != clinitIndex) {
 					MethodScope scope = new MethodScope(this, methods[i], false);
 					MethodBinding methodBinding = scope.createMethod(methods[i]);
+					FunctionFieldBinding fieldBinding = new FunctionFieldBinding(methods[i].selector, 
+							environment().getType(TypeConstants.JAVA_LANG_FUNCTION), methods[i].modifiers, sourceType, null);
+					fieldBinding.methodBinding = methodBinding;
 					if (methodBinding != null) { // is null if binding could not be created
-						methodBindings[count++] = methodBinding;
+						newfields[pos++] = fieldBinding;
 						hasAbstractMethods = hasAbstractMethods || methodBinding.isAbstract();
 						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
 					}
@@ -415,21 +487,21 @@ public class ClassScope extends Scope {
 			if (hasAbstractMethods)
 				problemReporter().abstractMethodInConcreteClass(sourceType);
 		}
-		if (count != methodBindings.length)
-			System.arraycopy(methodBindings, 0, methodBindings = new MethodBinding[count], 0, count);
+//		if (count != methodBindings.length)
+//			System.arraycopy(methodBindings, 0, methodBindings = new MethodBinding[count], 0, count);
 		sourceType.tagBits &= ~(TagBits.AreMethodsSorted|TagBits.AreMethodsComplete); // in case some static imports reached already into this type
-		sourceType.setMethods(methodBindings);
+		sourceType.setMethods(new MethodBinding[0]);
 		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=243917, conservatively tag all methods and fields as
 		// being in use if there is a native method in the class.
-		if (hasNativeMethods) {
-			for (int i = 0; i < methodBindings.length; i++) {
-				methodBindings[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;
-			}
-			FieldBinding[] fields = sourceType.unResolvedFields(); // https://bugs.eclipse.org/bugs/show_bug.cgi?id=301683
-			for (int i = 0; i < fields.length; i++) {
-				fields[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;	
-			}
-		}
+//		if (hasNativeMethods) {
+//			for (int i = 0; i < methodBindings.length; i++) {
+//				methodBindings[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;
+//			}
+//			FieldBinding[] fields = sourceType.unResolvedFields(); // https://bugs.eclipse.org/bugs/show_bug.cgi?id=301683
+//			for (int i = 0; i < fields.length; i++) {
+//				fields[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;	
+//			}
+//		}
 	}
 
 	SourceTypeBinding buildType(SourceTypeBinding enclosingType, PackageBinding packageBinding, AccessRestriction accessRestriction) {
@@ -833,12 +905,12 @@ public class ClassScope extends Scope {
 			problemReporter().duplicateModifierForField(declaringClass, fieldDecl);
 
 		if (declaringClass.isInterface()) {
-			if(fieldDecl instanceof PropertyDeclaration || fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof EventDeclaration){
+			if(fieldDecl instanceof PropertyDeclaration || fieldDecl instanceof IndexerDeclaration){
 				// after this point, tests on the 16 bits reserved.
 				int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
 				//cym modified 2014-11-24
 				final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccNative  
-						| ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer | ClassFileConstants.AccEvent);
+						| ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer);
 				if ((realModifiers & UNEXPECTED_MODIFIERS) != 0) {
 					problemReporter().illegalModifierForField(declaringClass, fieldDecl);
 				}
@@ -888,7 +960,7 @@ public class ClassScope extends Scope {
 		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected 
 				| ClassFileConstants.AccFinal | ClassFileConstants.AccStatic | ClassFileConstants.AccTransient | ClassFileConstants.AccVolatile  
 				| ClassFileConstants.AccAbstract | ClassFileConstants.AccNative
-				| ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer | ClassFileConstants.AccEvent);
+				| ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer);
 		if ((realModifiers & UNEXPECTED_MODIFIERS) != 0) {
 			problemReporter().illegalModifierForField(declaringClass, fieldDecl);
 			modifiers &= ~ExtraCompilerModifiers.AccJustFlag | ~UNEXPECTED_MODIFIERS;
@@ -911,7 +983,7 @@ public class ClassScope extends Scope {
 
 		if ((realModifiers & (ClassFileConstants.AccFinal | ClassFileConstants.AccVolatile)) == (ClassFileConstants.AccFinal | ClassFileConstants.AccVolatile))
 			problemReporter().illegalModifierCombinationFinalVolatileForField(declaringClass, fieldDecl);
-		if(fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof PropertyDeclaration || fieldDecl instanceof EventDeclaration){
+		if(fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof PropertyDeclaration){
 			
 		} else {
 			if (fieldDecl.initialization == null && (modifiers & ClassFileConstants.AccFinal) != 0)

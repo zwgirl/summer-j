@@ -654,6 +654,9 @@ abstract public class ReferenceBinding extends TypeBinding {
 					case 'F' :
 						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FLOAT[2]))
 							this.id = TypeIds.T_JavaLangFloat;
+						//cym 2015-02-04
+						else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FUNCTION[2]))
+							this.id = TypeIds.T_JavaLangFunction;
 						else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FUNCTIONAL_INTERFACE[2]))
 							this.id = TypeIds.T_JavaLangFunctionalInterface;
 						return;
@@ -691,8 +694,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_OVERRIDE[2])){
 									this.id = TypeIds.T_JavaLangOverride;
 									return;
-								} else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_OVERLOAD[3]))   //cym 2015-01-01
-									this.id = TypeIds.T_JavaLangAnnotationOverload;
+								}
 								return;
 						}
 						return;
@@ -779,7 +781,11 @@ abstract public class ReferenceBinding extends TypeBinding {
 									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_INHERITED[3]))
 										this.id = TypeIds.T_JavaLangAnnotationInherited;
 									return;
-								case 'O' :   //cym add 1014-11-20
+								case 'M' :   //cym add 2015-02-04
+									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_MODULE[3]))
+										this.id = TypeIds.T_JavaLangAnnotationModule;
+									return;
+								case 'O' :   //cym add 2014-11-20
 									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_OVERLOAD[3]))
 										this.id = TypeIds.T_JavaLangAnnotationOverload;
 									return;

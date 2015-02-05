@@ -382,23 +382,6 @@ public abstract class Engine implements ITypeRequestor {
 						}
 					}
 					continue;
-				} else if(field instanceof EventDeclaration){
-					EventDeclaration event = (EventDeclaration) field;
-					MethodDeclaration getter = event.add;
-					if (getter != null){
-						if (getter.bodyStart <= position + 1 && getter.declarationSourceEnd >= position) {
-							getParser().parseBlockStatements(getter, unit);
-							return getter;
-						}
-					}
-					MethodDeclaration setter = event.remove;
-					if (setter != null){
-						if (setter.bodyStart <= position + 1 && setter.declarationSourceEnd >= position) {
-							getParser().parseBlockStatements(setter, unit);
-							return setter;
-						}
-					}
-					continue;
 				}
 				
 				if (field.sourceStart > position)

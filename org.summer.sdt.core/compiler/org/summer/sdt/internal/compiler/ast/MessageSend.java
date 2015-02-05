@@ -1077,20 +1077,6 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 		return this.receiver.isQualifiedSuper();
 	}
 	
-//	private boolean hasRefOrOutArgument(){
-//		if(this.arguments == null || this.arguments.length == 0){
-//			return false;
-//		}
-//		
-//		for(Expression arg : this.arguments){
-//			if((arg.bits & (ASTNode.IsRefArgument |  ASTNode.IsRefArgument)) != 0){
-//				return true;
-//			}
-//		}
-//		
-//		return false;
-//	}
-	
 	ReferenceBinding[] getPath(ReferenceBinding targetEnclosingType, MethodScope currentMethodScope){
 		SourceTypeBinding sourceType = currentMethodScope.enclosingSourceType();
 		ReferenceBinding currentType = sourceType; //sourceType.enclosingType();

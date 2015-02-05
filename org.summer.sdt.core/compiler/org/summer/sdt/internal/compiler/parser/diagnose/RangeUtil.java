@@ -12,7 +12,6 @@ package org.summer.sdt.internal.compiler.parser.diagnose;
 
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
-import org.summer.sdt.internal.compiler.ast.EventDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.Initializer;
@@ -174,9 +173,6 @@ public class RangeUtil {
 						result.addInterval(property.bodyStart, property.bodyEnd);
 					} else if(fields[i] instanceof IndexerDeclaration){
 						IndexerDeclaration indexer = (IndexerDeclaration) fields[i];
-						result.addInterval(indexer.bodyStart, indexer.bodyEnd);
-					} else if(fields[i] instanceof EventDeclaration){
-						EventDeclaration indexer = (EventDeclaration) fields[i];
 						result.addInterval(indexer.bodyStart, indexer.bodyEnd);
 					}
 				}

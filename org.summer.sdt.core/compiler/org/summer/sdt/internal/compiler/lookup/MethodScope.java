@@ -219,7 +219,7 @@ public class MethodScope extends BlockScope {
 		// check for abnormal modifiers
 		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected
 			| ClassFileConstants.AccAbstract | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccSynchronized | ClassFileConstants.AccNative | ClassFileConstants.AccStrictfp
-			| ClassFileConstants.AccEvent | ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer);   //cym 2014-12-04
+			| ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer);   //cym 2014-12-04
 		if ((realModifiers & UNEXPECTED_MODIFIERS) != 0) {
 			problemReporter().illegalModifierForMethod((AbstractMethodDeclaration) this.referenceContext);
 			modifiers &= ~ExtraCompilerModifiers.AccJustFlag | ~UNEXPECTED_MODIFIERS;
@@ -317,7 +317,7 @@ public class MethodScope extends BlockScope {
 		// check for abnormal modifiers
 		final int UNEXPECTED_MODIFIERS = ~(ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected
 			| ClassFileConstants.AccAbstract | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccSynchronized | ClassFileConstants.AccNative | ClassFileConstants.AccStrictfp
-			| ClassFileConstants.AccEvent | ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer);   //cym 2014-12-04
+			| ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer);   //cym 2014-12-04
 		if ((realModifiers & UNEXPECTED_MODIFIERS) != 0) {
 			problemReporter().illegalModifierForMethod((AbstractMethodDeclaration) this.referenceContext);
 			modifiers &= ~ExtraCompilerModifiers.AccJustFlag | ~UNEXPECTED_MODIFIERS;

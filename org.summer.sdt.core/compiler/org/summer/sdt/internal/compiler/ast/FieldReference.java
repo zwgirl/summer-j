@@ -29,7 +29,6 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
-import org.summer.sdt.internal.compiler.lookup.EventBinding;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
@@ -119,7 +118,7 @@ public class FieldReference extends Reference implements InvocationSite {
 				flowInfo.markAsDefinitelyAssigned(this.binding);
 			} else {
 				// assigning a final field outside an initializer or constructor or wrong reference
-				if(this.binding instanceof PropertyBinding || this.binding instanceof IndexerBinding || this.binding instanceof EventBinding){
+				if(this.binding instanceof PropertyBinding || this.binding instanceof IndexerBinding){
 					
 				} else {
 					currentScope.problemReporter().cannotAssignToFinalField(this.binding, this);

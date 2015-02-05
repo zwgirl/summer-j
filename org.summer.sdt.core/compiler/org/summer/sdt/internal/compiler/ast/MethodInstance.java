@@ -6,7 +6,7 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
  * @author cym
  *
  */
-public class FunctionInstance extends Expression{
+public class MethodInstance extends Expression{
 	
 	public MethodDeclaration method;
 

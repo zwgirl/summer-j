@@ -594,13 +594,6 @@ public class BinaryTypeBinding extends ReferenceBinding {
 						IndexerBinding indexerBinding = (IndexerBinding) field;
 						indexerBinding.parameters = parameters;
 						
-					}  else if((binaryField.getModifiers() & ClassFileConstants.AccEvent) != 0){
-						field = new EventBinding(
-								binaryField.getName(),
-								type,
-								binaryField.getModifiers() | ExtraCompilerModifiers.AccUnresolved,
-								this,
-								binaryField.getConstant());
 					} else {
 						field = new FieldBinding(
 								binaryField.getName(),

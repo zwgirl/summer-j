@@ -45,7 +45,6 @@ import org.summer.sdt.internal.compiler.flow.InitializationFlowContext;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.EventBinding;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
@@ -232,7 +231,7 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 					FieldBinding[] fields = this.binding.declaringClass.fields();
 					for (int i = 0, count = fields.length; i < count; i++) {
 						FieldBinding field = fields[i];
-						if(field instanceof PropertyBinding || field instanceof IndexerBinding || fields[i] instanceof EventBinding){
+						if(field instanceof PropertyBinding || field instanceof IndexerBinding){
 							continue;
 						}
 						if (!field.isStatic() && !flowInfo.isDefinitelyAssigned(field)) {
