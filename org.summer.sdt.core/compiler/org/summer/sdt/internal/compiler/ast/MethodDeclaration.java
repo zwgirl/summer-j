@@ -61,8 +61,6 @@ public class MethodDeclaration extends AbstractMethodDeclaration {
 	//cym 2014-11-03
 	public static final int SETTER = 1;
 	public static final int GETTER = 2;
-	public static final int ADD = 4;
-	public static final int REMOVE = 8;
 	public static final char[] VALUE = "value".toCharArray();
 	
 	/**

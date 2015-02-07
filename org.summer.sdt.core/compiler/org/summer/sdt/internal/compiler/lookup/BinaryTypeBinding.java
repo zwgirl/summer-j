@@ -86,6 +86,10 @@ public class BinaryTypeBinding extends ReferenceBinding {
 
 	private ReferenceBinding containerAnnotationType;
 	int defaultNullness = 0;
+	
+	//cym 2015-02-06
+	protected TypeBinding returnType;
+	protected TypeBinding[] parameterTypes;
 
 	static Object convertMemberValue(Object binaryValue, LookupEnvironment env, char[][][] missingTypeNames, boolean resolveEnumConstants) {
 		if (binaryValue == null) return null;
@@ -471,6 +475,48 @@ public class BinaryTypeBinding extends ReferenceBinding {
 					this.tagBits |= TagBits.HasUnresolvedSuperinterfaces;
 				}
 			}
+			
+			//cym 2015-02-06
+			if (typeSignature == null)  {
+				char[] returnTypeName = binaryType.getReturnTypeName();
+				if (returnTypeName != null) {
+					// attempt to find the superclass if it exists in the cache (otherwise - resolve it when requested)
+					this.returnType = this.environment.getTypeFromConstantPoolName(returnTypeName, 0, -1, false, missingTypeNames, walker.toSupertype((short) -1));
+					this.tagBits |= TagBits.HasUnresolvedReturnType;
+				}
+	
+				this.parameterTypes = Binding.NO_PARAMETERS;
+				char[][] parameterNames = binaryType.getParameterNames();
+				if (parameterNames != null) {
+					int size = parameterNames.length;
+					if (size > 0) {
+						this.parameterTypes = new TypeBinding[size];
+						for (short i = 0; i < size; i++)
+							// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+							this.parameterTypes[i] = this.environment.getTypeFromConstantPoolName(parameterNames[i], 0, -1, false, missingTypeNames, walker.toSupertype(i));
+						this.tagBits |= TagBits.HasUnresolvedParameterTypes;
+					}
+				}
+			} else {
+				// attempt to find the return type if it exists in the cache (otherwise - resolve it when requested)
+				this.returnType = this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, 
+																			walker.toSupertype((short) -1));
+				this.tagBits |= TagBits.HasUnresolvedSuperclass;
+	
+				this.parameterTypes = Binding.NO_PARAMETERS;
+				if (!wrapper.atEnd()) {
+					// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+					java.util.ArrayList types = new java.util.ArrayList(2);
+					short rank = 0;
+					do {
+						types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toSupertype(rank++)));
+					} while (!wrapper.atEnd());
+					this.parameterTypes = new TypeBinding[types.size()];
+					types.toArray(this.parameterTypes);
+					this.tagBits |= TagBits.HasUnresolvedParameterTypes;
+				}
+			}
+			//cym 2015-02-06 end
 	
 			if (needFieldsAndMethods) {
 				IBinaryField[] iFields = binaryType.getFields();
@@ -2056,5 +2102,76 @@ public class BinaryTypeBinding extends ReferenceBinding {
 			return this.prototype.unResolvedFields();
 		
 		return this.fields;
+	}
+	
+	//cym 2015-02-06
+	@Override
+	public TypeBinding returnType() {
+		if (!isPrototype()) {
+			return this.returnType = this.prototype.returnType();
+		}
+		
+		if ((this.tagBits & TagBits.HasUnresolvedReturnType) == 0)
+			return this.returnType;
+	
+		// finish resolving the type
+		this.returnType = resolveType(this.returnType, this.environment, true /* raw conversion */);
+		this.tagBits &= ~TagBits.HasUnresolvedReturnType;
+//		if (this.superclass.problemId() == ProblemReasons.NotFound) {
+//			this.tagBits |= TagBits.HierarchyHasProblems; // propagate type inconsistency
+//		} else {
+//			// make super-type resolving recursive for propagating typeBits downwards
+//			boolean wasToleratingMissingTypeProcessingAnnotations = this.environment.mayTolerateMissingType;
+//			this.environment.mayTolerateMissingType = true; // https://bugs.eclipse.org/bugs/show_bug.cgi?id=360164
+//			try {
+//				this.superclass.superclass();
+//				this.superclass.superInterfaces();
+//			} finally {
+//				this.environment.mayTolerateMissingType = wasToleratingMissingTypeProcessingAnnotations;
+//			}
+//		}
+//		this.typeBits |= (this.superclass.typeBits & TypeIds.InheritableBits);
+//		if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
+//			this.typeBits |= applyCloseableClassWhitelists();
+		return this.returnType;
+	}
+	
+	//cym 2015-02-06
+	@Override
+	public TypeBinding[] parameterTypes() {
+		if (!isPrototype()) {
+			return this.parameterTypes = this.prototype.parameterTypes();
+		}
+		if ((this.tagBits & TagBits.HasUnresolvedParameterTypes) == 0)
+			return this.parameterTypes;
+	
+		for (int i = this.parameterTypes.length; --i >= 0;) {
+			this.parameterTypes[i] = (ReferenceBinding) resolveType(this.parameterTypes[i], this.environment, true /* raw conversion */);
+//			if (this.parameterTypes[i].problemId() == ProblemReasons.NotFound) {
+//				this.tagBits |= TagBits.HierarchyHasProblems; // propagate type inconsistency
+//			} else {
+//				// make super-type resolving recursive for propagating typeBits downwards
+//				boolean wasToleratingMissingTypeProcessingAnnotations = this.environment.mayTolerateMissingType;
+//				this.environment.mayTolerateMissingType = true; // https://bugs.eclipse.org/bugs/show_bug.cgi?id=360164
+//				try {
+//					this.superInterfaces[i].superclass();
+//					if (this.superInterfaces[i].isParameterizedType()) {
+//						ReferenceBinding superType = this.superInterfaces[i].actualType();
+//						if (TypeBinding.equalsEquals(superType, this)) {
+//							this.tagBits |= TagBits.HierarchyHasProblems;
+//							continue;
+//						}
+//					}
+//					this.superInterfaces[i].superInterfaces();
+//				} finally {
+//					this.environment.mayTolerateMissingType = wasToleratingMissingTypeProcessingAnnotations;
+//				}	
+//			}
+//			this.typeBits |= (this.parameterTypes[i].typeBits & TypeIds.InheritableBits);
+//			if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
+//				this.typeBits |= applyCloseableInterfaceWhitelists();
+		}
+		this.tagBits &= ~TagBits.HasUnresolvedParameterTypes;
+		return this.parameterTypes;
 	}
 }

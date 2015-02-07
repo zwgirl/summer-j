@@ -850,54 +850,6 @@ GetterMethodHeader ::= '&'
 /.$putCase consumeAccessorMethodName(MethodDeclaration.GETTER); $break./
 /:$readableName GetterMethodHeader:/
 
---ClassMemberDeclaration -> EventDeclaration
---EventDeclaration ::= EventHeader '{' EventAccessorDeclaration '}'
---/.$putCase consumeEventDeclaration(); $break./
---
---EventDeclaration ::= EventHeader ';'
---/.$putCase consumeEventDeclarationNoAccessor(); $break./
---/:$readableName EventDeclaration:/
---
-----EventHeader ::= Modifiersopt 'event' Type 'Identifier'
-----/.$putCase consumeEventHeader(); $break./
-----/:$readableName EventHeader:/
---
---EventHeader ::= Modifiersopt * Type 'Identifier'
---/.$putCase consumeEventHeader(); $break./
---/:$readableName EventHeader:/
---
---EventAccessorDeclaration ::= $empty
---/.$putCase consumeEmptyAccessor(); $break./
---EventAccessorDeclaration ::= AddAccessorDeclaration RemoveAccessorDeclarationopt
---EventAccessorDeclaration ::= RemoveAccessorDeclaration AddAccessorDeclarationopt
---/:$readableName EventAccessorDeclaration:/
---
---AddAccessorDeclarationopt ::= $empty
---AddAccessorDeclarationopt ::= AddAccessorDeclaration
---/.$putCase consumeAccessoropt(); $break./
---/:$readableName AddAccessorDeclarationopt:/
---
---AddAccessorDeclaration ::= AddMethodHeader MethodBody 
---/.$putCase consumeMethodDeclaration(true, false); $break./
---/:$readableName AddAccessorDeclaration:/
---
---AddMethodHeader ::= '+'
---/.$putCase consumeAccessorMethodName(MethodDeclaration.ADD); $break./
---/:$readableName AddMethodHeader:/
---
---RemoveAccessorDeclarationopt ::= $empty
---RemoveAccessorDeclarationopt ::= RemoveAccessorDeclaration
---/.$putCase consumeAccessoropt(); $break./
---/:$readableName RemoveAccessorDeclarationopt:/
---
---RemoveAccessorDeclaration ::= RemoveMethodHeader MethodBody
---/.$putCase consumeMethodDeclaration(true, false); $break./
---/:$readableName RemoveAccessorDeclaration:/
---
---RemoveMethodHeader ::= '-'
---/.$putCase consumeAccessorMethodName(MethodDeclaration.REMOVE); $break./
---/:$readableName RemoveMethodHeader:/
-
 ClassMemberDeclaration -> IndexerDeclaration
 IndexerDeclaration ::= IndexerHeader FormalParameter  ']'  '{' AccessorDeclaration '}'
 /.$putCase consumeIndexerDeclaration(); $break./
@@ -1509,6 +1461,7 @@ StatementExpressionList ::= StatementExpressionList ',' StatementExpression
 /.$putCase consumeStatementExpressionList() ; $break ./
 /:$readableName StatementExpressionList:/
 
+--cym comment
 ---- 1.4 feature
 --AssertStatement ::= 'assert' Expression ';'
 --/.$putCase consumeSimpleAssertStatement() ; $break ./
@@ -1963,6 +1916,13 @@ OneDimLoop ::= TypeAnnotations '[' ']'
 
 FieldAccess ::= Primary '.' 'Identifier'
 /.$putCase consumeFieldAccess(false); $break ./
+
+--cym 2015-02-06
+FieldAccess ::= Primary '.' OnlyTypeArguments 'Identifier'
+/.$putCase consumeFieldAccess(false); $break ./
+
+FieldAccess ::= 'super' '.' OnlyTypeArguments 'Identifier'
+/.$putCase consumeFieldAccess(true); $break ./
 
 FieldAccess ::= 'super' '.' 'Identifier'
 /.$putCase consumeFieldAccess(true); $break ./

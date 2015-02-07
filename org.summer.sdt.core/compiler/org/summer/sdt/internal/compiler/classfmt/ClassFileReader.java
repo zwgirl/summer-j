@@ -56,6 +56,11 @@ public class ClassFileReader extends ClassFileStruct implements IBinaryType {
 	private char[][][] missingTypeNames;
 	private int enclosingNameAndTypeIndex;
 	private char[] enclosingMethod;
+	
+	//cym 2015-02-06 function type
+	private int parametersCount;
+	private char[][] parameterNames;
+	private char[] returnTypeName;
 
 	private static String printTypeModifiers(int modifiers) {
 		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
@@ -254,6 +259,28 @@ public class ClassFileReader extends ClassFileStruct implements IBinaryType {
 					readOffset += 2;
 				}
 			}
+			
+			//cym 2015-02-06
+			// Read the return type name
+			int returnTypeNameIndex = u2At(readOffset);
+			readOffset += 2;
+			// if superclassNameIndex is equals to 0 there is no need to set a value for the
+			// field this.superclassName. null is fine.
+			if (returnTypeNameIndex != 0) {
+				this.returnTypeName = getConstantClassNameAt(returnTypeNameIndex);
+			}
+	
+			// Read the parameters, use exception handlers to catch bad format
+			this.parametersCount = u2At(readOffset);
+			readOffset += 2;
+			if (this.parametersCount != 0) {
+				this.parameterNames = new char[this.parametersCount][];
+				for (int i = 0; i < this.parametersCount; i++) {
+					this.parameterNames[i] = getConstantClassNameAt(u2At(readOffset));
+					readOffset += 2;
+				}
+			}
+			
 			// Read the fields, use exception handlers to catch bad format
 			this.fieldsCount = u2At(readOffset);
 			readOffset += 2;
@@ -1230,6 +1257,22 @@ public class ClassFileReader extends ClassFileStruct implements IBinaryType {
 	 */
 	public char[] sourceFileName() {
 		return this.sourceFileName;
+	}
+	
+	/**
+	 * 2015-02-06 for function type
+	 */
+	@Override
+	public char[] getReturnTypeName() {
+		return this.returnTypeName;
+	}
+	
+	/**
+	 * 2015-02-06 for function type
+	 */
+	@Override
+	public char[][] getParameterNames() {
+		return this.parameterNames;
 	}
 	
 	public String toString() {

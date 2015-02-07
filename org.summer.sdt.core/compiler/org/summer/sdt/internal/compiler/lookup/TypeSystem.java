@@ -143,9 +143,75 @@ public class TypeSystem {
 		}
 	}	
 	
+	/**
+	 * cym 2015-02-07
+	 */
+	public final class HashedFunctionTypes {
+		
+		private final class InternalFunctionTypeBinding extends FunctionTypeBinding {
+						
+			public InternalFunctionTypeBinding(TypeBinding returnType, TypeBinding[] parameterTypes, LookupEnvironment environment) {
+				super(returnType, parameterTypes, environment);
+			}
+			
+			public boolean equals(Object other) {
+				FunctionTypeBinding that = (FunctionTypeBinding) other;  // homogeneous container. 
+				return this.returnType == that.returnType &&  Util.effectivelyEqual(this.parameterTypes, that.parameterTypes); //$IDENTITY-COMPARISON$
+			}
+			
+			public int hashCode() {
+				int hashCode = this.returnType.hashCode();
+				for (int i = 0, length = this.parameterTypes == null ? 0 : this.parameterTypes.length; i < length; i++) {
+					hashCode += (i + 1) * this.parameterTypes[i].id * this.parameterTypes[i].hashCode();
+				}
+				return hashCode;
+			}
+		}
+		
+		HashMap<FunctionTypeBinding, FunctionTypeBinding []> functionTypes = new HashMap<FunctionTypeBinding, FunctionTypeBinding[]>(256);
+
+		FunctionTypeBinding get(TypeBinding returnType, TypeBinding[] parameterTypes) {
+			FunctionTypeBinding typeParameterization = new InternalFunctionTypeBinding(returnType, parameterTypes, TypeSystem.this.environment);
+			FunctionTypeBinding [] functionTypeBindings = this.functionTypes.get(typeParameterization);
+			for (int i = 0, length = functionTypeBindings == null ? 0 : functionTypeBindings.length; i < length; i++) {
+				FunctionTypeBinding functionType = functionTypeBindings[i];
+//				if (parameterizedType.actualType() != genericTypeToMatch) { //$IDENTITY-COMPARISON$
+//					continue;
+//				}
+				if (functionType.returnType != returnType //$IDENTITY-COMPARISON$
+						|| !Util.effectivelyEqual(functionType.parameterTypes, parameterTypes)) 
+					continue;
+				return functionType;
+			}
+
+			return null;
+		}
+
+		void put (TypeBinding returnType, TypeBinding[] parameterTypes, FunctionTypeBinding functionType)  {
+			
+			FunctionTypeBinding typeParameterization = new InternalFunctionTypeBinding(returnType, parameterTypes, TypeSystem.this.environment);
+			
+			FunctionTypeBinding [] functionTypeBindings = this.functionTypes.get(typeParameterization);
+			int slot;
+			if (functionTypeBindings == null) {
+				slot = 0;
+				functionTypeBindings = new FunctionTypeBinding[1];
+			} else { 
+				slot = functionTypeBindings.length;
+				System.arraycopy(functionTypeBindings, 0, functionTypeBindings = new FunctionTypeBinding[slot + 1], 0, slot);
+			}
+			functionTypeBindings[slot] = functionType;
+			this.functionTypes.put(typeParameterization, functionTypeBindings);
+		}
+	}
+	
 	private int typeid = TypeIds.T_LastWellKnownTypeId;
 	private TypeBinding [][] types; 
 	protected HashedParameterizedTypes parameterizedTypes;  // auxiliary fast lookup table for parameterized types.
+	
+	//cym 2015-02-07
+	protected HashedFunctionTypes functionTypes;  // auxiliary fast lookup table for parameterized types.
+	
 	private SimpleLookupTable annotationTypes; // cannot store in types, since AnnotationBinding is not a TypeBinding and we don't want types to operate at Binding level.
 	LookupEnvironment environment;
 	
@@ -155,6 +221,7 @@ public class TypeSystem {
 		this.typeid = TypeIds.T_LastWellKnownTypeId;
 		this.types = new TypeBinding[TypeIds.T_LastWellKnownTypeId * 2][]; 
 		this.parameterizedTypes = new HashedParameterizedTypes();
+		this.functionTypes = new HashedFunctionTypes();  //cym 2015-02-07
 	}
 
 	// Given a type, answer its unannotated aka naked prototype. This is also a convenient way to "register" a type with TypeSystem and have it id stamped.
@@ -551,5 +618,21 @@ public class TypeSystem {
 		} else {
 			var.declaringElement = declaringElement;
 		}
+	}
+
+	//cym 2015-02-07
+	public FunctionTypeBinding getFunctionType(TypeBinding returnType, TypeBinding[] parameterTypes) {
+		FunctionTypeBinding functionType = this.functionTypes.get(returnType, parameterTypes);
+		if (functionType != null) 
+			return functionType;
+
+		functionType = new FunctionTypeBinding(returnType, parameterTypes, this.environment);
+//		cacheDerivedType(parameterizedType, parameterizedType);
+		this.functionTypes.put(returnType, parameterTypes, functionType);
+		int typesLength = this.types.length;
+		if (this.typeid == typesLength)
+			System.arraycopy(this.types, 0, this.types = new TypeBinding[typesLength * 2][], 0, typesLength);
+		this.types[this.typeid] = new TypeBinding[1];
+		return (FunctionTypeBinding) (this.types[functionType.id = this.typeid++][0] = functionType);
 	}
 }

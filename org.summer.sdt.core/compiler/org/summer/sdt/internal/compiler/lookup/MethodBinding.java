@@ -69,9 +69,12 @@ public class MethodBinding extends Binding {
 
 	/** Store parameter names from MethodParameters attribute (incl. applicable default). */
 	public char[][] parameterNames = Binding.NO_PARAMETER_NAMES;
+	
+	//cym 2015-02-05
+	public FunctionFieldBinding functionFieldBinding;
 
 	protected MethodBinding() {
-		// for creating problem or synthetic method
+	// for creating problem or synthetic method
 	}
 	public MethodBinding(int modifiers, char[] selector, TypeBinding returnType, TypeBinding[] parameters, ReferenceBinding[] thrownExceptions, ReferenceBinding declaringClass) {
 		this.modifiers = modifiers;

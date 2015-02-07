@@ -113,7 +113,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	public XAMLElement element;
 	
 	//cym 2015-02-03 for function type
-	public Argument[] arguments;
+	public Argument[] arguments = ASTNode.NO_ARGUMENTS;
 	public TypeReference returnType;
 
 	public TypeDeclaration(CompilationResult compilationResult){

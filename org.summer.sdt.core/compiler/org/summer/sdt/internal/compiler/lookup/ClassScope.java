@@ -34,8 +34,10 @@ import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
+import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
+import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
@@ -441,17 +443,28 @@ public class ClassScope extends Scope {
 		}
 		
 		int count = isEnum ? 2 : 0; // reserve 2 slots for special enum methods: #values() and #valueOf(String)
-		int pos = sourceType.fields().length;
-		FieldBinding[] newfields = new FieldBinding[sourceType.fields().length + (clinitIndex == -1 ? size : size - 1) + count];
-		System.arraycopy(sourceType.fields(), 0, newfields, 0, sourceType.fields().length);
-		sourceType.setFields(newfields);
-//		int count = isEnum ? 2 : 0; // reserve 2 slots for special enum methods: #values() and #valueOf(String)
-//		MethodBinding[] methodBindings = new MethodBinding[(clinitIndex == -1 ? size : size - 1) + count];
-//		// create special methods for enums
-//		if (isEnum) {
-//			methodBindings[0] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUES); // add <EnumType>[] values()
-//			methodBindings[1] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUEOF); // add <EnumType> valueOf()
-//		}
+		MethodBinding[] methodBindings = new MethodBinding[(clinitIndex == -1 ? size : size - 1) + count];
+		//cym 2015-02-05
+		int fieldsSize = sourceType.fieldCount();
+		FieldBinding[] newfields = new FieldBinding[methodBindings.length + fieldsSize];
+		
+		// create special methods for enums
+		if (isEnum) {
+			methodBindings[0] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUES); // add <EnumType>[] values()
+			//cym 2015-02-06
+			methodBindings[0].functionFieldBinding = new FunctionFieldBinding(TypeConstants.VALUES,  ClassFileConstants.AccPublic, sourceType, null);
+			methodBindings[0].functionFieldBinding.type = environment().getType(TypeConstants.JAVA_LANG_FUNCTION);
+			
+			newfields[0 + fieldsSize] = methodBindings[0].functionFieldBinding;
+			
+			methodBindings[1] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUEOF); // add <EnumType> valueOf()
+			//cym 2015-02-06
+			methodBindings[1].functionFieldBinding = new FunctionFieldBinding(TypeConstants.VALUEOF,  ClassFileConstants.AccPublic, sourceType, null);
+			methodBindings[1].functionFieldBinding.type = environment().getType(TypeConstants.JAVA_LANG_FUNCTION);
+			
+			newfields[1 + fieldsSize] = methodBindings[1].functionFieldBinding;
+		}
+		
 		// create bindings for source methods
 		boolean hasNativeMethods = false;
 		if (sourceType.isAbstract()) {
@@ -459,11 +472,12 @@ public class ClassScope extends Scope {
 				if (i != clinitIndex) {
 					MethodScope scope = new MethodScope(this, methods[i], false);
 					MethodBinding methodBinding = scope.createMethod(methods[i]);
-					FunctionFieldBinding fieldBinding = new FunctionFieldBinding(methods[i].selector, 
-							environment().getType(TypeConstants.JAVA_LANG_FUNCTION), methods[i].modifiers, sourceType, null);
-					fieldBinding.methodBinding = methodBinding;
 					if (methodBinding != null) { // is null if binding could not be created
-						newfields[pos++] = fieldBinding;
+						//cym 2015-02-05
+						methodBinding.functionFieldBinding = new FunctionFieldBinding(methods[i].selector,  methods[i].modifiers, sourceType, null);
+						methodBinding.functionFieldBinding.type = environment().getType(TypeConstants.JAVA_LANG_FUNCTION);
+						newfields[count + fieldsSize] = methodBinding.functionFieldBinding;
+						methodBindings[count++] = methodBinding;
 						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
 					}
 				}
@@ -474,11 +488,13 @@ public class ClassScope extends Scope {
 				if (i != clinitIndex) {
 					MethodScope scope = new MethodScope(this, methods[i], false);
 					MethodBinding methodBinding = scope.createMethod(methods[i]);
-					FunctionFieldBinding fieldBinding = new FunctionFieldBinding(methods[i].selector, 
-							environment().getType(TypeConstants.JAVA_LANG_FUNCTION), methods[i].modifiers, sourceType, null);
-					fieldBinding.methodBinding = methodBinding;
 					if (methodBinding != null) { // is null if binding could not be created
-						newfields[pos++] = fieldBinding;
+						//cym 2015-02-05
+						methodBinding.functionFieldBinding = new FunctionFieldBinding(methods[i].selector,  methods[i].modifiers, sourceType, null);
+						methodBinding.functionFieldBinding.type = environment().getType(TypeConstants.JAVA_LANG_FUNCTION);
+						newfields[count + fieldsSize] = methodBinding.functionFieldBinding;
+						
+						methodBindings[count++] = methodBinding;
 						hasAbstractMethods = hasAbstractMethods || methodBinding.isAbstract();
 						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
 					}
@@ -487,21 +503,26 @@ public class ClassScope extends Scope {
 			if (hasAbstractMethods)
 				problemReporter().abstractMethodInConcreteClass(sourceType);
 		}
-//		if (count != methodBindings.length)
-//			System.arraycopy(methodBindings, 0, methodBindings = new MethodBinding[count], 0, count);
+		if (count != methodBindings.length)
+			System.arraycopy(methodBindings, 0, methodBindings = new MethodBinding[count], 0, count);
 		sourceType.tagBits &= ~(TagBits.AreMethodsSorted|TagBits.AreMethodsComplete); // in case some static imports reached already into this type
-		sourceType.setMethods(new MethodBinding[0]);
+		sourceType.setMethods(methodBindings);
 		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=243917, conservatively tag all methods and fields as
 		// being in use if there is a native method in the class.
-//		if (hasNativeMethods) {
-//			for (int i = 0; i < methodBindings.length; i++) {
-//				methodBindings[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;
-//			}
-//			FieldBinding[] fields = sourceType.unResolvedFields(); // https://bugs.eclipse.org/bugs/show_bug.cgi?id=301683
-//			for (int i = 0; i < fields.length; i++) {
-//				fields[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;	
-//			}
-//		}
+		if (hasNativeMethods) {
+			for (int i = 0; i < methodBindings.length; i++) {
+				methodBindings[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;
+			}
+			FieldBinding[] fields = sourceType.unResolvedFields(); // https://bugs.eclipse.org/bugs/show_bug.cgi?id=301683
+			for (int i = 0; i < fields.length; i++) {
+				fields[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;	
+			}
+		}
+		
+		System.arraycopy(sourceType.fields(), 0, newfields, 0, fieldsSize);
+		sourceType.setFields(newfields);
+		
+		sourceType.tagBits &= ~(TagBits.AreFieldsSorted | TagBits.AreFieldsComplete);
 	}
 
 	SourceTypeBinding buildType(SourceTypeBinding enclosingType, PackageBinding packageBinding, AccessRestriction accessRestriction) {
@@ -1326,6 +1347,25 @@ public class ClassScope extends Scope {
 		}
 		return noProblems;
 	}
+	
+	//cym 2014-02-06
+	private boolean connectFunctionType() {
+		boolean noProblems = true;
+		SourceTypeBinding sourceType = this.referenceContext.binding;
+		if(this.referenceContext.returnType != null){
+			sourceType.returnType = this.referenceContext.returnType.resolveType(this);
+		}
+		
+		if(this.referenceContext.arguments != ASTNode.NO_ARGUMENTS){
+			sourceType.parameterTypes = new TypeBinding[this.referenceContext.arguments.length];
+			int count = 0;
+			for(Argument arg : this.referenceContext.arguments){
+				sourceType.parameterTypes[count++] = arg.type.resolveType(this);
+			}
+		}
+
+		return noProblems;
+	}
 
 	void connectTypeHierarchy() {
 		SourceTypeBinding sourceType = this.referenceContext.binding;
@@ -1338,6 +1378,10 @@ public class ClassScope extends Scope {
 				environment().typesBeingConnected.add(sourceType);
 				boolean noProblems = connectSuperclass();
 				noProblems &= connectSuperInterfaces();
+				
+				//cym 2015-02-06
+				connectFunctionType();
+				
 				environment().typesBeingConnected.remove(sourceType);
 				sourceType.tagBits |= TagBits.EndHierarchyCheck;
 				noProblems &= connectTypeVariables(this.referenceContext.typeParameters, false);
@@ -1360,7 +1404,7 @@ public class ClassScope extends Scope {
 			env.missingClassFileLocation = null;
 		}
 	}
-
+	
 	@Override
 	public boolean deferCheck(Runnable check) {
 		if (compilationUnitScope().connectingHierarchy) {

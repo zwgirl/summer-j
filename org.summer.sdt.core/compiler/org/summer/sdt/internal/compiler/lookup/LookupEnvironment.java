@@ -674,6 +674,11 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 		return this.typeSystem.getAnnotationType(annotationType, false);
 	}
 	
+	//cym 2015-02-05
+	public ReferenceBinding createFunctionType(TypeBinding returnType, TypeBinding[] argumentTypes){
+		return this.typeSystem.getFunctionType(returnType, argumentTypes);
+	}
+	
 	/*
 	 *  Used to guarantee array type identity.
 	 */

@@ -97,6 +97,10 @@ public interface TagBits {
 	long HasUnresolvedSuperinterfaces = ASTNode.Bit27;
 	long HasUnresolvedEnclosingType = ASTNode.Bit28;
 	long HasUnresolvedMemberTypes = ASTNode.Bit29;  // Also in use at STB.
+	
+	//cym  2015-02-06 for function type
+	long HasUnresolvedParameterTypes = ASTNode.Bit40L;
+	long HasUnresolvedReturnType = ASTNode.Bit42L;
 
 	long HasTypeVariable = ASTNode.Bit30; // set either for type variables (direct) or parameterized types indirectly referencing type variables
 	long HasDirectWildcard = ASTNode.Bit31; // set for parameterized types directly referencing wildcards

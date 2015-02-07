@@ -102,6 +102,10 @@ public class SourceTypeBinding extends ReferenceBinding {
 	private int lambdaOrdinal = 0;
 	private ReferenceBinding containerAnnotationType = null;
 	
+	//cym 2015-02-06 function type
+	public TypeBinding returnType;                    // MUST NOT be modified directly, use setter !
+	public TypeBinding[] parameterTypes = NO_PARAMETERS;             // MUST NOT be modified directly, use setter !
+	
 	public SourceTypeBinding(char[][] compoundName, PackageBinding fPackage, ClassScope scope) {
 		this.compoundName = compoundName;
 		this.fPackage = fPackage;
@@ -114,6 +118,10 @@ public class SourceTypeBinding extends ReferenceBinding {
 		// expect the fields & methods to be initialized correctly later
 		this.fields = Binding.UNINITIALIZED_FIELDS;
 		this.methods = Binding.UNINITIALIZED_METHODS;
+		
+		//cym 2015-02-06
+		this.parameterTypes = Binding.NO_PARAMETERS; 
+		
 		this.prototype = this;
 		computeId();
 	}
@@ -895,7 +903,9 @@ public class SourceTypeBinding extends ReferenceBinding {
 						resolvedFields[i] = null;
 						failed++;
 					}
-				} else if(this.fields[i] instanceof IndexerBinding){
+				} else if(this.fields[i] instanceof FunctionFieldBinding){
+					continue;
+				}  else if(this.fields[i] instanceof IndexerBinding){
 					if (resolveTypeFor((IndexerBinding)this.fields[i]) == null) {
 						// do not alter original field array until resolution is over, due to reentrance (143259)
 						if (resolvedFields == this.fields) {
@@ -1604,6 +1614,9 @@ public class SourceTypeBinding extends ReferenceBinding {
 					resolvedMethods[i] = null; // unable to resolve parameters
 					failed++;
 				}
+				
+				//cym 2015-02-07
+				this.methods[i].functionFieldBinding.type = this.scope.createFunctionType(this.methods[i].returnType, this.methods[i].parameters);
 			}
 	
 			// find & report collision cases
@@ -3225,5 +3238,16 @@ public class SourceTypeBinding extends ReferenceBinding {
 		if (this.superclass.isPrivate()) 
 			if (this.superclass instanceof SourceTypeBinding)  // should always be true because private super type can only be accessed in same CU
 				((SourceTypeBinding) this.superclass).tagIndirectlyAccessibleMembers();
+	}
+	
+	//cym 2015-02-06
+	@Override
+	public TypeBinding returnType() {
+		return this.returnType;
+	}
+	
+	@Override
+	public TypeBinding[] parameterTypes() {
+		return this.parameterTypes;
 	}
 }

@@ -595,10 +595,40 @@ public class ClassFile implements TypeConstants, TypeIds {
 	 * - a field info for each defined field of that class
 	 * - a field info for each synthetic field (e.g. this$0)
 	 */
+//	public void addFieldInfos() {
+//		SourceTypeBinding currentBinding = this.referenceBinding;
+//		FieldBinding[] syntheticFields = currentBinding.syntheticFields();
+//		int fieldCount = currentBinding.fieldCount() + (syntheticFields == null ? 0 : syntheticFields.length);
+//
+//		// write the number of fields
+//		if (fieldCount > 0xFFFF) {
+//			this.referenceBinding.scope.problemReporter().tooManyFields(this.referenceBinding.scope.referenceType());
+//		}
+//		this.contents[this.contentsOffset++] = (byte) (fieldCount >> 8);
+//		this.contents[this.contentsOffset++] = (byte) fieldCount;
+//
+//		FieldDeclaration[] fieldDecls = currentBinding.scope.referenceContext.fields;
+//		for (int i = 0, max = fieldDecls == null ? 0 : fieldDecls.length; i < max; i++) {
+//			FieldDeclaration fieldDecl = fieldDecls[i];
+//			if (fieldDecl.binding != null) {
+//				addFieldInfo(fieldDecl.binding);
+//			}
+//		}
+//
+//		if (syntheticFields != null) {
+//			for (int i = 0, max = syntheticFields.length; i < max; i++) {
+//				addFieldInfo(syntheticFields[i]);
+//			}
+//		}
+//	}
+	
+	//cym 2015-02-06 modify
 	public void addFieldInfos() {
 		SourceTypeBinding currentBinding = this.referenceBinding;
+		FieldDeclaration[] fieldDecls = currentBinding.scope.referenceContext.fields;
+		
 		FieldBinding[] syntheticFields = currentBinding.syntheticFields();
-		int fieldCount = 	currentBinding.fieldCount() + (syntheticFields == null ? 0 : syntheticFields.length);
+		int fieldCount = (fieldDecls == null ? 0 : fieldDecls.length) + (syntheticFields == null ? 0 : syntheticFields.length);
 
 		// write the number of fields
 		if (fieldCount > 0xFFFF) {
@@ -607,7 +637,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 		this.contents[this.contentsOffset++] = (byte) (fieldCount >> 8);
 		this.contents[this.contentsOffset++] = (byte) fieldCount;
 
-		FieldDeclaration[] fieldDecls = currentBinding.scope.referenceContext.fields;
+//		FieldDeclaration[] fieldDecls = currentBinding.scope.referenceContext.fields;
 		for (int i = 0, max = fieldDecls == null ? 0 : fieldDecls.length; i < max; i++) {
 			FieldDeclaration fieldDecl = fieldDecls[i];
 			if (fieldDecl.binding != null) {
@@ -5024,6 +5054,33 @@ public class ClassFile implements TypeConstants, TypeIds {
 		// retrieve the enclosing one guaranteed to be the one matching the propagated flow info
 		// 1FF9ZBU: LFCOM:ALL - Local variable attributes busted (Sanity check)
 		this.codeStream.maxFieldCount = aType.scope.outerMostClassScope().referenceType().maxFieldCount;
+		
+		//cym 2015-02-06
+		int returnTypeIndex;
+		if (aType.returnType != null) {
+			 returnTypeIndex = this.constantPool.literalIndexForType(aType.returnType);
+		} else {
+			returnTypeIndex = 0;
+		}
+		this.contents[this.contentsOffset++] = (byte) (returnTypeIndex >> 8);
+		this.contents[this.contentsOffset++] = (byte) returnTypeIndex;
+		TypeBinding[] parametersBinding = aType.parameterTypes();
+		int parametersCount = parametersBinding.length;
+		int parametersCountPosition = this.contentsOffset;
+		this.contentsOffset += 2;
+		int parameterCounter = 0;
+		for (int i = 0; i < parametersCount; i++) {
+			TypeBinding binding = parametersBinding[i];
+			if ((binding.tagBits & TagBits.HasMissingType) != 0) {
+				continue;
+			}
+			parameterCounter++;
+			int parameterIndex = this.constantPool.literalIndexForType(binding);
+			this.contents[this.contentsOffset++] = (byte) (parameterIndex >> 8);
+			this.contents[this.contentsOffset++] = (byte) parameterIndex;
+		}
+		this.contents[parametersCountPosition++] = (byte) (parameterCounter >> 8);
+		this.contents[parametersCountPosition] = (byte) parameterCounter;
 	}
 
 	private void initializeDefaultLocals(StackMapFrame frame,
