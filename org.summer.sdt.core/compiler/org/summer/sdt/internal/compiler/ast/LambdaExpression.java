@@ -230,6 +230,229 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 	 * @see org.summer.sdt.internal.compiler.lookup.SourceTypeBinding.resolveTypesFor(MethodBinding)
 	 * @see org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration.resolve(ClassScope)
 	 */
+//	public TypeBinding resolveType(BlockScope blockScope) {
+//		
+//		boolean argumentsTypeElided = argumentsTypeElided();
+//		int argumentsLength = this.arguments == null ? 0 : this.arguments.length;
+//		
+//		if (this.constant != Constant.NotAConstant) {
+//			this.constant = Constant.NotAConstant;
+//			this.enclosingScope = blockScope;
+//			if (this.original == this)
+//				this.ordinal = recordFunctionalType(blockScope);
+//			
+//			if (!argumentsTypeElided) {
+//				for (int i = 0; i < argumentsLength; i++)
+//					this.argumentTypes[i] = this.arguments[i].type.resolveType(blockScope, true /* check bounds*/);
+//			}
+//			if (this.expectedType == null && this.expressionContext == INVOCATION_CONTEXT) {
+//				return new PolyTypeBinding(this);
+//			} 
+//		}
+//		
+//		MethodScope methodScope = blockScope.methodScope();
+//		this.scope = new MethodScope(blockScope, this, methodScope.isStatic, methodScope.lastVisibleFieldID);
+//		this.scope.isConstructorCall = methodScope.isConstructorCall;
+//
+//		super.resolveType(blockScope); // compute & capture interface function descriptor.
+//		
+//		final boolean haveDescriptor = this.descriptor != null;
+//		
+//		if (!haveDescriptor || this.descriptor.typeVariables != Binding.NO_TYPE_VARIABLES) // already complained in kosher*
+//			return this.resolvedType = null;
+//		
+//		this.binding = new MethodBinding(ClassFileConstants.AccPrivate | ClassFileConstants.AccSynthetic | ExtraCompilerModifiers.AccUnresolved,
+//							CharOperation.concat(TypeConstants.ANONYMOUS_METHOD, Integer.toString(this.ordinal).toCharArray()), // will be fixed up later.
+//							haveDescriptor ? this.descriptor.returnType : TypeBinding.VOID, 
+//							Binding.NO_PARAMETERS, // for now. 
+//							haveDescriptor ? this.descriptor.thrownExceptions : Binding.NO_EXCEPTIONS, 
+//							blockScope.enclosingSourceType());
+//		this.binding.typeVariables = Binding.NO_TYPE_VARIABLES;
+//		
+//		boolean argumentsHaveErrors = false;
+//		if (haveDescriptor) {
+//			int parametersLength = this.descriptor.parameters.length;
+//			if (parametersLength != argumentsLength) {
+//            	this.scope.problemReporter().lambdaSignatureMismatched(this);
+//            	if (argumentsTypeElided || this.original != this) // no interest in continuing to error check copy.
+//            		return this.resolvedType = null; // FUBAR, bail out ...
+//            	else {
+//            		this.resolvedType = null; // continue to type check.
+//            		argumentsHaveErrors = true;
+//            	}
+//            }
+//		}
+//		
+//		TypeBinding[] newParameters = new TypeBinding[argumentsLength];
+//
+//		AnnotationBinding [][] parameterAnnotations = null;
+//		for (int i = 0; i < argumentsLength; i++) {
+//			Argument argument = this.arguments[i];
+//			if (argument.isVarArgs()) {
+//				if (i == argumentsLength - 1) {
+//					this.binding.modifiers |= ClassFileConstants.AccVarargs;
+//				} else {
+//					this.scope.problemReporter().illegalVarargInLambda(argument);
+//					argumentsHaveErrors = true;
+//				}
+//			}
+//			
+//			TypeBinding argumentType;
+//			final TypeBinding expectedParameterType = haveDescriptor && i < this.descriptor.parameters.length ? this.descriptor.parameters[i] : null;
+//			argumentType = argumentsTypeElided ? expectedParameterType : this.argumentTypes[i];
+//			if (argumentType == null) {
+//				argumentsHaveErrors = true;
+//			} else if (argumentType == TypeBinding.VOID) {
+//				this.scope.problemReporter().argumentTypeCannotBeVoid(this, argument);
+//				argumentsHaveErrors = true;
+//			} else {
+//				if (!argumentType.isValidBinding()) {
+//					this.binding.tagBits |= TagBits.HasUnresolvedArguments;
+//				}
+//				if ((argumentType.tagBits & TagBits.HasMissingType) != 0) {
+//					this.binding.tagBits |= TagBits.HasMissingType;
+//				}
+//			}
+//		}
+//		if (!argumentsTypeElided && !argumentsHaveErrors) {
+//			ReferenceBinding groundType = null;
+//			ReferenceBinding expectedSAMType = null;
+//			if (this.expectedType instanceof IntersectionTypeBinding18)
+//				expectedSAMType = (ReferenceBinding) ((IntersectionTypeBinding18) this.expectedType).getSAMType(blockScope); 
+//			else if (this.expectedType instanceof ReferenceBinding)
+//				expectedSAMType = (ReferenceBinding) this.expectedType;
+//			if (expectedSAMType != null)
+//				groundType = findGroundTargetType(blockScope, expectedSAMType, argumentsTypeElided);
+//			
+//			if (groundType != null) {
+//				this.descriptor = groundType.getSingleAbstractMethod(blockScope, true);
+//				if (!this.descriptor.isValidBinding()) {
+//					reportSamProblem(blockScope, this.descriptor);
+//				} else {
+//					if (groundType != expectedSAMType) { //$IDENTITY-COMPARISON$
+//						if (!groundType.isCompatibleWith(expectedSAMType, this.scope)) { // the ground has shifted, are we still on firm grounds ? 
+//							blockScope.problemReporter().typeMismatchError(groundType, this.expectedType, this, null); // report deliberately against block scope so as not to blame the lambda.
+//							return this.resolvedType = null;
+//						}
+//					}
+//					this.resolvedType = groundType;
+//				}
+//			}
+//		}
+//		boolean genericSignatureNeeded = this.requiresGenericSignature || blockScope.compilerOptions().generateGenericSignatureForLambdaExpressions;
+//		for (int i = 0; i < argumentsLength; i++) {
+//			Argument argument = this.arguments[i];
+//			TypeBinding argumentType;
+//			final TypeBinding expectedParameterType = haveDescriptor && i < this.descriptor.parameters.length ? this.descriptor.parameters[i] : null;
+//			argumentType = argumentsTypeElided ? expectedParameterType : this.argumentTypes[i];
+//			if (argumentType != null && argumentType != TypeBinding.VOID) {
+//				if (haveDescriptor && expectedParameterType != null && argumentType.isValidBinding() && TypeBinding.notEquals(argumentType, expectedParameterType)) {
+//					if (expectedParameterType.isProperType(true)) {
+//						this.scope.problemReporter().lambdaParameterTypeMismatched(argument, argument.type, expectedParameterType);
+//						this.resolvedType = null; // continue to type check.
+//					}
+//				}
+//				if (genericSignatureNeeded) {
+//					TypeBinding leafType = argumentType.leafComponentType();
+//					if (leafType instanceof ReferenceBinding && (((ReferenceBinding) leafType).modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0)
+//						this.binding.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
+//				}
+//				newParameters[i] = argument.bind(this.scope, argumentType, false);				
+//				if (argument.annotations != null) {
+//					this.binding.tagBits |= TagBits.HasParameterAnnotations;
+//					if (parameterAnnotations == null) {
+//						parameterAnnotations = new AnnotationBinding[argumentsLength][];
+//						for (int j = 0; j < i; j++) {
+//							parameterAnnotations[j] = Binding.NO_ANNOTATIONS;
+//						}
+//					}
+//					parameterAnnotations[i] = argument.binding.getAnnotations();
+//				} else if (parameterAnnotations != null) {
+//					parameterAnnotations[i] = Binding.NO_ANNOTATIONS;
+//				}
+//			}
+//		}
+//		// only assign parameters if no problems are found
+//		if (!argumentsHaveErrors) {
+//			this.binding.parameters = newParameters;
+//			if (parameterAnnotations != null)
+//				this.binding.setParameterAnnotations(parameterAnnotations);
+//		}
+//	
+//		if (!argumentsTypeElided && this.binding.isVarargs()) {
+//			if (!this.binding.parameters[this.binding.parameters.length - 1].isReifiable()) {
+//				this.scope.problemReporter().possibleHeapPollutionFromVararg(this.arguments[this.arguments.length - 1]);
+//			}
+//		}
+//
+//		ReferenceBinding [] exceptions = this.binding.thrownExceptions;
+//		int exceptionsLength = exceptions.length;
+//		for (int i = 0; i < exceptionsLength; i++) {
+//			ReferenceBinding exception = exceptions[i];
+//			if ((exception.tagBits & TagBits.HasMissingType) != 0) {
+//				this.binding.tagBits |= TagBits.HasMissingType;
+//			}
+//			if (genericSignatureNeeded)
+//				this.binding.modifiers |= (exception.modifiers & ExtraCompilerModifiers.AccGenericSignature);
+//		}
+//		
+//		TypeBinding returnType = this.binding.returnType;
+//		if (returnType != null) {
+//			if ((returnType.tagBits & TagBits.HasMissingType) != 0) {
+//				this.binding.tagBits |= TagBits.HasMissingType;
+//			}
+//			if (genericSignatureNeeded) {
+//				TypeBinding leafType = returnType.leafComponentType();
+//				if (leafType instanceof ReferenceBinding && (((ReferenceBinding) leafType).modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0)
+//					this.binding.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
+//			}
+//		} // TODO (stephan): else? (can that happen?)
+//
+//		if (haveDescriptor && !argumentsHaveErrors && blockScope.compilerOptions().isAnnotationBasedNullAnalysisEnabled) {
+//			if (!argumentsTypeElided) {
+//				AbstractMethodDeclaration.createArgumentBindings(this.arguments, this.binding, this.scope);
+//				validateNullAnnotations();
+//				// no application of null-ness default, hence also no warning regarding redundant null annotation
+//				mergeParameterNullAnnotations(blockScope);
+//			}
+//			this.binding.tagBits |= (this.descriptor.tagBits & TagBits.AnnotationNullMASK);
+//		}
+//
+//		this.binding.modifiers &= ~ExtraCompilerModifiers.AccUnresolved;
+//		
+//		if (this.body instanceof Expression) {
+//			Expression expression = (Expression) this.body;
+//			new ReturnStatement(expression, expression.sourceStart, expression.sourceEnd, true).resolve(this.scope); // :-) ;-)
+//		} else {
+//			this.body.resolve(this.scope);
+//			/* At this point, shape analysis is complete for ((see returnsExpression(...))
+//		       - a lambda with an expression body,
+//			   - a lambda with a block body in which we saw a return statement naked or otherwise.
+//		    */
+//			if (!this.returnsVoid && !this.returnsValue)
+//				this.valueCompatible = this.body.doesNotCompleteNormally();
+//		}
+//		if (this.expectedType instanceof IntersectionTypeBinding18) {
+//			ReferenceBinding[] intersectingTypes =  ((IntersectionTypeBinding18)this.expectedType).intersectingTypes;
+//			for (int t = 0, max = intersectingTypes.length; t < max; t++) {
+//				if (intersectingTypes[t].findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
+//					this.isSerializable = true;
+//					break;
+//				}
+//			}
+//		} else if (this.expectedType != null && 
+//				   this.expectedType.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
+//			this.isSerializable = true;
+//		}
+//		if ((this.binding.tagBits & TagBits.HasMissingType) != 0) {
+//			this.scope.problemReporter().missingTypeInLambda(this, this.binding);
+//		}
+//		if (this.shouldCaptureInstance && this.scope.isConstructorCall) {
+//			this.scope.problemReporter().fieldsOrThisBeforeConstructorInvocation(this);
+//		}
+//		return argumentsHaveErrors ? this.resolvedType = null : this.resolvedType;
+//	}
+	
 	public TypeBinding resolveType(BlockScope blockScope) {
 		
 		boolean argumentsTypeElided = argumentsTypeElided();
@@ -256,169 +479,169 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 
 		super.resolveType(blockScope); // compute & capture interface function descriptor.
 		
-		final boolean haveDescriptor = this.descriptor != null;
-		
-		if (!haveDescriptor || this.descriptor.typeVariables != Binding.NO_TYPE_VARIABLES) // already complained in kosher*
-			return this.resolvedType = null;
-		
-		this.binding = new MethodBinding(ClassFileConstants.AccPrivate | ClassFileConstants.AccSynthetic | ExtraCompilerModifiers.AccUnresolved,
-							CharOperation.concat(TypeConstants.ANONYMOUS_METHOD, Integer.toString(this.ordinal).toCharArray()), // will be fixed up later.
-							haveDescriptor ? this.descriptor.returnType : TypeBinding.VOID, 
-							Binding.NO_PARAMETERS, // for now. 
-							haveDescriptor ? this.descriptor.thrownExceptions : Binding.NO_EXCEPTIONS, 
-							blockScope.enclosingSourceType());
-		this.binding.typeVariables = Binding.NO_TYPE_VARIABLES;
-		
-		boolean argumentsHaveErrors = false;
-		if (haveDescriptor) {
-			int parametersLength = this.descriptor.parameters.length;
-			if (parametersLength != argumentsLength) {
-            	this.scope.problemReporter().lambdaSignatureMismatched(this);
-            	if (argumentsTypeElided || this.original != this) // no interest in continuing to error check copy.
-            		return this.resolvedType = null; // FUBAR, bail out ...
-            	else {
-            		this.resolvedType = null; // continue to type check.
-            		argumentsHaveErrors = true;
-            	}
-            }
-		}
-		
-		TypeBinding[] newParameters = new TypeBinding[argumentsLength];
-
-		AnnotationBinding [][] parameterAnnotations = null;
-		for (int i = 0; i < argumentsLength; i++) {
-			Argument argument = this.arguments[i];
-			if (argument.isVarArgs()) {
-				if (i == argumentsLength - 1) {
-					this.binding.modifiers |= ClassFileConstants.AccVarargs;
-				} else {
-					this.scope.problemReporter().illegalVarargInLambda(argument);
-					argumentsHaveErrors = true;
-				}
-			}
-			
-			TypeBinding argumentType;
-			final TypeBinding expectedParameterType = haveDescriptor && i < this.descriptor.parameters.length ? this.descriptor.parameters[i] : null;
-			argumentType = argumentsTypeElided ? expectedParameterType : this.argumentTypes[i];
-			if (argumentType == null) {
-				argumentsHaveErrors = true;
-			} else if (argumentType == TypeBinding.VOID) {
-				this.scope.problemReporter().argumentTypeCannotBeVoid(this, argument);
-				argumentsHaveErrors = true;
-			} else {
-				if (!argumentType.isValidBinding()) {
-					this.binding.tagBits |= TagBits.HasUnresolvedArguments;
-				}
-				if ((argumentType.tagBits & TagBits.HasMissingType) != 0) {
-					this.binding.tagBits |= TagBits.HasMissingType;
-				}
-			}
-		}
-		if (!argumentsTypeElided && !argumentsHaveErrors) {
-			ReferenceBinding groundType = null;
-			ReferenceBinding expectedSAMType = null;
-			if (this.expectedType instanceof IntersectionTypeBinding18)
-				expectedSAMType = (ReferenceBinding) ((IntersectionTypeBinding18) this.expectedType).getSAMType(blockScope); 
-			else if (this.expectedType instanceof ReferenceBinding)
-				expectedSAMType = (ReferenceBinding) this.expectedType;
-			if (expectedSAMType != null)
-				groundType = findGroundTargetType(blockScope, expectedSAMType, argumentsTypeElided);
-			
-			if (groundType != null) {
-				this.descriptor = groundType.getSingleAbstractMethod(blockScope, true);
-				if (!this.descriptor.isValidBinding()) {
-					reportSamProblem(blockScope, this.descriptor);
-				} else {
-					if (groundType != expectedSAMType) { //$IDENTITY-COMPARISON$
-						if (!groundType.isCompatibleWith(expectedSAMType, this.scope)) { // the ground has shifted, are we still on firm grounds ? 
-							blockScope.problemReporter().typeMismatchError(groundType, this.expectedType, this, null); // report deliberately against block scope so as not to blame the lambda.
-							return this.resolvedType = null;
-						}
-					}
-					this.resolvedType = groundType;
-				}
-			}
-		}
-		boolean genericSignatureNeeded = this.requiresGenericSignature || blockScope.compilerOptions().generateGenericSignatureForLambdaExpressions;
-		for (int i = 0; i < argumentsLength; i++) {
-			Argument argument = this.arguments[i];
-			TypeBinding argumentType;
-			final TypeBinding expectedParameterType = haveDescriptor && i < this.descriptor.parameters.length ? this.descriptor.parameters[i] : null;
-			argumentType = argumentsTypeElided ? expectedParameterType : this.argumentTypes[i];
-			if (argumentType != null && argumentType != TypeBinding.VOID) {
-				if (haveDescriptor && expectedParameterType != null && argumentType.isValidBinding() && TypeBinding.notEquals(argumentType, expectedParameterType)) {
-					if (expectedParameterType.isProperType(true)) {
-						this.scope.problemReporter().lambdaParameterTypeMismatched(argument, argument.type, expectedParameterType);
-						this.resolvedType = null; // continue to type check.
-					}
-				}
-				if (genericSignatureNeeded) {
-					TypeBinding leafType = argumentType.leafComponentType();
-					if (leafType instanceof ReferenceBinding && (((ReferenceBinding) leafType).modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0)
-						this.binding.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
-				}
-				newParameters[i] = argument.bind(this.scope, argumentType, false);				
-				if (argument.annotations != null) {
-					this.binding.tagBits |= TagBits.HasParameterAnnotations;
-					if (parameterAnnotations == null) {
-						parameterAnnotations = new AnnotationBinding[argumentsLength][];
-						for (int j = 0; j < i; j++) {
-							parameterAnnotations[j] = Binding.NO_ANNOTATIONS;
-						}
-					}
-					parameterAnnotations[i] = argument.binding.getAnnotations();
-				} else if (parameterAnnotations != null) {
-					parameterAnnotations[i] = Binding.NO_ANNOTATIONS;
-				}
-			}
-		}
-		// only assign parameters if no problems are found
-		if (!argumentsHaveErrors) {
-			this.binding.parameters = newParameters;
-			if (parameterAnnotations != null)
-				this.binding.setParameterAnnotations(parameterAnnotations);
-		}
-	
-		if (!argumentsTypeElided && this.binding.isVarargs()) {
-			if (!this.binding.parameters[this.binding.parameters.length - 1].isReifiable()) {
-				this.scope.problemReporter().possibleHeapPollutionFromVararg(this.arguments[this.arguments.length - 1]);
-			}
-		}
-
-		ReferenceBinding [] exceptions = this.binding.thrownExceptions;
-		int exceptionsLength = exceptions.length;
-		for (int i = 0; i < exceptionsLength; i++) {
-			ReferenceBinding exception = exceptions[i];
-			if ((exception.tagBits & TagBits.HasMissingType) != 0) {
-				this.binding.tagBits |= TagBits.HasMissingType;
-			}
-			if (genericSignatureNeeded)
-				this.binding.modifiers |= (exception.modifiers & ExtraCompilerModifiers.AccGenericSignature);
-		}
-		
-		TypeBinding returnType = this.binding.returnType;
-		if (returnType != null) {
-			if ((returnType.tagBits & TagBits.HasMissingType) != 0) {
-				this.binding.tagBits |= TagBits.HasMissingType;
-			}
-			if (genericSignatureNeeded) {
-				TypeBinding leafType = returnType.leafComponentType();
-				if (leafType instanceof ReferenceBinding && (((ReferenceBinding) leafType).modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0)
-					this.binding.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
-			}
-		} // TODO (stephan): else? (can that happen?)
-
-		if (haveDescriptor && !argumentsHaveErrors && blockScope.compilerOptions().isAnnotationBasedNullAnalysisEnabled) {
-			if (!argumentsTypeElided) {
-				AbstractMethodDeclaration.createArgumentBindings(this.arguments, this.binding, this.scope);
-				validateNullAnnotations();
-				// no application of null-ness default, hence also no warning regarding redundant null annotation
-				mergeParameterNullAnnotations(blockScope);
-			}
-			this.binding.tagBits |= (this.descriptor.tagBits & TagBits.AnnotationNullMASK);
-		}
-
-		this.binding.modifiers &= ~ExtraCompilerModifiers.AccUnresolved;
+//		final boolean haveDescriptor = this.descriptor != null;
+//		
+//		if (!haveDescriptor || this.descriptor.typeVariables != Binding.NO_TYPE_VARIABLES) // already complained in kosher*
+//			return this.resolvedType = null;
+//		
+//		this.binding = new MethodBinding(ClassFileConstants.AccPrivate | ClassFileConstants.AccSynthetic | ExtraCompilerModifiers.AccUnresolved,
+//							CharOperation.concat(TypeConstants.ANONYMOUS_METHOD, Integer.toString(this.ordinal).toCharArray()), // will be fixed up later.
+//							haveDescriptor ? this.descriptor.returnType : TypeBinding.VOID, 
+//							Binding.NO_PARAMETERS, // for now. 
+//							haveDescriptor ? this.descriptor.thrownExceptions : Binding.NO_EXCEPTIONS, 
+//							blockScope.enclosingSourceType());
+//		this.binding.typeVariables = Binding.NO_TYPE_VARIABLES;
+//		
+//		boolean argumentsHaveErrors = false;
+//		if (haveDescriptor) {
+//			int parametersLength = this.descriptor.parameters.length;
+//			if (parametersLength != argumentsLength) {
+//            	this.scope.problemReporter().lambdaSignatureMismatched(this);
+//            	if (argumentsTypeElided || this.original != this) // no interest in continuing to error check copy.
+//            		return this.resolvedType = null; // FUBAR, bail out ...
+//            	else {
+//            		this.resolvedType = null; // continue to type check.
+//            		argumentsHaveErrors = true;
+//            	}
+//            }
+//		}
+//		
+//		TypeBinding[] newParameters = new TypeBinding[argumentsLength];
+//
+//		AnnotationBinding [][] parameterAnnotations = null;
+//		for (int i = 0; i < argumentsLength; i++) {
+//			Argument argument = this.arguments[i];
+//			if (argument.isVarArgs()) {
+//				if (i == argumentsLength - 1) {
+//					this.binding.modifiers |= ClassFileConstants.AccVarargs;
+//				} else {
+//					this.scope.problemReporter().illegalVarargInLambda(argument);
+//					argumentsHaveErrors = true;
+//				}
+//			}
+//			
+//			TypeBinding argumentType;
+//			final TypeBinding expectedParameterType = haveDescriptor && i < this.descriptor.parameters.length ? this.descriptor.parameters[i] : null;
+//			argumentType = argumentsTypeElided ? expectedParameterType : this.argumentTypes[i];
+//			if (argumentType == null) {
+//				argumentsHaveErrors = true;
+//			} else if (argumentType == TypeBinding.VOID) {
+//				this.scope.problemReporter().argumentTypeCannotBeVoid(this, argument);
+//				argumentsHaveErrors = true;
+//			} else {
+//				if (!argumentType.isValidBinding()) {
+//					this.binding.tagBits |= TagBits.HasUnresolvedArguments;
+//				}
+//				if ((argumentType.tagBits & TagBits.HasMissingType) != 0) {
+//					this.binding.tagBits |= TagBits.HasMissingType;
+//				}
+//			}
+//		}
+//		if (!argumentsTypeElided && !argumentsHaveErrors) {
+//			ReferenceBinding groundType = null;
+//			ReferenceBinding expectedSAMType = null;
+//			if (this.expectedType instanceof IntersectionTypeBinding18)
+//				expectedSAMType = (ReferenceBinding) ((IntersectionTypeBinding18) this.expectedType).getSAMType(blockScope); 
+//			else if (this.expectedType instanceof ReferenceBinding)
+//				expectedSAMType = (ReferenceBinding) this.expectedType;
+//			if (expectedSAMType != null)
+//				groundType = findGroundTargetType(blockScope, expectedSAMType, argumentsTypeElided);
+//			
+//			if (groundType != null) {
+//				this.descriptor = groundType.getSingleAbstractMethod(blockScope, true);
+//				if (!this.descriptor.isValidBinding()) {
+//					reportSamProblem(blockScope, this.descriptor);
+//				} else {
+//					if (groundType != expectedSAMType) { //$IDENTITY-COMPARISON$
+//						if (!groundType.isCompatibleWith(expectedSAMType, this.scope)) { // the ground has shifted, are we still on firm grounds ? 
+//							blockScope.problemReporter().typeMismatchError(groundType, this.expectedType, this, null); // report deliberately against block scope so as not to blame the lambda.
+//							return this.resolvedType = null;
+//						}
+//					}
+//					this.resolvedType = groundType;
+//				}
+//			}
+//		}
+//		boolean genericSignatureNeeded = this.requiresGenericSignature || blockScope.compilerOptions().generateGenericSignatureForLambdaExpressions;
+//		for (int i = 0; i < argumentsLength; i++) {
+//			Argument argument = this.arguments[i];
+//			TypeBinding argumentType;
+//			final TypeBinding expectedParameterType = haveDescriptor && i < this.descriptor.parameters.length ? this.descriptor.parameters[i] : null;
+//			argumentType = argumentsTypeElided ? expectedParameterType : this.argumentTypes[i];
+//			if (argumentType != null && argumentType != TypeBinding.VOID) {
+//				if (haveDescriptor && expectedParameterType != null && argumentType.isValidBinding() && TypeBinding.notEquals(argumentType, expectedParameterType)) {
+//					if (expectedParameterType.isProperType(true)) {
+//						this.scope.problemReporter().lambdaParameterTypeMismatched(argument, argument.type, expectedParameterType);
+//						this.resolvedType = null; // continue to type check.
+//					}
+//				}
+//				if (genericSignatureNeeded) {
+//					TypeBinding leafType = argumentType.leafComponentType();
+//					if (leafType instanceof ReferenceBinding && (((ReferenceBinding) leafType).modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0)
+//						this.binding.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
+//				}
+//				newParameters[i] = argument.bind(this.scope, argumentType, false);				
+//				if (argument.annotations != null) {
+//					this.binding.tagBits |= TagBits.HasParameterAnnotations;
+//					if (parameterAnnotations == null) {
+//						parameterAnnotations = new AnnotationBinding[argumentsLength][];
+//						for (int j = 0; j < i; j++) {
+//							parameterAnnotations[j] = Binding.NO_ANNOTATIONS;
+//						}
+//					}
+//					parameterAnnotations[i] = argument.binding.getAnnotations();
+//				} else if (parameterAnnotations != null) {
+//					parameterAnnotations[i] = Binding.NO_ANNOTATIONS;
+//				}
+//			}
+//		}
+//		// only assign parameters if no problems are found
+//		if (!argumentsHaveErrors) {
+//			this.binding.parameters = newParameters;
+//			if (parameterAnnotations != null)
+//				this.binding.setParameterAnnotations(parameterAnnotations);
+//		}
+//	
+//		if (!argumentsTypeElided && this.binding.isVarargs()) {
+//			if (!this.binding.parameters[this.binding.parameters.length - 1].isReifiable()) {
+//				this.scope.problemReporter().possibleHeapPollutionFromVararg(this.arguments[this.arguments.length - 1]);
+//			}
+//		}
+//
+//		ReferenceBinding [] exceptions = this.binding.thrownExceptions;
+//		int exceptionsLength = exceptions.length;
+//		for (int i = 0; i < exceptionsLength; i++) {
+//			ReferenceBinding exception = exceptions[i];
+//			if ((exception.tagBits & TagBits.HasMissingType) != 0) {
+//				this.binding.tagBits |= TagBits.HasMissingType;
+//			}
+//			if (genericSignatureNeeded)
+//				this.binding.modifiers |= (exception.modifiers & ExtraCompilerModifiers.AccGenericSignature);
+//		}
+//		
+//		TypeBinding returnType = this.binding.returnType;
+//		if (returnType != null) {
+//			if ((returnType.tagBits & TagBits.HasMissingType) != 0) {
+//				this.binding.tagBits |= TagBits.HasMissingType;
+//			}
+//			if (genericSignatureNeeded) {
+//				TypeBinding leafType = returnType.leafComponentType();
+//				if (leafType instanceof ReferenceBinding && (((ReferenceBinding) leafType).modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0)
+//					this.binding.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
+//			}
+//		} // TODO (stephan): else? (can that happen?)
+//
+//		if (haveDescriptor && !argumentsHaveErrors && blockScope.compilerOptions().isAnnotationBasedNullAnalysisEnabled) {
+//			if (!argumentsTypeElided) {
+//				AbstractMethodDeclaration.createArgumentBindings(this.arguments, this.binding, this.scope);
+//				validateNullAnnotations();
+//				// no application of null-ness default, hence also no warning regarding redundant null annotation
+//				mergeParameterNullAnnotations(blockScope);
+//			}
+//			this.binding.tagBits |= (this.descriptor.tagBits & TagBits.AnnotationNullMASK);
+//		}
+//
+//		this.binding.modifiers &= ~ExtraCompilerModifiers.AccUnresolved;
 		
 		if (this.body instanceof Expression) {
 			Expression expression = (Expression) this.body;
@@ -432,25 +655,27 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 			if (!this.returnsVoid && !this.returnsValue)
 				this.valueCompatible = this.body.doesNotCompleteNormally();
 		}
-		if (this.expectedType instanceof IntersectionTypeBinding18) {
-			ReferenceBinding[] intersectingTypes =  ((IntersectionTypeBinding18)this.expectedType).intersectingTypes;
-			for (int t = 0, max = intersectingTypes.length; t < max; t++) {
-				if (intersectingTypes[t].findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
-					this.isSerializable = true;
-					break;
-				}
-			}
-		} else if (this.expectedType != null && 
-				   this.expectedType.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
-			this.isSerializable = true;
-		}
-		if ((this.binding.tagBits & TagBits.HasMissingType) != 0) {
-			this.scope.problemReporter().missingTypeInLambda(this, this.binding);
-		}
-		if (this.shouldCaptureInstance && this.scope.isConstructorCall) {
-			this.scope.problemReporter().fieldsOrThisBeforeConstructorInvocation(this);
-		}
-		return argumentsHaveErrors ? this.resolvedType = null : this.resolvedType;
+//		if (this.expectedType instanceof IntersectionTypeBinding18) {
+//			ReferenceBinding[] intersectingTypes =  ((IntersectionTypeBinding18)this.expectedType).intersectingTypes;
+//			for (int t = 0, max = intersectingTypes.length; t < max; t++) {
+//				if (intersectingTypes[t].findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
+//					this.isSerializable = true;
+//					break;
+//				}
+//			}
+//		} else if (this.expectedType != null && 
+//				   this.expectedType.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
+//			this.isSerializable = true;
+//		}
+//		if ((this.binding.tagBits & TagBits.HasMissingType) != 0) {
+//			this.scope.problemReporter().missingTypeInLambda(this, this.binding);
+//		}
+//		if (this.shouldCaptureInstance && this.scope.isConstructorCall) {
+//			this.scope.problemReporter().fieldsOrThisBeforeConstructorInvocation(this);
+//		}
+//		return argumentsHaveErrors ? this.resolvedType = null : this.resolvedType;
+		
+		return this.resolvedType;
 	}
 
 	private ReferenceBinding findGroundTargetType(BlockScope blockScope, TypeBinding targetType, boolean argumentTypesElided) {
@@ -496,52 +721,52 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 		}
 	}
 	public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext, final FlowInfo flowInfo) {
-		
-		if (this.ignoreFurtherInvestigation) 
-			return flowInfo;
-		
-		FlowInfo lambdaInfo = flowInfo.copy(); // what happens in vegas, stays in vegas ...
-		ExceptionHandlingFlowContext methodContext =
-				new ExceptionHandlingFlowContext(
-						flowContext,
-						this,
-						this.binding.thrownExceptions,
-						flowContext.getInitializationContext(),
-						this.scope,
-						FlowInfo.DEAD_END);
-
-		// nullity and mark as assigned
-		MethodBinding methodWithParameterDeclaration = argumentsTypeElided() ? this.descriptor : this.binding;
-		AbstractMethodDeclaration.analyseArguments18(lambdaInfo, this.arguments, methodWithParameterDeclaration);
-
-		if (this.arguments != null) {
-			for (int i = 0, count = this.arguments.length; i < count; i++) {
-				this.bits |= (this.arguments[i].bits & ASTNode.HasTypeAnnotations);
-			}
-		}
-		
-		lambdaInfo = this.body.analyseCode(this.scope, methodContext, lambdaInfo);
-		
-		// check for missing returning path for block body's ...
-		if (this.body instanceof Block) {
-			TypeBinding returnTypeBinding = expectedResultType();
-			if ((returnTypeBinding == TypeBinding.VOID)) {
-				if ((lambdaInfo.tagBits & FlowInfo.UNREACHABLE_OR_DEAD) == 0 || ((Block) this.body).statements == null) {
-					this.bits |= ASTNode.NeedFreeReturn;
-				}
-			} else {
-				if (lambdaInfo != FlowInfo.DEAD_END) {
-					this.scope.problemReporter().shouldReturn(returnTypeBinding, this);
-				}
-			}
-		} else { // Expression
-			if (currentScope.compilerOptions().isAnnotationBasedNullAnalysisEnabled 
-					&& lambdaInfo.reachMode() == FlowInfo.REACHABLE)
-			{
-				Expression expression = (Expression)this.body;
-				checkAgainstNullAnnotation(flowContext, expression, expression.nullStatus(lambdaInfo, flowContext));
-			}
-		}
+		//cym 2015-02-06
+//		if (this.ignoreFurtherInvestigation) 
+//			return flowInfo;
+//		
+//		FlowInfo lambdaInfo = flowInfo.copy(); // what happens in vegas, stays in vegas ...
+//		ExceptionHandlingFlowContext methodContext =
+//				new ExceptionHandlingFlowContext(
+//						flowContext,
+//						this,
+//						this.binding.thrownExceptions,
+//						flowContext.getInitializationContext(),
+//						this.scope,
+//						FlowInfo.DEAD_END);
+//
+//		// nullity and mark as assigned
+//		MethodBinding methodWithParameterDeclaration = argumentsTypeElided() ? this.descriptor : this.binding;
+//		AbstractMethodDeclaration.analyseArguments18(lambdaInfo, this.arguments, methodWithParameterDeclaration);
+//
+//		if (this.arguments != null) {
+//			for (int i = 0, count = this.arguments.length; i < count; i++) {
+//				this.bits |= (this.arguments[i].bits & ASTNode.HasTypeAnnotations);
+//			}
+//		}
+//		
+//		lambdaInfo = this.body.analyseCode(this.scope, methodContext, lambdaInfo);
+//		
+//		// check for missing returning path for block body's ...
+//		if (this.body instanceof Block) {
+//			TypeBinding returnTypeBinding = expectedResultType();
+//			if ((returnTypeBinding == TypeBinding.VOID)) {
+//				if ((lambdaInfo.tagBits & FlowInfo.UNREACHABLE_OR_DEAD) == 0 || ((Block) this.body).statements == null) {
+//					this.bits |= ASTNode.NeedFreeReturn;
+//				}
+//			} else {
+//				if (lambdaInfo != FlowInfo.DEAD_END) {
+//					this.scope.problemReporter().shouldReturn(returnTypeBinding, this);
+//				}
+//			}
+//		} else { // Expression
+//			if (currentScope.compilerOptions().isAnnotationBasedNullAnalysisEnabled 
+//					&& lambdaInfo.reachMode() == FlowInfo.REACHABLE)
+//			{
+//				Expression expression = (Expression)this.body;
+//				checkAgainstNullAnnotation(flowContext, expression, expression.nullStatus(lambdaInfo, flowContext));
+//			}
+//		}
 		return flowInfo;
 	}
 

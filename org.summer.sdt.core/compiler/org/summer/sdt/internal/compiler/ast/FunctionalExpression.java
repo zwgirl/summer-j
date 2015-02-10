@@ -46,6 +46,7 @@ import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeBindingVisitor;
+import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
 
 public abstract class FunctionalExpression extends Expression {
@@ -165,24 +166,46 @@ public abstract class FunctionalExpression extends Expression {
 		return 0; // not reached.
 	}
 
+//	public TypeBinding resolveType(BlockScope blockScope) {
+//		this.constant = Constant.NotAConstant;
+//		this.enclosingScope = blockScope;
+//		MethodBinding sam = this.expectedType == null ? null : this.expectedType.getSingleAbstractMethod(blockScope, argumentsTypeElided());
+//		if (sam == null) {
+//			blockScope.problemReporter().targetTypeIsNotAFunctionalInterface(this);
+//			return null;
+//		}
+//		if (!sam.isValidBinding()) {
+//			return reportSamProblem(blockScope, sam);
+//		}
+//		
+//		this.descriptor = sam;
+//		if (kosherDescriptor(blockScope, sam, true)) {
+//			return this.resolvedType = this.expectedType;		
+//		}
+//		
+//		return this.resolvedType = null;
+//	}
+	
+	//cym 2015-02-08
 	public TypeBinding resolveType(BlockScope blockScope) {
 		this.constant = Constant.NotAConstant;
 		this.enclosingScope = blockScope;
-		MethodBinding sam = this.expectedType == null ? null : this.expectedType.getSingleAbstractMethod(blockScope, argumentsTypeElided());
-		if (sam == null) {
-			blockScope.problemReporter().targetTypeIsNotAFunctionalInterface(this);
-			return null;
-		}
-		if (!sam.isValidBinding()) {
-			return reportSamProblem(blockScope, sam);
-		}
+//		MethodBinding sam = this.expectedType == null ? null : this.expectedType.getSingleAbstractMethod(blockScope, argumentsTypeElided());
+//		if (sam == null) {
+//			blockScope.problemReporter().targetTypeIsNotAFunctionalInterface(this);
+//			return null;
+//		}
+//		if (!sam.isValidBinding()) {
+//			return reportSamProblem(blockScope, sam);
+//		}
+//		
+//		this.descriptor = sam;
+//		if (kosherDescriptor(blockScope, sam, true)) {
+//			return this.resolvedType = this.expectedType;		
+//		}
+		return this.expectedType == null ? null : this.expectedType.isSubtypeOf(blockScope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION)) ? this.resolvedType = this.expectedType : null;
 		
-		this.descriptor = sam;
-		if (kosherDescriptor(blockScope, sam, true)) {
-			return this.resolvedType = this.expectedType;		
-		}
-		
-		return this.resolvedType = null;
+//		return this.resolvedType = null;
 	}
 
 	protected TypeBinding reportSamProblem(BlockScope blockScope, MethodBinding sam) {

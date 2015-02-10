@@ -892,7 +892,9 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 			if(this.selector == NO_SELECTOR){
 				TypeBinding receiverType = this.receiver.resolveType(scope);
 				if(this.receiver instanceof LambdaExpression){
-					
+//					LambdaExpression lambda = (LambdaExpression) this.receiver;
+//					TypeBinding[] argumentTypes = lambda.argumentTypes();
+//					lambda.returnsExpression(expression, resultType);
 					return scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION); 
 				}
 				if(receiverType.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){

@@ -646,19 +646,26 @@ abstract public class ReferenceBinding extends TypeBinding {
 									this.id = TypeIds.T_JavaLangException;
 								return;
 							case 13:  //cym 2015-01-01
-								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_EVENTCALLBACK[2]))
-									this.id = TypeIds.T_JavaLangAnnotationEventCallback;
+								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_EVENT[2]))
+									this.id = TypeIds.T_JavaLangEventCallback;
 								return;
 						}
 						return;
 					case 'F' :
-						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FLOAT[2]))
-							this.id = TypeIds.T_JavaLangFloat;
-						//cym 2015-02-04
-						else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FUNCTION[2]))
-							this.id = TypeIds.T_JavaLangFunction;
-						else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FUNCTIONAL_INTERFACE[2]))
-							this.id = TypeIds.T_JavaLangFunctionalInterface;
+						switch(typeName.length){
+							case 5 :
+								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FLOAT[2]))
+									this.id = TypeIds.T_JavaLangFloat;
+								return;
+							case 8: //cym 2015-02-04
+								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FUNCTION[2]))
+									this.id = TypeIds.T_JavaLangFunction;
+								return;
+							case 9:
+								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FUNCTIONAL_INTERFACE[2]))
+									this.id = TypeIds.T_JavaLangFunctionalInterface;
+								return;	
+						}
 						return;
 					case 'I' :
 						switch (typeName.length) {
@@ -680,6 +687,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_LONG[2]))
 							this.id = TypeIds.T_JavaLangLong;
 						return;
+					case 'M' :   //cym add 2015-02-04
+						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_MODULE[2]))
+							this.id = TypeIds.T_JavaLangModule;
+						return;	
 					case 'N' :
 						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_NOCLASSDEFERROR[2]))
 							this.id = TypeIds.T_JavaLangNoClassDefError;
@@ -694,8 +705,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_OVERRIDE[2])){
 									this.id = TypeIds.T_JavaLangOverride;
 									return;
-								}
+								} else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_OVERLOAD[2]))  //cym add 2014-11-20
+									this.id = TypeIds.T_JavaLangOverload;
 								return;
+							
 						}
 						return;
 					case 'R' :
@@ -774,20 +787,11 @@ abstract public class ReferenceBinding extends TypeBinding {
 								case 'E' :
 									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_ELEMENTTYPE[3])){
 										this.id = TypeIds.T_JavaLangAnnotationElementType;
-										return;
-									} else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_EVENTCALLBACK[3]))   //cym 2015-01-15
-										this.id = TypeIds.T_JavaLangAnnotationEventCallback;
+									}
+									return;
 								case 'I' :
 									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_INHERITED[3]))
 										this.id = TypeIds.T_JavaLangAnnotationInherited;
-									return;
-								case 'M' :   //cym add 2015-02-04
-									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_MODULE[3]))
-										this.id = TypeIds.T_JavaLangAnnotationModule;
-									return;
-								case 'O' :   //cym add 2014-11-20
-									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_OVERLOAD[3]))
-										this.id = TypeIds.T_JavaLangAnnotationOverload;
 									return;
 								case 'R' :
 									switch (typeName.length) {

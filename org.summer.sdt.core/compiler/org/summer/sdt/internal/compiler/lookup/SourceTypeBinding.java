@@ -2233,7 +2233,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 						if(annotation.resolvedType == null){
 							continue;
 						}
-						if(annotation.resolvedType.id == TypeIds.T_JavaLangAnnotationOverload){
+						if(annotation.resolvedType.id == TypeIds.T_JavaLangOverload){
 							for (MemberValuePair pair : annotation.memberValuePairs()) {
 								if (CharOperation.equals(pair.name, TypeConstants.VALUE)) {
 									if (pair.value.constant.typeID() == TypeIds.T_JavaLangString) {

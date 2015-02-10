@@ -9,7 +9,7 @@ import org.summer.sdt.core.compiler.CharOperation;
  */
 public class FunctionTypeBinding extends ReferenceBinding{
 	private static final char[] FUNCTION = "function".toCharArray();
-	public TypeBinding function;
+	public ReferenceBinding function;
 	LookupEnvironment environment;
 	char[] constantPoolName;
 	char[] genericTypeSignature;
@@ -21,16 +21,17 @@ public class FunctionTypeBinding extends ReferenceBinding{
 		this.returnType = returnType;
 		this.parameterTypes = parameterTypes;
 		this.environment = environment;
+		this.compoundName = TypeConstants.JAVA_LANG_FUNCTION;
 	}
 
 	@Override
 	public char[] constantPoolName() {
-		return function.constantPoolName();
+		return functionType().constantPoolName();
 	}
 
 	@Override
 	public PackageBinding getPackage() {
-		return function.getPackage();
+		return functionType().getPackage();
 	}
 
 	@Override
@@ -71,7 +72,14 @@ public class FunctionTypeBinding extends ReferenceBinding{
 	
 	@Override
 	public ReferenceBinding superclass() {
-		return environment.getType(TypeConstants.JAVA_LANG_FUNCTION);
+		return functionType();
+	}
+	
+	private ReferenceBinding functionType(){
+		if(function == null){
+			function = environment.getType(TypeConstants.JAVA_LANG_FUNCTION);
+		}
+		return function;
 	}
 	
 	@Override

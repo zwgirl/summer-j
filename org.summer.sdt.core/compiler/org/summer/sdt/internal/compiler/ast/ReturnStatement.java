@@ -376,10 +376,12 @@ public class ReturnStatement extends Statement {
 				CastExpression.checkNeedForAssignedCast(scope, methodType, (CastExpression) this.expression);
 			}			return;
 		}
-		if ((methodType.tagBits & TagBits.HasMissingType) == 0) {
-			// no need to complain if return type was missing (avoid secondary error : 220967)
-			scope.problemReporter().typeMismatchError(expressionType, methodType, this.expression, this);
-		}
+		
+		//cym comment 2015-02-09
+//		if ((methodType.tagBits & TagBits.HasMissingType) == 0) {
+//			// no need to complain if return type was missing (avoid secondary error : 220967)
+//			scope.problemReporter().typeMismatchError(expressionType, methodType, this.expression, this);
+//		}
 	}
 	
 	public void traverse(ASTVisitor visitor, BlockScope scope) {

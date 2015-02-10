@@ -153,17 +153,7 @@ public class CompilationUnitScope extends Scope {
 				problemReporter().typeCollidesWithPackage(this.referenceContext, typeDecl);
 			}
 	
-			//cym 2014-12-13
-			if ((typeDecl.modifiers & ClassFileConstants.AccPublic) != 0 
-					&& this.referenceContext.currentPackage != null && (this.referenceContext.currentPackage.modifiers & ClassFileConstants.AccModule) == 0) {
-				char[] mainTypeName;
-				if ((mainTypeName = this.referenceContext.getMainTypeName()) != null // mainTypeName == null means that implementor of ICompilationUnit decided to return null
-						&& !CharOperation.equals(mainTypeName, typeDecl.name)) {
-					problemReporter().publicClassMustMatchFileName(this.referenceContext, typeDecl);
-					// tolerate faulty main type name (91091), allow to proceed into type construction
-				}
-			}
-			
+			//cym 2015-02-09 comment move this action to resolve of compilationUnitDeclaration
 //			if ((typeDecl.modifiers & ClassFileConstants.AccPublic) != 0 ) {
 //				char[] mainTypeName;
 //				if ((mainTypeName = this.referenceContext.getMainTypeName()) != null // mainTypeName == null means that implementor of ICompilationUnit decided to return null
@@ -172,6 +162,7 @@ public class CompilationUnitScope extends Scope {
 //					// tolerate faulty main type name (91091), allow to proceed into type construction
 //				}
 //			}
+			
 //			ClassScope child = new ClassScope(this, typeDecl);
 //			SourceTypeBinding type = child.buildType(null, this.fPackage, accessRestriction);
 //			if (firstIsSynthetic && i == 0)
@@ -193,10 +184,6 @@ public class CompilationUnitScope extends Scope {
 			SourceTypeBinding type = child.buildType(null, this.fPackage, accessRestriction);
 			if (firstIsSynthetic && i == 0)
 				type.modifiers |= ClassFileConstants.AccSynthetic;
-			//cym 2014-12-13
-			if(this.referenceContext.currentPackage != null && (this.referenceContext.currentPackage.modifiers & ClassFileConstants.AccModule) != 0){
-				type.modifiers |= ClassFileConstants.AccModule;
-			}
 			
 			if (type != null)
 				this.topLevelTypes[count++] = type;

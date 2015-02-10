@@ -25,6 +25,7 @@ public interface AttributeNamesConstants {
 	final char[] ExceptionsName = "Exceptions".toCharArray(); //$NON-NLS-1$
 	final char[] SourceName = "SourceFile".toCharArray(); //$NON-NLS-1$
 	final char[] DeprecatedName = "Deprecated".toCharArray(); //$NON-NLS-1$
+	final char[] ModuleName = "Module".toCharArray(); //$NON-NLS-1$  //2015-02-08
 	final char[] SignatureName = "Signature".toCharArray(); //$NON-NLS-1$
 	final char[] LocalVariableTypeTableName = "LocalVariableTypeTable".toCharArray(); //$NON-NLS-1$
 	final char[] EnclosingMethodName = "EnclosingMethod".toCharArray(); //$NON-NLS-1$

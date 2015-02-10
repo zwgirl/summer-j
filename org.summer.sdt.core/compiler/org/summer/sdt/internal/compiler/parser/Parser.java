@@ -6276,54 +6276,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			this.restartRecovery = true; // used to avoid branching back into the regular automaton
 		}
 	}
-	
-	//cym 2014-12-13
-	protected void consumeModuleDeclarationName() {
-		// PackageDeclarationName ::= PackageComment 'module' Name RejectTypeAnnotations
-		/* build an ImportRef build from the last name
-		stored in the identifier stack. */
-	
-		ImportReference impt;
-		int length;
-		char[][] tokens =
-			new char[length = this.identifierLengthStack[this.identifierLengthPtr--]][];
-		this.identifierPtr -= length;
-		long[] positions = new long[length];
-		System.arraycopy(this.identifierStack, ++this.identifierPtr, tokens, 0, length);
-		System.arraycopy(
-			this.identifierPositionStack,
-			this.identifierPtr--,
-			positions,
-			0,
-			length);
-	
-		impt = new ImportReference(tokens, positions, false, ClassFileConstants.AccDefault);
-		this.compilationUnit.currentPackage = impt;
-		
-		this.compilationUnit.currentPackage.modifiers |= ClassFileConstants.AccModule;   //cym 2014-12-13
-	
-		if (this.currentToken == TokenNameSEMICOLON){
-			impt.declarationSourceEnd = this.scanner.currentPosition - 1;
-		} else {
-			impt.declarationSourceEnd = impt.sourceEnd;
-		}
-		impt.declarationEnd = impt.declarationSourceEnd;
-		//this.endPosition is just before the ;
-		impt.declarationSourceStart = this.intStack[this.intPtr--];
-	
-		// get possible comment source start
-		if(this.javadoc != null) {
-			impt.declarationSourceStart = this.javadoc.sourceStart;
-		}
-	
-		// recovery
-		if (this.currentElement != null){
-			this.lastCheckPoint = impt.declarationSourceEnd+1;
-			this.restartRecovery = true; // used to avoid branching back into the regular automaton
-		}
-		
-		
-	}
 
 	protected void consumePackageDeclarationNameWithModifiers() {
 		// PackageDeclarationName ::= Modifiers 'package' PushRealModifiers Name RejectTypeAnnotations
@@ -6374,69 +6326,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			problemReporter().illegalModifiers(packageModifiersSourceStart, packageModifiersSourceEnd);
 		}
 		
-		
-		if (this.currentToken == TokenNameSEMICOLON){
-			impt.declarationSourceEnd = this.scanner.currentPosition - 1;
-		} else {
-			impt.declarationSourceEnd = impt.sourceEnd;
-		}
-		impt.declarationEnd = impt.declarationSourceEnd;
-	
-		// recovery
-		if (this.currentElement != null){
-			this.lastCheckPoint = impt.declarationSourceEnd+1;
-			this.restartRecovery = true; // used to avoid branching back into the regular automaton
-		}
-	}
-	//cym 2014-12-13
-	protected void consumeModuleDeclarationNameWithModifiers() {
-		// PackageDeclarationName ::= Modifiers 'module' PushRealModifiers Name RejectTypeAnnotations
-		/* build an ImportRef build from the last name
-		stored in the identifier stack. */
-	
-		ImportReference impt;
-		int length;
-		char[][] tokens =
-			new char[length = this.identifierLengthStack[this.identifierLengthPtr--]][];
-		this.identifierPtr -= length;
-		long[] positions = new long[length];
-		System.arraycopy(this.identifierStack, ++this.identifierPtr, tokens, 0, length);
-		System.arraycopy(
-			this.identifierPositionStack,
-			this.identifierPtr--,
-			positions,
-			0,
-			length);
-	
-		int packageModifiersSourceStart = this.intStack[this.intPtr--];
-		int packageModifiersSourceEnd = packageModifiersSourceStart; // Unless there were any
-		int packageModifiers = this.intStack[this.intPtr--];
-	
-		impt = new ImportReference(tokens, positions, false, packageModifiers);
-		this.compilationUnit.currentPackage = impt;
-		this.compilationUnit.currentPackage.modifiers |= ClassFileConstants.AccModule;  //cym 2014-12-13
-		
-		// consume annotations
-		if ((length = this.expressionLengthStack[this.expressionLengthPtr--]) != 0) {
-			System.arraycopy(
-				this.expressionStack,
-				(this.expressionPtr -= length) + 1,
-				impt.annotations = new Annotation[length],
-				0,
-				length);
-			impt.declarationSourceStart = packageModifiersSourceStart;
-			packageModifiersSourceEnd = this.intStack[this.intPtr--] - 2; // we don't need the position of the 'package keyword
-		} else {
-			impt.declarationSourceStart = this.intStack[this.intPtr--];
-			packageModifiersSourceEnd = impt.declarationSourceStart - 2;
-			// get possible comment source start
-			if (this.javadoc != null) {
-				impt.declarationSourceStart = this.javadoc.sourceStart;
-			}
-		}
-		if (packageModifiers != 0) {
-			problemReporter().illegalModifiers(packageModifiersSourceStart, packageModifiersSourceEnd);
-		}
 		
 		if (this.currentToken == TokenNameSEMICOLON){
 			impt.declarationSourceEnd = this.scanner.currentPosition - 1;

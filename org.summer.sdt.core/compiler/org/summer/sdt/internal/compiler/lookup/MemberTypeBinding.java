@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.lookup;
 
-import java.util.Stack;
-
 import org.summer.sdt.core.compiler.CharOperation;
 
 public final class MemberTypeBinding extends NestedTypeBinding {

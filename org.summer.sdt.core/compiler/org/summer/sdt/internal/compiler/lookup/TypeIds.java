@@ -125,17 +125,17 @@ public interface TypeIds {
 	final int T_JavaLangFunctionalInterface = 77;
 
 	//summer cym 2014-11-20
-	final int T_JavaLangAnnotationOverload = 78;
+	final int T_JavaLangOverload = 78;
 	
 	//summer cym 2015-01-01
-	final int T_JavaLangAnnotationEventCallback = 79;
+	final int T_JavaLangEventCallback = 79;
 	
 	// new in 3.9 to identify known @Inject annotations
 	final int T_JavaxInjectInject = 80;
 	final int T_ComGoogleInjectInject = 81;
 	
 	//summer cym 2015-02-03
-	final int T_JavaLangAnnotationModule = 83;
+	final int T_JavaLangModule = 83;
 	
 	// Java 8 - JEP 120
 	final int T_JavaLangAnnotationRepeatable = 90;
