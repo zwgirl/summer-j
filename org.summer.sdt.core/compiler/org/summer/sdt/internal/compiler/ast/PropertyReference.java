@@ -94,7 +94,10 @@ public class PropertyReference extends Expression{
 		}
 		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
 		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.token, null);
+		
+		//cym 2012-02-12
 		if((fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
+			//TODO complete me
 			System.err.println("只能是属性！！！！！！！！！！！！！！！！！！！");
 		}
 		if (!fieldBinding.isValidBinding()) {
