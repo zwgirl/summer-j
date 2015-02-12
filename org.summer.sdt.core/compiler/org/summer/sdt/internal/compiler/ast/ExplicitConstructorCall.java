@@ -527,7 +527,7 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 			printIndent(indent + 1, output).append("var r = {__enclosing : this, __proto__: ");
 			output.append(this.binding.declaringClass.getMemberTypeName()).append(".prototype");
 			output.append("};\n");
-			printIndent(indent + 1, output).append(this.binding.declaringClass.sourceName).append(".apply(r, arguments");
+			printIndent(indent + 1, output).append(this.binding.declaringClass.name).append(".apply(r, arguments");
 			output.append(");\n");
 			printIndent(indent + 1, output).append("return r;\n"); 
 			printIndent(indent, output).append("}).call(this");

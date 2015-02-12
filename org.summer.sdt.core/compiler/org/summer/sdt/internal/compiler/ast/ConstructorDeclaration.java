@@ -640,7 +640,7 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 	 */
 	public void resolveStatements() {
 		SourceTypeBinding sourceType = this.scope.enclosingSourceType();
-		if (!CharOperation.equals(sourceType.sourceName, this.selector)){
+		if (!CharOperation.equals(sourceType.name, this.selector)){
 			this.scope.problemReporter().missingReturnType(this);
 		}
 		// typeParameters are already resolved from Scope#connectTypeVariables()

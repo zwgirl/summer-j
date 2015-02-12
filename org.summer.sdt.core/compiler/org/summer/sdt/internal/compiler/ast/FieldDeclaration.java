@@ -363,7 +363,7 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		}
 		printIndent(indent, output);
 		if(isStatic()){
-			output.append(this.binding.declaringClass.sourceName).append(".");
+			output.append(this.binding.declaringClass.name).append(".");
 		} else{
 			output.append("this.");
 		}

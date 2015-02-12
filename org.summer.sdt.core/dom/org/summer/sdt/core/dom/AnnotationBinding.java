@@ -94,7 +94,7 @@ class AnnotationBinding implements IAnnotationBinding {
 		// handle case of more methods than declared members
 		IMemberValuePairBinding[] allPairs = new  IMemberValuePairBinding[methodLength];
 		for (int i = 0; i < methodLength; i++) {
-			Object pair = table.get(methods[i].selector);
+			Object pair = table.get(methods[i].name);
 			allPairs[i] = pair == null ? new DefaultValuePairBinding(methods[i], this.bindingResolver) : (IMemberValuePairBinding) pair;
 		}
 		return allPairs;

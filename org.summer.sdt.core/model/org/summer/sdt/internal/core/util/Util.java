@@ -1412,7 +1412,7 @@ public class Util {
 		} else {
 			// case of method not in the created AST, or a binary method
 			org.summer.sdt.internal.compiler.lookup.MethodBinding original = methodBinding.original();
-			String selector = original.isConstructor() ? declaringType.getElementName() : new String(original.selector);
+			String selector = original.isConstructor() ? declaringType.getElementName() : new String(original.name);
 			boolean isBinary = declaringType.isBinary();
 			ReferenceBinding enclosingType = original.declaringClass.enclosingType();
 			// Static inner types' constructors don't get receivers (https://bugs.eclipse.org/bugs/show_bug.cgi?id=388137)

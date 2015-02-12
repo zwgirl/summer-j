@@ -645,7 +645,7 @@ public class InternalExtendedCompletionContext {
 				if (method == otherMethod)
 					continue next;
 
-				if (CharOperation.equals(method.selector, otherMethod.selector, true)) {
+				if (CharOperation.equals(method.name, otherMethod.name, true)) {
 					if (this.lookupEnvironment.methodVerifier().isMethodSubsignature(otherMethod, method)) {
 						continue next;
 					}
@@ -885,7 +885,7 @@ public class InternalExtendedCompletionContext {
 							MethodBinding methodBinding = (MethodBinding)binding;
 
 							searchVisibleLocalMethods(
-									methodBinding.declaringClass.getMethods(methodBinding.selector),
+									methodBinding.declaringClass.getMethods(methodBinding.name),
 									methodBinding.declaringClass,
 									scope,
 									invocationSite,
@@ -931,7 +931,7 @@ public class InternalExtendedCompletionContext {
 			TypeVariableBinding[] typeVars = guessedType.typeVariables();
 			for (int i = 0; i < parameterTypes.length; i++) {
 				for (int j = 0; j < typeVars.length; j++) {
-					if (CharOperation.equals(parameterTypes[i].toCharArray(), typeVars[j].sourceName))
+					if (CharOperation.equals(parameterTypes[i].toCharArray(), typeVars[j].name))
 						return false;
 				}
 			}

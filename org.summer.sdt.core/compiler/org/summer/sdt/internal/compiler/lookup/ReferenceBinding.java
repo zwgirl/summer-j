@@ -66,7 +66,7 @@ null is NOT a valid value for a non-public field... it just means the field is n
 abstract public class ReferenceBinding extends TypeBinding {
 
 	public char[][] compoundName;
-	public char[] sourceName;
+	public char[] name;   //sourceName
 	public int modifiers;
 	public PackageBinding fPackage;
 	char[] fileName;
@@ -103,8 +103,8 @@ abstract public class ReferenceBinding extends TypeBinding {
 		public int compare(MethodBinding o1, MethodBinding o2) {
 			MethodBinding m1 = o1;
 			MethodBinding m2 = o2;
-			char[] s1 = m1.selector;
-			char[] s2 = m2.selector;
+			char[] s1 = m1.name;
+			char[] s2 = m2.name;
 			int c = ReferenceBinding.compare(s1, s2, s1.length, s2.length);
 			return c == 0 ? m1.parameters.length - m2.parameters.length : c;
 		}
@@ -116,7 +116,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 		super(prototype);
 	
 		this.compoundName = prototype.compoundName;
-		this.sourceName = prototype.sourceName;
+		this.name = prototype.name;
 		this.modifiers = prototype.modifiers;
 		this.fPackage = prototype.fPackage;
 		this.fileName = prototype.fileName;
@@ -160,7 +160,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 	 * (remember methods are sorted alphabetically on selectors), and end is the index of last contiguous methods with same
 	 * selector.
 	 * -1 means no method got found
-	 * @param selector
+	 * @param name
 	 * @param sortedMethods
 	 * @return (start + (end<<32)) or -1 if no method found
 	 */
@@ -212,7 +212,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 		char[] midSelector;
 		while (left <= right) {
 			mid = left + (right - left) /2;
-			int compare = compare(selector, midSelector = sortedMethods[mid].selector, selectorLength, midSelector.length);
+			int compare = compare(selector, midSelector = sortedMethods[mid].name, selectorLength, midSelector.length);
 			if (compare < 0) {
 				right = mid-1;
 			} else if (compare > 0) {
@@ -220,9 +220,9 @@ abstract public class ReferenceBinding extends TypeBinding {
 			} else {
 				int start = mid, end = mid;
 				// find first method with same selector
-				while (start > left && CharOperation.equals(sortedMethods[start-1].selector, selector)){ start--; }
+				while (start > left && CharOperation.equals(sortedMethods[start-1].name, selector)){ start--; }
 				// find last method with same selector
-				while (end < right && CharOperation.equals(sortedMethods[end+1].selector, selector)){ end++; }
+				while (end < right && CharOperation.equals(sortedMethods[end+1].name, selector)){ end++; }
 				return start + ((long)end<< 32);
 			}
 		}
@@ -455,7 +455,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 		    char[] typeSig = enclosingType().genericTypeSignature();
 		    sig.append(typeSig, 0, typeSig.length-1); // copy all but trailing semicolon
 		    sig.append('.'); // NOTE: cannot override trailing ';' with '.' in enclosing signature, since shared char[]
-		    sig.append(this.sourceName);
+		    sig.append(this.name);
 		}	else {
 		    char[] typeSig = signature();
 		    sig.append(typeSig, 0, typeSig.length-1); // copy all but trailing semicolon
@@ -1083,7 +1083,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 	public ReferenceBinding getMemberType(char[] typeName) {
 		ReferenceBinding[] memberTypes = memberTypes();
 		for (int i = memberTypes.length; --i >= 0;)
-			if (CharOperation.equals(memberTypes[i].sourceName, typeName))
+			if (CharOperation.equals(memberTypes[i].name, typeName))
 				return memberTypes[i];
 		return null;
 	}
@@ -1112,7 +1112,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 	public TypeVariableBinding getTypeVariable(char[] variableName) {
 		TypeVariableBinding[] typeVariables = typeVariables();
 		for (int i = typeVariables.length; --i >= 0;)
-			if (CharOperation.equals(typeVariables[i].sourceName, variableName))
+			if (CharOperation.equals(typeVariables[i].name, variableName))
 				return typeVariables[i];
 		return null;
 	}
@@ -1283,7 +1283,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 	
 	// Internal method... assume its only sent to classes NOT interfaces
 	boolean implementsMethod(MethodBinding method) {
-		char[] selector = method.selector;
+		char[] selector = method.name;
 		ReferenceBinding type = this;
 		while (type != null) {
 			MethodBinding[] methods = type.methods();
@@ -1699,7 +1699,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 	public char[] readableName() /*java.lang.Object,  p.X<T> */ {
 	    char[] readableName;
 		if (isMemberType()) {
-			readableName = CharOperation.concat(enclosingType().readableName(), this.sourceName, '.');
+			readableName = CharOperation.concat(enclosingType().readableName(), this.name, '.');
 		} else {
 			readableName = CharOperation.concatWith(this.compoundName, '.');
 		}
@@ -1768,7 +1768,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 			nameBuffer.append(enclosingType().nullAnnotatedReadableName(options, false));
 			nameBuffer.append('.');
 			appendNullAnnotation(nameBuffer, options);
-			nameBuffer.append(this.sourceName);
+			nameBuffer.append(this.name);
 		} else if (this.compoundName != null) {
 			int i;
 			int l=this.compoundName.length;
@@ -1781,8 +1781,8 @@ abstract public class ReferenceBinding extends TypeBinding {
 		} else {
 			// case of TypeVariableBinding with nullAnnotationTagBits:
 			appendNullAnnotation(nameBuffer, options);
-			if (this.sourceName != null)
-				nameBuffer.append(this.sourceName);
+			if (this.name != null)
+				nameBuffer.append(this.name);
 			else // WildcardBinding, CaptureBinding have no sourceName
 				nameBuffer.append(this.readableName());
 		}
@@ -1807,11 +1807,11 @@ abstract public class ReferenceBinding extends TypeBinding {
 			nameBuffer.append(enclosingType().nullAnnotatedReadableName(options, true));
 			nameBuffer.append('.');
 			appendNullAnnotation(nameBuffer, options);
-			nameBuffer.append(this.sourceName);
+			nameBuffer.append(this.name);
 		} else {
 			appendNullAnnotation(nameBuffer, options);
-			if (this.sourceName != null)
-				nameBuffer.append(this.sourceName);
+			if (this.name != null)
+				nameBuffer.append(this.name);
 			else // WildcardBinding, CaptureBinding have no sourceName
 				nameBuffer.append(this.shortReadableName());
 		}
@@ -1833,9 +1833,9 @@ abstract public class ReferenceBinding extends TypeBinding {
 	public char[] shortReadableName() /*Object*/ {
 		char[] shortReadableName;
 		if (isMemberType()) {
-			shortReadableName = CharOperation.concat(enclosingType().shortReadableName(), this.sourceName, '.');
+			shortReadableName = CharOperation.concat(enclosingType().shortReadableName(), this.name, '.');
 		} else {
-			shortReadableName = this.sourceName;
+			shortReadableName = this.name;
 		}
 		TypeVariableBinding[] typeVars;
 		if ((typeVars = typeVariables()) != Binding.NO_TYPE_VARIABLES) {
@@ -1861,7 +1861,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 	}
 	
 	public char[] sourceName() {
-		return this.sourceName;
+		return this.name;
 	}
 	
 	void storeAnnotationHolder(Binding binding, AnnotationHolder holder) {
@@ -2056,11 +2056,11 @@ abstract public class ReferenceBinding extends TypeBinding {
 				MethodBinding method = methods[i];
 				if (method == null) continue;
 				if (contractSelector == null) {
-					contractSelector = method.selector;
+					contractSelector = method.name;
 					contractParameterLength = method.parameters == null ? 0 : method.parameters.length;
 				} else {
 					int methodParameterLength = method.parameters == null ? 0 : method.parameters.length;
-					if (methodParameterLength != contractParameterLength || !CharOperation.equals(method.selector, contractSelector))
+					if (methodParameterLength != contractParameterLength || !CharOperation.equals(method.name, contractSelector))
 						return this.singleAbstractMethod[index] = samProblemBinding;
 				}
 			}
@@ -2155,7 +2155,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 				System.arraycopy(exceptions, 0, exceptions = new ReferenceBinding[exceptionsCount], 0, exceptionsCount);
 			}
 			this.singleAbstractMethod[index] = new MethodBinding(theAbstractMethod.modifiers | ClassFileConstants.AccSynthetic, 
-					theAbstractMethod.selector, 
+					theAbstractMethod.name, 
 					theAbstractMethod.returnType, 
 					theAbstractMethod.parameters, 
 					exceptions, 
@@ -2204,7 +2204,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 		ReferenceBinding toplevel = stack.pop();
 		output.append("__lc('").append(CharOperation.concatWith(toplevel.compoundName, '.')).append("')");
 		while(!stack.isEmpty()){
-			output.append('.').append(stack.pop().sourceName);
+			output.append('.').append(stack.pop().name);
 		}
 		
 		return output;

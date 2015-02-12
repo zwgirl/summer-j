@@ -805,10 +805,10 @@ public class Javadoc extends ASTNode {
 				int depth = resolvedType.depth();
 				int idx = depth + packageLength;
 				char[][] computedCompoundName = new char[idx+1][];
-				computedCompoundName[idx] = topLevelType.sourceName;
+				computedCompoundName[idx] = topLevelType.name;
 				while (topLevelType.enclosingType() != null) {
 					topLevelType = topLevelType.enclosingType();
-					computedCompoundName[--idx] = topLevelType.sourceName;
+					computedCompoundName[--idx] = topLevelType.name;
 				}
 
 				// add package information
@@ -819,7 +819,7 @@ public class Javadoc extends ASTNode {
 				ClassScope topLevelScope = scope.classScope();
 				// when scope is not on compilation unit type, then inner class may not be visible...
 				if (topLevelScope.parent.kind != Scope.COMPILATION_UNIT_SCOPE ||
-					!CharOperation.equals(topLevelType.sourceName, topLevelScope.referenceContext.name)) {
+					!CharOperation.equals(topLevelType.name, topLevelScope.referenceContext.name)) {
 					topLevelScope = topLevelScope.outerMostClassScope();
 					if (typeReference instanceof JavadocSingleTypeReference) {
 						// inner class single reference can only be done in same unit

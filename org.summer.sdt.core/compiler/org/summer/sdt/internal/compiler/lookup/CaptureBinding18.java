@@ -29,7 +29,7 @@ public class CaptureBinding18 extends CaptureBinding {
 	
 	private CaptureBinding18(CaptureBinding18 prototype) {
 		super(prototype);
-		this.sourceName = CharOperation.append(prototype.sourceName, '\'');
+		this.name = CharOperation.append(prototype.name, '\'');
 		this.originalName = prototype.originalName;
 		this.upperBounds = prototype.upperBounds;
 		this.prototype = prototype.prototype;		

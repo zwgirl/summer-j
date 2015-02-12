@@ -237,7 +237,7 @@ public class RawTypeBinding extends ParameterizedTypeBinding {
 		
 		ReferenceBinding declaringType = (ReferenceBinding) scope.environment().convertToRawType(genericType, true);
 		declaringType = (ReferenceBinding) declaringType.findSuperTypeOriginatingFrom(theAbstractMethod.declaringClass);
-		MethodBinding [] choices = declaringType.getMethods(theAbstractMethod.selector);
+		MethodBinding [] choices = declaringType.getMethods(theAbstractMethod.name);
 		for (int i = 0, length = choices.length; i < length; i++) {
 			MethodBinding method = choices[i];
 			if (!method.isAbstract() || method.redeclaresPublicObjectMethod(scope)) continue; // (re)skip statics, defaults, public object methods ...
@@ -255,7 +255,7 @@ public class RawTypeBinding extends ParameterizedTypeBinding {
 	public char[] readableName() /*java.lang.Object,  p.X<T> */ {
 	    char[] readableName;
 		if (isMemberType()) {
-			readableName = CharOperation.concat(enclosingType().readableName(), this.sourceName, '.');
+			readableName = CharOperation.concat(enclosingType().readableName(), this.name, '.');
 		} else {
 			readableName = CharOperation.concatWith(actualType().compoundName, '.');
 		}
@@ -268,9 +268,9 @@ public class RawTypeBinding extends ParameterizedTypeBinding {
 	public char[] shortReadableName() /*Object*/ {
 	    char[] shortReadableName;
 		if (isMemberType()) {
-			shortReadableName = CharOperation.concat(enclosingType().shortReadableName(), this.sourceName, '.');
+			shortReadableName = CharOperation.concat(enclosingType().shortReadableName(), this.name, '.');
 		} else {
-			shortReadableName = actualType().sourceName;
+			shortReadableName = actualType().name;
 		}
 		return shortReadableName;
 	}

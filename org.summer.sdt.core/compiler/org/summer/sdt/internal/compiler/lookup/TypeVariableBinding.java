@@ -64,7 +64,7 @@ public class TypeVariableBinding extends ReferenceBinding {
 	LookupEnvironment environment;
 	
 	public TypeVariableBinding(char[] sourceName, Binding declaringElement, int rank, LookupEnvironment environment) {
-		this.sourceName = sourceName;
+		this.name = sourceName;
 		this.declaringElement = declaringElement;
 		this.rank = rank;
 		this.modifiers = ClassFileConstants.AccPublic | ExtraCompilerModifiers.AccGenericSignature; // treat type var as public
@@ -353,7 +353,7 @@ public class TypeVariableBinding extends ReferenceBinding {
 	public String debugName() {
 		if (this.hasTypeAnnotations())
 			return super.annotatedDebugName();
-	    return new String(this.sourceName);
+	    return new String(this.name);
 	}
 	public TypeBinding erasure() {
 	    if (this.firstBound != null) {
@@ -367,7 +367,7 @@ public class TypeVariableBinding extends ReferenceBinding {
 	 */
 	public char[] genericSignature() {
 	    StringBuffer sig = new StringBuffer(10);
-	    sig.append(this.sourceName).append(':');
+	    sig.append(this.name).append(':');
 	   	int interfaceLength = this.superInterfaces == null ? 0 : this.superInterfaces.length;
 	    if (interfaceLength == 0 || TypeBinding.equalsEquals(this.firstBound, this.superclass)) {
 	    	if (this.superclass != null)
@@ -387,7 +387,7 @@ public class TypeVariableBinding extends ReferenceBinding {
 	 */
 	public char[] genericTypeSignature() {
 	    if (this.genericTypeSignature != null) return this.genericTypeSignature;
-		return this.genericTypeSignature = CharOperation.concat('T', this.sourceName, ';');
+		return this.genericTypeSignature = CharOperation.concat('T', this.name, ';');
 	}
 
 	/**
@@ -554,7 +554,7 @@ public class TypeVariableBinding extends ReferenceBinding {
 				}
 			}
 			if (haveSubstitution) {
-				TypeVariableBinding newVar = new TypeVariableBinding(this.sourceName, this.declaringElement, this.rank, this.environment);
+				TypeVariableBinding newVar = new TypeVariableBinding(this.name, this.declaringElement, this.rank, this.environment);
 				newVar.superclass = currentSuperclass;
 				newVar.superInterfaces = currentSuperInterfaces;
 				newVar.tagBits = this.tagBits;
@@ -652,7 +652,7 @@ public class TypeVariableBinding extends ReferenceBinding {
      * @see org.summer.sdt.internal.compiler.lookup.ReferenceBinding#readableName()
      */
     public char[] readableName() {
-        return this.sourceName;
+        return this.name;
     }
 	ReferenceBinding resolve() {
 		if ((this.modifiers & ExtraCompilerModifiers.AccUnresolved) == 0)
@@ -738,7 +738,7 @@ public class TypeVariableBinding extends ReferenceBinding {
 		if (this.hasTypeAnnotations())
 			return annotatedDebugName();
 		StringBuffer buffer = new StringBuffer(10);
-		buffer.append('<').append(this.sourceName);//.append('[').append(this.rank).append(']');
+		buffer.append('<').append(this.name);//.append('[').append(this.rank).append(']');
 		if (this.superclass != null && TypeBinding.equalsEquals(this.firstBound, this.superclass)) {
 		    buffer.append(" extends ").append(this.superclass.debugName()); //$NON-NLS-1$
 		}

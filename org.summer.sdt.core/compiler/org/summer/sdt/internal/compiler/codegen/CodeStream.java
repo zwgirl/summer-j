@@ -1931,7 +1931,7 @@ public class CodeStream {
 		// leave a java.lang.reflect.Field object on the stack
 		this.ldc(String.valueOf(methodBinding.declaringClass.constantPoolName()).replace('/', '.'));
 		invokeClassForName();
-		this.ldc(String.valueOf(methodBinding.selector));
+		this.ldc(String.valueOf(methodBinding.name));
 		int paramLength = methodBinding.parameters.length;
 		this.generateInlinedValue(paramLength);
 	//	newArray(scope.createArrayType(scope.getType(TypeConstants.JAVA_LANG_CLASS, 3), 1));  //cym comment 2014-12-03
@@ -2535,7 +2535,7 @@ public class CodeStream {
 			if (syntheticMethodBinding.lambda!=null && syntheticMethodBinding.lambda.isSerializable) {
 				syntheticsForSerializableLambdas.add(syntheticMethodBinding);
 				// TODO can I use > Java 1.4 features here?
-				Integer hashcode = new Integer(new String(syntheticMethodBinding.selector).hashCode());
+				Integer hashcode = new Integer(new String(syntheticMethodBinding.name).hashCode());
 				List lambdasForThisHashcode = (List)hashcodesToLambdas.get(hashcode);
 				if (hashcodesToLambdas.get(hashcode)==null) {
 					lambdasForThisHashcode = new ArrayList();
@@ -2596,7 +2596,7 @@ public class CodeStream {
 			for (int j=0,max=lambdas.size();j<max;j++) {
 				SyntheticMethodBinding syntheticMethodBinding = (SyntheticMethodBinding)lambdas.get(j);
 				aload_1();
-				ldc(new String(syntheticMethodBinding.selector));
+				ldc(new String(syntheticMethodBinding.name));
 				invokeStringEquals();
 				ifeq(nextOne);
 				loadInt(index++);
@@ -2667,7 +2667,7 @@ public class CodeStream {
 			aload_0();
 			invoke(Opcodes.OPC_invokevirtual, 1, 1, ConstantPool.JavaLangInvokeSerializedLambdaConstantPoolName, 
 					ConstantPool.GetFunctionalInterfaceMethodName, ConstantPool.GetFunctionalInterfaceMethodNameSignature);
-			ldc(new String(lambdaEx.descriptor.selector)); // e.g. "m"
+			ldc(new String(lambdaEx.descriptor.name)); // e.g. "m"
 			invokeObjectEquals();
 			ifeq(errorLabel);
 	
@@ -2733,7 +2733,7 @@ public class CodeStream {
 				sig.append(lambdaEx.resolvedType.signature());
 			}
 			// Example: invokeDynamic(0, 0, 1, "m".toCharArray(), "()Lcom/foo/X$Foo;".toCharArray());
-			invokeDynamic(lambdaEx.bootstrapMethodNumber, index, 1, lambdaEx.descriptor.selector, sig.toString().toCharArray());
+			invokeDynamic(lambdaEx.bootstrapMethodNumber, index, 1, lambdaEx.descriptor.name, sig.toString().toCharArray());
 			areturn();
 		}
 		
@@ -4365,7 +4365,7 @@ public class CodeStream {
 				returnTypeSize, 
 				declaringClass.constantPoolName(),
 				declaringClass.isInterface(),
-				methodBinding.selector, 
+				methodBinding.name, 
 				methodBinding.signature(this.classFile));
 	}
 	

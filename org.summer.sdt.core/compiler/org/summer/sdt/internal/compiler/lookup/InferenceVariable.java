@@ -95,11 +95,11 @@ public class InferenceVariable extends TypeVariableBinding {
 	}
 
 	public char[] sourceName() {
-		return this.sourceName;
+		return this.name;
 	}
 
 	public char[] readableName() {
-		return this.sourceName;
+		return this.name;
 	}
 
 	public boolean hasTypeBit(int bit) {
@@ -107,7 +107,7 @@ public class InferenceVariable extends TypeVariableBinding {
 	}
 	
 	public String debugName() {
-		return String.valueOf(this.sourceName);
+		return String.valueOf(this.name);
 	}
 	
 	public String toString() {
@@ -115,15 +115,15 @@ public class InferenceVariable extends TypeVariableBinding {
 	}
 	
 	public int hashCode() {
-		if (this.sourceName != null)
-			return this.sourceName.hashCode();
+		if (this.name != null)
+			return this.name.hashCode();
 		return super.hashCode();
 	}
 	public boolean equals(Object obj) {
 		if (!(obj instanceof InferenceVariable))
 			return false;
-		if (this.sourceName != null)
-			return this.sourceName.equals(((InferenceVariable)obj).sourceName);
+		if (this.name != null)
+			return this.name.equals(((InferenceVariable)obj).name);
 		return super.equals(obj);
 	}
 

@@ -182,7 +182,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		int argumentsLength = argumentTypes.length;
 		//the constructor
 		MethodDeclaration methodDeclaration = new MethodDeclaration(this.compilationResult);
-		methodDeclaration.selector = methodBinding.selector;
+		methodDeclaration.selector = methodBinding.name;
 		methodDeclaration.sourceStart = this.sourceStart;
 		methodDeclaration.sourceEnd = this.sourceEnd;
 		methodDeclaration.modifiers = methodBinding.getAccessFlags() & ~ClassFileConstants.AccAbstract;
@@ -213,7 +213,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		//============BINDING UPDATE==========================
 		methodDeclaration.binding = new MethodBinding(
 				methodDeclaration.modifiers | ClassFileConstants.AccSynthetic, //methodDeclaration
-				methodBinding.selector,
+				methodBinding.name,
 				methodBinding.returnType,
 				argumentsLength == 0 ? Binding.NO_PARAMETERS : argumentTypes, //arguments bindings
 				methodBinding.thrownExceptions, //exceptions
@@ -1874,13 +1874,13 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			if(type.binding.isAnonymousType()){
 				output.append(TypeConstants.ANONYM).append(".prototype.__proto__ = ");
 			} else {
-				output.append(type.binding.sourceName).append(".prototype.__proto__ = ");
+				output.append(type.binding.name).append(".prototype.__proto__ = ");
 			}
 			if(superBinding.isMemberType()){
 				output.append("__lc('").append(CharOperation.concatWith(superBinding.compoundName, '.')).append("')");
 			} else {
 				if((superBinding.modifiers & ClassFileConstants.AccNative) != 0){
-					output.append(superBinding.sourceName);
+					output.append(superBinding.name);
 				} else {
 					if((superBinding.modifiers & ClassFileConstants.AccModule) != 0){
 						output.append("__lc('").append(CharOperation.concatWith(superBinding.compoundName, '.')).append("', ");
@@ -1966,7 +1966,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		
 		//type information
 		output.append("\n");
-		if((type.binding.sourceName != null && type.binding.sourceName.length > 0) && type.binding.sourceName[0] == 'C' && CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_CLASS)){   //if Class Type
+		if((type.binding.name != null && type.binding.name.length > 0) && type.binding.name[0] == 'C' && CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_CLASS)){   //if Class Type
 			printIndent(indent, output).append(type.getTypeName()).append(".prototype.__class = new Class(");
 		} else {
 			if(type.binding.isAnonymousType()){
@@ -1983,14 +1983,14 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append(TypeConstants.ANONYM).append(", ");
 		} else {
 			output.append("\"").append(CharOperation.concatWith(type.binding.compoundName, '.')).append("\", ");
-			output.append(type.binding.sourceName).append(", ");
+			output.append(type.binding.name).append(", ");
 		}
 
 		
 		if(type.binding.superclass != null){
 			ReferenceBinding baseBinding = type.binding.superclass;
 			if((baseBinding.modifiers & ClassFileConstants.AccNative) != 0){
-				output.append(baseBinding.sourceName).append(", ");
+				output.append(baseBinding.name).append(", ");
 			} else {
 				if((baseBinding.modifiers & ClassFileConstants.AccModule) != 0){
 					output.append("__lc('").append(CharOperation.concatWith(baseBinding.compoundName, '.')).append("', ");
@@ -2013,7 +2013,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				}
 				
 				if((binding.modifiers & ClassFileConstants.AccNative) != 0){
-					output.append(type.binding.sourceName);
+					output.append(type.binding.name);
 				} else {
 					if((binding.modifiers & ClassFileConstants.AccModule) != 0){
 						output.append("__lc('").append(CharOperation.concatWith(binding.compoundName, '.')).append("', ");
@@ -2070,7 +2070,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		if(type.binding.isAnonymousType()){
 			output.append(TypeConstants.ANONYM);
 		} else {
-			output.append(type.binding.sourceName);
+			output.append(type.binding.name);
 		}
 		
 		output.append(";");
@@ -2081,7 +2081,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_COMPONENT)))){
 			output.append('\n');
 			printIndent(indent, output);
-			output.append(type.binding.sourceName).append(".prototype.").append("doCreate").append(" = function(parent) {");
+			output.append(type.binding.name).append(".prototype.").append("doCreate").append(" = function(parent) {");
 			output.append('\n');
 			printIndent(indent, output);
 			((ObjectElement)type.element).buildElement(scope, indent, output, "parent");
@@ -2228,7 +2228,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						cstrCall.generateStatement(scope, indent, output);
 					}
 				} else {   //this()
-					output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
+					output.append(cstrCall.binding.declaringClass.name).append(".call(this");
 					if(cstrCall.arguments != null){
 						for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
 							output.append(", ");

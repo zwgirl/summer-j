@@ -90,7 +90,7 @@ class MethodBinding implements IMethodBinding {
 			if (this.binding.isConstructor()) {
 				this.name = getDeclaringClass().getName();
 			} else {
-				this.name = new String(this.binding.selector);
+				this.name = new String(this.binding.name);
 			}
 		}
 		return this.name;

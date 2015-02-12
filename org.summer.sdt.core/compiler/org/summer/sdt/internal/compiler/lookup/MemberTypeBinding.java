@@ -47,7 +47,7 @@ public final class MemberTypeBinding extends NestedTypeBinding {
 			return this.prototype.constantPoolName();
 		}
 	
-		return this.constantPoolName = CharOperation.concat(enclosingType().constantPoolName(), this.sourceName, '$');
+		return this.constantPoolName = CharOperation.concat(enclosingType().constantPoolName(), this.name, '$');
 	}
 	
 	public TypeBinding clone(TypeBinding outerType) {

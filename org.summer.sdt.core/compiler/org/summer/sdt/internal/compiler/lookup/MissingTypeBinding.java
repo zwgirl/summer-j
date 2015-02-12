@@ -32,7 +32,7 @@ public class MissingTypeBinding extends BinaryTypeBinding {
 		this.environment = environment;
 		this.fPackage = packageBinding;
 		this.fileName = CharOperation.concatWith(compoundName, '/');
-		this.sourceName = compoundName[compoundName.length - 1]; // [java][util][Map$Entry]
+		this.name = compoundName[compoundName.length - 1]; // [java][util][Map$Entry]
 		this.modifiers = ClassFileConstants.AccPublic;
 		this.superclass = null; // will be fixed up using #setMissingSuperclass(...)
 		this.superInterfaces = Binding.NO_SUPERINTERFACES;

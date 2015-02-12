@@ -37,7 +37,7 @@ public class ParameterizedMethodBinding extends MethodBinding {
 	public ParameterizedMethodBinding(final ParameterizedTypeBinding parameterizedDeclaringClass, MethodBinding originalMethod) {
 		super(
 				originalMethod.modifiers,
-				originalMethod.selector,
+				originalMethod.name,
 				originalMethod.returnType,
 				originalMethod.parameters,
 				originalMethod.thrownExceptions,
@@ -63,7 +63,7 @@ public class ParameterizedMethodBinding extends MethodBinding {
 			final TypeVariableBinding[] substitutedVariables = new TypeVariableBinding[length];
 			for (int i = 0; i < length; i++) { // copy original type variable to relocate
 				TypeVariableBinding originalVariable = originalVariables[i];
-				substitutedVariables[i] = new TypeVariableBinding(originalVariable.sourceName, this, originalVariable.rank, parameterizedDeclaringClass.environment);
+				substitutedVariables[i] = new TypeVariableBinding(originalVariable.name, this, originalVariable.rank, parameterizedDeclaringClass.environment);
 				substitutedVariables[i].tagBits |= (originalVariable.tagBits & (TagBits.AnnotationNullMASK|TagBits.HasNullTypeAnnotation));
 			}
 			this.typeVariables = substitutedVariables;
@@ -174,7 +174,7 @@ public class ParameterizedMethodBinding extends MethodBinding {
 	public ParameterizedMethodBinding(final ReferenceBinding declaringClass, MethodBinding originalMethod, char[][] alternateParamaterNames, final LookupEnvironment environment) {
 		super(
 				originalMethod.modifiers,
-				originalMethod.selector,
+				originalMethod.name,
 				 originalMethod.returnType,
 				originalMethod.parameters,
 				originalMethod.thrownExceptions,
@@ -199,7 +199,7 @@ public class ParameterizedMethodBinding extends MethodBinding {
 				TypeVariableBinding originalVariable = originalVariables[i];
 				substitutedVariables[i] = new TypeVariableBinding(
 						alternateParamaterNames == null ?
-								originalVariable.sourceName :
+								originalVariable.name :
 								alternateParamaterNames[i],
 							this,
 							originalVariable.rank,
@@ -297,7 +297,7 @@ public class ParameterizedMethodBinding extends MethodBinding {
 	public static ParameterizedMethodBinding instantiateGetClass(TypeBinding receiverType, MethodBinding originalMethod, Scope scope) {
 		ParameterizedMethodBinding method = new ParameterizedMethodBinding();
 		method.modifiers = originalMethod.modifiers;
-		method.selector = originalMethod.selector;
+		method.name = originalMethod.name;
 		method.declaringClass = originalMethod.declaringClass;
 		method.typeVariables = Binding.NO_TYPE_VARIABLES;
 		method.originalMethod = originalMethod;

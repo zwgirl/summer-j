@@ -451,7 +451,7 @@ public abstract class Expression extends Statement {
 									for (int i = 0, castMethodsLength = castTypeMethods.length; i < castMethodsLength; i++) {
 										for (int j = 0; j < exprMethodsLength; j++) {
 											if ((TypeBinding.notEquals(castTypeMethods[i].returnType, expressionTypeMethods[j].returnType))
-													&& (CharOperation.equals(castTypeMethods[i].selector, expressionTypeMethods[j].selector))
+													&& (CharOperation.equals(castTypeMethods[i].name, expressionTypeMethods[j].name))
 													&& castTypeMethods[i].areParametersEqual(expressionTypeMethods[j])) {
 												return false;
 	

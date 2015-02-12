@@ -64,7 +64,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 		SyntheticMethodBinding[] knownAccessMethods = declaringSourceType.syntheticMethods();
 		int methodId = knownAccessMethods == null ? 0 : knownAccessMethods.length;
 		this.index = methodId;
-		this.selector = CharOperation.concat(TypeConstants.SYNTHETIC_ACCESS_METHOD_PREFIX, String.valueOf(methodId).toCharArray());
+		this.name = CharOperation.concat(TypeConstants.SYNTHETIC_ACCESS_METHOD_PREFIX, String.valueOf(methodId).toCharArray());
 		if (isReadAccess) {
 			this.returnType = targetField.type;
 			if (targetField.isStatic()) {
@@ -99,7 +99,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 				// check for collision with known methods
 				long range;
 				MethodBinding[] methods = declaringSourceType.methods();
-				if ((range = ReferenceBinding.binarySearch(this.selector, methods)) >= 0) {
+				if ((range = ReferenceBinding.binarySearch(this.name, methods)) >= 0) {
 					int paramCount = this.parameters.length;
 					nextMethod: for (int imethod = (int)range, end = (int)(range >> 32); imethod <= end; imethod++) {
 						MethodBinding method = methods[imethod];
@@ -119,7 +119,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 				if (knownAccessMethods != null) {
 					for (int i = 0, length = knownAccessMethods.length; i < length; i++) {
 						if (knownAccessMethods[i] == null) continue;
-						if (CharOperation.equals(this.selector, knownAccessMethods[i].selector) && areParametersEqual(methods[i])) {
+						if (CharOperation.equals(this.name, knownAccessMethods[i].name) && areParametersEqual(methods[i])) {
 							needRename = true;
 							break check;
 						}
@@ -168,7 +168,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 		SyntheticMethodBinding[] knownAccessMethods = declaringSourceType.syntheticMethods();
 		int methodId = knownAccessMethods == null ? 0 : knownAccessMethods.length;
 		this.index = methodId;
-		this.selector = selector;
+		this.name = selector;
 		this.returnType = declaringSourceType.scope.createArrayType(TypeBinding.INT, 1);
 		this.parameters = Binding.NO_PARAMETERS;
 		this.targetReadField = targetField;
@@ -188,7 +188,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 				// check for collision with known methods
 				long range;
 				MethodBinding[] methods = declaringSourceType.methods();
-				if ((range = ReferenceBinding.binarySearch(this.selector, methods)) >= 0) {
+				if ((range = ReferenceBinding.binarySearch(this.name, methods)) >= 0) {
 					int paramCount = this.parameters.length;
 					nextMethod: for (int imethod = (int)range, end = (int)(range >> 32); imethod <= end; imethod++) {
 						MethodBinding method = methods[imethod];
@@ -208,7 +208,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 				if (knownAccessMethods != null) {
 					for (int i = 0, length = knownAccessMethods.length; i < length; i++) {
 						if (knownAccessMethods[i] == null) continue;
-						if (CharOperation.equals(this.selector, knownAccessMethods[i].selector) && areParametersEqual(methods[i])) {
+						if (CharOperation.equals(this.name, knownAccessMethods[i].name) && areParametersEqual(methods[i])) {
 							needRename = true;
 							break check;
 						}
@@ -240,7 +240,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 	public SyntheticMethodBinding(MethodBinding overridenMethodToBridge, MethodBinding targetMethod, SourceTypeBinding declaringClass) {
 
 	    this.declaringClass = declaringClass;
-	    this.selector = overridenMethodToBridge.selector;
+	    this.name = overridenMethodToBridge.name;
 	    // amongst other, clear the AccGenericSignature, so as to ensure no remains of original inherited persist (101794)
 	    // also use the modifiers from the target method, as opposed to inherited one (147690)
 	    this.modifiers = (targetMethod.modifiers | ClassFileConstants.AccBridge | ClassFileConstants.AccSynthetic) & ~(ClassFileConstants.AccSynchronized | ClassFileConstants.AccAbstract | ClassFileConstants.AccNative  | ClassFileConstants.AccFinal | ExtraCompilerModifiers.AccGenericSignature);
@@ -260,7 +260,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 	 */
 	public SyntheticMethodBinding(SourceTypeBinding declaringEnum, char[] selector) {
 	    this.declaringClass = declaringEnum;
-	    this.selector = selector;
+	    this.name = selector;
 	    this.modifiers = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic;
 		this.tagBits |= (TagBits.AnnotationResolved | TagBits.DeprecatedAnnotationResolved);
 		LookupEnvironment environment = declaringEnum.scope.environment();
@@ -287,7 +287,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 	 */
 	public SyntheticMethodBinding(SourceTypeBinding declaringClass) {
 		this.declaringClass = declaringClass;
-		this.selector = TypeConstants.DESERIALIZE_LAMBDA;
+		this.name = TypeConstants.DESERIALIZE_LAMBDA;
 		this.modifiers = ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic | ClassFileConstants.AccSynthetic;
 		this.tagBits |= (TagBits.AnnotationResolved | TagBits.DeprecatedAnnotationResolved);
 		this.thrownExceptions = Binding.NO_EXCEPTIONS;
@@ -308,7 +308,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 		this.index = knownAccessMethods == null ? 0 : knownAccessMethods.length;
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(TypeConstants.SYNTHETIC_ENUM_CONSTANT_INITIALIZATION_METHOD_PREFIX).append(this.index);
-		this.selector = String.valueOf(buffer).toCharArray(); 
+		this.name = String.valueOf(buffer).toCharArray(); 
 		this.modifiers = ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic;
 		this.tagBits |= (TagBits.AnnotationResolved | TagBits.DeprecatedAnnotationResolved);
 		this.purpose = SyntheticMethodBinding.TooManyEnumsConstants;
@@ -327,7 +327,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 	public SyntheticMethodBinding(MethodBinding overridenMethodToBridge, SourceTypeBinding declaringClass) {
 
 	    this.declaringClass = declaringClass;
-	    this.selector = overridenMethodToBridge.selector;
+	    this.name = overridenMethodToBridge.name;
 	    // amongst other, clear the AccGenericSignature, so as to ensure no remains of original inherited persist (101794)
 	    this.modifiers = (overridenMethodToBridge.modifiers | ClassFileConstants.AccBridge | ClassFileConstants.AccSynthetic) & ~(ClassFileConstants.AccSynchronized | ClassFileConstants.AccAbstract | ClassFileConstants.AccNative  | ClassFileConstants.AccFinal | ExtraCompilerModifiers.AccGenericSignature);
 		this.tagBits |= (TagBits.AnnotationResolved | TagBits.DeprecatedAnnotationResolved);
@@ -343,7 +343,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 
 	public SyntheticMethodBinding(int purpose, ArrayBinding arrayType, char [] selector, SourceTypeBinding declaringClass) {
 	    this.declaringClass = declaringClass;
-	    this.selector = selector;
+	    this.name = selector;
 	    this.modifiers = ClassFileConstants.AccSynthetic | ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic;
 		this.tagBits |= (TagBits.AnnotationResolved | TagBits.DeprecatedAnnotationResolved);
 	    this.returnType = arrayType;
@@ -358,7 +358,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 	public SyntheticMethodBinding(LambdaExpression lambda, char [] lambdaName, SourceTypeBinding declaringClass) {
 		this.lambda = lambda;
 	    this.declaringClass = declaringClass;
-	    this.selector = lambdaName;
+	    this.name = lambdaName;
 	    this.modifiers = lambda.binding.modifiers;
 		this.tagBits |= (TagBits.AnnotationResolved | TagBits.DeprecatedAnnotationResolved) | (lambda.binding.tagBits & TagBits.HasParameterAnnotations);
 	    this.returnType = lambda.binding.returnType;
@@ -372,7 +372,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 
 	public SyntheticMethodBinding(MethodBinding privateConstructor, MethodBinding publicConstructor, char[] selector, TypeBinding[] enclosingInstances, SourceTypeBinding declaringClass) {
 	    this.declaringClass = declaringClass;
-	    this.selector = selector;
+	    this.name = selector;
 	    this.modifiers = ClassFileConstants.AccSynthetic | ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic;
 		this.tagBits |= (TagBits.AnnotationResolved | TagBits.DeprecatedAnnotationResolved);
 	    this.returnType = publicConstructor.declaringClass;
@@ -406,7 +406,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 		SyntheticMethodBinding[] knownSyntheticMethods = sourceType.syntheticMethods();
 		this.index = knownSyntheticMethods == null ? 0 : knownSyntheticMethods.length;
 
-		this.selector = accessedConstructor.selector;
+		this.name = accessedConstructor.name;
 		this.returnType = accessedConstructor.returnType;
 		this.purpose = SyntheticMethodBinding.ConstructorAccess;
 		final int parametersLength = accessedConstructor.parameters.length;
@@ -430,7 +430,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 				// check for collision with known methods
 				MethodBinding[] methods = sourceType.methods();
 				for (int i = 0, length = methods.length; i < length; i++) {
-					if (CharOperation.equals(this.selector, methods[i].selector) && areParameterErasuresEqual(methods[i])) {
+					if (CharOperation.equals(this.name, methods[i].name) && areParameterErasuresEqual(methods[i])) {
 						needRename = true;
 						break check;
 					}
@@ -440,7 +440,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 					for (int i = 0, length = knownSyntheticMethods.length; i < length; i++) {
 						if (knownSyntheticMethods[i] == null)
 							continue;
-						if (CharOperation.equals(this.selector, knownSyntheticMethods[i].selector) && areParameterErasuresEqual(knownSyntheticMethods[i])) {
+						if (CharOperation.equals(this.name, knownSyntheticMethods[i].name) && areParameterErasuresEqual(knownSyntheticMethods[i])) {
 							needRename = true;
 							break check;
 						}
@@ -488,7 +488,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 		int methodId = knownAccessMethods == null ? 0 : knownAccessMethods.length;
 		this.index = methodId;
 
-		this.selector = CharOperation.concat(TypeConstants.SYNTHETIC_ACCESS_METHOD_PREFIX, String.valueOf(methodId).toCharArray());
+		this.name = CharOperation.concat(TypeConstants.SYNTHETIC_ACCESS_METHOD_PREFIX, String.valueOf(methodId).toCharArray());
 		this.returnType = accessedMethod.returnType;
 		this.purpose = isSuperAccess ? SyntheticMethodBinding.SuperMethodAccess : SyntheticMethodBinding.MethodAccess;
 
@@ -510,7 +510,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 				// check for collision with known methods
 				MethodBinding[] methods = declaringSourceType.methods();
 				for (int i = 0, length = methods.length; i < length; i++) {
-					if (CharOperation.equals(this.selector, methods[i].selector) && areParameterErasuresEqual(methods[i])) {
+					if (CharOperation.equals(this.name, methods[i].name) && areParameterErasuresEqual(methods[i])) {
 						needRename = true;
 						break check;
 					}
@@ -519,7 +519,7 @@ public class SyntheticMethodBinding extends MethodBinding {
 				if (knownAccessMethods != null) {
 					for (int i = 0, length = knownAccessMethods.length; i < length; i++) {
 						if (knownAccessMethods[i] == null) continue;
-						if (CharOperation.equals(this.selector, knownAccessMethods[i].selector) && areParameterErasuresEqual(knownAccessMethods[i])) {
+						if (CharOperation.equals(this.name, knownAccessMethods[i].name) && areParameterErasuresEqual(knownAccessMethods[i])) {
 							needRename = true;
 							break check;
 						}

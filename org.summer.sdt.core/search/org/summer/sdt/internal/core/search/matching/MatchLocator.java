@@ -1099,7 +1099,7 @@ private MethodBinding getMethodBinding0(MethodPattern methodPattern) {
 							found = false;
 							if (refTypeVariables != null) {
 								for (int v=0; v<typeVarLength; v++) {
-									if (!CharOperation.equals(refTypeVariables[v].sourceName, parameterTypes[p])) {
+									if (!CharOperation.equals(refTypeVariables[v].name, parameterTypes[p])) {
 										found = false;
 										break;
 									}
@@ -1108,7 +1108,7 @@ private MethodBinding getMethodBinding0(MethodPattern methodPattern) {
 							}
 							if (!found && methodTypeVariables != null) {
 								for (int v=0; v<methTypeVarLength; v++) {
-									if (!CharOperation.equals(methodTypeVariables[v].sourceName, parameterTypes[p])) {
+									if (!CharOperation.equals(methodTypeVariables[v].name, parameterTypes[p])) {
 										found = false;
 										break;
 									}

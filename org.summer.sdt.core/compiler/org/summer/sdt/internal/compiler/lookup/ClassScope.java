@@ -259,7 +259,7 @@ public class ClassScope extends Scope {
 				ReferenceBinding type = localType;
 				// check that the member does not conflict with an enclosing type
 				do {
-					if (CharOperation.equals(type.sourceName, memberContext.name)) {
+					if (CharOperation.equals(type.name, memberContext.name)) {
 						problemReporter().typeCollidesWithEnclosingType(memberContext);
 						continue nextMember;
 					}
@@ -321,7 +321,7 @@ public class ClassScope extends Scope {
 				ReferenceBinding type = sourceType;
 				// check that the member does not conflict with an enclosing type
 				do {
-					if (CharOperation.equals(type.sourceName, memberContext.name)) {
+					if (CharOperation.equals(type.name, memberContext.name)) {
 						problemReporter().typeCollidesWithEnclosingType(memberContext);
 						continue nextMember;
 					}
@@ -698,7 +698,7 @@ public class ClassScope extends Scope {
 			/*
 			 * AccSynthetic must be set if the target is greater than 1.5. 1.5 VM don't support AccSynthetics flag.
 			 */
-			if (sourceType.sourceName == TypeConstants.PACKAGE_INFO_NAME && compilerOptions().targetJDK > ClassFileConstants.JDK1_5) {
+			if (sourceType.name == TypeConstants.PACKAGE_INFO_NAME && compilerOptions().targetJDK > ClassFileConstants.JDK1_5) {
 				modifiers |= ClassFileConstants.AccSynthetic;
 			}
 			modifiers |= ClassFileConstants.AccAbstract;

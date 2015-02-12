@@ -183,10 +183,10 @@ public class HandleFactory {
 				IJavaElement parentElement = createElement(scope.parent, elementPosition, unit, existingElements, knownScopes);
 				switch (parentElement.getElementType()) {
 					case IJavaElement.COMPILATION_UNIT :
-						newElement = ((ICompilationUnit)parentElement).getType(new String(scope.enclosingSourceType().sourceName));
+						newElement = ((ICompilationUnit)parentElement).getType(new String(scope.enclosingSourceType().name));
 						break;
 					case IJavaElement.TYPE :
-						newElement = ((IType)parentElement).getType(new String(scope.enclosingSourceType().sourceName));
+						newElement = ((IType)parentElement).getType(new String(scope.enclosingSourceType().name));
 						break;
 					case IJavaElement.FIELD :
 					case IJavaElement.INITIALIZER :
@@ -195,7 +195,7 @@ public class HandleFactory {
 					    if (member.isBinary()) {
 					        return null;
 					    } else {
-							newElement = member.getType(new String(scope.enclosingSourceType().sourceName), 1);
+							newElement = member.getType(new String(scope.enclosingSourceType().name), 1);
 							// increment occurrence count if collision is detected
 							if (newElement != null) {
 								while (!existingElements.add(newElement)) ((SourceRefElement)newElement).occurrenceCount++;

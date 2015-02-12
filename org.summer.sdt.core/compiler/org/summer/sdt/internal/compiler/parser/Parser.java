@@ -8753,7 +8753,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				method.returnType = property.type;
 			} else {
 				property.setter = method;
-				method.returnType = new SingleTypeReference(TypeBinding.VOID.simpleName, 0);
+				method.returnType = new SingleTypeReference(TypeBinding.VOID.name, 0);
 				//value parameter
 				method.arguments = new Argument[]{new Argument(MethodDeclaration.VALUE, 0, property.type, 0)};
 			}
@@ -8927,7 +8927,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				indexer.getter = method;
 				method.arguments = args;
 			} else {
-				method.returnType = new SingleTypeReference(TypeBinding.VOID.simpleName, 0);
+				method.returnType = new SingleTypeReference(TypeBinding.VOID.name, 0);
 				method.arguments = new Argument[argLength + 1];
 				System.arraycopy(args, 0, method.arguments, 0, argLength);
 				method.arguments[argLength] = new Argument(MethodDeclaration.VALUE, 0, indexer.type, 0);
@@ -9050,7 +9050,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 //		md.bodyStart = md.sourceEnd + 1;
 		this.listLength = 0; // initialize this.listLength before reading parameters/throws
 		method.declarationSourceStart = method.sourceStart;
-		method.returnType = new SingleTypeReference(TypeBinding.VOID.simpleName, 0);
+		method.returnType = new SingleTypeReference(TypeBinding.VOID.name, 0);
 		// recovery
 		if (this.currentElement != null){
 			if (this.currentElement instanceof RecoveredType

@@ -206,9 +206,9 @@ public class ObjectElement extends XAMLElement {
 						printIndent(indent + 1, output);
 						output.append("_n.").append(attr.property.token).append(" = ");
 						if(attr.method.isStatic()){
-							output.append(attr.method.declaringClass.sourceName).append('.');
+							output.append(attr.method.declaringClass.name).append('.');
 							if(attr.value instanceof StringLiteral){
-								output.append(((StringLiteral)attr.value).source).append(".bind(").append(attr.method.declaringClass.sourceName)
+								output.append(((StringLiteral)attr.value).source).append(".bind(").append(attr.method.declaringClass.name)
 								.append("); ");
 							}
 						} else {

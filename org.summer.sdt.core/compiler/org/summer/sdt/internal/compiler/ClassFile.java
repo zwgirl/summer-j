@@ -462,6 +462,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 		if(fieldBinding instanceof IndexerBinding){
 			attributesNumber += generateExceptionsAttribute1(((IndexerBinding)fieldBinding).parameters);
 		}
+		
 		if (this.targetJDK >= ClassFileConstants.JDK1_4) {
 			FieldDeclaration fieldDeclaration = fieldBinding.sourceField();
 			if (fieldDeclaration != null) {
@@ -566,9 +567,16 @@ public class ClassFile implements TypeConstants, TypeIds {
 		this.contents[this.contentsOffset++] = (byte) (nameIndex >> 8);
 		this.contents[this.contentsOffset++] = (byte) nameIndex;
 		// Then the descriptorIndex
-		int descriptorIndex = this.constantPool.literalIndex(fieldBinding.type);
+		//cym 2015-02-12
+//		int descriptorIndex = this.constantPool.literalIndex(fieldBinding.type);
+//		this.contents[this.contentsOffset++] = (byte) (descriptorIndex >> 8);
+//		this.contents[this.contentsOffset++] = (byte) descriptorIndex;
+		
+		int descriptorIndex = this.constantPool.literalIndex(fieldBinding.signature(this));
 		this.contents[this.contentsOffset++] = (byte) (descriptorIndex >> 8);
 		this.contents[this.contentsOffset++] = (byte) descriptorIndex;
+		//cym 2015-02-12
+		
 		int fieldAttributeOffset = this.contentsOffset;
 		int attributeNumber = 0;
 		// leave some space for the number of attributes
@@ -1380,7 +1388,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 								this.codeStream.methodDeclaration);
 					} else {
 						this.codeStream.lambdaExpression.scope.problemReporter().abortDueToInternalError(
-								Messages.bind(Messages.abort_invalidExceptionAttribute, new String(this.codeStream.lambdaExpression.binding.selector)),
+								Messages.bind(Messages.abort_invalidExceptionAttribute, new String(this.codeStream.lambdaExpression.binding.name)),
 								this.codeStream.lambdaExpression);
 					}
 				}
@@ -2024,7 +2032,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 					int iRange = 0, maxRange = exceptionLabel.getCount();
 					if ((maxRange & 1) != 0) {
 						this.referenceBinding.scope.problemReporter().abortDueToInternalError(
-								Messages.bind(Messages.abort_invalidExceptionAttribute, new String(binding.selector),
+								Messages.bind(Messages.abort_invalidExceptionAttribute, new String(binding.name),
 										this.referenceBinding.scope.problemReporter().referenceContext));
 					}
 					while  (iRange < maxRange) {
@@ -2838,7 +2846,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 		if (this.referenceBinding instanceof LocalTypeBinding) {
 			MethodBinding methodBinding = ((LocalTypeBinding) this.referenceBinding).enclosingMethod;
 			if (methodBinding != null) {
-				int enclosingMethodIndex = this.constantPool.literalIndexForNameAndType(methodBinding.selector, methodBinding.signature(this));
+				int enclosingMethodIndex = this.constantPool.literalIndexForNameAndType(methodBinding.name, methodBinding.signature(this));
 				methodIndexByte1 = (byte) (enclosingMethodIndex >> 8);
 				methodIndexByte2 = (byte) enclosingMethodIndex;
 			}
@@ -3424,7 +3432,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 			AbstractMethodDeclaration methodDeclaration = methodBinding.sourceMethod();
 			if (methodBinding instanceof SyntheticMethodBinding) {
 				SyntheticMethodBinding syntheticMethod = (SyntheticMethodBinding) methodBinding;
-				if (syntheticMethod.purpose == SyntheticMethodBinding.SuperMethodAccess && CharOperation.equals(syntheticMethod.selector, syntheticMethod.targetMethod.selector))
+				if (syntheticMethod.purpose == SyntheticMethodBinding.SuperMethodAccess && CharOperation.equals(syntheticMethod.name, syntheticMethod.targetMethod.name))
 					methodDeclaration = ((SyntheticMethodBinding)methodBinding).targetMethod.sourceMethod();
 			}
 			if (methodDeclaration != null) {
@@ -3514,7 +3522,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 		}
 		this.contents[this.contentsOffset++] = (byte) (accessFlags >> 8);
 		this.contents[this.contentsOffset++] = (byte) accessFlags;
-		int nameIndex = this.constantPool.literalIndex(methodBinding.selector);
+		int nameIndex = this.constantPool.literalIndex(methodBinding.name);
 		this.contents[this.contentsOffset++] = (byte) (nameIndex >> 8);
 		this.contents[this.contentsOffset++] = (byte) nameIndex;
 		int descriptorIndex = this.constantPool.literalIndex(methodBinding.signature(this));
@@ -4064,7 +4072,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 			if (isConstructor) { // insert String name,int ordinal
 				length = writeArgumentName(ConstantPool.EnumName, ClassFileConstants.AccSynthetic, length);
 				length = writeArgumentName(ConstantPool.EnumOrdinal, ClassFileConstants.AccSynthetic, length);
-			} else if (CharOperation.equals(ConstantPool.ValueOf, binding.selector)) { // insert String name
+			} else if (CharOperation.equals(ConstantPool.ValueOf, binding.name)) { // insert String name
 				length = writeArgumentName(ConstantPool.Name, ClassFileConstants.AccMandated, length);
 				targetParameters =  Binding.NO_PARAMETERS; // Override "unknown" synthetics below
 			}

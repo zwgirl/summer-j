@@ -127,7 +127,7 @@ class MethodVerifier15 extends MethodVerifier {
 			// we should check for "method descriptor clash" and not just "method signature clash". Really
 			// what we are checking is whether there is a contention for the method dispatch table slot.
 			// See https://bugs.eclipse.org/bugs/show_bug.cgi?id=293615.
-			MethodBinding[] current = (MethodBinding[]) this.currentMethods.get(bridge.selector);
+			MethodBinding[] current = (MethodBinding[]) this.currentMethods.get(bridge.name);
 			for (int i = current.length - 1; i >= 0; --i) {
 				final MethodBinding thisMethod = current[i];
 				if (thisMethod.areParameterErasuresEqual(bridge) && TypeBinding.equalsEquals(thisMethod.returnType.erasure(), bridge.returnType.erasure())) {
@@ -200,7 +200,7 @@ class MethodVerifier15 extends MethodVerifier {
 			}
 			superType = superType.superclass(); // now start with its superclass
 			while (superType != null && superType.isValidBinding()) {
-				MethodBinding[] methods = superType.getMethods(currentMethod.selector);
+				MethodBinding[] methods = superType.getMethods(currentMethod.name);
 				for (int m = 0, n = methods.length; m < n; m++) {
 					MethodBinding substitute = computeSubstituteMethod(methods[m], currentMethod);
 					if (substitute != null && !isSubstituteParameterSubsignature(currentMethod, substitute) && detectNameClash(currentMethod, substitute, true))
@@ -228,7 +228,7 @@ class MethodVerifier15 extends MethodVerifier {
 			for (int i = 0; i < nextPosition; i++) {
 				superType = interfacesToVisit[i];
 				if (superType.isValidBinding()) {
-					MethodBinding[] methods = superType.getMethods(currentMethod.selector);
+					MethodBinding[] methods = superType.getMethods(currentMethod.name);
 					for (int m = 0, n = methods.length; m < n; m++){
 						MethodBinding substitute = computeSubstituteMethod(methods[m], currentMethod);
 						if (substitute != null && !isSubstituteParameterSubsignature(currentMethod, substitute) && detectNameClash(currentMethod, substitute, true))
@@ -832,7 +832,7 @@ class MethodVerifier15 extends MethodVerifier {
 			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=315978 : we now defer this rather expensive
 			// check to just before reporting (the incorrect) name clash. In the event there is no name
 			// clash to report to begin with (the common case), no penalty needs to be paid.  
-			MethodBinding[] currentNamesakes = (MethodBinding[]) this.currentMethods.get(inherited.selector);
+			MethodBinding[] currentNamesakes = (MethodBinding[]) this.currentMethods.get(inherited.name);
 			if (currentNamesakes.length > 1) { // we know it ought to at least one and that current is NOT the override
 				for (int i = 0, length = currentNamesakes.length; i < length; i++) {
 					MethodBinding currentMethod = currentNamesakes[i];
@@ -965,7 +965,7 @@ class MethodVerifier15 extends MethodVerifier {
 				&& !existingMethod.declaringClass.isInterface();
 	}
 	public boolean isMethodSubsignature(MethodBinding method, MethodBinding inheritedMethod) {
-		if (!org.summer.sdt.core.compiler.CharOperation.equals(method.selector, inheritedMethod.selector))
+		if (!org.summer.sdt.core.compiler.CharOperation.equals(method.name, inheritedMethod.name))
 			return false;
 	
 		// need to switch back to the original if the method is from a ParameterizedType

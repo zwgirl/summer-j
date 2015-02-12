@@ -182,7 +182,7 @@ private IType findSuperClass(IGenericType type, ReferenceBinding typeBinding) {
 		if (typeBinding.isHierarchyInconsistent()) {
 			if (superBinding.problemId() == ProblemReasons.NotFound) {
 				this.hasMissingSuperClass = true;
-				this.builder.hierarchy.missingTypes.add(new String(superBinding.sourceName)); // note: this could be Map$Entry
+				this.builder.hierarchy.missingTypes.add(new String(superBinding.name)); // note: this could be Map$Entry
 				return null;
 			} else if ((superBinding.id == TypeIds.T_JavaLangObject)) {
 				char[] superclassName;
@@ -288,7 +288,7 @@ private IType[] findSuperInterfaces(IGenericType type, ReferenceBinding typeBind
 			ReferenceBinding interfaceBinding = (ReferenceBinding) interfaceBindings[bindingIndex].erasure();
 
 			// ensure that the binding corresponds to the interface defined by the user
-			if (CharOperation.equals(simpleName, interfaceBinding.sourceName)) {
+			if (CharOperation.equals(simpleName, interfaceBinding.name)) {
 				bindingIndex++;
 				for (int t = this.typeIndex; t >= 0; t--) {
 					if (TypeBinding.equalsEquals(this.typeBindings[t], interfaceBinding)) {

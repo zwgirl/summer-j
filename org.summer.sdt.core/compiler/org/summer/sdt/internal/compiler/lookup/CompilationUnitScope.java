@@ -282,7 +282,7 @@ public class CompilationUnitScope extends Scope {
 				if (index == 0){
 					candidateName = CharOperation.concat(
 						localType.enclosingType().constantPoolName(),
-						localType.sourceName,
+						localType.name,
 						'$');
 				} else {
 					// in case of collision, then member name gets extra $1 inserted
@@ -292,7 +292,7 @@ public class CompilationUnitScope extends Scope {
 						'$',
 						String.valueOf(index).toCharArray(),
 						'$',
-						localType.sourceName);
+						localType.name);
 				}
 			} else if (localType.isAnonymousType()){
 				if (isCompliant15) {
@@ -315,14 +315,14 @@ public class CompilationUnitScope extends Scope {
 							localType.enclosingType().constantPoolName(),
 							String.valueOf(index+1).toCharArray(),
 							'$'),
-						localType.sourceName);
+						localType.name);
 				} else {
 					candidateName = CharOperation.concat(
 						outerMostEnclosingType.constantPoolName(),
 						'$',
 						String.valueOf(index+1).toCharArray(),
 						'$',
-						localType.sourceName);
+						localType.name);
 				}
 			}
 			if (this.constantPoolNameUsage.get(candidateName) != null) {
@@ -358,7 +358,7 @@ public class CompilationUnitScope extends Scope {
 			if ((this.referenceContext.imports[i].bits & ASTNode.OnDemand) == 0) {
 				typesBySimpleNames = new HashtableOfType(this.topLevelTypes.length + numberOfStatements);
 				for (int j = 0, length = this.topLevelTypes.length; j < length; j++)
-					typesBySimpleNames.put(this.topLevelTypes[j].sourceName, this.topLevelTypes[j]);
+					typesBySimpleNames.put(this.topLevelTypes[j].name, this.topLevelTypes[j]);
 				break;
 			}
 		}
@@ -941,7 +941,7 @@ public class CompilationUnitScope extends Scope {
 				}
 				// either the type collides with a top level type or another imported type
 				for (int j = 0, length = this.topLevelTypes.length; j < length; j++) {
-					if (CharOperation.equals(this.topLevelTypes[j].sourceName, existingType.sourceName)) {
+					if (CharOperation.equals(this.topLevelTypes[j].name, existingType.name)) {
 						problemReporter().conflictingImport(importReference);
 						return -1;
 					}

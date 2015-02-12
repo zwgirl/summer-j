@@ -196,7 +196,7 @@ public class SingleTypeReference extends TypeReference {
 				output.append("__lc(\"").append(CharOperation.concatWith(outters.pop().compoundName, '.')).append("\").");
 				StringBuffer temp = new StringBuffer();
 				while(!outters.isEmpty()){
-					temp.append(".").append(outters.pop().sourceName);
+					temp.append(".").append(outters.pop().name);
 				}
 			} else {
 				if((binding.modifiers & ClassFileConstants.AccModule) != 0){
@@ -247,7 +247,7 @@ public class SingleTypeReference extends TypeReference {
 				output.append("__lc(\"").append(CharOperation.concatWith(outters.pop().compoundName, '.')).append("\").");
 				StringBuffer temp = new StringBuffer();
 				while(!outters.isEmpty()){
-					temp.append(".").append(outters.pop().sourceName);
+					temp.append(".").append(outters.pop().name);
 				}
 			} else {
 				if((binding.modifiers & ClassFileConstants.AccModule) != 0){

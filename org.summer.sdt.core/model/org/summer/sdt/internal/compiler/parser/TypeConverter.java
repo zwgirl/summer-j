@@ -155,78 +155,78 @@ public abstract class TypeConverter {
 					if (!nameStarted) {
 						this.namePos++;
 						if (dim == 0)
-							return new SingleTypeReference(TypeBinding.BOOLEAN.simpleName, ((long) start << 32) + end);
+							return new SingleTypeReference(TypeBinding.BOOLEAN.name, ((long) start << 32) + end);
 						else
-							return new ArrayTypeReference(TypeBinding.BOOLEAN.simpleName, dim, ((long) start << 32) + end);
+							return new ArrayTypeReference(TypeBinding.BOOLEAN.name, dim, ((long) start << 32) + end);
 					}
 					break;
 				case Signature.C_BYTE :
 					if (!nameStarted) {
 						this.namePos++;
 						if (dim == 0)
-							return new SingleTypeReference(TypeBinding.BYTE.simpleName, ((long) start << 32) + end);
+							return new SingleTypeReference(TypeBinding.BYTE.name, ((long) start << 32) + end);
 						else
-							return new ArrayTypeReference(TypeBinding.BYTE.simpleName, dim, ((long) start << 32) + end);
+							return new ArrayTypeReference(TypeBinding.BYTE.name, dim, ((long) start << 32) + end);
 					}
 					break;
 				case Signature.C_CHAR :
 					if (!nameStarted) {
 						this.namePos++;
 						if (dim == 0)
-							return new SingleTypeReference(TypeBinding.CHAR.simpleName, ((long) start << 32) + end);
+							return new SingleTypeReference(TypeBinding.CHAR.name, ((long) start << 32) + end);
 						else
-							return new ArrayTypeReference(TypeBinding.CHAR.simpleName, dim, ((long) start << 32) + end);
+							return new ArrayTypeReference(TypeBinding.CHAR.name, dim, ((long) start << 32) + end);
 					}
 					break;
 				case Signature.C_DOUBLE :
 					if (!nameStarted) {
 						this.namePos++;
 						if (dim == 0)
-							return new SingleTypeReference(TypeBinding.DOUBLE.simpleName, ((long) start << 32) + end);
+							return new SingleTypeReference(TypeBinding.DOUBLE.name, ((long) start << 32) + end);
 						else
-							return new ArrayTypeReference(TypeBinding.DOUBLE.simpleName, dim, ((long) start << 32) + end);
+							return new ArrayTypeReference(TypeBinding.DOUBLE.name, dim, ((long) start << 32) + end);
 					}
 					break;
 				case Signature.C_FLOAT :
 					if (!nameStarted) {
 						this.namePos++;
 						if (dim == 0)
-							return new SingleTypeReference(TypeBinding.FLOAT.simpleName, ((long) start << 32) + end);
+							return new SingleTypeReference(TypeBinding.FLOAT.name, ((long) start << 32) + end);
 						else
-							return new ArrayTypeReference(TypeBinding.FLOAT.simpleName, dim, ((long) start << 32) + end);
+							return new ArrayTypeReference(TypeBinding.FLOAT.name, dim, ((long) start << 32) + end);
 					}
 					break;
 				case Signature.C_INT :
 					if (!nameStarted) {
 						this.namePos++;
 						if (dim == 0)
-							return new SingleTypeReference(TypeBinding.INT.simpleName, ((long) start << 32) + end);
+							return new SingleTypeReference(TypeBinding.INT.name, ((long) start << 32) + end);
 						else
-							return new ArrayTypeReference(TypeBinding.INT.simpleName, dim, ((long) start << 32) + end);
+							return new ArrayTypeReference(TypeBinding.INT.name, dim, ((long) start << 32) + end);
 					}
 					break;
 				case Signature.C_LONG :
 					if (!nameStarted) {
 						this.namePos++;
 						if (dim == 0)
-							return new SingleTypeReference(TypeBinding.LONG.simpleName, ((long) start << 32) + end);
+							return new SingleTypeReference(TypeBinding.LONG.name, ((long) start << 32) + end);
 						else
-							return new ArrayTypeReference(TypeBinding.LONG.simpleName, dim, ((long) start << 32) + end);
+							return new ArrayTypeReference(TypeBinding.LONG.name, dim, ((long) start << 32) + end);
 					}
 					break;
 				case Signature.C_SHORT :
 					if (!nameStarted) {
 						this.namePos++;
 						if (dim == 0)
-							return new SingleTypeReference(TypeBinding.SHORT.simpleName, ((long) start << 32) + end);
+							return new SingleTypeReference(TypeBinding.SHORT.name, ((long) start << 32) + end);
 						else
-							return new ArrayTypeReference(TypeBinding.SHORT.simpleName, dim, ((long) start << 32) + end);
+							return new ArrayTypeReference(TypeBinding.SHORT.name, dim, ((long) start << 32) + end);
 					}
 					break;
 				case Signature.C_VOID :
 					if (!nameStarted) {
 						this.namePos++;
-						return new SingleTypeReference(TypeBinding.VOID.simpleName, ((long) start << 32) + end);
+						return new SingleTypeReference(TypeBinding.VOID.name, ((long) start << 32) + end);
 					}
 					break;
 				case Signature.C_RESOLVED :

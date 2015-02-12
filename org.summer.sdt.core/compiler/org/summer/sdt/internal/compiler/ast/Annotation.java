@@ -556,7 +556,7 @@ public abstract class Annotation extends Expression {
 		boolean sawValue = false;
 		for (int i = 0, length = annotationMethods.length; i < length; ++i) {
 			MethodBinding method = annotationMethods[i];
-			if (CharOperation.equals(method.selector, TypeConstants.VALUE)) {
+			if (CharOperation.equals(method.name, TypeConstants.VALUE)) {
 				sawValue = true;
 				//cym 2015-01-01
 //				if (method.returnType.isArrayType() && method.returnType.dimensions() == 1) {
@@ -571,7 +571,7 @@ public abstract class Annotation extends Expression {
 				// Not the value() - must have default (or else isn't suitable as container)
 				if ((method.modifiers & ClassFileConstants.AccAnnotationDefault) == 0) {
 					repeatableAnnotationType.tagAsHavingDefectiveContainerType();
-					scope.problemReporter().containerAnnotationTypeHasNonDefaultMembers(culpritNode, containerAnnotationType, method.selector);
+					scope.problemReporter().containerAnnotationTypeHasNonDefaultMembers(culpritNode, containerAnnotationType, method.name);
 				}
 			}
 		}
@@ -849,7 +849,7 @@ public abstract class Annotation extends Expression {
 
 		nextMember: for (int i = 0, requiredLength = methods.length; i < requiredLength; i++) {
 			MethodBinding method = methods[i];
-			char[] selector = method.selector;
+			char[] selector = method.name;
 			boolean foundValue = false;
 			nextPair: for (int j = 0; j < pairsLength; j++) {
 				MemberValuePair pair = pairs[j];
@@ -985,7 +985,7 @@ public abstract class Annotation extends Expression {
 			} 
 			if (kind == Binding.TYPE) {
 				SourceTypeBinding sourceType = (SourceTypeBinding) this.recipient;
-				if (CharOperation.equals(sourceType.sourceName, TypeConstants.PACKAGE_INFO_NAME))
+				if (CharOperation.equals(sourceType.name, TypeConstants.PACKAGE_INFO_NAME))
 					kind = Binding.PACKAGE;
 			}
 			checkAnnotationTarget(this, scope, annotationType, kind);
@@ -1041,7 +1041,7 @@ public abstract class Annotation extends Expression {
 				} else if ((metaTagBits & (TagBits.AnnotationForType | TagBits.AnnotationForTypeUse)) != 0) {
 					return true;
 				} else if ((metaTagBits & TagBits.AnnotationForPackage) != 0) {
-					if (CharOperation.equals(((ReferenceBinding) annotation.recipient).sourceName, TypeConstants.PACKAGE_INFO_NAME))
+					if (CharOperation.equals(((ReferenceBinding) annotation.recipient).name, TypeConstants.PACKAGE_INFO_NAME))
 						return true;
 				}
 				break;

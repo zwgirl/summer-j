@@ -6,7 +6,7 @@ import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.impl.Constant;
 
 public class IndexerBinding extends FieldBinding {
-	public TypeBinding[] parameters;
+//	public TypeBinding[] parameters;
 	public static final char[] THIS = "this".toCharArray();
 	
 	protected IndexerBinding() {

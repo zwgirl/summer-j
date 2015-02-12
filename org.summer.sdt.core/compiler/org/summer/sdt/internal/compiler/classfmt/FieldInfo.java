@@ -33,6 +33,10 @@ public class FieldInfo extends ClassFileStruct implements IBinaryField, Comparab
 	protected long tagBits;
 	protected Object wrappedConstantValue;
 	
+	//cym 2015-02-10
+	protected char[][] exceptionNames;
+	protected char[][] argumentNames;
+	
 	//cym 2014-12-04 for indexer parameters
 	static private final char[][] noParameters = CharOperation.NO_CHAR_CHAR;
 	protected char[][] parameters = noParameters;
@@ -259,6 +263,17 @@ public class FieldInfo extends ClassFileStruct implements IBinaryField, Comparab
 		}
 		return this.descriptor;
 	}
+	
+	//cym 2015-02-12
+	public char[] getFieldDescriptor() {
+		if (this.descriptor == null) {
+			// read the name
+			int utf8Offset = this.constantPoolOffsets[u2At(4)] - this.structOffset;
+			this.descriptor = utf8At(utf8Offset + 3, u2At(utf8Offset + 1));
+		}
+		return this.descriptor;
+	}
+	
 	/**
 	 * @return the annotations or null if there is none.
 	 */

@@ -620,7 +620,7 @@ public class QualifiedAllocationExpression extends AllocationExpression {
 			output.append("((function() {");
 			anonymousType.generateClassContent(this.anonymousType, indent + 1, output);
 			output.append('\n');
-			printIndent(indent + 1, output).append("return ").append(anonymousType.binding.sourceName).append(";");
+			printIndent(indent + 1, output).append("return ").append(anonymousType.binding.name).append(";");
 			output.append('\n');
 			printIndent(indent, output);
 			output.append("})())");
@@ -640,7 +640,7 @@ public class QualifiedAllocationExpression extends AllocationExpression {
 			enclosingInstance.doGenerateExpression(scope, indent, output);
 			output.append("};\n");
 			if(this.binding.declaringClass.isNestedType()){
-				printIndent(indent + 1, output).append(this.binding.declaringClass.sourceName).append(".call(r");
+				printIndent(indent + 1, output).append(this.binding.declaringClass.name).append(".call(r");
 			} else {
 //				printIndent(indent + 1, output).append(this.binding.declaringClass..sourceName).append(".call(r");
 			}

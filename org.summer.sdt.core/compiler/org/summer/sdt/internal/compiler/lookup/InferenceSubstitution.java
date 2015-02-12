@@ -76,7 +76,7 @@ public class InferenceSubstitution extends Scope.Substitutor implements Substitu
 			}
 		}
 		if (hasSubstituted) {
-			typeVariable = new TypeVariableBinding(typeVariable.sourceName, typeVariable.declaringElement, typeVariable.rank, this.environment);
+			typeVariable = new TypeVariableBinding(typeVariable.name, typeVariable.declaringElement, typeVariable.rank, this.environment);
 			typeVariable.superclass = superclass;
 			typeVariable.superInterfaces = superInterfaces;
 			typeVariable.firstBound = superclass != null ? superclass : superInterfaces[0];

@@ -144,7 +144,7 @@ public final class LocalTypeBinding extends NestedTypeBinding {
 		// insert $LocalName if local
 		if (!isAnonymousType()) {
 			sig.append('$');
-			sig.append(this.sourceName);
+			sig.append(this.name);
 		}
 	
 		// insert remaining from outer key
@@ -202,9 +202,9 @@ public final class LocalTypeBinding extends NestedTypeBinding {
 		if (isAnonymousType()) {
 			readableName = CharOperation.concat(TypeConstants.ANONYM_PREFIX, anonymousOriginalSuperType().readableName(), TypeConstants.ANONYM_SUFFIX);
 		} else if (isMemberType()) {
-			readableName = CharOperation.concat(enclosingType().readableName(), this.sourceName, '.');
+			readableName = CharOperation.concat(enclosingType().readableName(), this.name, '.');
 		} else {
-			readableName = this.sourceName;
+			readableName = this.name;
 		}
 		TypeVariableBinding[] typeVars;
 		if ((typeVars = typeVariables()) != Binding.NO_TYPE_VARIABLES) {
@@ -227,9 +227,9 @@ public final class LocalTypeBinding extends NestedTypeBinding {
 		if (isAnonymousType()) {
 			shortReadableName = CharOperation.concat(TypeConstants.ANONYM_PREFIX, anonymousOriginalSuperType().shortReadableName(), TypeConstants.ANONYM_SUFFIX);
 		} else if (isMemberType()) {
-			shortReadableName = CharOperation.concat(enclosingType().shortReadableName(), this.sourceName, '.');
+			shortReadableName = CharOperation.concat(enclosingType().shortReadableName(), this.name, '.');
 		} else {
-			shortReadableName = this.sourceName;
+			shortReadableName = this.name;
 		}
 		TypeVariableBinding[] typeVars;
 		if ((typeVars = typeVariables()) != Binding.NO_TYPE_VARIABLES) {
@@ -289,7 +289,7 @@ public final class LocalTypeBinding extends NestedTypeBinding {
 		if (isAnonymousType()) {
 			return CharOperation.concat(TypeConstants.ANONYM_PREFIX, anonymousOriginalSuperType().sourceName(), TypeConstants.ANONYM_SUFFIX);
 		} else
-			return this.sourceName;
+			return this.name;
 	}
 	
 	public String toString() {

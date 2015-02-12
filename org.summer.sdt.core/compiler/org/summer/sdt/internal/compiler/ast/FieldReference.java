@@ -832,7 +832,7 @@ public class FieldReference extends Reference implements InvocationSite {
 		}
 		
 		if(this.binding.isStatic()){
-			output.append(this.binding.declaringClass.sourceName);
+			output.append(this.binding.declaringClass.name);
 			output.append('.').append(this.token);
 		} else if(this.receiver.isThis() || this.receiver.isSuper()){
 			output.append("this.").append(this.token);

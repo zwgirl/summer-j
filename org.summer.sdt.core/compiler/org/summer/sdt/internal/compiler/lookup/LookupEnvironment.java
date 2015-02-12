@@ -854,7 +854,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 	}
 	public PolymorphicMethodBinding createPolymorphicMethod(MethodBinding originalPolymorphicMethod, TypeBinding[] parameters) {
 		// cached info is array of already created polymorphic methods for this type
-		String key = new String(originalPolymorphicMethod.selector);
+		String key = new String(originalPolymorphicMethod.name);
 		PolymorphicMethodBinding[] cachedInfo = (PolymorphicMethodBinding[]) this.uniquePolymorphicMethodBindings.get(key);
 		int parametersLength = parameters == null ? 0: parameters.length;
 		TypeBinding[] parametersTypeBinding = new TypeBinding[parametersLength]; 
@@ -905,7 +905,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 	
 	public MethodBinding updatePolymorphicMethodReturnType(PolymorphicMethodBinding binding, TypeBinding typeBinding) {
 		// update the return type to be the given return type, but reuse existing binding if one can match
-		String key = new String(binding.selector);
+		String key = new String(binding.name);
 		PolymorphicMethodBinding[] cachedInfo = (PolymorphicMethodBinding[]) this.uniquePolymorphicMethodBindings.get(key);
 		boolean needToGrow = false;
 		int index = 0;
@@ -1445,7 +1445,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 		    int varStart = wrapper.start + 1;
 		    int varEnd = wrapper.computeEnd();
 			for (int i = staticVariables.length; --i >= 0;)
-				if (CharOperation.equals(staticVariables[i].sourceName, wrapper.signature, varStart, varEnd))
+				if (CharOperation.equals(staticVariables[i].name, wrapper.signature, varStart, varEnd))
 					return getTypeFromTypeVariable(staticVariables[i], dimension, annotationsOnDimensions, walker, missingTypeNames);
 		    ReferenceBinding initialType = enclosingType;
 			do {
@@ -1456,7 +1456,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 					enclosingTypeVariables = enclosingType.typeVariables();
 				}
 				for (int i = enclosingTypeVariables.length; --i >= 0;)
-					if (CharOperation.equals(enclosingTypeVariables[i].sourceName, wrapper.signature, varStart, varEnd))
+					if (CharOperation.equals(enclosingTypeVariables[i].name, wrapper.signature, varStart, varEnd))
 						return getTypeFromTypeVariable(enclosingTypeVariables[i], dimension, annotationsOnDimensions, walker, missingTypeNames);
 			} while ((enclosingType = enclosingType.enclosingType()) != null);
 			this.problemReporter.undefinedTypeVariableSignature(CharOperation.subarray(wrapper.signature, varStart, varEnd), initialType);
@@ -1553,7 +1553,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 	boolean isMissingType(char[] typeName) {
 		for (int i = this.missingTypes == null ? 0 : this.missingTypes.size(); --i >= 0;) {
 			MissingTypeBinding missingType = (MissingTypeBinding) this.missingTypes.get(i);
-			if (CharOperation.equals(missingType.sourceName, typeName))
+			if (CharOperation.equals(missingType.name, typeName))
 				return true;
 		}
 		return false;

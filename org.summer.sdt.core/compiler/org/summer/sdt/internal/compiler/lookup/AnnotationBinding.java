@@ -228,7 +228,7 @@ public class AnnotationBinding {
 	
 	public String toString() {
 		StringBuffer buffer = new StringBuffer(5);
-		buffer.append('@').append(this.type.sourceName);
+		buffer.append('@').append(this.type.name);
 		if (this.pairs != null && this.pairs.length > 0) {
 			buffer.append('(');
 			if (this.pairs.length == 1 && CharOperation.equals(this.pairs[0].getName(), TypeConstants.VALUE)) {

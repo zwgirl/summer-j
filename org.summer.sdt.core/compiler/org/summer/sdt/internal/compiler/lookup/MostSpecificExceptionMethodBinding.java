@@ -24,7 +24,7 @@ public class MostSpecificExceptionMethodBinding  extends MethodBinding {
 	public MostSpecificExceptionMethodBinding (MethodBinding originalMethod, ReferenceBinding[] mostSpecificExceptions) {
 		super(
 				originalMethod.modifiers, 
-				originalMethod.selector, 
+				originalMethod.name, 
 				originalMethod.returnType, 
 				originalMethod.parameters, 
 				mostSpecificExceptions, 

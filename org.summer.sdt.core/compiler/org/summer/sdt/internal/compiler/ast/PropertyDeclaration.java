@@ -237,9 +237,9 @@ public class PropertyDeclaration extends FieldDeclaration {
 		printIndent(indent, output);
 		output.append("Object.defineProperty(");
 		if(this.isStatic()){
-			output.append(binding.declaringClass.sourceName);
+			output.append(binding.declaringClass.name);
 		} else {
-			output.append(binding.declaringClass.sourceName).append(".prototype");
+			output.append(binding.declaringClass.name).append(".prototype");
 		}
 		
 		output.append(", \"").append(this.name).append("\", ").append('{').append("\n");

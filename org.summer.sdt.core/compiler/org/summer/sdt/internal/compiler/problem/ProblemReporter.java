@@ -806,12 +806,12 @@ public class ProblemReporter extends ProblemHandler {
 				// 8.4.3 - Every non-abstract subclass of an abstract type, A, must provide a concrete implementation of all of A's methods.
 				IProblem.EnumConstantMustImplementAbstractMethod,
 				new String[] {
-				        new String(abstractMethod.selector),
+				        new String(abstractMethod.name),
 				        typesAsString(abstractMethod, false),
 				        new String(decl.name),
 				},
 				new String[] {
-				        new String(abstractMethod.selector),
+				        new String(abstractMethod.name),
 				        typesAsString(abstractMethod, true),
 				        new String(decl.name),
 				},
@@ -823,13 +823,13 @@ public class ProblemReporter extends ProblemHandler {
 				// 8.4.3 - Every non-abstract subclass of an abstract type, A, must provide a concrete implementation of all of A's methods.
 				IProblem.AbstractMethodMustBeImplemented,
 				new String[] {
-				        new String(abstractMethod.selector),
+				        new String(abstractMethod.name),
 				        typesAsString(abstractMethod, false),
 				        new String(abstractMethod.declaringClass.readableName()),
 				        new String(type.readableName()),
 				},
 				new String[] {
-				        new String(abstractMethod.selector),
+				        new String(abstractMethod.name),
 				        typesAsString(abstractMethod, true),
 				        new String(abstractMethod.declaringClass.shortReadableName()),
 				        new String(type.shortReadableName()),
@@ -844,20 +844,20 @@ public class ProblemReporter extends ProblemHandler {
 			// 8.4.3 - Every non-abstract subclass of an abstract type, A, must provide a concrete implementation of all of A's methods.
 			IProblem.AbstractMethodMustBeImplementedOverConcreteMethod,
 			new String[] {
-			        new String(abstractMethod.selector),
+			        new String(abstractMethod.name),
 			        typesAsString(abstractMethod, false),
 			        new String(abstractMethod.declaringClass.readableName()),
 			        new String(type.readableName()),
-			        new String(concreteMethod.selector),
+			        new String(concreteMethod.name),
 			        typesAsString(concreteMethod, false),
 			        new String(concreteMethod.declaringClass.readableName()),
 			},
 			new String[] {
-			        new String(abstractMethod.selector),
+			        new String(abstractMethod.name),
 			        typesAsString(abstractMethod, true),
 			        new String(abstractMethod.declaringClass.shortReadableName()),
 			        new String(type.shortReadableName()),
-			        new String(concreteMethod.selector),
+			        new String(concreteMethod.name),
 			        typesAsString(concreteMethod, true),
 			        new String(concreteMethod.declaringClass.shortReadableName()),
 			},
@@ -890,12 +890,12 @@ public class ProblemReporter extends ProblemHandler {
 			new String[] {
 					new String(overrideMethod.declaringClass.readableName()),
 					new String(inheritedMethod.declaringClass.readableName()),
-					new String(inheritedMethod.selector),
+					new String(inheritedMethod.name),
 					typesAsString(inheritedMethod, false)},
 			new String[] {
 					new String(overrideMethod.declaringClass.shortReadableName()),
 					new String(inheritedMethod.declaringClass.shortReadableName()),
-					new String(inheritedMethod.selector),
+					new String(inheritedMethod.name),
 					typesAsString(inheritedMethod, true)},
 			location.sourceStart,
 			location.sourceEnd);
@@ -1139,8 +1139,8 @@ public class ProblemReporter extends ProblemHandler {
 		MethodBinding method = location.binding;
 			this.handle(
 				IProblem.BytecodeExceeds64KLimit,
-				new String[] {new String(method.selector), typesAsString(method, false)},
-				new String[] {new String(method.selector), typesAsString(method, true)},
+				new String[] {new String(method.name), typesAsString(method, false)},
+				new String[] {new String(method.name), typesAsString(method, true)},
 				ProblemSeverities.Error | ProblemSeverities.Abort | ProblemSeverities.Fatal,
 				location.sourceStart,
 				location.diagnosticsSourceEnd());
@@ -1211,8 +1211,8 @@ public class ProblemReporter extends ProblemHandler {
 	public void cannotDireclyInvokeAbstractMethod(ASTNode invocationSite, MethodBinding method) {
 		this.handle(
 			IProblem.DirectInvocationOfAbstractMethod,
-			new String[] {new String(method.declaringClass.readableName()), new String(method.selector), typesAsString(method, false)},
-			new String[] {new String(method.declaringClass.shortReadableName()), new String(method.selector), typesAsString(method, true)},
+			new String[] {new String(method.declaringClass.readableName()), new String(method.name), typesAsString(method, false)},
+			new String[] {new String(method.declaringClass.shortReadableName()), new String(method.name), typesAsString(method, true)},
 			invocationSite.sourceStart,
 			invocationSite.sourceEnd);
 	}
@@ -1409,7 +1409,7 @@ public class ProblemReporter extends ProblemHandler {
 				type.sourceEnd);
 	}
 	public void lambdaExpressionCannotImplementGenericMethod(LambdaExpression lambda, MethodBinding sam) {
-		final String selector = new String(sam.selector);
+		final String selector = new String(sam.name);
 		this.handle(
 				IProblem.NoGenericLambda, 
 				new String[] { selector, new String(sam.declaringClass.readableName())},
@@ -1677,8 +1677,8 @@ public class ProblemReporter extends ProblemHandler {
 			}
 			this.handle(
 				IProblem.UsingDeprecatedMethod,
-				new String[] {new String(method.declaringClass.readableName()), new String(method.selector), typesAsString(method, false)},
-				new String[] {new String(method.declaringClass.shortReadableName()), new String(method.selector), typesAsString(method, true)},
+				new String[] {new String(method.declaringClass.readableName()), new String(method.name), typesAsString(method, false)},
+				new String[] {new String(method.declaringClass.shortReadableName()), new String(method.name), typesAsString(method, true)},
 				severity,
 				(start == -1) ? location.sourceStart : start,
 				location.sourceEnd);
@@ -1842,14 +1842,14 @@ public class ProblemReporter extends ProblemHandler {
 			this.handle(
 				problemID,
 				new String[] {
-			        new String(inheritedMethod1.selector),
+			        new String(inheritedMethod1.name),
 					typesAsString(inheritedMethod1, inheritedMethod1.original().parameters, false),
 					typesAsString(inheritedMethod2, inheritedMethod2.original().parameters, false),
 					new String(inheritedMethod1.declaringClass.readableName()),
 					new String(inheritedMethod2.declaringClass.readableName()),
 				},
 				new String[] {
-					new String(inheritedMethod1.selector),
+					new String(inheritedMethod1.name),
 					typesAsString(inheritedMethod1, inheritedMethod1.original().parameters, true),
 					typesAsString(inheritedMethod2, inheritedMethod2.original().parameters, true),
 					new String(inheritedMethod1.declaringClass.shortReadableName()),
@@ -1863,12 +1863,12 @@ public class ProblemReporter extends ProblemHandler {
 		this.handle(
 			IProblem.DuplicateParameterizedMethods,
 			new String[] {
-		        new String(inheritedMethod1.selector),
+		        new String(inheritedMethod1.name),
 				new String(inheritedMethod1.declaringClass.readableName()),
 				typesAsString(inheritedMethod1, inheritedMethod1.original().parameters, false),
 				typesAsString(inheritedMethod2, inheritedMethod2.original().parameters, false)},
 			new String[] {
-				new String(inheritedMethod1.selector),
+				new String(inheritedMethod1.name),
 				new String(inheritedMethod1.declaringClass.shortReadableName()),
 				typesAsString(inheritedMethod1, inheritedMethod1.original().parameters, true),
 				typesAsString(inheritedMethod2, inheritedMethod2.original().parameters, true)},
@@ -2040,12 +2040,12 @@ public class ProblemReporter extends ProblemHandler {
 			// 8.4.3 - Every non-abstract subclass of an abstract type, A, must provide a concrete implementation of all of A's methods.
 			IProblem.EnumAbstractMethodMustBeImplemented,
 			new String[] {
-			        new String(abstractMethod.selector),
+			        new String(abstractMethod.name),
 			        typesAsString(abstractMethod, false),
 			        new String(abstractMethod.declaringClass.readableName()),
 			},
 			new String[] {
-			        new String(abstractMethod.selector),
+			        new String(abstractMethod.name),
 			        typesAsString(abstractMethod, true),
 			        new String(abstractMethod.declaringClass.shortReadableName()),
 			},
@@ -2057,12 +2057,12 @@ public class ProblemReporter extends ProblemHandler {
 		this.handle(
 			IProblem.EnumConstantMustImplementAbstractMethod,
 			new String[] {
-			        new String(abstractMethod.selector),
+			        new String(abstractMethod.name),
 			        typesAsString(abstractMethod, false),
 			        new String(field.name),
 			},
 			new String[] {
-			        new String(abstractMethod.selector),
+			        new String(abstractMethod.name),
 			        typesAsString(abstractMethod, true),
 			        new String(field.name),
 			},
@@ -2554,7 +2554,7 @@ public class ProblemReporter extends ProblemHandler {
 		if ((location.bits & ASTNode.InsideJavadoc)!= 0) {
 			javadocInvalidReference(location.sourceStart, location.sourceEnd);
 		} else {
-			String[] arguments = new String[] { new String(variable.sourceName) };
+			String[] arguments = new String[] { new String(variable.name) };
 			this.handle(
 					IProblem.IllegalAccessFromTypeVariable,
 					arguments,
@@ -2564,7 +2564,7 @@ public class ProblemReporter extends ProblemHandler {
 		}
 	}
 	public void illegalClassLiteralForTypeVariable(TypeVariableBinding variable, ASTNode location) {
-		String[] arguments = new String[] { new String(variable.sourceName) };
+		String[] arguments = new String[] { new String(variable.name) };
 		this.handle(
 			IProblem.IllegalClassLiteralForTypeVariable,
 			arguments,
@@ -3362,8 +3362,8 @@ public class ProblemReporter extends ProblemHandler {
 		if (severity == ProblemSeverities.Ignore) return;
 		this.handle(
 			IProblem.IndirectAccessToStaticMethod,
-			new String[] {new String(method.declaringClass.readableName()), new String(method.selector), typesAsString(method, false)},
-			new String[] {new String(method.declaringClass.shortReadableName()), new String(method.selector), typesAsString(method, true)},
+			new String[] {new String(method.declaringClass.readableName()), new String(method.name), typesAsString(method, false)},
+			new String[] {new String(method.declaringClass.shortReadableName()), new String(method.name), typesAsString(method, true)},
 			severity,
 			location.sourceStart,
 			location.sourceEnd);
@@ -3472,14 +3472,14 @@ public class ProblemReporter extends ProblemHandler {
 		this.handle(
 			IProblem.MethodNameClash,
 			new String[] {
-				new String(oneMethod.selector),
+				new String(oneMethod.name),
 				typesAsString(oneMethod.original(), false),
 				new String(oneMethod.declaringClass.readableName()),
 				typesAsString(twoMethod.original(), false),
 				new String(twoMethod.declaringClass.readableName()),
 			 },
 			new String[] {
-				new String(oneMethod.selector),
+				new String(oneMethod.name),
 				typesAsString(oneMethod.original(), true),
 				new String(oneMethod.declaringClass.shortReadableName()),
 				typesAsString(twoMethod.original(), true),
@@ -3780,7 +3780,7 @@ public class ProblemReporter extends ProblemHandler {
 	public void invalidEnclosingType(Expression expression, TypeBinding type, ReferenceBinding enclosingType) {
 	
 		if (enclosingType.isAnonymousType()) enclosingType = enclosingType.superclass();
-		if (enclosingType.sourceName != null && enclosingType.sourceName.length == 0) return;
+		if (enclosingType.name != null && enclosingType.name.length == 0) return;
 	
 		int flag = IProblem.UndefinedType; // default
 		switch (type.problemId()) {
@@ -4250,13 +4250,13 @@ public class ProblemReporter extends ProblemHandler {
 							IProblem.ParameterMismatch,
 							new String[] {
 								new String(shownMethod.declaringClass.readableName()),
-								new String(shownMethod.selector),
+								new String(shownMethod.name),
 								closestParameterTypeNames,
 								parameterTypeNames
 							},
 							new String[] {
 								new String(shownMethod.declaringClass.shortReadableName()),
-								new String(shownMethod.selector),
+								new String(shownMethod.name),
 								closestParameterTypeShortNames,
 								parameterTypeShortNames
 							},
@@ -4289,11 +4289,11 @@ public class ProblemReporter extends ProblemHandler {
 						IProblem.NonStaticOrAlienTypeReceiver,
 						new String[] {
 								new String(method.declaringClass.readableName()),
-						        new String(method.selector),
+						        new String(method.name),
 						},
 						new String[] {
 								new String(method.declaringClass.shortReadableName()),
-						        new String(method.selector),
+						        new String(method.name),
 						},
 						(int) (messageSend.nameSourcePosition >>> 32),
 						(int) messageSend.nameSourcePosition);
@@ -4318,7 +4318,7 @@ public class ProblemReporter extends ProblemHandler {
 				this.handle(
 					IProblem.GenericMethodTypeArgumentMismatch,
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, false),
 					        new String(shownMethod.declaringClass.readableName()),
 					        typesAsString(invocationArguments, false),
@@ -4326,7 +4326,7 @@ public class ProblemReporter extends ProblemHandler {
 					        new String(typeParameter.sourceName()),
 					        parameterBoundAsString(typeParameter, false) },
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, true),
 					        new String(shownMethod.declaringClass.shortReadableName()),
 					        typesAsString(invocationArguments, true),
@@ -4343,12 +4343,12 @@ public class ProblemReporter extends ProblemHandler {
 					this.handle(
 						IProblem.NonGenericMethod ,
 						new String[] {
-						        new String(shownMethod.selector),
+						        new String(shownMethod.name),
 						        typesAsString(shownMethod, false),
 						        new String(shownMethod.declaringClass.readableName()),
 						        typesAsString(method, false) },
 						new String[] {
-						        new String(shownMethod.selector),
+						        new String(shownMethod.name),
 						        typesAsString(shownMethod, true),
 						        new String(shownMethod.declaringClass.shortReadableName()),
 						        typesAsString(method, true) },
@@ -4358,13 +4358,13 @@ public class ProblemReporter extends ProblemHandler {
 					this.handle(
 						IProblem.IncorrectArityForParameterizedMethod  ,
 						new String[] {
-						        new String(shownMethod.selector),
+						        new String(shownMethod.name),
 						        typesAsString(shownMethod, false),
 						        new String(shownMethod.declaringClass.readableName()),
 								typesAsString(shownMethod.typeVariables, false),
 						        typesAsString(method, false) },
 						new String[] {
-						        new String(shownMethod.selector),
+						        new String(shownMethod.name),
 						        typesAsString(shownMethod, true),
 						        new String(shownMethod.declaringClass.shortReadableName()),
 								typesAsString(shownMethod.typeVariables, true),
@@ -4379,13 +4379,13 @@ public class ProblemReporter extends ProblemHandler {
 				this.handle(
 					IProblem.ParameterizedMethodArgumentTypeMismatch,
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, false),
 					        new String(shownMethod.declaringClass.readableName()),
 							typesAsString(((ParameterizedGenericMethodBinding)shownMethod).typeArguments, false),
 					        typesAsString(method, false) },
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, true),
 					        new String(shownMethod.declaringClass.shortReadableName()),
 							typesAsString(((ParameterizedGenericMethodBinding)shownMethod).typeArguments, true),
@@ -4399,12 +4399,12 @@ public class ProblemReporter extends ProblemHandler {
 				this.handle(
 					IProblem.TypeArgumentsForRawGenericMethod ,
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, false),
 					        new String(shownMethod.declaringClass.readableName()),
 					        typesAsString(method, false) },
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, true),
 					        new String(shownMethod.declaringClass.shortReadableName()),
 					        typesAsString(method, true) },
@@ -4439,13 +4439,13 @@ public class ProblemReporter extends ProblemHandler {
 				this.handle(
 					IProblem.VarargsElementTypeNotVisible,
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, false),
 					        new String(shownMethod.declaringClass.readableName()),
 					        new String(varargsElementType.readableName())
 					},
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, true),
 					        new String(shownMethod.declaringClass.shortReadableName()),
 					        new String(varargsElementType.shortReadableName())
@@ -4461,12 +4461,12 @@ public class ProblemReporter extends ProblemHandler {
 				this.handle(
 					IProblem.ApplicableMethodOverriddenByInapplicable,
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, false),
 					        new String(shownMethod.declaringClass.readableName()),
 					},
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, true),
 					        new String(shownMethod.declaringClass.shortReadableName()),
 					},
@@ -4486,10 +4486,10 @@ public class ProblemReporter extends ProblemHandler {
 			id,
 			new String[] {
 				new String(method.declaringClass.readableName()),
-				new String(shownMethod.selector), typesAsString(shownMethod, false)},
+				new String(shownMethod.name), typesAsString(shownMethod, false)},
 			new String[] {
 				new String(method.declaringClass.shortReadableName()),
-				new String(shownMethod.selector), typesAsString(shownMethod, true)},
+				new String(shownMethod.name), typesAsString(shownMethod, true)},
 			(int) (messageSend.nameSourcePosition >>> 32),
 			(int) messageSend.nameSourcePosition);
 	}
@@ -5006,8 +5006,8 @@ public class ProblemReporter extends ProblemHandler {
 			} else {
 				this.handle(
 					IProblem.JavadocUsingDeprecatedMethod,
-					new String[] {new String(method.declaringClass.readableName()), new String(method.selector), typesAsString(method, false)},
-					new String[] {new String(method.declaringClass.shortReadableName()), new String(method.selector), typesAsString(method, true)},
+					new String[] {new String(method.declaringClass.readableName()), new String(method.name), typesAsString(method, false)},
+					new String[] {new String(method.declaringClass.shortReadableName()), new String(method.name), typesAsString(method, true)},
 					severity,
 					location.sourceStart,
 					location.sourceEnd);
@@ -5355,13 +5355,13 @@ public class ProblemReporter extends ProblemHandler {
 						IProblem.JavadocParameterMismatch,
 						new String[] {
 							new String(problemMethod.closestMatch.declaringClass.readableName()),
-							new String(problemMethod.closestMatch.selector),
+							new String(problemMethod.closestMatch.name),
 							closestParameterTypeNames,
 							parameterTypeNames
 						},
 						new String[] {
 							new String(problemMethod.closestMatch.declaringClass.shortReadableName()),
-							new String(problemMethod.closestMatch.selector),
+							new String(problemMethod.closestMatch.name),
 							closestParameterTypeShortNames,
 							parameterTypeShortNames
 						},
@@ -5391,7 +5391,7 @@ public class ProblemReporter extends ProblemHandler {
 				this.handle(
 					IProblem.JavadocGenericMethodTypeArgumentMismatch,
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, false),
 					        new String(shownMethod.declaringClass.readableName()),
 					        typesAsString(invocationArguments, false),
@@ -5399,7 +5399,7 @@ public class ProblemReporter extends ProblemHandler {
 					        new String(typeParameter.sourceName()),
 					        parameterBoundAsString(typeParameter, false) },
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, true),
 					        new String(shownMethod.declaringClass.shortReadableName()),
 					        typesAsString(invocationArguments, true),
@@ -5420,12 +5420,12 @@ public class ProblemReporter extends ProblemHandler {
 					this.handle(
 						IProblem.JavadocNonGenericMethod,
 						new String[] {
-						        new String(shownMethod.selector),
+						        new String(shownMethod.name),
 						        typesAsString(shownMethod, false),
 						        new String(shownMethod.declaringClass.readableName()),
 						        typesAsString(method, false) },
 						new String[] {
-						        new String(shownMethod.selector),
+						        new String(shownMethod.name),
 						        typesAsString(shownMethod, true),
 						        new String(shownMethod.declaringClass.shortReadableName()),
 						        typesAsString(method, true) },
@@ -5436,13 +5436,13 @@ public class ProblemReporter extends ProblemHandler {
 					this.handle(
 						IProblem.JavadocIncorrectArityForParameterizedMethod,
 						new String[] {
-						        new String(shownMethod.selector),
+						        new String(shownMethod.name),
 						        typesAsString(shownMethod, false),
 						        new String(shownMethod.declaringClass.readableName()),
 								typesAsString(shownMethod.typeVariables, false),
 						        typesAsString(method, false) },
 						new String[] {
-						        new String(shownMethod.selector),
+						        new String(shownMethod.name),
 						        typesAsString(shownMethod, true),
 						        new String(shownMethod.declaringClass.shortReadableName()),
 								typesAsString(shownMethod.typeVariables, true),
@@ -5460,13 +5460,13 @@ public class ProblemReporter extends ProblemHandler {
 				this.handle(
 					IProblem.JavadocParameterizedMethodArgumentTypeMismatch,
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, false),
 					        new String(shownMethod.declaringClass.readableName()),
 							typesAsString(((ParameterizedGenericMethodBinding)shownMethod).typeArguments, false),
 					        typesAsString(method, false) },
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, true),
 					        new String(shownMethod.declaringClass.shortReadableName()),
 							typesAsString(((ParameterizedGenericMethodBinding)shownMethod).typeArguments, true),
@@ -5483,12 +5483,12 @@ public class ProblemReporter extends ProblemHandler {
 				this.handle(
 					IProblem.JavadocTypeArgumentsForRawGenericMethod,
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, false),
 					        new String(shownMethod.declaringClass.readableName()),
 					        typesAsString(method, false) },
 					new String[] {
-					        new String(shownMethod.selector),
+					        new String(shownMethod.name),
 					        typesAsString(shownMethod, true),
 					        new String(shownMethod.declaringClass.shortReadableName()),
 					        typesAsString(method, true) },
@@ -5508,10 +5508,10 @@ public class ProblemReporter extends ProblemHandler {
 			id,
 			new String[] {
 				new String(method.declaringClass.readableName()),
-				new String(method.selector), typesAsString(method, false)},
+				new String(method.name), typesAsString(method, false)},
 			new String[] {
 				new String(method.declaringClass.shortReadableName()),
-				new String(method.selector), typesAsString(method, true)},
+				new String(method.name), typesAsString(method, true)},
 			severity,
 			(int) (messageSend.nameSourcePosition >>> 32),
 			(int) messageSend.nameSourcePosition);
@@ -6111,8 +6111,8 @@ public class ProblemReporter extends ProblemHandler {
 		MethodBinding binding = method.binding;
 		this.handle(
 			complianceLevel == ClassFileConstants.JDK1_5 ? IProblem.MethodMustOverride : IProblem.MethodMustOverrideOrImplement,
-			new String[] {new String(binding.selector), typesAsString(binding, false), new String(binding.declaringClass.readableName()), },
-			new String[] {new String(binding.selector), typesAsString(binding, true), new String(binding.declaringClass.shortReadableName()),},
+			new String[] {new String(binding.name), typesAsString(binding, false), new String(binding.declaringClass.readableName()), },
+			new String[] {new String(binding.name), typesAsString(binding, true), new String(binding.declaringClass.shortReadableName()),},
 			method.sourceStart,
 			method.sourceEnd);
 	}
@@ -6121,14 +6121,14 @@ public class ProblemReporter extends ProblemHandler {
 		this.handle(
 			IProblem.MethodNameClash,
 			new String[] {
-				new String(currentMethod.selector),
+				new String(currentMethod.name),
 				typesAsString(currentMethod, false),
 				new String(currentMethod.declaringClass.readableName()),
 				typesAsString(inheritedMethod, false),
 				new String(inheritedMethod.declaringClass.readableName()),
 			 },
 			new String[] {
-				new String(currentMethod.selector),
+				new String(currentMethod.name),
 				typesAsString(currentMethod, true),
 				new String(currentMethod.declaringClass.shortReadableName()),
 				typesAsString(inheritedMethod, true),
@@ -6143,14 +6143,14 @@ public class ProblemReporter extends ProblemHandler {
 		this.handle(
 			IProblem.MethodNameClashHidden,
 			new String[] {
-				new String(currentMethod.selector),
+				new String(currentMethod.name),
 				typesAsString(currentMethod, currentMethod.parameters, false),
 				new String(currentMethod.declaringClass.readableName()),
 				typesAsString(inheritedMethod, inheritedMethod.parameters, false),
 				new String(inheritedMethod.declaringClass.readableName()),
 			 },
 			new String[] {
-				new String(currentMethod.selector),
+				new String(currentMethod.name),
 				typesAsString(currentMethod, currentMethod.parameters, true),
 				new String(currentMethod.declaringClass.shortReadableName()),
 				typesAsString(inheritedMethod, inheritedMethod.parameters, true),
@@ -6195,12 +6195,12 @@ public class ProblemReporter extends ProblemHandler {
 				IProblem.MethodCanBeStatic,
 			new String[] {
 				new String(method.declaringClass.readableName()),
-				new String(method.selector),
+				new String(method.name),
 				typesAsString(method, false)
 			 },
 			new String[] {
 				new String(method.declaringClass.shortReadableName()),
-				new String(method.selector),
+				new String(method.name),
 				typesAsString(method, true)
 			 },
 			severity,
@@ -6216,12 +6216,12 @@ public class ProblemReporter extends ProblemHandler {
 				IProblem.MethodCanBePotentiallyStatic,
 			new String[] {
 				new String(method.declaringClass.readableName()),
-				new String(method.selector),
+				new String(method.name),
 				typesAsString(method, false)
 			 },
 			new String[] {
 				new String(method.declaringClass.shortReadableName()),
-				new String(method.selector),
+				new String(method.name),
 				typesAsString(method, true)
 			 },
 			severity,
@@ -6248,8 +6248,8 @@ public class ProblemReporter extends ProblemHandler {
 		MethodBinding binding = method.binding;
 		this.handle(
 			IProblem.MethodMissingDeprecatedAnnotation,
-			new String[] {new String(binding.selector), typesAsString(binding, false), new String(binding.declaringClass.readableName()), },
-			new String[] {new String(binding.selector), typesAsString(binding, true), new String(binding.declaringClass.shortReadableName()),},
+			new String[] {new String(binding.name), typesAsString(binding, false), new String(binding.declaringClass.readableName()), },
+			new String[] {new String(binding.name), typesAsString(binding, true), new String(binding.declaringClass.shortReadableName()),},
 			severity,
 			method.sourceStart,
 			method.sourceEnd);
@@ -6307,8 +6307,8 @@ public class ProblemReporter extends ProblemHandler {
 		MethodBinding binding = method.binding;
 		this.handle(
 			IProblem.MissingOverrideAnnotation,
-			new String[] {new String(binding.selector), typesAsString(binding, false), new String(binding.declaringClass.readableName()), },
-			new String[] {new String(binding.selector), typesAsString(binding, true), new String(binding.declaringClass.shortReadableName()),},
+			new String[] {new String(binding.name), typesAsString(binding, false), new String(binding.declaringClass.readableName()), },
+			new String[] {new String(binding.name), typesAsString(binding, true), new String(binding.declaringClass.shortReadableName()),},
 			severity,
 			method.sourceStart,
 			method.sourceEnd);
@@ -6319,8 +6319,8 @@ public class ProblemReporter extends ProblemHandler {
 		MethodBinding binding = method.binding;
 		this.handle(
 			IProblem.MissingOverrideAnnotationForInterfaceMethodImplementation,
-			new String[] {new String(binding.selector), typesAsString(binding, false), new String(binding.declaringClass.readableName()), },
-			new String[] {new String(binding.selector), typesAsString(binding, true), new String(binding.declaringClass.shortReadableName()),},
+			new String[] {new String(binding.name), typesAsString(binding, false), new String(binding.declaringClass.readableName()), },
+			new String[] {new String(binding.name), typesAsString(binding, true), new String(binding.declaringClass.shortReadableName()),},
 			severity,
 			method.sourceStart,
 			method.sourceEnd);
@@ -6355,12 +6355,12 @@ public class ProblemReporter extends ProblemHandler {
 				IProblem.MissingSynchronizedModifierInInheritedMethod,
 				new String[] {
 						new String(currentMethod.declaringClass.readableName()),
-						new String(currentMethod.selector),
+						new String(currentMethod.name),
 						typesAsString(currentMethod, false),
 				},
 				new String[] {
 						new String(currentMethod.declaringClass.shortReadableName()),
-						new String(currentMethod.selector),
+						new String(currentMethod.name),
 						typesAsString(currentMethod, true),
 				},
 				currentMethod.sourceStart(),
@@ -6437,13 +6437,13 @@ public class ProblemReporter extends ProblemHandler {
 				IProblem.MissingTypeInMethod,
 				new String[] {
 				        new String(method.declaringClass.readableName()),
-				        new String(method.selector),
+				        new String(method.name),
 				        typesAsString(method, false),
 				       	new String(missingType.readableName()),
 				},
 				new String[] {
 				        new String(method.declaringClass.shortReadableName()),
-				        new String(method.selector),
+				        new String(method.name),
 				        typesAsString(method, true),
 				       	new String(missingType.shortReadableName()),
 				},
@@ -6470,8 +6470,8 @@ public class ProblemReporter extends ProblemHandler {
 	public void mustUseAStaticMethod(MessageSend messageSend, MethodBinding method) {
 		this.handle(
 			IProblem.StaticMethodRequested,
-			new String[] {new String(method.declaringClass.readableName()), new String(method.selector), typesAsString(method, false)},
-			new String[] {new String(method.declaringClass.shortReadableName()), new String(method.selector), typesAsString(method, true)},
+			new String[] {new String(method.declaringClass.readableName()), new String(method.name), typesAsString(method, false)},
+			new String[] {new String(method.declaringClass.shortReadableName()), new String(method.name), typesAsString(method, true)},
 			messageSend.sourceStart,
 			messageSend.sourceEnd);
 	}
@@ -6532,12 +6532,12 @@ public class ProblemReporter extends ProblemHandler {
 			IProblem.NeedToEmulateMethodAccess,
 			new String[] {
 				new String(method.declaringClass.readableName()),
-				new String(method.selector),
+				new String(method.name),
 				typesAsString(method, false)
 			 },
 			new String[] {
 				new String(method.declaringClass.shortReadableName()),
-				new String(method.selector),
+				new String(method.name),
 				typesAsString(method, true)
 			 },
 			 severity,
@@ -6749,8 +6749,8 @@ public class ProblemReporter extends ProblemHandler {
 	public void nonStaticAccessToStaticMethod(ASTNode location, MethodBinding method) {
 		this.handle(
 			IProblem.NonStaticAccessToStaticMethod,
-			new String[] {new String(method.declaringClass.readableName()), new String(method.selector), typesAsString(method, false)},
-			new String[] {new String(method.declaringClass.shortReadableName()), new String(method.selector), typesAsString(method, true)},
+			new String[] {new String(method.declaringClass.readableName()), new String(method.name), typesAsString(method, false)},
+			new String[] {new String(method.declaringClass.shortReadableName()), new String(method.name), typesAsString(method, true)},
 			location.sourceStart,
 			location.sourceEnd);
 	}
@@ -7984,14 +7984,14 @@ public class ProblemReporter extends ProblemHandler {
 					new String[] {
 							new String(typeDecl.name),
 							new String(hiddenTypeParameter.readableName()),
-							new String(declaringMethod.selector),
+							new String(declaringMethod.name),
 							typesAsString(declaringMethod, false),
 							new String(declaringMethod.declaringClass.readableName()),
 					},
 					new String[] {
 							new String(typeDecl.name),
 							new String(hiddenTypeParameter.shortReadableName()),
-							new String(declaringMethod.selector),
+							new String(declaringMethod.name),
 							typesAsString(declaringMethod, true),
 							new String(declaringMethod.declaringClass.shortReadableName()),
 					},
@@ -8373,7 +8373,7 @@ public class ProblemReporter extends ProblemHandler {
 	public void unnecessaryTypeArgumentsForMethodInvocation(MethodBinding method, TypeBinding[] genericTypeArguments, TypeReference[] typeArguments) {
 		String methodName = method.isConstructor()
 			? new String(method.declaringClass.shortReadableName())
-			: new String(method.selector);
+			: new String(method.name);
 		this.handle(
 				method.isConstructor()
 					? IProblem.UnusedTypeArgumentsForConstructorInvocation
@@ -8567,13 +8567,13 @@ public class ProblemReporter extends ProblemHandler {
 			this.handle(
 				IProblem.UnsafeRawGenericMethodInvocation,
 				new String[] {
-					new String(rawMethod.selector),
+					new String(rawMethod.name),
 					typesAsString(rawMethod.original(), false),
 					new String(rawMethod.declaringClass.readableName()),
 					typesAsString(argumentTypes, false),
 				 },
 				new String[] {
-					new String(rawMethod.selector),
+					new String(rawMethod.name),
 					typesAsString(rawMethod.original(), true),
 					new String(rawMethod.declaringClass.shortReadableName()),
 					typesAsString(argumentTypes, true),
@@ -8608,13 +8608,13 @@ public class ProblemReporter extends ProblemHandler {
 			this.handle(
 				IProblem.UnsafeRawMethodInvocation,
 				new String[] {
-					new String(rawMethod.selector),
+					new String(rawMethod.name),
 					typesAsString(rawMethod.original(), rawMethod.parameters, false),
 					new String(rawMethod.declaringClass.readableName()),
 					new String(rawMethod.declaringClass.erasure().readableName()),
 				 },
 				new String[] {
-					new String(rawMethod.selector),
+					new String(rawMethod.name),
 					typesAsString(rawMethod.original(), rawMethod.parameters, true),
 					new String(rawMethod.declaringClass.shortReadableName()),
 					new String(rawMethod.declaringClass.erasure().shortReadableName()),
@@ -8641,7 +8641,7 @@ public class ProblemReporter extends ProblemHandler {
 				IProblem.UnsafeReturnTypeOverride,
 				new String[] {
 					new String(currentMethod.returnType.readableName()),
-					new String(currentMethod.selector),
+					new String(currentMethod.name),
 					typesAsString(currentMethod.original(), false),
 					new String(currentMethod.declaringClass.readableName()),
 					new String(inheritedMethod.returnType.readableName()),
@@ -8650,7 +8650,7 @@ public class ProblemReporter extends ProblemHandler {
 				 },
 				new String[] {
 					new String(currentMethod.returnType.shortReadableName()),
-					new String(currentMethod.selector),
+					new String(currentMethod.name),
 					typesAsString(currentMethod.original(), true),
 					new String(currentMethod.declaringClass.shortReadableName()),
 					new String(inheritedMethod.returnType.shortReadableName()),
@@ -8878,7 +8878,7 @@ public class ProblemReporter extends ProblemHandler {
 				&& TypeBinding.VOID == method.returnType
 				&& method.parameters.length == 1
 				&& method.parameters[0].dimensions() == 0
-				&& CharOperation.equals(method.selector, TypeConstants.READOBJECT)
+				&& CharOperation.equals(method.name, TypeConstants.READOBJECT)
 				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTINPUTSTREAM, method.parameters[0].readableName())) {
 			return;
 		}
@@ -8887,7 +8887,7 @@ public class ProblemReporter extends ProblemHandler {
 				&& TypeBinding.VOID == method.returnType
 				&& method.parameters.length == 1
 				&& method.parameters[0].dimensions() == 0
-				&& CharOperation.equals(method.selector, TypeConstants.WRITEOBJECT)
+				&& CharOperation.equals(method.name, TypeConstants.WRITEOBJECT)
 				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTOUTPUTSTREAM, method.parameters[0].readableName())) {
 			return;
 		}
@@ -8895,14 +8895,14 @@ public class ProblemReporter extends ProblemHandler {
 		if (!method.isStatic()
 				&& TypeIds.T_JavaLangObject == method.returnType.id
 				&& method.parameters.length == 0
-				&& CharOperation.equals(method.selector, TypeConstants.READRESOLVE)) {
+				&& CharOperation.equals(method.name, TypeConstants.READRESOLVE)) {
 			return;
 		}
 		// no report for serialization support 'Object writeReplace()'
 		if (!method.isStatic()
 				&& TypeIds.T_JavaLangObject == method.returnType.id
 				&& method.parameters.length == 0
-				&& CharOperation.equals(method.selector, TypeConstants.WRITEREPLACE)) {
+				&& CharOperation.equals(method.name, TypeConstants.WRITEREPLACE)) {
 			return;
 		}
 		if (excludeDueToAnnotation(methodDecl.annotations, IProblem.UnusedPrivateMethod)) return;
@@ -8911,12 +8911,12 @@ public class ProblemReporter extends ProblemHandler {
 				IProblem.UnusedPrivateMethod,
 			new String[] {
 				new String(method.declaringClass.readableName()),
-				new String(method.selector),
+				new String(method.name),
 				typesAsString(method, false)
 			 },
 			new String[] {
 				new String(method.declaringClass.shortReadableName()),
-				new String(method.selector),
+				new String(method.name),
 				typesAsString(method, true)
 			 },
 			severity,
@@ -9058,7 +9058,7 @@ public class ProblemReporter extends ProblemHandler {
 				new String[] {
 						new String(argumentType.readableName()),
 						new String(varargsType.readableName()),
-						new String(method.selector),
+						new String(method.name),
 						typesAsString(method, false),
 						new String(method.declaringClass.readableName()),
 						new String(varargsType.elementsType().readableName()),
@@ -9066,7 +9066,7 @@ public class ProblemReporter extends ProblemHandler {
 				new String[] {
 						new String(argumentType.shortReadableName()),
 						new String(varargsType.shortReadableName()),
-						new String(method.selector), typesAsString(method, true),
+						new String(method.name), typesAsString(method, true),
 						new String(method.declaringClass.shortReadableName()),
 						new String(varargsType.elementsType().shortReadableName()),
 				},
@@ -9079,14 +9079,14 @@ public class ProblemReporter extends ProblemHandler {
 		this.handle(
 			IProblem.VarargsConflict,
 			new String[] {
-			        new String(method1.selector),
+			        new String(method1.name),
 			        typesAsString(method1, false),
 			        new String(method1.declaringClass.readableName()),
 			        typesAsString(method2, false),
 			        new String(method2.declaringClass.readableName())
 			},
 			new String[] {
-			        new String(method1.selector),
+			        new String(method1.name),
 			        typesAsString(method1, true),
 			        new String(method1.declaringClass.shortReadableName()),
 			        typesAsString(method2, true),
@@ -9096,7 +9096,7 @@ public class ProblemReporter extends ProblemHandler {
 			TypeBinding.equalsEquals(method1.declaringClass, type) ? method1.sourceEnd() : type.sourceEnd());
 	}
 	public void safeVarargsOnFixedArityMethod(MethodBinding method) {
-		String [] arguments = new String[] { new String(method.isConstructor() ? method.declaringClass.shortReadableName() : method.selector)}; 
+		String [] arguments = new String[] { new String(method.isConstructor() ? method.declaringClass.shortReadableName() : method.name)}; 
 		this.handle(
 			IProblem.SafeVarargsOnFixedArityMethod,
 			arguments,
@@ -9105,7 +9105,7 @@ public class ProblemReporter extends ProblemHandler {
 			method.sourceEnd());
 	}
 	public void safeVarargsOnNonFinalInstanceMethod(MethodBinding method) {
-		String [] arguments = new String[] { new String(method.isConstructor() ? method.declaringClass.shortReadableName() : method.selector)}; 
+		String [] arguments = new String[] { new String(method.isConstructor() ? method.declaringClass.shortReadableName() : method.name)}; 
 		this.handle(
 			IProblem.SafeVarargsOnNonFinalInstanceMethod,
 			arguments,
@@ -9197,7 +9197,7 @@ public class ProblemReporter extends ProblemHandler {
 			this.handle(
 				IProblem.WildcardMethodInvocation,
 				new String[] {
-					new String(method.selector),
+					new String(method.name),
 					typesAsString(method, false),
 					new String(receiverType.readableName()),
 					typesAsString(arguments, false),
@@ -9205,7 +9205,7 @@ public class ProblemReporter extends ProblemHandler {
 					new String(offendingParameter.readableName()),
 				 },
 				new String[] {
-					new String(method.selector),
+					new String(method.name),
 					typesAsString(method, true),
 					new String(receiverType.shortReadableName()),
 					typesAsString(arguments, true),
@@ -9666,7 +9666,7 @@ public class ProblemReporter extends ProblemHandler {
 				showReturn 
 					? new String(currentMethod.returnType.nullAnnotatedReadableName(this.options, false))+' '
 					: "", //$NON-NLS-1$
-				new String(currentMethod.selector),
+				new String(currentMethod.name),
 				typesAsString(currentMethod, false, true),
 				new String(currentMethod.declaringClass.readableName()),
 				new String(inheritedMethod.declaringClass.readableName())
@@ -9675,7 +9675,7 @@ public class ProblemReporter extends ProblemHandler {
 				showReturn 
 					? new String(currentMethod.returnType.nullAnnotatedReadableName(this.options, true))+' '
 					: "", //$NON-NLS-1$
-				new String(currentMethod.selector),
+				new String(currentMethod.name),
 				typesAsString(currentMethod, true, true),
 				new String(currentMethod.declaringClass.shortReadableName()),
 				new String(inheritedMethod.declaringClass.shortReadableName())
@@ -9768,14 +9768,14 @@ public class ProblemReporter extends ProblemHandler {
 			new String(CharOperation.concatWith(nonNullAnnotationName, '.')),
 			new String(CharOperation.concatWith(nullableAnnotationName, '.')),
 			new String(inferredMethod.returnType.nullAnnotatedReadableName(this.options, false)),
-			new String(inferredMethod.selector),
+			new String(inferredMethod.name),
 			typesAsString(inferredMethod, false, true)
 		};
 		String[] shortArguments = {
 				new String(nonNullAnnotationName[nonNullAnnotationName.length-1]),
 				new String(nullableAnnotationName[nullableAnnotationName.length-1]),
 				new String(inferredMethod.returnType.nullAnnotatedReadableName(this.options, true)),
-				new String(inferredMethod.selector),
+				new String(inferredMethod.name),
 				typesAsString(inferredMethod, true, true)
 			};
 		this.handle(IProblem.ContradictoryNullAnnotationsInferred, arguments, shortArguments, sourceStart, sourceEnd);
@@ -10137,7 +10137,7 @@ public class ProblemReporter extends ProblemHandler {
 	}
 	
 	public void methodReferenceSwingsBothWays(ReferenceExpression expression, MethodBinding instanceMethod, MethodBinding nonInstanceMethod) {
-		char [] selector = instanceMethod.selector;
+		char [] selector = instanceMethod.name;
 		TypeBinding receiverType = instanceMethod.declaringClass;
 		StringBuffer buffer1 = new StringBuffer();
 		StringBuffer shortBuffer1 = new StringBuffer();
@@ -10173,7 +10173,7 @@ public class ProblemReporter extends ProblemHandler {
 	
 	public void methodMustBeAccessedStatically(ReferenceExpression expression, MethodBinding nonInstanceMethod) {
 		TypeBinding receiverType = nonInstanceMethod.declaringClass;
-		char [] selector = nonInstanceMethod.selector;
+		char [] selector = nonInstanceMethod.name;
 		StringBuffer buffer = new StringBuffer();
 		StringBuffer shortBuffer = new StringBuffer();
 		TypeBinding [] parameters = nonInstanceMethod.parameters;
@@ -10196,7 +10196,7 @@ public class ProblemReporter extends ProblemHandler {
 	
 	public void methodMustBeAccessedWithInstance(ReferenceExpression expression, MethodBinding instanceMethod) {
 		TypeBinding receiverType = instanceMethod.declaringClass;
-		char [] selector = instanceMethod.selector;
+		char [] selector = instanceMethod.name;
 		StringBuffer buffer = new StringBuffer();
 		StringBuffer shortBuffer = new StringBuffer();
 		TypeBinding [] parameters = instanceMethod.parameters;
@@ -10295,7 +10295,7 @@ public class ProblemReporter extends ProblemHandler {
 				buffer.append(new String(parameters[i].readableName()));
 				shortBuffer.append(new String(parameters[i].shortReadableName()));
 			}
-			String selector = new String(method.selector);
+			String selector = new String(method.name);
 			this.handle(IProblem.IncompatibleMethodReference,
 					new String[] { selector, buffer.toString(), new String(method.declaringClass.readableName()), new String(method.returnType.readableName()), new String(returnType.readableName())},
 					new String[] { selector, shortBuffer.toString(), new String(method.declaringClass.shortReadableName()), new String(method.returnType.shortReadableName()), new String(returnType.shortReadableName())},

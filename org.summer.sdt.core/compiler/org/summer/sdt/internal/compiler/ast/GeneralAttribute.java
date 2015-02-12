@@ -38,9 +38,9 @@ public class GeneralAttribute extends Attribute{
 		
 		if((this.bits & ASTNode.IsEventCallback) != 0){
 			if(this.method.isStatic()){
-				output.append(this.method.declaringClass.sourceName).append('.');
+				output.append(this.method.declaringClass.name).append('.');
 				if(value instanceof StringLiteral){
-					output.append(((StringLiteral)value).source).append(".call(").append(this.method.declaringClass.sourceName)
+					output.append(((StringLiteral)value).source).append(".call(").append(this.method.declaringClass.name)
 					.append(", event); \"");
 				}
 			} else {

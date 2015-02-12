@@ -375,7 +375,7 @@ public void acceptLocalMethod(MethodBinding methodBinding) {
 				System.out.print(res.toString());
 				System.out.println(")"); //$NON-NLS-1$
 			}
-		} else if(methodBinding.selector == TypeConstants.INIT && res.getElementType() == IJavaElement.TYPE) {
+		} else if(methodBinding.name == TypeConstants.INIT && res.getElementType() == IJavaElement.TYPE) {
 			// it's a default constructor
 			res = ((JavaElement)res).resolved(methodBinding.declaringClass);
 			addElement(res);
@@ -416,7 +416,7 @@ public void acceptLocalTypeParameter(TypeVariableBinding typeVariableBinding) {
 	}
 	if (res != null && res.getElementType() == IJavaElement.TYPE) {
 		IType type = (IType) res;
-		ITypeParameter typeParameter = type.getTypeParameter(new String(typeVariableBinding.sourceName));
+		ITypeParameter typeParameter = type.getTypeParameter(new String(typeVariableBinding.name));
 		if (typeParameter.exists()) {
 			addElement(typeParameter);
 			if(SelectionEngine.DEBUG){
@@ -433,7 +433,7 @@ public void acceptLocalMethodTypeParameter(TypeVariableBinding typeVariableBindi
 	if(res != null && res.getElementType() == IJavaElement.METHOD) {
 		IMethod method = (IMethod) res;
 
-		ITypeParameter typeParameter = method.getTypeParameter(new String(typeVariableBinding.sourceName));
+		ITypeParameter typeParameter = method.getTypeParameter(new String(typeVariableBinding.name));
 		if (typeParameter.exists()) {
 			addElement(typeParameter);
 			if(SelectionEngine.DEBUG){
@@ -897,12 +897,12 @@ public IJavaElement findMethodFromBinding(MethodBinding method, String[] signatu
 	if (foundType != null) {
 		if (foundType instanceof BinaryType) {
 			try {
-				return Util.findMethod(foundType, method.selector, signatures, method.isConstructor());
+				return Util.findMethod(foundType, method.name, signatures, method.isConstructor());
 			} catch (JavaModelException e) {
 				return null;
 			}
 		} else {
-			return foundType.getMethod(new String(method.selector), signatures);
+			return foundType.getMethod(new String(method.name), signatures);
 		}
 	}
 	return null;

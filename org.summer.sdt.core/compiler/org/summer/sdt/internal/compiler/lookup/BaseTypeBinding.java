@@ -122,14 +122,14 @@ public class BaseTypeBinding extends TypeBinding {
 						&& (CONVERSIONS[right2left] & (IDENTITY|WIDENING)) != 0;
 	}
 	
-	public char[] simpleName;
+	public char[] name;
 
 	private char[] constantPoolName;
 
 	BaseTypeBinding(int id, char[] name, char[] constantPoolName) {
 		this.tagBits |= TagBits.IsBaseType;
 		this.id = id;
-		this.simpleName = name;
+		this.name = name;
 		this.constantPoolName = constantPoolName;
 	}
 
@@ -148,7 +148,7 @@ public class BaseTypeBinding extends TypeBinding {
 	}
 
 	public TypeBinding clone(TypeBinding enclosingType) {
-		return new BaseTypeBinding(this.id, this.simpleName, this.constantPoolName);
+		return new BaseTypeBinding(this.id, this.name, this.constantPoolName);
 	}
 	
 	public PackageBinding getPackage() {
@@ -212,19 +212,19 @@ public class BaseTypeBinding extends TypeBinding {
 		return Binding.BASE_TYPE;
 	}
 	public char[] qualifiedSourceName() {
-		return this.simpleName;
+		return this.name;
 	}
 
 	public char[] readableName() {
-		return this.simpleName;
+		return this.name;
 	}
 
 	public char[] shortReadableName() {
-		return this.simpleName;
+		return this.name;
 	}
 
 	public char[] sourceName() {
-		return this.simpleName;
+		return this.name;
 	}
 
 	public String toString() {

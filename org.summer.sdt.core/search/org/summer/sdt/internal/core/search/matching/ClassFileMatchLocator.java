@@ -209,7 +209,7 @@ public void locateMatches(MatchLocator locator, ClassFile classFile, IBinaryType
 				int level = locator.patternLocator.resolveLevel(method);
 				if (level != PatternLocator.IMPOSSIBLE_MATCH) {
 					IMethod methodHandle = binaryType.getMethod(
-						new String(method.isConstructor() ? binding.compoundName[binding.compoundName.length-1] : method.selector),
+						new String(method.isConstructor() ? binding.compoundName[binding.compoundName.length-1] : method.name),
 						CharOperation.toStrings(Signature.getParameterTypes(convertClassFileFormat(methodSignature))));
 					accuracy = level == PatternLocator.ACCURATE_MATCH ? SearchMatch.A_ACCURATE : SearchMatch.A_INACCURATE;
 					locator.reportBinaryMemberDeclaration(null, methodHandle, method, info, accuracy);
@@ -227,7 +227,7 @@ public void locateMatches(MatchLocator locator, ClassFile classFile, IBinaryType
 						}
 					}
 					for (int j=0; j<bMethodsLength; j++) {
-						if (CharOperation.equals(binaryMethods[j].getSelector(), method.selector) && CharOperation.equals(binaryMethodSignatures[j], methodSignature)) {
+						if (CharOperation.equals(binaryMethods[j].getSelector(), method.name) && CharOperation.equals(binaryMethodSignatures[j], methodSignature)) {
 							if (unresolvedMethods == null) {
 								System.arraycopy(binaryMethods, 0, unresolvedMethods = new IBinaryMethod[bMethodsLength], 0, bMethodsLength);
 							}

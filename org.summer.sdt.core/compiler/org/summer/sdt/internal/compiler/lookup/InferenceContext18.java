@@ -1034,7 +1034,7 @@ public class InferenceContext18 {
 	/** For 18.4: "Let Z1, ..., Zn be fresh type variables" use capture bindings. */
 	private CaptureBinding18 freshCapture(InferenceVariable variable) {
 		int id = this.captureId++;
-		char[] sourceName = CharOperation.concat("Z".toCharArray(), '#', String.valueOf(id).toCharArray(), '-', variable.sourceName); //$NON-NLS-1$
+		char[] sourceName = CharOperation.concat("Z".toCharArray(), '#', String.valueOf(id).toCharArray(), '-', variable.name); //$NON-NLS-1$
 		int start = this.currentInvocation != null ? this.currentInvocation.sourceStart() : 0;
 		int end = this.currentInvocation != null ? this.currentInvocation.sourceEnd() : 0;
 		return new CaptureBinding18(this.scope.enclosingSourceType(), sourceName, variable.typeParameter.shortReadableName(),
@@ -1423,7 +1423,7 @@ public class InferenceContext18 {
 		   if we get here with expected type set to null at all, the target context does not define a target type (vanilla context), so inference has done its
 		   best and nothing more to do than to signal error. 
 		 */
-		ProblemMethodBinding problemMethod = new ProblemMethodBinding(method, method.selector, method.parameters, ProblemReasons.InvocationTypeInferenceFailure);
+		ProblemMethodBinding problemMethod = new ProblemMethodBinding(method, method.name, method.parameters, ProblemReasons.InvocationTypeInferenceFailure);
 		problemMethod.returnType = expectedType;
 		problemMethod.inferenceContext = this;
 		return problemMethod;
@@ -1448,7 +1448,7 @@ public class InferenceContext18 {
 		if (this.inferenceVariables != null) {
 			buf.append("Inference Variables:\n"); //$NON-NLS-1$
 			for (int i = 0; i < this.inferenceVariables.length; i++) {
-				buf.append('\t').append(this.inferenceVariables[i].sourceName).append("\t:\t"); //$NON-NLS-1$
+				buf.append('\t').append(this.inferenceVariables[i].name).append("\t:\t"); //$NON-NLS-1$
 				if (this.currentBounds != null && this.currentBounds.isInstantiated(this.inferenceVariables[i]))
 					buf.append(this.currentBounds.getInstantiation(this.inferenceVariables[i], this.environment).readableName());
 				else

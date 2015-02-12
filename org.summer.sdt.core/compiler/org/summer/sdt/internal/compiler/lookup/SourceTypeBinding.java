@@ -111,7 +111,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 		this.fPackage = fPackage;
 		this.fileName = scope.referenceCompilationUnit().getFileName();
 		this.modifiers = scope.referenceContext.modifiers;
-		this.sourceName = scope.referenceContext.name;
+		this.name = scope.referenceContext.name;
 		this.scope = scope;
 		this.environment = scope.environment();
 	
@@ -185,13 +185,13 @@ public class SourceTypeBinding extends ReferenceBinding {
 								// already added as default abstract ?
 								for (int k = 0; k < defaultAbstractsCount; k++) {
 									MethodBinding alreadyAdded = defaultAbstracts[k];
-									if (CharOperation.equals(alreadyAdded.selector, method.selector) && alreadyAdded.areParametersEqual(method))
+									if (CharOperation.equals(alreadyAdded.name, method.name) && alreadyAdded.areParametersEqual(method))
 										continue nextAbstractMethod;
 								}
 							}
 							MethodBinding defaultAbstract = new MethodBinding(
 									method.modifiers | ExtraCompilerModifiers.AccDefaultAbstract | ClassFileConstants.AccSynthetic,
-									method.selector,
+									method.name,
 									method.returnType,
 									method.parameters,
 									method.thrownExceptions,
@@ -597,7 +597,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 	
 		SyntheticMethodBinding accessMethod = new SyntheticMethodBinding(this, begin, end);
 		SyntheticMethodBinding[] accessors = new SyntheticMethodBinding[2]; 
-		this.synthetics[SourceTypeBinding.METHOD_EMUL].put(accessMethod.selector, accessors);
+		this.synthetics[SourceTypeBinding.METHOD_EMUL].put(accessMethod.name, accessors);
 		accessors[0] = accessMethod;
 		return accessMethod;
 	}
@@ -722,7 +722,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 				Object synthetic = synthMethods.next();
 				if (synthetic instanceof MethodBinding) {
 					MethodBinding method = (MethodBinding) synthetic;
-					if (CharOperation.equals(inheritedMethodToBridge.selector, method.selector)
+					if (CharOperation.equals(inheritedMethodToBridge.name, method.name)
 						&& TypeBinding.equalsEquals(inheritedMethodToBridge.returnType.erasure(), method.returnType.erasure())
 						&& inheritedMethodToBridge.areParameterErasuresEqual(method)) {
 							return null;
@@ -770,7 +770,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 				Object synthetic = synthMethods.next();
 				if (synthetic instanceof MethodBinding) {
 					MethodBinding method = (MethodBinding) synthetic;
-					if (CharOperation.equals(inheritedMethodToBridge.selector, method.selector)
+					if (CharOperation.equals(inheritedMethodToBridge.name, method.name)
 						&& TypeBinding.equalsEquals(inheritedMethodToBridge.returnType.erasure(), method.returnType.erasure())
 						&& inheritedMethodToBridge.areParameterErasuresEqual(method)) {
 							return null;
@@ -1628,13 +1628,13 @@ public class SourceTypeBinding extends ReferenceBinding {
 				MethodBinding method = resolvedMethods[i];
 				if (method == null)
 					continue;
-				char[] selector = method.selector;
+				char[] selector = method.name;
 				AbstractMethodDeclaration methodDecl = null;
 				nextSibling: for (int j = i + 1; j < length; j++) {
 					MethodBinding method2 = resolvedMethods[j];
 					if (method2 == null)
 						continue nextSibling;
-					if (!CharOperation.equals(selector, method2.selector))
+					if (!CharOperation.equals(selector, method2.name))
 						break nextSibling; // methods with same selector are contiguous
 	
 					if (complyTo15OrAbove) {
@@ -2692,7 +2692,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 		
 		if (this.nullnessDefaultInitialized > 0 || !this.scope.compilerOptions().isAnnotationBasedNullAnalysisEnabled)
 			return;
-		boolean isPackageInfo = CharOperation.equals(this.sourceName, TypeConstants.PACKAGE_INFO_NAME);
+		boolean isPackageInfo = CharOperation.equals(this.name, TypeConstants.PACKAGE_INFO_NAME);
 		PackageBinding pkg = getPackage();
 		boolean isInDefaultPkg = (pkg.compoundName == CharOperation.NO_CHAR_CHAR);
 		if (!isPackageInfo) {

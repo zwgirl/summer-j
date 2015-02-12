@@ -1040,13 +1040,13 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 		next : for (int j = 0; j < memberTypes.length; j++) {
 			ReferenceBinding memberType = memberTypes[j];
 
-			if (fieldLength > memberType.sourceName.length)
+			if (fieldLength > memberType.name.length)
 				continue next;
 
 			if (staticOnly && !memberType.isStatic())
 				continue next;
 
-			if (!CharOperation.equals(lastToken, memberType.sourceName, true))
+			if (!CharOperation.equals(lastToken, memberType.name, true))
 				continue next;
 
 			selectFrom(memberType, parsedUnit, false);
@@ -1089,10 +1089,10 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 
 			if (!method.isStatic()) continue next;
 
-			if (methodLength > method.selector.length)
+			if (methodLength > method.name.length)
 				continue next;
 
-			if (!CharOperation.equals(lastToken, method.selector, true))
+			if (!CharOperation.equals(lastToken, method.name, true))
 				continue next;
 
 			selectFrom(method, parsedUnit, false);
@@ -1131,7 +1131,7 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 						enclosingMethod.declaringClass.qualifiedSourceName(),
 						enclosingMethod.isConstructor()
 								? enclosingMethod.declaringClass.sourceName()
-								: enclosingMethod.selector,
+								: enclosingMethod.name,
 						enclosingMethod.sourceStart(),
 						enclosingMethod.sourceEnd(),
 						typeVariableBinding.sourceName(),
@@ -1199,21 +1199,21 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 				char[][][] typeParameterBoundNames = new char[length][][];
 				for (int i = 0; i < length; i++) {
 					TypeVariableBinding typeVariable = typeVariables[i];
-					typeParameterNames[i] = typeVariable.sourceName;
+					typeParameterNames[i] = typeVariable.name;
 					if (typeVariable.firstBound == null) {
 						typeParameterBoundNames[i] = new char[0][];
 					} else if (TypeBinding.equalsEquals(typeVariable.firstBound, typeVariable.superclass)) {
 						int boundCount = 1 + (typeVariable.superInterfaces == null ? 0 : typeVariable.superInterfaces.length);
 						typeParameterBoundNames[i] = new char[boundCount][];
-						typeParameterBoundNames[i][0] = typeVariable.superclass.sourceName;
+						typeParameterBoundNames[i][0] = typeVariable.superclass.name;
 						for (int j = 1; j < boundCount; j++) {
-							typeParameterBoundNames[i][j] = typeVariables[i].superInterfaces[j - 1].sourceName;
+							typeParameterBoundNames[i][j] = typeVariables[i].superInterfaces[j - 1].name;
 						}
 					} else {
 						int boundCount = typeVariable.superInterfaces == null ? 0 : typeVariable.superInterfaces.length;
 						typeParameterBoundNames[i] = new char[boundCount][];
 						for (int j = 0; j < boundCount; j++) {
-							typeParameterBoundNames[i][j] = typeVariables[i].superInterfaces[j].sourceName;
+							typeParameterBoundNames[i][j] = typeVariables[i].superInterfaces[j].name;
 						}
 					}
 				}
@@ -1228,7 +1228,7 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 						declaringClass.enclosingType() == null ? null : new String(getSignature(declaringClass.enclosingType())),
 						methodBinding.isConstructor()
 							? declaringClass.sourceName()
-							: methodBinding.selector,
+							: methodBinding.name,
 						parameterPackageNames,
 						parameterTypeNames,
 						parameterSignatures,

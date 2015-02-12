@@ -48,7 +48,7 @@ public class TypeBound extends ReductionResult {
 	private TypeBinding safeType(TypeBinding type) {
 		if (type != null && type.isLocalType()) {
 			MethodBinding enclosingMethod = ((LocalTypeBinding) type.original()).enclosingMethod;
-			if (enclosingMethod != null && CharOperation.prefixEquals(TypeConstants.ANONYMOUS_METHOD, enclosingMethod.selector))
+			if (enclosingMethod != null && CharOperation.prefixEquals(TypeConstants.ANONYMOUS_METHOD, enclosingMethod.name))
 				return type.superclass(); // don't use local class inside lambda: lambda is copied, type will be re-created and thus is unmatchable
 		}
 		return type;
@@ -77,7 +77,7 @@ public class TypeBound extends ReductionResult {
 		boolean isBound = this.right.isProperType(true);
 		StringBuffer buf = new StringBuffer();
 		buf.append(isBound ? "TypeBound  " : "Dependency "); //$NON-NLS-1$ //$NON-NLS-2$
-		buf.append(this.left.sourceName);
+		buf.append(this.left.name);
 		buf.append(relationToString(this.relation));
 		buf.append(this.right.readableName());
 		return buf.toString();

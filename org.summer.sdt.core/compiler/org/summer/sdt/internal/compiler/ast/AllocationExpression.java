@@ -762,7 +762,7 @@ public class AllocationExpression extends Expression implements Invocation {
 		}
 		
 		if((this.binding.declaringClass.modifiers & ClassFileConstants.AccNative) != 0){
-			output.append("new ").append(this.binding.declaringClass.sourceName);
+			output.append("new ").append(this.binding.declaringClass.name);
 		} else {
 			if(this.binding.declaringClass.isMemberType()){
 				output.append("(function(){\n");
@@ -788,7 +788,7 @@ public class AllocationExpression extends Expression implements Invocation {
 			} else {
 				output.append("new "); 
 				if(this.binding.declaringClass.isBaseType()){
-					output.append(binding.declaringClass.sourceName);
+					output.append(binding.declaringClass.name);
 				} else {
 					output.append('(');
 					output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')");

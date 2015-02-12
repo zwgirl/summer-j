@@ -45,7 +45,7 @@ public class LambdaFactory {
 		for (int i = 0; i < length; i++)
 			parameterNames[i] = manager.intern(new String(lambdaExpression.arguments[i].name));
 		String returnType = getTypeSignature(manager, lambdaExpression.descriptor.returnType);
-		String selector = manager.intern(new String(lambdaExpression.descriptor.selector));
+		String selector = manager.intern(new String(lambdaExpression.descriptor.name));
 		String key = new String(lambdaExpression.descriptor.computeUniqueKey());
 		LambdaMethod lambdaMethod = createLambdaMethod(parent, selector, key, lambdaExpression.sourceStart, lambdaExpression.sourceEnd, lambdaExpression.arrowPosition, parameterTypes, parameterNames, returnType);
 		ILocalVariable [] parameters = new ILocalVariable[length = lambdaExpression.arguments.length];

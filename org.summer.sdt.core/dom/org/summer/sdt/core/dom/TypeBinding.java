@@ -153,7 +153,7 @@ class TypeBinding implements ITypeBinding {
 						.append('$')
 						.append(methodBinding.signature())
 						.append('$')
-						.append(typeVariableBinding.sourceName);
+						.append(typeVariableBinding.name);
 					break;
 				default :
 					org.summer.sdt.internal.compiler.lookup.TypeBinding typeBinding = (org.summer.sdt.internal.compiler.lookup.TypeBinding) declaring;
@@ -162,7 +162,7 @@ class TypeBinding implements ITypeBinding {
 					binaryName
 						.append(CharOperation.replaceOnCopy(constantPoolName, '/', '.'))
 						.append('$')
-						.append(typeVariableBinding.sourceName);
+						.append(typeVariableBinding.name);
 			}
 			return String.valueOf(binaryName);
 		}
@@ -648,7 +648,7 @@ class TypeBinding implements ITypeBinding {
 					return NO_NAME;
 				}
 				TypeVariableBinding typeVariableBinding = (TypeVariableBinding) this.binding;
-				return new String(typeVariableBinding.sourceName);
+				return new String(typeVariableBinding.name);
 
 			case Binding.PARAMETERIZED_TYPE :
 				ParameterizedTypeBinding parameterizedTypeBinding = (ParameterizedTypeBinding) this.binding;
@@ -693,7 +693,7 @@ class TypeBinding implements ITypeBinding {
 			default :
 				if (isPrimitive() || isNullType()) {
 					BaseTypeBinding baseTypeBinding = (BaseTypeBinding) this.binding;
-					return new String(baseTypeBinding.simpleName);
+					return new String(baseTypeBinding.name);
 				}
 				if (isAnonymous()) {
 					return NO_NAME;
@@ -767,7 +767,7 @@ class TypeBinding implements ITypeBinding {
 					return NO_NAME;
 				}
 				TypeVariableBinding typeVariableBinding = (TypeVariableBinding) this.binding;
-				return new String(typeVariableBinding.sourceName);
+				return new String(typeVariableBinding.name);
 
 			case Binding.PARAMETERIZED_TYPE :
 				if (this.binding.isLocalType()) {
@@ -814,7 +814,7 @@ class TypeBinding implements ITypeBinding {
 				}
 				if (isPrimitive() || isNullType()) {
 					BaseTypeBinding baseTypeBinding = (BaseTypeBinding) this.binding;
-					return new String(baseTypeBinding.simpleName);
+					return new String(baseTypeBinding.name);
 				}
 				if (isMember()) {
 					buffer = new StringBuffer();

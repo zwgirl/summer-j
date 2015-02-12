@@ -207,9 +207,9 @@ public class SourceIndexer extends AbstractIndexer implements ITypeRequestor, Su
 						final char[] superinterface = lambdaExpression.resolvedType.sourceName();
 						if (DEBUG) {
 							System.out.println('\t' + new String(superinterface) + '.' + 
-									new String(lambdaExpression.descriptor.selector) + "-> {}"); //$NON-NLS-1$
+									new String(lambdaExpression.descriptor.name) + "-> {}"); //$NON-NLS-1$
 						}
-						SourceIndexer.this.addIndexEntry(IIndexConstants.METHOD_DECL, MethodPattern.createIndexKey(lambdaExpression.descriptor.selector, lambdaExpression.descriptor.parameters.length));
+						SourceIndexer.this.addIndexEntry(IIndexConstants.METHOD_DECL, MethodPattern.createIndexKey(lambdaExpression.descriptor.name, lambdaExpression.descriptor.parameters.length));
 					
 						addClassDeclaration(0,  // most entries are blank, that is fine, since lambda type/method cannot be searched.
 								CharOperation.NO_CHAR, // package name
@@ -231,11 +231,11 @@ public class SourceIndexer extends AbstractIndexer implements ITypeRequestor, Su
 					if (binding != null && binding.isValidBinding()) {
 						if (DEBUG) {
 							System.out.println('\t' + new String(referenceExpression.resolvedType.sourceName()) + "::"  //$NON-NLS-1$
-									+ new String(referenceExpression.descriptor.selector) + " == " + new String(binding.declaringClass.sourceName()) + '.' + //$NON-NLS-1$
-									new String(binding.selector));
+									+ new String(referenceExpression.descriptor.name) + " == " + new String(binding.declaringClass.sourceName()) + '.' + //$NON-NLS-1$
+									new String(binding.name));
 						}
 						if (referenceExpression.isMethodReference())
-							SourceIndexer.this.addMethodReference(binding.selector, binding.parameters.length);
+							SourceIndexer.this.addMethodReference(binding.name, binding.parameters.length);
 						else
 							SourceIndexer.this.addConstructorReference(binding.declaringClass.sourceName(), binding.parameters.length);
 					} else {

@@ -103,7 +103,7 @@ public class InferenceContext {
 				TypeBinding[] constraintCollected = collected[j];
 				if (constraintCollected != null) {
 					for (int k = 0, clength = constraintCollected.length; k < clength; k++) {
-						buffer.append("\n\t\t").append(this.genericMethod.typeVariables[i].sourceName); //$NON-NLS-1$
+						buffer.append("\n\t\t").append(this.genericMethod.typeVariables[i].name); //$NON-NLS-1$
 						switch (j) {
 							case TypeConstants.CONSTRAINT_EQUAL :
 								buffer.append("="); //$NON-NLS-1$
@@ -128,7 +128,7 @@ public class InferenceContext {
 		for (int i = 0, length = this.substitutes == null ? 0 : this.substitutes.length; i < length; i++) {
 			if (this.substitutes[i] == null) continue;
 			count++;
-			buffer.append('{').append(this.genericMethod.typeVariables[i].sourceName);
+			buffer.append('{').append(this.genericMethod.typeVariables[i].name);
 			buffer.append("=").append(this.substitutes[i].shortReadableName()).append('}'); //$NON-NLS-1$
 		}
 		if (count == 0) buffer.append("{}"); //$NON-NLS-1$

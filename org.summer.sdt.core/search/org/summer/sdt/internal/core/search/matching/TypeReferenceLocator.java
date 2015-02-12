@@ -508,7 +508,7 @@ void matchReportReference(Expression expr, int lastIndex, TypeBinding refBinding
 		IJavaElement focus = this.pattern.focus;
 		if (focus != null && local.enclosingMethod != null && focus.getParent().getElementType() == IJavaElement.METHOD) {
 			IMethod method = (IMethod) focus.getParent();
-			if (!CharOperation.equals(local.enclosingMethod.selector, method.getElementName().toCharArray())) {
+			if (!CharOperation.equals(local.enclosingMethod.name, method.getElementName().toCharArray())) {
 				return;
 			}
 		}

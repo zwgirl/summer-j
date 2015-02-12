@@ -117,7 +117,7 @@ class BindingComparator {
 			return methodBinding2 == null;
 		}
 		if (methodBinding2 == null) return false;
-		return CharOperation.equals(methodBinding.selector, methodBinding2.selector)
+		return CharOperation.equals(methodBinding.name, methodBinding2.name)
 				&& isEqual(methodBinding.returnType, methodBinding2.returnType, visitedTypes)
 				&& isEqual(methodBinding.thrownExceptions, methodBinding2.thrownExceptions, visitedTypes)
 				&& isEqual(methodBinding.declaringClass, methodBinding2.declaringClass, visitedTypes)
@@ -243,7 +243,7 @@ class BindingComparator {
 				}
 				TypeVariableBinding typeVariableBinding = (TypeVariableBinding) typeBinding;
 				TypeVariableBinding typeVariableBinding2 = (TypeVariableBinding) typeBinding2;
-				if (CharOperation.equals(typeVariableBinding.sourceName, typeVariableBinding2.sourceName)) {
+				if (CharOperation.equals(typeVariableBinding.name, typeVariableBinding2.name)) {
 					if (visitedTypes.contains(typeBinding)) return true;
 					visitedTypes.add(typeBinding);
 

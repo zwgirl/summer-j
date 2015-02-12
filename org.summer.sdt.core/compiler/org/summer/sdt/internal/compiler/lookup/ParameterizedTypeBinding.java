@@ -769,7 +769,7 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 		int typeLength = typeName.length;
 		for (int i = this.memberTypes.length; --i >= 0;) {
 			ReferenceBinding memberType = this.memberTypes[i];
-			if (memberType.sourceName.length == typeLength && CharOperation.equals(memberType.sourceName, typeName))
+			if (memberType.name.length == typeLength && CharOperation.equals(memberType.name, typeName))
 				return memberType;
 		}
 		return null;
@@ -854,7 +854,7 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 
 	void initialize(ReferenceBinding someType, TypeBinding[] someArguments) {
 		this.type = someType;
-		this.sourceName = someType.sourceName;
+		this.name = someType.name;
 		this.compoundName = someType.compoundName;
 		this.fPackage = someType.fPackage;
 		this.fileName = someType.fileName;
@@ -1150,7 +1150,7 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	public char[] readableName() {
 	    StringBuffer nameBuffer = new StringBuffer(10);
 		if (isMemberType()) {
-			nameBuffer.append(CharOperation.concat(enclosingType().readableName(), this.sourceName, '.'));
+			nameBuffer.append(CharOperation.concat(enclosingType().readableName(), this.name, '.'));
 		} else {
 			nameBuffer.append(CharOperation.concatWith(this.type.compoundName, '.'));
 		}
@@ -1221,9 +1221,9 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	public char[] shortReadableName() {
 	    StringBuffer nameBuffer = new StringBuffer(10);
 		if (isMemberType()) {
-			nameBuffer.append(CharOperation.concat(enclosingType().shortReadableName(), this.sourceName, '.'));
+			nameBuffer.append(CharOperation.concat(enclosingType().shortReadableName(), this.name, '.'));
 		} else {
-			nameBuffer.append(this.type.sourceName);
+			nameBuffer.append(this.type.name);
 		}
 		if (this.arguments != null && this.arguments.length > 0) { // empty arguments array happens when PTB has been created just to capture type annotations
 			nameBuffer.append('<');
@@ -1254,7 +1254,7 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 			nameBuffer.append(enclosingType().nullAnnotatedReadableName(options, false));
 			nameBuffer.append('.');
 			appendNullAnnotation(nameBuffer, options);
-			nameBuffer.append(this.sourceName);
+			nameBuffer.append(this.name);
 		} else if (this.type.compoundName != null) {
 			int i;
 			int l=this.type.compoundName.length;
@@ -1267,8 +1267,8 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 		} else {
 			// case of TypeVariableBinding with nullAnnotationTagBits:
 			appendNullAnnotation(nameBuffer, options);
-			if (this.type.sourceName != null)
-				nameBuffer.append(this.type.sourceName);
+			if (this.type.name != null)
+				nameBuffer.append(this.type.name);
 			else // WildcardBinding, CaptureBinding have no sourceName
 				nameBuffer.append(this.type.readableName());
 		}
@@ -1292,11 +1292,11 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 			nameBuffer.append(enclosingType().nullAnnotatedReadableName(options, true));
 			nameBuffer.append('.');
 			appendNullAnnotation(nameBuffer, options);
-			nameBuffer.append(this.sourceName);
+			nameBuffer.append(this.name);
 		} else {
 			appendNullAnnotation(nameBuffer, options);
-			if (this.type.sourceName != null)
-				nameBuffer.append(this.type.sourceName);
+			if (this.type.name != null)
+				nameBuffer.append(this.type.name);
 			else // WildcardBinding, CaptureBinding have no sourceName
 				nameBuffer.append(this.type.shortReadableName());
 		}
@@ -1573,7 +1573,7 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 				return this.singleAbstractMethod[index] = new ProblemMethodBinding(TypeConstants.ANONYMOUS_METHOD, null, ProblemReasons.NotAWellFormedParameterizedType);			
 		}
 		ReferenceBinding substitutedDeclaringType = (ReferenceBinding) declaringType.findSuperTypeOriginatingFrom(theAbstractMethod.declaringClass);
-		MethodBinding [] choices = substitutedDeclaringType.getMethods(theAbstractMethod.selector);
+		MethodBinding [] choices = substitutedDeclaringType.getMethods(theAbstractMethod.name);
 		for (int i = 0, length = choices.length; i < length; i++) {
 			MethodBinding method = choices[i];
 			if (!method.isAbstract() || method.redeclaresPublicObjectMethod(scope)) continue; // (re)skip statics, defaults, public object methods ...

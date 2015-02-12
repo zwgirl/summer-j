@@ -51,7 +51,7 @@ import org.summer.sdt.internal.compiler.util.Util;
 public class MethodBinding extends Binding {
 
 	public int modifiers;
-	public char[] selector;
+	public char[] name;
 	public TypeBinding returnType;
 	public TypeBinding[] parameters;
 	public TypeBinding receiver;  // JSR308 - explicit this parameter
@@ -78,7 +78,7 @@ public class MethodBinding extends Binding {
 	}
 	public MethodBinding(int modifiers, char[] selector, TypeBinding returnType, TypeBinding[] parameters, ReferenceBinding[] thrownExceptions, ReferenceBinding declaringClass) {
 		this.modifiers = modifiers;
-		this.selector = selector;
+		this.name = selector;
 		this.returnType = returnType;
 		this.parameters = (parameters == null || parameters.length == 0) ? Binding.NO_PARAMETERS : parameters;
 		this.thrownExceptions = (thrownExceptions == null || thrownExceptions.length == 0) ? Binding.NO_EXCEPTIONS : thrownExceptions;
@@ -97,7 +97,7 @@ public class MethodBinding extends Binding {
 	// special API used to change method declaring class for runtime visibility check
 	public MethodBinding(MethodBinding initialMethodBinding, ReferenceBinding declaringClass) {
 		this.modifiers = initialMethodBinding.modifiers;
-		this.selector = initialMethodBinding.selector;
+		this.name = initialMethodBinding.name;
 		this.returnType = initialMethodBinding.returnType;
 		this.parameters = initialMethodBinding.parameters;
 		this.thrownExceptions = initialMethodBinding.thrownExceptions;
@@ -433,7 +433,7 @@ public class MethodBinding extends Binding {
 		int declaringLength = declaringKey.length;
 	
 		// selector
-		int selectorLength = this.selector == TypeConstants.INIT ? 0 : this.selector.length;
+		int selectorLength = this.name == TypeConstants.INIT ? 0 : this.name.length;
 	
 		// generic signature
 		char[] sig = genericSignature();
@@ -461,7 +461,7 @@ public class MethodBinding extends Binding {
 		System.arraycopy(declaringKey, 0, uniqueKey, index, declaringLength);
 		index = declaringLength;
 		uniqueKey[index++] = '.';
-		System.arraycopy(this.selector, 0, uniqueKey, index, selectorLength);
+		System.arraycopy(this.name, 0, uniqueKey, index, selectorLength);
 		index += selectorLength;
 		System.arraycopy(sig, 0, uniqueKey, index, signatureLength);
 		if (thrownExceptionsSignatureLength > 0) {
@@ -486,7 +486,7 @@ public class MethodBinding extends Binding {
 	* or the source name of the method
 	*/
 	public final char[] constantPoolName() {
-		return this.selector;
+		return this.name;
 	}
 	
 	/**
@@ -564,7 +564,7 @@ public class MethodBinding extends Binding {
 	
 		if (TypeBinding.notEquals(inheritedOriginal.declaringClass, superType)) {
 			// must find inherited method with the same substituted variables
-			MethodBinding[] superMethods = ((ReferenceBinding) superType).getMethods(inheritedOriginal.selector, inheritedOriginal.parameters.length);
+			MethodBinding[] superMethods = ((ReferenceBinding) superType).getMethods(inheritedOriginal.name, inheritedOriginal.parameters.length);
 			for (int m = 0, l = superMethods.length; m < l; m++)
 				if (superMethods[m].original() == inheritedOriginal)
 					return superMethods[m];
@@ -727,7 +727,7 @@ public class MethodBinding extends Binding {
 	
 	public TypeVariableBinding getTypeVariable(char[] variableName) {
 		for (int i = this.typeVariables.length; --i >= 0;)
-			if (CharOperation.equals(this.typeVariables[i].sourceName, variableName))
+			if (CharOperation.equals(this.typeVariables[i].name, variableName))
 				return this.typeVariables[i];
 		return null;
 	}
@@ -761,7 +761,7 @@ public class MethodBinding extends Binding {
 	/* Answer true if the receiver is a constructor
 	*/
 	public final boolean isConstructor() {
-		return this.selector == TypeConstants.INIT;
+		return this.name == TypeConstants.INIT;
 	}
 	
 	/* Answer true if the receiver has default visibility
@@ -805,7 +805,7 @@ public class MethodBinding extends Binding {
 	 * Answer true if the receiver is a "public static void main(String[])" method
 	 */
 	public final boolean isMain() {
-		if (this.selector.length == 4 && CharOperation.equals(this.selector, TypeConstants.MAIN)
+		if (this.name.length == 4 && CharOperation.equals(this.name, TypeConstants.MAIN)
 				&& ((this.modifiers & (ClassFileConstants.AccPublic | ClassFileConstants.AccStatic)) != 0)
 				&& TypeBinding.VOID == this.returnType
 				&& this.parameters.length == 1) {
@@ -929,7 +929,7 @@ public class MethodBinding extends Binding {
 		if (isConstructor())
 			buffer.append(this.declaringClass.sourceName());
 		else
-			buffer.append(this.selector);
+			buffer.append(this.name);
 		buffer.append('(');
 		if (this.parameters != Binding.NO_PARAMETERS) {
 			for (int i = 0, length = this.parameters.length; i < length; i++) {
@@ -965,7 +965,7 @@ public class MethodBinding extends Binding {
 			setAnnotations(holder.getAnnotations(), parameterAnnotations, holder.getDefaultValue(), null);
 	}
 	protected final void setSelector(char[] selector) {
-		this.selector = selector;
+		this.name = selector;
 		this.signature = null;
 	}
 	
@@ -977,7 +977,7 @@ public class MethodBinding extends Binding {
 		if (isConstructor())
 			buffer.append(this.declaringClass.shortReadableName());
 		else
-			buffer.append(this.selector);
+			buffer.append(this.name);
 		buffer.append('(');
 		if (this.parameters != Binding.NO_PARAMETERS) {
 			for (int i = 0, length = this.parameters.length; i < length; i++) {
@@ -1295,7 +1295,7 @@ public class MethodBinding extends Binding {
 		ASTNode.printModifiers(this.modifiers, output);
 		output.append(this.returnType != null ? this.returnType.debugName() : "<no type>"); //$NON-NLS-1$
 		output.append(" "); //$NON-NLS-1$
-		output.append(this.selector != null ? new String(this.selector) : "<no selector>"); //$NON-NLS-1$
+		output.append(this.name != null ? new String(this.name) : "<no selector>"); //$NON-NLS-1$
 		output.append("("); //$NON-NLS-1$
 		if (this.parameters != null) {
 			if (this.parameters != Binding.NO_PARAMETERS) {
@@ -1345,7 +1345,7 @@ public class MethodBinding extends Binding {
 	
 	public boolean redeclaresPublicObjectMethod(Scope scope) {
 		ReferenceBinding javaLangObject = scope.getJavaLangObject();
-		MethodBinding [] methods = javaLangObject.getMethods(this.selector);
+		MethodBinding [] methods = javaLangObject.getMethods(this.name);
 		for (int i = 0, length = methods == null ? 0 : methods.length; i < length; i++) {
 			final MethodBinding method = methods[i];
 			if (!method.isPublic() || method.isStatic() || method.parameters.length != this.parameters.length) 

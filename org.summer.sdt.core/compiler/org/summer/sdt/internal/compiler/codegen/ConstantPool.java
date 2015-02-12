@@ -792,7 +792,7 @@ public class ConstantPool implements ClassFileConstants, TypeIds {
 			: binding.isPrivate() ? MethodHandleRefKindInvokeSpecial
 			: MethodHandleRefKindInvokeVirtual;
 		
-		return literalIndexForMethodHandle(referenceKind, binding.declaringClass, binding.selector, binding.signature(), isInterface);
+		return literalIndexForMethodHandle(referenceKind, binding.declaringClass, binding.name, binding.signature(), isInterface);
 	}
 	
 	public int literalIndexForMethodHandle(int referenceKind, TypeBinding declaringClass, char[] selector, char[] signature, boolean isInterface) {

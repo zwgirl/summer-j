@@ -937,29 +937,29 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 //					scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
 //				}
 //			}
-//			// resolve type arguments (for generic constructor call)
-//			if (this.typeArguments != null) {
-//				int length = this.typeArguments.length;
-//				this.argumentsHaveErrors = sourceLevel < ClassFileConstants.JDK1_5; // typeChecks all arguments
-//				this.genericTypeArguments = new TypeBinding[length];
-//				for (int i = 0; i < length; i++) {
-//					TypeReference typeReference = this.typeArguments[i];
-//					if ((this.genericTypeArguments[i] = typeReference.resolveType(scope, true /* check bounds*/)) == null) {
-//						this.argumentsHaveErrors = true;
-//					}
-//					if (this.argumentsHaveErrors && typeReference instanceof Wildcard) {
-//						scope.problemReporter().illegalUsageOfWildcard(typeReference);
-//					}
-//				}
-//				if (this.argumentsHaveErrors) {
-//					if (this.arguments != null) { // still attempt to resolve arguments
-//						for (int i = 0, max = this.arguments.length; i < max; i++) {
-//							this.arguments[i].resolveType(scope);
-//						}
-//					}
-//					return null;
-//				}
-//			}
+			// resolve type arguments (for generic constructor call)
+			if (this.typeArguments != null) {
+				int length = this.typeArguments.length;
+				this.argumentsHaveErrors = sourceLevel < ClassFileConstants.JDK1_5; // typeChecks all arguments
+				this.genericTypeArguments = new TypeBinding[length];
+				for (int i = 0; i < length; i++) {
+					TypeReference typeReference = this.typeArguments[i];
+					if ((this.genericTypeArguments[i] = typeReference.resolveType(scope, true /* check bounds*/)) == null) {
+						this.argumentsHaveErrors = true;
+					}
+					if (this.argumentsHaveErrors && typeReference instanceof Wildcard) {
+						scope.problemReporter().illegalUsageOfWildcard(typeReference);
+					}
+				}
+				if (this.argumentsHaveErrors) {
+					if (this.arguments != null) { // still attempt to resolve arguments
+						for (int i = 0, max = this.arguments.length; i < max; i++) {
+							this.arguments[i].resolveType(scope);
+						}
+					}
+					return null;
+				}
+			}
 //			// will check for null after args are resolved
 //			if (this.arguments != null) {
 //				this.argumentsHaveErrors = false; // typeChecks all arguments
@@ -1450,7 +1450,7 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 			output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append('.');;
 		} else if ((this.bits & ASTNode.DepthMASK) != 0 && this.receiver.isImplicitThis()) { // outer access ?
 			//process GLobal and Window
-			if((this.binding.declaringClass.sourceName[0] == 'W' || this.binding.declaringClass.sourceName[0] == 'G') &&
+			if((this.binding.declaringClass.name[0] == 'W' || this.binding.declaringClass.name[0] == 'G') &&
 					(CharOperation.equals(this.binding.declaringClass.compoundName, TypeConstants.JAVA_LANG_WINDOW) 
 						|| CharOperation.equals(this.binding.declaringClass.compoundName, TypeConstants.JAVA_LANG_GLOBAL))){
 			} else {
@@ -1461,7 +1461,7 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 				}
 			}
 		} else if(this.binding.isDefaultMethod()){
-			output.append(this.binding.declaringClass.sourceName);
+			output.append(this.binding.declaringClass.name);
 			output.append(".prototype.");
 		} else if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0){
 			

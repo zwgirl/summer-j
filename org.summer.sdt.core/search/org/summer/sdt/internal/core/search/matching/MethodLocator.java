@@ -284,7 +284,7 @@ protected void matchLevelAndReportImportRef(ImportReference importRef, Binding b
 }
 
 protected int matchMethod(MethodBinding method, boolean skipImpossibleArg) {
-	if (!matchesName(this.pattern.selector, method.selector)) return IMPOSSIBLE_MATCH;
+	if (!matchesName(this.pattern.selector, method.name)) return IMPOSSIBLE_MATCH;
 
 	int level = ACCURATE_MATCH;
 	// look at return type only if declaring type is not specified
@@ -448,7 +448,7 @@ protected void matchReportReference(ASTNode reference, IJavaElement element, IJa
 			if (focus != null && focus.getElementType() == IJavaElement.METHOD) {
 				if (methodBinding != null && methodBinding.declaringClass != null) {
 					boolean isPrivate = Flags.isPrivate(((IMethod) focus).getFlags());
-					if (isPrivate && !CharOperation.equals(methodBinding.declaringClass.sourceName, focus.getParent().getElementName().toCharArray())) {
+					if (isPrivate && !CharOperation.equals(methodBinding.declaringClass.name, focus.getParent().getElementName().toCharArray())) {
 						return; // finally the match was not possible
 					}
 				}
@@ -631,7 +631,7 @@ protected void reportDeclaration(MethodBinding methodBinding, MatchLocator locat
 			}
 			parameterTypes[i] = typeName;
 		}
-		method = locator.createBinaryMethodHandle(type, methodBinding.selector, parameterTypes);
+		method = locator.createBinaryMethodHandle(type, methodBinding.name, parameterTypes);
 		if (method == null || knownMethods.addIfNotIncluded(method) == null) return;
 	
 		IResource resource = type.getResource();
@@ -652,7 +652,7 @@ protected void reportDeclaration(MethodBinding methodBinding, MatchLocator locat
 		AbstractMethodDeclaration methodDecl = typeDecl.declarationOf(methodBinding.original());
 		if (methodDecl != null) {
 			// Create method handle from method declaration
-			String methodName = new String(methodBinding.selector);
+			String methodName = new String(methodBinding.name);
 			Argument[] arguments = methodDecl.arguments;
 			int length = arguments == null ? 0 : arguments.length;
 			String[] parameterTypes = new String[length];
@@ -721,7 +721,7 @@ public int resolveLevel(Binding binding) {
 		subType = CharOperation.compareWith(this.pattern.declaringQualification, method.declaringClass.fPackage.shortReadableName()) == 0;
 	}
 	int declaringLevel = subType
-		? resolveLevelAsSubtype(this.pattern.declaringSimpleName, this.pattern.declaringQualification, method.declaringClass, method.selector, null, method.declaringClass.qualifiedPackageName(), method.isDefault())
+		? resolveLevelAsSubtype(this.pattern.declaringSimpleName, this.pattern.declaringQualification, method.declaringClass, method.name, null, method.declaringClass.qualifiedPackageName(), method.isDefault())
 		: resolveLevelForType(this.pattern.declaringSimpleName, this.pattern.declaringQualification, method.declaringClass);
 	return (methodLevel & MATCH_LEVEL_MASK) > (declaringLevel & MATCH_LEVEL_MASK) ? declaringLevel : methodLevel; // return the weaker match
 }
@@ -754,7 +754,7 @@ protected int resolveLevel(MessageSend messageSend) {
 	int declaringLevel;
 	if (isVirtualInvoke(method, messageSend) && (messageSend.actualReceiverType instanceof ReferenceBinding)) {
 		ReferenceBinding methodReceiverType = (ReferenceBinding) messageSend.actualReceiverType;
-		declaringLevel = resolveLevelAsSubtype(this.pattern.declaringSimpleName, this.pattern.declaringQualification, methodReceiverType, method.selector, method.parameters, methodReceiverType.qualifiedPackageName(), method.isDefault());
+		declaringLevel = resolveLevelAsSubtype(this.pattern.declaringSimpleName, this.pattern.declaringQualification, methodReceiverType, method.name, method.parameters, methodReceiverType.qualifiedPackageName(), method.isDefault());
 		if (declaringLevel == IMPOSSIBLE_MATCH) {
 			if (method.declaringClass == null || this.allSuperDeclaringTypeNames == null) {
 				declaringLevel = INACCURATE_MATCH;

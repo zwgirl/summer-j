@@ -66,7 +66,7 @@ public class ParameterizedGenericMethodBinding extends ParameterizedMethodBindin
 				// explicit type arguments got supplied
 				if (substitutes.length != typeVariables.length) {
 			        // incompatible due to wrong arity
-			        return new ProblemMethodBinding(originalMethod, originalMethod.selector, substitutes, ProblemReasons.TypeParameterArityMismatch);
+			        return new ProblemMethodBinding(originalMethod, originalMethod.name, substitutes, ProblemReasons.TypeParameterArityMismatch);
 				}
 				methodSubstitute = scope.environment().createParameterizedGenericMethod(originalMethod, substitutes);
 				break computeSubstitutes;
@@ -145,7 +145,7 @@ public class ParameterizedGenericMethodBinding extends ParameterizedMethodBindin
 					System.arraycopy(arguments, 0, augmentedArguments, 0, argLength);
 					augmentedArguments[argLength] = substitute;
 					augmentedArguments[argLength+1] = typeVariable;
-			        return new ProblemMethodBinding(methodSubstitute, originalMethod.selector, augmentedArguments, ProblemReasons.ParameterBoundMismatch);
+			        return new ProblemMethodBinding(methodSubstitute, originalMethod.name, augmentedArguments, ProblemReasons.ParameterBoundMismatch);
 				case TypeConstants.UNCHECKED :
 					// tolerate unchecked bounds
 					methodSubstitute.tagBits |= TagBits.HasUncheckedTypeArgumentForBoundCheck;
@@ -289,7 +289,7 @@ public class ParameterizedGenericMethodBinding extends ParameterizedMethodBindin
 					System.arraycopy(arguments, 0, augmentedArguments, 0, argLength);
 					augmentedArguments[argLength] = substitute;
 					augmentedArguments[argLength+1] = typeVariable;
-			        return new ProblemMethodBinding(methodSubstitute, this.originalMethod.selector, augmentedArguments, ProblemReasons.ParameterBoundMismatch);
+			        return new ProblemMethodBinding(methodSubstitute, this.originalMethod.name, augmentedArguments, ProblemReasons.ParameterBoundMismatch);
 				case TypeConstants.UNCHECKED :
 					// tolerate unchecked bounds
 					methodSubstitute.tagBits |= TagBits.HasUncheckedTypeArgumentForBoundCheck;
@@ -467,7 +467,7 @@ public class ParameterizedGenericMethodBinding extends ParameterizedMethodBindin
 	    this.tagBits = originalMethod.tagBits;
 	    this.environment = environment;
 		this.modifiers = originalMethod.modifiers;
-		this.selector = originalMethod.selector;
+		this.name = originalMethod.name;
 		this.declaringClass = rawType == null ? originalMethod.declaringClass : rawType;
 	    this.typeVariables = Binding.NO_TYPE_VARIABLES;
 	    this.typeArguments = rawArguments;
@@ -495,7 +495,7 @@ public class ParameterizedGenericMethodBinding extends ParameterizedMethodBindin
 	public ParameterizedGenericMethodBinding(MethodBinding originalMethod, TypeBinding[] typeArguments, LookupEnvironment environment) {
 	    this.environment = environment;
 		this.modifiers = originalMethod.modifiers;
-		this.selector = originalMethod.selector;
+		this.name = originalMethod.name;
 		this.declaringClass = originalMethod.declaringClass;
 	    this.typeVariables = Binding.NO_TYPE_VARIABLES;
 	    this.typeArguments = typeArguments;

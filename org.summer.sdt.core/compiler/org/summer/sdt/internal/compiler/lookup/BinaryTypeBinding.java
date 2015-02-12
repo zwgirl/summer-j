@@ -252,7 +252,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 			? null // is initialized in cachePartsFrom (called from LookupEnvironment.createBinaryTypeFrom())... must set to null so isGenericType() answers true
 			: Binding.NO_TYPE_VARIABLES;
 	
-		this.sourceName = binaryType.getSourceName();
+		this.name = binaryType.getSourceName();
 		this.modifiers = binaryType.getModifiers();
 	
 		if ((binaryType.getTagBits() & TagBits.HierarchyHasProblems) != 0)
@@ -330,7 +330,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 		int size = this.typeVariables.length;
 		loop: for (int i = 0, len = methodTypeVars.length; i < len; i++) {
 			for (int j = this.typeVariables.length -1 ; j >= 0; j--) {
-				if (CharOperation.equals(methodTypeVars[i].sourceName, this.typeVariables[j].sourceName))
+				if (CharOperation.equals(methodTypeVars[i].name, this.typeVariables[j].name))
 					continue loop;
 			}
 			combinedTypeVars[size++] = methodTypeVars[i];
@@ -594,7 +594,9 @@ public class BinaryTypeBinding extends ReferenceBinding {
 					char[] fieldSignature = use15specifics ? binaryField.getGenericSignature() : null;
 					TypeAnnotationWalker walker = getTypeAnnotationWalker(binaryField.getTypeAnnotations()).toField();
 					TypeBinding type = fieldSignature == null
-						? this.environment.getTypeFromSignature(binaryField.getTypeName(), 0, -1, false, this, missingTypeNames, walker)
+							//cym 2015-02-12
+						? //this.environment.getTypeFromSignature(binaryField.getTypeName(), 0, -1, false, this, missingTypeNames, walker)
+						  this.environment.getTypeFromSignature(binaryField.getTypeName(), 0, -1, false, this, missingTypeNames, walker)
 						: this.environment.getTypeFromTypeSignature(new SignatureWrapper(fieldSignature), Binding.NO_TYPE_VARIABLES, this, missingTypeNames, walker);
 					
 					FieldBinding field = null;
@@ -1256,12 +1258,12 @@ public class BinaryTypeBinding extends ReferenceBinding {
 		for (int i = this.memberTypes.length; --i >= 0;) {
 		    ReferenceBinding memberType = this.memberTypes[i];
 		    if (memberType instanceof UnresolvedReferenceBinding) {
-				char[] name = memberType.sourceName; // source name is qualified with enclosing type name
+				char[] name = memberType.name; // source name is qualified with enclosing type name
 				int prefixLength = this.compoundName[this.compoundName.length - 1].length + 1; // enclosing$
 				if (name.length == (prefixLength + typeName.length)) // enclosing $ typeName
 					if (CharOperation.fragmentEquals(typeName, name, prefixLength, true)) // only check trailing portion
 						return this.memberTypes[i] = (ReferenceBinding) resolveType(memberType, this.environment, false /* no raw conversion for now */);
-		    } else if (CharOperation.equals(typeName, memberType.sourceName)) {
+		    } else if (CharOperation.equals(typeName, memberType.name)) {
 		        return memberType;
 		    }
 		}
