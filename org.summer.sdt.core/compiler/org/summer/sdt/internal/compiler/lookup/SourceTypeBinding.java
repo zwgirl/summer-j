@@ -54,7 +54,6 @@ import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.summer.sdt.internal.compiler.ast.Annotation;
 import org.summer.sdt.internal.compiler.ast.Argument;
-import org.summer.sdt.internal.compiler.ast.EventDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
@@ -898,15 +897,6 @@ public class SourceTypeBinding extends ReferenceBinding {
 					}
 				} else if(this.fields[i] instanceof IndexerBinding){
 					if (resolveTypeFor((IndexerBinding)this.fields[i]) == null) {
-						// do not alter original field array until resolution is over, due to reentrance (143259)
-						if (resolvedFields == this.fields) {
-							System.arraycopy(this.fields, 0, resolvedFields = new FieldBinding[length], 0, length);
-						}
-						resolvedFields[i] = null;
-						failed++;
-					}
-				}  else if(this.fields[i] instanceof EventBinding){
-					if (resolveTypeFor((EventBinding)this.fields[i]) == null) {
 						// do not alter original field array until resolution is over, due to reentrance (143259)
 						if (resolvedFields == this.fields) {
 							System.arraycopy(this.fields, 0, resolvedFields = new FieldBinding[length], 0, length);
@@ -2188,100 +2178,6 @@ public class SourceTypeBinding extends ReferenceBinding {
 //			    initializationScope.initializedField = previousField;
 			}
 			return indexer;
-		}
-		return null; // should never reach this point
-	}
-	
-	public EventBinding resolveTypeFor(EventBinding event) {
-		
-		if (!isPrototype())
-			return this.prototype.resolveTypeFor(event);
-	
-		if ((event.modifiers & ExtraCompilerModifiers.AccUnresolved) == 0)
-			return event;
-	
-		long sourceLevel = this.scope.compilerOptions().sourceLevel;
-		if (sourceLevel >= ClassFileConstants.JDK1_5) {
-			if ((event.getAnnotationTagBits() & TagBits.AnnotationDeprecated) != 0)
-				event.modifiers |= ClassFileConstants.AccDeprecated;
-		}
-		if (isViewedAsDeprecated() && !event.isDeprecated())
-			event.modifiers |= ExtraCompilerModifiers.AccDeprecatedImplicitly;
-		if (hasRestrictedAccess())
-			event.modifiers |= ExtraCompilerModifiers.AccRestrictedAccess;
-		FieldDeclaration[] fields = this.scope.referenceContext.fields;
-		int length = fields == null ? 0 : fields.length;
-		for (int f = 0; f < length; f++) {
-			if (fields[f].binding != event)
-				continue;
-			
-			try {
-				EventDeclaration indexerDecl = (EventDeclaration) fields[f];
-				MethodScope methodScope = new MethodScope(this.scope, this.scope.referenceContext, false);
-				TypeBinding propType = indexerDecl.type.resolveType(methodScope, true /* check bounds*/);
-				event.type = propType;
-				event.modifiers &= ~ExtraCompilerModifiers.AccUnresolved;
-				if (propType == null) {
-					indexerDecl.binding = null;
-					return null;
-				}
-				if (propType == TypeBinding.VOID) {
-					this.scope.problemReporter().variableTypeCannotBeVoid(indexerDecl);
-					indexerDecl.binding = null;
-					return null;
-				}
-				if (propType.isArrayType() && ((ArrayBinding) propType).leafComponentType == TypeBinding.VOID) {
-					this.scope.problemReporter().variableTypeCannotBeVoidArray(indexerDecl);
-					indexerDecl.binding = null;
-					return null;
-				}
-				if ((propType.tagBits & TagBits.HasMissingType) != 0) {
-					event.tagBits |= TagBits.HasMissingType;
-				}
-				TypeBinding leafType = propType.leafComponentType();
-				if (leafType instanceof ReferenceBinding && (((ReferenceBinding)leafType).modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0) {
-					event.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
-				}
-	
-				if (sourceLevel >= ClassFileConstants.JDK1_8) {
-					Annotation [] annotations = indexerDecl.annotations;
-					if (annotations != null && annotations.length != 0) {
-						ASTNode.copySE8AnnotationsToType(methodScope, event, annotations,
-								indexerDecl.getKind() != AbstractVariableDeclaration.ENUM_CONSTANT); // type annotation is illegal on enum constant
-					}
-					Annotation.isTypeUseCompatible(indexerDecl.type, this.scope, annotations);
-				}
-//				// apply null default:
-//				if (this.environment.globalOptions.isAnnotationBasedNullAnalysisEnabled) {
-//					// TODO(SH): different strategy for 1.8, or is "repair" below enough?
-//					if (propertyDecl.getKind() == AbstractVariableDeclaration.ENUM_CONSTANT) {
-//						// enum constants neither have a type declaration nor can they be null
-//						property.tagBits |= TagBits.AnnotationNonNull;
-//					} else {
-//						if (hasNonNullDefaultFor(DefaultLocationField, sourceLevel >= ClassFileConstants.JDK1_8)) {
-//							property.fillInDefaultNonNullness(propertyDecl, initializationScope);
-//						}
-//						// validate null annotation:
-//						if (!this.scope.validateNullAnnotation(property.tagBits, propertyDecl.type, propertyDecl.annotations))
-//							property.tagBits &= ~TagBits.AnnotationNullMASK;
-//					}
-//				}
-				
-				//cym add 
-				MethodDeclaration add = ((EventDeclaration)fields[f]).add;
-				if(add != null){
-					resolveTypesFor2(add.binding);
-				}
-				
-				MethodDeclaration remove = ((EventDeclaration)fields[f]).remove;
-				if(remove != null){
-					resolveTypesFor2(remove.binding);
-				}
-				// cym end
-			} finally {
-//			    initializationScope.initializedField = previousField;
-			}
-			return event;
 		}
 		return null; // should never reach this point
 	}

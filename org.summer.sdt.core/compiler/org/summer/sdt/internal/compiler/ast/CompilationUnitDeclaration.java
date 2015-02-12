@@ -27,10 +27,12 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IrritantSet;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
 import org.summer.sdt.internal.compiler.javascript.JsFile;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
 import org.summer.sdt.internal.compiler.lookup.ImportBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.parser.NLSTag;
@@ -611,12 +613,35 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 				this.javadoc.resolve(this.scope);
 			}
 		}
-		if (this.currentPackage != null && this.currentPackage.annotations != null && !isPackageInfo) {
-			this.scope.problemReporter().invalidFileNameForPackageAnnotations(this.currentPackage.annotations[0]);
-		}
+		//cym 2015-02-03
+//		if (this.currentPackage != null && this.currentPackage.annotations != null && !isPackageInfo) {
+//			this.scope.problemReporter().invalidFileNameForPackageAnnotations(this.currentPackage.annotations[0]);
+//		}
 		try {
+			//cym 2015-02-09
+			if(this.currentPackage != null){
+				BlockScope blockScope = new MethodScope(scope, this, false);
+				ASTNode.resolveAnnotations(blockScope, this.currentPackage.annotations, scope.fPackage);
+				if((scope.fPackage.tagBits & TagBits.AnnotationModule) != 0){
+					this.currentPackage.modifiers |= ClassFileConstants.AccModule;
+				}
+			}
 			if (this.types != null) {
 				for (int i = startingTypeIndex, count = this.types.length; i < count; i++) {
+					//cym 2014-12-13
+					if((scope.fPackage.tagBits & TagBits.AnnotationModule) != 0){
+						this.types[i].binding.modifiers |= ClassFileConstants.AccModule;
+					} else {
+						//cym 2014-12-13
+						if ((this.types[i].modifiers & ClassFileConstants.AccPublic) != 0) {
+							char[] mainTypeName;
+							if ((mainTypeName = this.getMainTypeName()) != null // mainTypeName == null means that implementor of ICompilationUnit decided to return null
+									&& !CharOperation.equals(mainTypeName, this.types[i].name)) {
+								scope.problemReporter().publicClassMustMatchFileName(this, this.types[i]);
+								// tolerate faulty main type name (91091), allow to proceed into type construction
+							}
+						}
+					}
 					this.types[i].resolve(this.scope);
 				}
 			}

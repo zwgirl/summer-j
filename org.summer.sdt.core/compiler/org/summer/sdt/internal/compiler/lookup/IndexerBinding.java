@@ -7,14 +7,14 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 
 public class IndexerBinding extends FieldBinding {
 	public TypeBinding[] parameters;
-	public static final char[] THIS = "this".toCharArray();
 	
 	protected IndexerBinding() {
 		this((char[])null, null, 0, null);
 		// for creating problem field
 	}
 	public IndexerBinding(char[] name, TypeBinding type, int modifiers, ReferenceBinding declaringClass, Constant constant) {
-		this(name, type, modifiers, constant);
+//		this(name, type, modifiers, constant);
+		this(TypeConstants.INDEXER, type, modifiers, constant);
 		this.declaringClass = declaringClass;
 	}
 	// special API used to change field declaring class for runtime visibility check

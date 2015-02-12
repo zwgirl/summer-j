@@ -1447,7 +1447,7 @@ public abstract class Scope {
 
 		ReferenceBinding currentType = (ReferenceBinding) receiverType;
 		if (!currentType.canBeSeenBy(this))
-			return new ProblemIndexerBinding(currentType, IndexerBinding.THIS, ProblemReasons.ReceiverTypeNotVisible);
+			return new ProblemIndexerBinding(currentType, TypeConstants.INDEXER, ProblemReasons.ReceiverTypeNotVisible);
 
 		currentType.initializeForStaticImports();
 		IndexerBinding field = currentType.getExactIndexer(argumentTypes, unitScope);
@@ -1461,7 +1461,7 @@ public abstract class Scope {
 				? field.canBeSeenBy(getCurrentPackage())
 				: field.canBeSeenBy(currentType, invocationSite, this))
 					return field;
-			return new ProblemIndexerBinding(field /* closest match*/, field.declaringClass, IndexerBinding.THIS, ProblemReasons.NotVisible);
+			return new ProblemIndexerBinding(field /* closest match*/, field.declaringClass, TypeConstants.INDEXER, ProblemReasons.NotVisible);
 		}
 		// collect all superinterfaces of receiverType until the field is found in a supertype
 		ReferenceBinding[] interfacesToVisit = null;
@@ -1503,7 +1503,7 @@ public abstract class Scope {
 					if (visibleField == null)
 						visibleField = field;
 					else
-						return new ProblemIndexerBinding(visibleField /* closest match*/, visibleField.declaringClass, IndexerBinding.THIS, ProblemReasons.Ambiguous);
+						return new ProblemIndexerBinding(visibleField /* closest match*/, visibleField.declaringClass, TypeConstants.INDEXER, ProblemReasons.Ambiguous);
 				} else {
 					if (notVisibleField == null)
 						notVisibleField = field;
@@ -1525,7 +1525,7 @@ public abstract class Scope {
 					if (visibleField == null) {
 						visibleField = field;
 					} else {
-						ambiguous = new ProblemIndexerBinding(visibleField /* closest match*/, visibleField.declaringClass, IndexerBinding.THIS, ProblemReasons.Ambiguous);
+						ambiguous = new ProblemIndexerBinding(visibleField /* closest match*/, visibleField.declaringClass, TypeConstants.INDEXER, ProblemReasons.Ambiguous);
 						break done;
 					}
 				} else {
@@ -1550,7 +1550,7 @@ public abstract class Scope {
 		if (visibleField != null)
 			return visibleField;
 		if (notVisibleField != null) {
-			return new ProblemIndexerBinding(notVisibleField, currentType, IndexerBinding.THIS, ProblemReasons.NotVisible);
+			return new ProblemIndexerBinding(notVisibleField, currentType, TypeConstants.INDEXER, ProblemReasons.NotVisible);
 		}
 		return null;
 	}
@@ -2786,9 +2786,9 @@ public abstract class Scope {
 			if (indexer != null) return indexer;
 
 			return new ProblemIndexerBinding(
-				receiverType instanceof ReferenceBinding ? (ReferenceBinding) receiverType : null,
-				IndexerBinding.THIS,
-				ProblemReasons.NotFound);
+					receiverType instanceof ReferenceBinding ? (ReferenceBinding) receiverType : null,
+					TypeConstants.INDEXER,
+					ProblemReasons.NotFound);
 		} catch (AbortCompilation e) {
 			e.updateContext(invocationSite, referenceCompilationUnit().compilationResult);
 			throw e;

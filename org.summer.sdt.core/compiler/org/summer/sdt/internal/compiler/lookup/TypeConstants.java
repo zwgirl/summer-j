@@ -46,6 +46,7 @@ public interface TypeConstants {
 	char[] WINDOW = "Window".toCharArray(); //$NON-NLS-1$  //cym 2014-12-13
 	char[] TEMPLATE = "Template".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] COMPONENT = "Component".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
+	char[] MODULE = "Module".toCharArray(); //$NON-NLS-1$  //cym 2015-02-12
 	char[] ANONYM = "Anonym".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] HTML = "html".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] ARRAY = "Array".toCharArray(); //$NON-NLS-1$  //cym 2014-12-03
@@ -176,6 +177,7 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_ANNOTATION_INHERITED = {JAVA, LANG, ANNOTATION, "Inherited".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ANNOTATION_OVERLOAD = {JAVA, LANG, ANNOTATION, "Overload".toCharArray()}; //$NON-NLS-1$   //cym add 2014-11-20
 	char[][] JAVA_LANG_ANNOTATION_EVENTCALLBACK = {JAVA, LANG, ANNOTATION, "EventCallback".toCharArray()}; //$NON-NLS-1$   //cym add 2015-01-15
+	char[][] JAVA_LANG_MODULE = {JAVA, LANG, MODULE}; //$NON-NLS-1$   //cym add 2015-02-12
 	char[][] JAVA_LANG_ANNOTATION_REPEATABLE = {JAVA, LANG, ANNOTATION, "Repeatable".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_OVERRIDE = {JAVA, LANG, "Override".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_EVENTCALLBACK = {JAVA, LANG, "EventCallback".toCharArray()}; //$NON-NLS-1$ //cym add 2015-01-01
@@ -359,6 +361,7 @@ public interface TypeConstants {
 	int MISMATCH = 2;
 
 	// Synthetics
+	char[] INDEXER = "<indexer>".toCharArray(); //$NON-NLS-1$  //cym 2015-02-12
 	char[] INIT = "<init>".toCharArray(); //$NON-NLS-1$
 	char[] CLINIT = "<clinit>".toCharArray(); //$NON-NLS-1$
 	char[] SYNTHETIC_SWITCH_ENUM_TABLE = "$SWITCH_TABLE$".toCharArray(); //$NON-NLS-1$

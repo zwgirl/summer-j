@@ -170,12 +170,12 @@ abstract public class ReferenceBinding extends TypeBinding {
 		int max = sortedFields.length;
 		if (max == 0)
 			return -1;
-		int left = 0, right = max - 1, selectorLength = IndexerBinding.THIS.length;
+		int left = 0, right = max - 1, selectorLength = TypeConstants.INDEXER.length;
 		int mid = 0;
 		char[] midSelector;
 		while (left <= right) {
 			mid = left + (right - left) /2;
-			int compare = compare(IndexerBinding.THIS, midSelector = sortedFields[mid].name, selectorLength, midSelector.length);
+			int compare = compare(TypeConstants.INDEXER, midSelector = sortedFields[mid].name, selectorLength, midSelector.length);
 			if (compare < 0) {
 				right = mid-1;
 			} else if (compare > 0) {
@@ -183,9 +183,9 @@ abstract public class ReferenceBinding extends TypeBinding {
 			} else {
 				int start = mid, end = mid;
 				// find first method with same selector
-				while (start > left && CharOperation.equals(sortedFields[start-1].name, IndexerBinding.THIS)){ start--; }
+				while (start > left && CharOperation.equals(sortedFields[start-1].name, TypeConstants.INDEXER)){ start--; }
 				// find last method with same selector
-				while (end < right && CharOperation.equals(sortedFields[end+1].name, IndexerBinding.THIS)){ end++; }
+				while (end < right && CharOperation.equals(sortedFields[end+1].name, TypeConstants.INDEXER)){ end++; }
 				return start + ((long)end<< 32);
 			}
 		}
@@ -677,6 +677,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_LONG[2]))
 							this.id = TypeIds.T_JavaLangLong;
 						return;
+					case 'M' :   //cym add 2015-02-12
+						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_MODULE[2]))
+							this.id = TypeIds.T_JavaLangModule;
+						return;	
 					case 'N' :
 						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_NOCLASSDEFERROR[2]))
 							this.id = TypeIds.T_JavaLangNoClassDefError;

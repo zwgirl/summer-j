@@ -359,25 +359,7 @@ public final class JavaCodeScanner extends AbstractJavaScanner {
 
 	private static final String SOURCE_VERSION= JavaCore.COMPILER_SOURCE;
 
-//	static String[] fgKeywords= {
-//		"abstract", //$NON-NLS-1$
-//		"break", //$NON-NLS-1$
-//		"case", "catch", "class", "const", "continue", //$NON-NLS-5$ //$NON-NLS-4$ //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
-//		"default", "do", //$NON-NLS-2$ //$NON-NLS-1$
-//		"else", "extends", //$NON-NLS-2$ //$NON-NLS-1$
-//		"final", "finally", "for", //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
-//		"goto", //$NON-NLS-1$
-//		"if", "implements", "import", "instanceof", "interface", //$NON-NLS-5$ //$NON-NLS-4$ //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
-//		"native", "new", //$NON-NLS-2$ //$NON-NLS-1$
-//		"package", "private", "protected", "public", //$NON-NLS-4$ //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
-//		"static", "super", "switch", "synchronized", //$NON-NLS-4$ //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
-//		"this", "throw", "throws", "transient", "try", //$NON-NLS-5$ //$NON-NLS-4$ //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
-//		"volatile", //$NON-NLS-1$
-//		"while", //$NON-NLS-1$
-//		"ref", "out", "get", "set", "add", //$NON-NLS-5$ //$NON-NLS-4$ //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
-//		"remove", "module", "function", "event", "export" //$NON-NLS-5$ //$NON-NLS-4$ //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
-//	};
-	
+	//cym 2015-02-12
 	static String[] fgKeywords= {
 		"abstract", //$NON-NLS-1$
 		"break", //$NON-NLS-1$
@@ -394,7 +376,7 @@ public final class JavaCodeScanner extends AbstractJavaScanner {
 		"typeof" , //$NON-NLS-1$
 		"volatile", //$NON-NLS-1$
 		"while", //$NON-NLS-1$
-		"module", "function", "export" //$NON-NLS-5$ //$NON-NLS-4$ //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
+		"function", "export" //$NON-NLS-2$ //$NON-NLS-1$
 	};
 
 	private static final String INTERFACE= "interface";  //$NON-NLS-1$

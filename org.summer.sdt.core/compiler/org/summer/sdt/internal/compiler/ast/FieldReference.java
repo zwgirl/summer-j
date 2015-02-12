@@ -29,7 +29,6 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
-import org.summer.sdt.internal.compiler.lookup.EventBinding;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
@@ -101,7 +100,9 @@ public class FieldReference extends Reference implements InvocationSite {
 		manageSyntheticAccessIfNecessary(currentScope, flowInfo, false /*write-access*/);
 	
 		// check if assigning a final field
-		if (this.binding.isFinal()) {
+		//cym 2015-02-12
+//		if (this.binding.isFinal()) {
+		if (this.binding.isFinal() && (this.binding.modifiers & ClassFileConstants.AccField) != 0) {
 			// in a context where it can be assigned?
 			if (this.binding.isBlankFinal()
 				&& !isCompound
@@ -119,11 +120,7 @@ public class FieldReference extends Reference implements InvocationSite {
 				flowInfo.markAsDefinitelyAssigned(this.binding);
 			} else {
 				// assigning a final field outside an initializer or constructor or wrong reference
-				if(this.binding instanceof PropertyBinding || this.binding instanceof IndexerBinding || this.binding instanceof EventBinding){
-					
-				} else {
-					currentScope.problemReporter().cannotAssignToFinalField(this.binding, this);
-				}
+				currentScope.problemReporter().cannotAssignToFinalField(this.binding, this);
 			}
 		} else if (this.binding.isNonNull()) {
 			// in a context where it can be assigned?
@@ -135,6 +132,14 @@ public class FieldReference extends Reference implements InvocationSite {
 				flowInfo.markAsDefinitelyAssigned(this.binding);
 			}		
 		}
+		
+		//cym 2015-02-12
+		if((this.binding.modifiers & ClassFileConstants.AccProperty) != 0){
+			if((this.binding.tagBits & TagBits.canWriteAccess) == 0){
+				currentScope.problemReporter().cannotAssignToFinalField(this.binding, this);
+			}
+		}
+		
 		return flowInfo;
 	}
 	

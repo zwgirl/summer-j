@@ -111,7 +111,9 @@ public class SingleNameReference extends NameReference implements OperatorIds {
 	
 				// check if assigning a final field
 				FieldBinding fieldBinding = (FieldBinding) this.binding;
-				if (fieldBinding.isFinal()) {
+				//cym 2015-02-12
+//				if (fieldBinding.isFinal()) {
+				if (fieldBinding.isFinal() && (fieldBinding.modifiers & ClassFileConstants.AccField) != 0) {
 					// inside a context where allowed
 					if (!isCompound && fieldBinding.isBlankFinal() && currentScope.allowBlankFinalFieldAssignment(fieldBinding)) {
 						if (flowInfo.isPotentiallyAssigned(fieldBinding)) {
@@ -128,6 +130,12 @@ public class SingleNameReference extends NameReference implements OperatorIds {
 					// record assignment for detecting uninitialized non-null fields:
 					flowInfo.markAsDefinitelyAssigned(fieldBinding);
 				}
+				
+				//cym 2015-02-12
+				if((fieldBinding.modifiers & ClassFileConstants.AccProperty) != 0 && (fieldBinding.tagBits & TagBits.canWriteAccess) == 0){
+					currentScope.problemReporter().cannotAssignToFinalField(fieldBinding, this);
+				}
+				
 				break;
 			case Binding.LOCAL : // assigning to a local variable
 				LocalVariableBinding localBinding = (LocalVariableBinding) this.binding;

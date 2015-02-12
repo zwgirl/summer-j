@@ -17,7 +17,6 @@ package org.summer.sdt.internal.compiler.parser;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.Block;
-import org.summer.sdt.internal.compiler.ast.EventDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
@@ -85,17 +84,6 @@ public class RecoveredElement {
 		if (this.parent == null) return this; // ignore
 		this.updateSourceEndIfNecessary(previousAvailableLineEnd(fieldDeclaration.declarationSourceStart - 1));
 		return this.parent.add(fieldDeclaration, bracketBalanceValue);
-	}
-	/*
-	 * Record a event declaration
-	 */
-	public RecoveredElement add(EventDeclaration eventDeclaration, int bracketBalanceValue) {
-	
-		/* default behavior is to delegate recording to parent if any */
-		resetPendingModifiers();
-		if (this.parent == null) return this; // ignore
-		this.updateSourceEndIfNecessary(previousAvailableLineEnd(eventDeclaration.declarationSourceStart - 1));
-		return this.parent.add(eventDeclaration, bracketBalanceValue);
 	}
 	/*
 	 * Record a indexer declaration

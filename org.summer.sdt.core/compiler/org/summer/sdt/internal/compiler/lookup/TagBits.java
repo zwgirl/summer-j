@@ -31,6 +31,11 @@ public interface TagBits {
 	long IsAnonymousType = ASTNode.Bit6;
 	long AnonymousTypeMask = LocalTypeMask | IsAnonymousType | ContainsNestedTypeReferences;
 	long IsBinaryBinding = ASTNode.Bit7;
+	
+	//cym 2015-02-12
+	//for access flag of property and indexer
+	long canReadAccess = ASTNode.Bit3;
+	long canWriteAccess = ASTNode.Bit4;
 
 	// set for all bindings either representing a missing type (type), or directly referencing a missing type (field/method/variable)
 	long HasMissingType = ASTNode.Bit8;
@@ -159,6 +164,9 @@ public interface TagBits {
 	/** summer cym 2014-11-20*/
 	long AnnotationOverload = ASTNode.Bit63L;
 	
+	/** summer cym 2015-02-12*/
+	long AnnotationModule = ASTNode.Bit63L;   //AnnotationFunctionalInterface
+	
 	long AllStandardAnnotationsMask =
 				  AnnotationTargetMASK
 				| AnnotationRetentionMASK
@@ -174,6 +182,7 @@ public interface TagBits {
 				| AnnotationNonNullByDefault
 				| AnnotationNullUnspecifiedByDefault
 				| AnnotationRepeatable
+				| AnnotationModule //cym add 2015-02-12
 				| AnnotationEventCallback  //cym add 2015-01-01
 				| AnnotationOverload;    //cym add 2014-11-20
 	

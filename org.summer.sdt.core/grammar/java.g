@@ -66,7 +66,7 @@ $Terminals
 	interface 
 	let 
 	long 
-	module 
+--	module 
 	native new null package private
 	protected public return short static strictfp super switch
 	synchronized this throw throws transient true try 
@@ -617,15 +617,15 @@ PackageDeclaration ::= PackageDeclarationName ';'
 PackageDeclarationName ::= Modifiers 'package' PushRealModifiers Name RejectTypeAnnotations
 /.$putCase consumePackageDeclarationNameWithModifiers(); $break ./
 
-PackageDeclarationName ::= Modifiers 'module' PushRealModifiers Name RejectTypeAnnotations --cym 2014-10-16
-/.$putCase consumeModuleDeclarationNameWithModifiers(); $break ./
+--PackageDeclarationName ::= Modifiers 'module' PushRealModifiers Name RejectTypeAnnotations --cym 2014-10-16
+--/.$putCase consumeModuleDeclarationNameWithModifiers(); $break ./
 /:$readableName PackageDeclarationName:/
 /:$compliance 1.5:/
 
 PackageDeclarationName ::= PackageComment 'package' Name RejectTypeAnnotations
 /.$putCase consumePackageDeclarationName(); $break ./
-PackageDeclarationName ::= PackageComment 'module' Name  RejectTypeAnnotations  --cym 2014-10-16
-/.$putCase consumeModuleDeclarationName(); $break ./
+--PackageDeclarationName ::= PackageComment 'module' Name  RejectTypeAnnotations  --cym 2014-10-16
+--/.$putCase consumeModuleDeclarationName(); $break ./
 /:$readableName PackageDeclarationName:/
 
 PackageComment ::= $empty
@@ -815,53 +815,53 @@ GetterMethodHeader ::= '&'
 /.$putCase consumeAccessorMethodName(MethodDeclaration.GETTER); $break./
 /:$readableName GetterMethodHeader:/
 
-ClassMemberDeclaration -> EventDeclaration
-EventDeclaration ::= EventHeader '{' EventAccessorDeclaration '}'
-/.$putCase consumeEventDeclaration(); $break./
-
-EventDeclaration ::= EventHeader ';'
-/.$putCase consumeEventDeclarationNoAccessor(); $break./
-/:$readableName EventDeclaration:/
-
---EventHeader ::= Modifiersopt 'event' Type 'Identifier'
+--ClassMemberDeclaration -> EventDeclaration
+--EventDeclaration ::= EventHeader '{' EventAccessorDeclaration '}'
+--/.$putCase consumeEventDeclaration(); $break./
+--
+--EventDeclaration ::= EventHeader ';'
+--/.$putCase consumeEventDeclarationNoAccessor(); $break./
+--/:$readableName EventDeclaration:/
+--
+----EventHeader ::= Modifiersopt 'event' Type 'Identifier'
+----/.$putCase consumeEventHeader(); $break./
+----/:$readableName EventHeader:/
+--
+--EventHeader ::= Modifiersopt * Type 'Identifier'
 --/.$putCase consumeEventHeader(); $break./
 --/:$readableName EventHeader:/
-
-EventHeader ::= Modifiersopt * Type 'Identifier'
-/.$putCase consumeEventHeader(); $break./
-/:$readableName EventHeader:/
-
-EventAccessorDeclaration ::= $empty
-/.$putCase consumeEmptyAccessor(); $break./
-EventAccessorDeclaration ::= AddAccessorDeclaration RemoveAccessorDeclarationopt
-EventAccessorDeclaration ::= RemoveAccessorDeclaration AddAccessorDeclarationopt
-/:$readableName EventAccessorDeclaration:/
-
-AddAccessorDeclarationopt ::= $empty
-AddAccessorDeclarationopt ::= AddAccessorDeclaration
-/.$putCase consumeAccessoropt(); $break./
-/:$readableName AddAccessorDeclarationopt:/
-
-AddAccessorDeclaration ::= AddMethodHeader MethodBody 
-/.$putCase consumeMethodDeclaration(true, false); $break./
-/:$readableName AddAccessorDeclaration:/
-
-AddMethodHeader ::= '+'
-/.$putCase consumeAccessorMethodName(MethodDeclaration.ADD); $break./
-/:$readableName AddMethodHeader:/
-
-RemoveAccessorDeclarationopt ::= $empty
-RemoveAccessorDeclarationopt ::= RemoveAccessorDeclaration
-/.$putCase consumeAccessoropt(); $break./
-/:$readableName RemoveAccessorDeclarationopt:/
-
-RemoveAccessorDeclaration ::= RemoveMethodHeader MethodBody
-/.$putCase consumeMethodDeclaration(true, false); $break./
-/:$readableName RemoveAccessorDeclaration:/
-
-RemoveMethodHeader ::= '-'
-/.$putCase consumeAccessorMethodName(MethodDeclaration.REMOVE); $break./
-/:$readableName RemoveMethodHeader:/
+--
+--EventAccessorDeclaration ::= $empty
+--/.$putCase consumeEmptyAccessor(); $break./
+--EventAccessorDeclaration ::= AddAccessorDeclaration RemoveAccessorDeclarationopt
+--EventAccessorDeclaration ::= RemoveAccessorDeclaration AddAccessorDeclarationopt
+--/:$readableName EventAccessorDeclaration:/
+--
+--AddAccessorDeclarationopt ::= $empty
+--AddAccessorDeclarationopt ::= AddAccessorDeclaration
+--/.$putCase consumeAccessoropt(); $break./
+--/:$readableName AddAccessorDeclarationopt:/
+--
+--AddAccessorDeclaration ::= AddMethodHeader MethodBody 
+--/.$putCase consumeMethodDeclaration(true, false); $break./
+--/:$readableName AddAccessorDeclaration:/
+--
+--AddMethodHeader ::= '+'
+--/.$putCase consumeAccessorMethodName(MethodDeclaration.ADD); $break./
+--/:$readableName AddMethodHeader:/
+--
+--RemoveAccessorDeclarationopt ::= $empty
+--RemoveAccessorDeclarationopt ::= RemoveAccessorDeclaration
+--/.$putCase consumeAccessoropt(); $break./
+--/:$readableName RemoveAccessorDeclarationopt:/
+--
+--RemoveAccessorDeclaration ::= RemoveMethodHeader MethodBody
+--/.$putCase consumeMethodDeclaration(true, false); $break./
+--/:$readableName RemoveAccessorDeclaration:/
+--
+--RemoveMethodHeader ::= '-'
+--/.$putCase consumeAccessorMethodName(MethodDeclaration.REMOVE); $break./
+--/:$readableName RemoveMethodHeader:/
 
 ClassMemberDeclaration -> IndexerDeclaration
 IndexerDeclaration ::= IndexerHeader FormalParameter  ']'  '{' AccessorDeclaration '}'

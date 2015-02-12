@@ -1,6 +1,7 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.ASTVisitor;
+import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
@@ -66,8 +67,6 @@ public class PropertyReference extends Expression{
 		return this.binding;
 	}
 	
-
-	
 	public Constant optimizedBooleanConstant() {
 		switch (this.resolvedType.id) {
 			case T_boolean :
@@ -78,11 +77,9 @@ public class PropertyReference extends Expression{
 		}
 	}
 	
-	
 	public StringBuffer printExpression(int indent, StringBuffer output) {
 		return output.append('.').append(this.token);
 	}
-	
 
 	public TypeBinding resolveType(ElementScope scope) {
 		// Answer the signature type of the field.
@@ -97,6 +94,9 @@ public class PropertyReference extends Expression{
 		}
 		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
 		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.token, null);
+		if((fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
+			System.err.println("只能是属性！！！！！！！！！！！！！！！！！！！");
+		}
 		if (!fieldBinding.isValidBinding()) {
 			this.constant = Constant.NotAConstant;
 			if (this.actualReceiverType instanceof ProblemReferenceBinding) {

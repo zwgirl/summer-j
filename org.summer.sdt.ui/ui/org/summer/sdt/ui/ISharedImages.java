@@ -122,17 +122,6 @@ public interface ISharedImages {
 	public static final String IMG_OBJS_CLASS_DEFAULT= JavaPluginImages.IMG_OBJS_CLASS_DEFAULT;
 	
 	/**
-	 * Key to access the shared image or image descriptor for a class.
-	 */
-	public static final String IMG_OBJS_MODULE= JavaPluginImages.IMG_OBJS_MODULE;   //cym add
-
-	/**
-	 * Key to access the shared image or image descriptor for a class with default visibility.
-	 * @since 3.0
-	 */
-	public static final String IMG_OBJS_MODULE_DEFAULT= JavaPluginImages.IMG_OBJS_MODULE_DEFAULT;  //cym add
-
-	/**
 	 * Key to access the shared image or image descriptor for a public inner class.
 	 * @since 3.0
 	 */

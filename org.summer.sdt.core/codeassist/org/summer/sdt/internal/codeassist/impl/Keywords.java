@@ -27,7 +27,8 @@ public interface Keywords {
 	char[] EXTENDS = "extends".toCharArray(); //$NON-NLS-1$
 	char[] FINAL = "final".toCharArray(); //$NON-NLS-1$
 	char[] FINALLY = "finally".toCharArray(); //$NON-NLS-1$
-	char[] FOR = "for".toCharArray(); //$NON-NLS-1$
+	char[] FOR = "for".toCharArray(); //$NON-NLS-1$   //cym 2015-02-12
+	char[] FUNCTION = "function".toCharArray(); //$NON-NLS-1$
 	char[] IF = "if".toCharArray(); //$NON-NLS-1$
 	char[] IMPLEMENTS = "implements".toCharArray(); //$NON-NLS-1$
 	char[] IMPORT = "import".toCharArray(); //$NON-NLS-1$

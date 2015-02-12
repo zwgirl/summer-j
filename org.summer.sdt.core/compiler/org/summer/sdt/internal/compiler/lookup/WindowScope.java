@@ -21,7 +21,6 @@ public class WindowScope extends Scope{
 		super(WINDOW_SCOPE, parent);
 	}
 	
-	public static final char[][] JAVA_LANG_WINDOW = new char[][] {"java".toCharArray(), "lang".toCharArray(), "Window".toCharArray()};
 	public static final char[] LOCAL_WINDOW_VARIABLE = "window".toCharArray();
 
 	@Override
@@ -38,7 +37,7 @@ public class WindowScope extends Scope{
 
 	public ReferenceBinding window() {
 		if(window == null){
-			QualifiedTypeReference winType = new QualifiedTypeReference(JAVA_LANG_WINDOW, new long[]{0});
+			QualifiedTypeReference winType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_WINDOW, new long[]{0});
 			window = (ReferenceBinding) winType.resolveType((GlobalScope)this.parent);
 		} 
 		
@@ -72,7 +71,7 @@ public class WindowScope extends Scope{
 			locals = new LocalVariableBinding[1];
 			// allocate #index secret variable (of type int)
 			LocalDeclaration windowVarDecl = new LocalDeclaration(LOCAL_WINDOW_VARIABLE, 0, 0);
-			windowVarDecl.type = new QualifiedTypeReference(JAVA_LANG_WINDOW, new long[]{0});
+			windowVarDecl.type = new QualifiedTypeReference(TypeConstants.JAVA_LANG_WINDOW, new long[]{0});
 			windowVarDecl.modifiers |= ClassFileConstants.AccFinal;
 			LocalVariableBinding windowVariable = new LocalVariableBinding(windowVarDecl, window(), ClassFileConstants.AccFinal, true);
 			addLocalVariable(windowVariable);
