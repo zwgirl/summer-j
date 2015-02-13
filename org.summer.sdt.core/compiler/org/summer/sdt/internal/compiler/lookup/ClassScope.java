@@ -35,8 +35,6 @@ import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
-import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
-import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeParameter;
@@ -117,6 +115,109 @@ public class ClassScope extends Scope {
 		anonymousType.verifyMethods(environment().methodVerifier());
 	}
 
+//	void buildFields() {
+//		SourceTypeBinding sourceType = this.referenceContext.binding;
+//		if (sourceType.areFieldsInitialized()) return;
+//		if (this.referenceContext.fields == null) {
+//			sourceType.setFields(Binding.NO_FIELDS);
+//			return;
+//		}
+//		// count the number of fields vs. initializers
+//		FieldDeclaration[] fields = this.referenceContext.fields;
+//		int size = fields.length;
+//		int count = 0;
+//		for (int i = 0; i < size; i++) {
+//			switch (fields[i].getKind()) {
+//				case AbstractVariableDeclaration.FIELD:
+//				case AbstractVariableDeclaration.ENUM_CONSTANT:
+//					count++;
+//			}
+//		}
+//
+//		// iterate the field declarations to create the bindings, lose all duplicates
+//		FieldBinding[] fieldBindings = new FieldBinding[count];
+//		HashtableOfObject knownFieldNames = new HashtableOfObject(count);
+//		count = 0;
+//		for (int i = 0; i < size; i++) {
+//			FieldDeclaration field = fields[i];
+//			if (field.getKind() == AbstractVariableDeclaration.INITIALIZER ) {
+//				// We used to report an error for initializers declared inside interfaces, but
+//				// now this error reporting is moved into the parser itself. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=212713
+//			} else {
+//				FieldBinding fieldBinding;
+//				if(field instanceof PropertyDeclaration){
+//					fieldBinding = new PropertyBinding((PropertyDeclaration) field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
+//					if(((PropertyDeclaration) field).getter != null){
+//						fieldBinding.tagBits |= TagBits.canReadAccess;
+//					}
+//					
+//					if(((PropertyDeclaration) field).setter != null){
+//						fieldBinding.tagBits |= TagBits.canWriteAccess;
+//					}
+//				} else if(field instanceof IndexerDeclaration){
+//					fieldBinding = new IndexerBinding((IndexerDeclaration) field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
+//					((IndexerBinding)fieldBinding).parameters = Binding.NO_PARAMETERS;
+//				} else {
+//					fieldBinding = new FieldBinding(field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
+//				}
+//				fieldBinding.id = count;
+//				// field's type will be resolved when needed for top level types
+//				checkAndSetModifiersForField(fieldBinding, field);
+//
+////				if (knownFieldNames.containsKey(field.name)) {
+//				if (knownFieldNames.containsKey(field.name) && !(field instanceof IndexerDeclaration)) {   //cym 2014-11-24
+//					FieldBinding previousBinding = (FieldBinding) knownFieldNames.get(field.name);
+//					if (previousBinding != null) {
+//						for (int f = 0; f < i; f++) {
+//							FieldDeclaration previousField = fields[f];
+//							if (previousField.binding == previousBinding) {
+//								problemReporter().duplicateFieldInType(sourceType, previousField);
+//								break;
+//							}
+//						}
+//					}
+//					knownFieldNames.put(field.name, null); // ensure that the duplicate field is found & removed
+//					problemReporter().duplicateFieldInType(sourceType, field);
+//					field.binding = null;
+//				} else {
+//					knownFieldNames.put(field.name, fieldBinding);
+//					// remember that we have seen a field with this name
+//					fieldBindings[count++] = fieldBinding;
+//					
+//					
+//					if (field instanceof PropertyDeclaration) {
+//						PropertyDeclaration property = (PropertyDeclaration) field;
+//						if(property.setter != null){
+//							MethodScope scope = new MethodScope(this, property.setter, property.isStatic());
+//							scope.createMethod1(property.setter);
+//						}
+//						
+//						if(property.getter != null){
+//							MethodScope scope = new MethodScope(this, property.getter, property.isStatic());
+//							scope.createMethod1(property.getter);
+//						}
+//					} else if (field instanceof IndexerDeclaration) {
+//						IndexerDeclaration indexer = (IndexerDeclaration) field;
+//						if(indexer.setter != null){
+//							MethodScope scope = new MethodScope(this, indexer.setter, indexer.isStatic());
+//							scope.createMethod1(indexer.setter);
+//						}
+//						
+//						if(indexer.getter != null){
+//							MethodScope scope = new MethodScope(this, indexer.getter, indexer.isStatic());
+//							scope.createMethod1(indexer.getter);
+//						}
+//					}
+//				}
+//			}
+//		}
+//		// remove duplicate fields
+//		if (count != fieldBindings.length)
+//			System.arraycopy(fieldBindings, 0, fieldBindings = new FieldBinding[count], 0, count);
+//		sourceType.tagBits &= ~(TagBits.AreFieldsSorted|TagBits.AreFieldsComplete); // in case some static imports reached already into this type
+//		sourceType.setFields(fieldBindings);
+//	}
+	
 	void buildFields() {
 		SourceTypeBinding sourceType = this.referenceContext.binding;
 		if (sourceType.areFieldsInitialized()) return;
@@ -146,28 +247,25 @@ public class ClassScope extends Scope {
 				// We used to report an error for initializers declared inside interfaces, but
 				// now this error reporting is moved into the parser itself. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=212713
 			} else {
-				FieldBinding fieldBinding;
-				if(field instanceof PropertyDeclaration){
-					fieldBinding = new PropertyBinding((PropertyDeclaration) field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
-					if(((PropertyDeclaration) field).getter != null){
+				FieldBinding fieldBinding = new FieldBinding(field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
+				fieldBinding.id = count;
+				
+				//cym 2015-02-13
+				if((fieldBinding.modifiers & ClassFileConstants.AccProperty) != 0){
+					if(field.getter != null){
 						fieldBinding.tagBits |= TagBits.canReadAccess;
 					}
 					
-					if(((PropertyDeclaration) field).setter != null){
+					if(field.setter != null){
 						fieldBinding.tagBits |= TagBits.canWriteAccess;
 					}
-				} else if(field instanceof IndexerDeclaration){
-					fieldBinding = new IndexerBinding((IndexerDeclaration) field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
-					((IndexerBinding)fieldBinding).parameters = Binding.NO_PARAMETERS;
-				} else {
-					fieldBinding = new FieldBinding(field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
 				}
-				fieldBinding.id = count;
+				
 				// field's type will be resolved when needed for top level types
 				checkAndSetModifiersForField(fieldBinding, field);
 
 //				if (knownFieldNames.containsKey(field.name)) {
-				if (knownFieldNames.containsKey(field.name) && !(field instanceof IndexerDeclaration)) {   //cym 2014-11-24
+				if (knownFieldNames.containsKey(field.name) && (field.modifiers & ClassFileConstants.AccIndexer) == 0) {   //cym 2014-11-24
 					FieldBinding previousBinding = (FieldBinding) knownFieldNames.get(field.name);
 					if (previousBinding != null) {
 						for (int f = 0; f < i; f++) {
@@ -186,29 +284,15 @@ public class ClassScope extends Scope {
 					// remember that we have seen a field with this name
 					fieldBindings[count++] = fieldBinding;
 					
+					//cym 2015-02-13
+					if(field.setter != null){
+						MethodScope scope = new MethodScope(this, field.setter, field.isStatic());
+						scope.createMethod1(field.setter);
+					}
 					
-					if (field instanceof PropertyDeclaration) {
-						PropertyDeclaration property = (PropertyDeclaration) field;
-						if(property.setter != null){
-							MethodScope scope = new MethodScope(this, property.setter, property.isStatic());
-							scope.createMethod1(property.setter);
-						}
-						
-						if(property.getter != null){
-							MethodScope scope = new MethodScope(this, property.getter, property.isStatic());
-							scope.createMethod1(property.getter);
-						}
-					} else if (field instanceof IndexerDeclaration) {
-						IndexerDeclaration indexer = (IndexerDeclaration) field;
-						if(indexer.setter != null){
-							MethodScope scope = new MethodScope(this, indexer.setter, indexer.isStatic());
-							scope.createMethod1(indexer.setter);
-						}
-						
-						if(indexer.getter != null){
-							MethodScope scope = new MethodScope(this, indexer.getter, indexer.isStatic());
-							scope.createMethod1(indexer.getter);
-						}
+					if(field.getter != null){
+						MethodScope scope = new MethodScope(this, field.getter, field.isStatic());
+						scope.createMethod1(field.getter);
 					}
 				}
 			}
@@ -821,7 +905,7 @@ public class ClassScope extends Scope {
 			problemReporter().duplicateModifierForField(declaringClass, fieldDecl);
 
 		if (declaringClass.isInterface()) {
-			if(fieldDecl instanceof PropertyDeclaration || fieldDecl instanceof IndexerDeclaration){
+			if((fieldDecl.modifiers & (ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer)) != 0){
 				// after this point, tests on the 16 bits reserved.
 				int realModifiers = modifiers & ExtraCompilerModifiers.AccJustFlag;
 				//cym modified 2014-11-24
@@ -840,7 +924,8 @@ public class ClassScope extends Scope {
 			} else {
 				//cym 2014-12-23
 //				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
-				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccNative;
+				final int IMPLICIT_MODIFIERS = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccNative
+						 | ClassFileConstants.AccField;
 				// set the modifiers
 				modifiers |= IMPLICIT_MODIFIERS;
 	
@@ -899,13 +984,12 @@ public class ClassScope extends Scope {
 
 		if ((realModifiers & (ClassFileConstants.AccFinal | ClassFileConstants.AccVolatile)) == (ClassFileConstants.AccFinal | ClassFileConstants.AccVolatile))
 			problemReporter().illegalModifierCombinationFinalVolatileForField(declaringClass, fieldDecl);
-		if(fieldDecl instanceof IndexerDeclaration || fieldDecl instanceof PropertyDeclaration){
+		if((fieldDecl.modifiers & (ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer)) != 0){
 			
 		} else {
 			if (fieldDecl.initialization == null && (modifiers & ClassFileConstants.AccFinal) != 0)
 				modifiers |= ExtraCompilerModifiers.AccBlankFinal;
 		}
-//		fieldBinding.modifiers = modifiers;
 		fieldBinding.modifiers |= modifiers;
 	}
 

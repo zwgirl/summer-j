@@ -348,16 +348,15 @@ public abstract class Engine implements ITypeRequestor {
 			for (int i = 0; i < length; i++) {
 				FieldDeclaration field = fields[i];
 				
-				if(field instanceof PropertyDeclaration){
-					PropertyDeclaration property = (PropertyDeclaration) field;
-					MethodDeclaration getter = property.getter;
+				if((field.modifiers & (ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer)) != 0){
+					MethodDeclaration getter = field.getter;
 					if (getter != null){
 						if (getter.bodyStart <= position + 1 && getter.declarationSourceEnd >= position) {
 							getParser().parseBlockStatements(getter, unit);
 							return getter;
 						}
 					}
-					MethodDeclaration setter = property.setter;
+					MethodDeclaration setter = field.setter;
 					if (setter != null){
 						if (setter.bodyStart <= position + 1 && setter.declarationSourceEnd >= position) {
 							getParser().parseBlockStatements(setter, unit);
@@ -365,24 +364,7 @@ public abstract class Engine implements ITypeRequestor {
 						}
 					}
 					continue;
-				} else if(field instanceof IndexerDeclaration){
-					IndexerDeclaration indexer = (IndexerDeclaration) field;
-					MethodDeclaration getter = indexer.getter;
-					if (getter != null){
-						if (getter.bodyStart <= position + 1 && getter.declarationSourceEnd >= position) {
-							getParser().parseBlockStatements(getter, unit);
-							return getter;
-						}
-					}
-					MethodDeclaration setter = indexer.setter;
-					if (setter != null){
-						if (setter.bodyStart <= position + 1 && setter.declarationSourceEnd >= position) {
-							getParser().parseBlockStatements(setter, unit);
-							return setter;
-						}
-					}
-					continue;
-				}
+				} 
 				
 				if (field.sourceStart > position)
 					continue;

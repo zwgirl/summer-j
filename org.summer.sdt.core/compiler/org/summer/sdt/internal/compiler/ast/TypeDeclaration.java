@@ -1015,30 +1015,15 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						continue;
 				}
 				
-				if(fieldDeclaration instanceof IndexerDeclaration){
-					IndexerDeclaration indexer = (IndexerDeclaration) fieldDeclaration;
-					if(indexer.getter != null){
-						indexer.getter.parseStatements(parser, unit);
-					}
-					
-					if(indexer.setter != null){
-						indexer.setter.parseStatements(parser, unit);
-					}
-					
-					continue;
-				} 
-				if(fieldDeclaration instanceof PropertyDeclaration){
-					PropertyDeclaration property = (PropertyDeclaration) fieldDeclaration;
-					if(property.getter != null){
-						property.getter.parseStatements(parser, unit);
-					}
-					
-					if(property.setter != null){
-						property.setter.parseStatements(parser, unit);
-					}
-					
-					continue;
-				} 
+				if(fieldDeclaration.getter != null){
+					fieldDeclaration.getter.parseStatements(parser, unit);
+				}
+				
+				if(fieldDeclaration.setter != null){
+					fieldDeclaration.setter.parseStatements(parser, unit);
+				}
+				
+				continue;
 			}
 		}
 	}
@@ -1299,6 +1284,16 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 							break;
 					}
 					field.resolve(field.isStatic() ? this.staticInitializerScope : this.initializerScope);
+					
+					//check accessor  cym add 2014-11-03
+					if((field.modifiers & (ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer)) != 0){
+						if(field.getter != null){
+							field.getter.resolve(this.scope);
+						} 
+						if(field.setter != null){
+							field.setter.resolve(this.scope);
+						}
+					}
 				}
 			}
 			if (this.maxFieldCount < localMaxFieldCount) {
@@ -1358,29 +1353,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			//check element cym 2014-12-09
 			if(this.element != null){
 				this.element.resolve(new ElementScope(this.element, this.scope));
-			}
-			
-			//check property  cym add 2014-11-03
-			if (this.fields != null) {
-				for (int i = 0, count = this.fields.length; i < count; i++) {
-					if(fields[i] instanceof PropertyDeclaration){
-						PropertyDeclaration property = (PropertyDeclaration) this.fields[i];
-						if(property.getter != null){
-							property.getter.resolve(this.scope);
-						} 
-						if(property.setter != null){
-							property.setter.resolve(this.scope);
-						}
-					} else if(fields[i] instanceof IndexerDeclaration){
-						IndexerDeclaration indexer = (IndexerDeclaration) this.fields[i];
-						if(indexer.getter != null){
-							indexer.getter.resolve(this.scope);
-						} 
-						if(indexer.setter != null){
-							indexer.setter.resolve(this.scope);
-						}
-					}
-				}
 			}
 	
 			int missingAbstractMethodslength = this.missingAbstractMethods == null ? 0 : this.missingAbstractMethods.length;
@@ -1895,7 +1867,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		
 		generateProperties(type.scope, indent, output, type);
 		
-		generateIndexers(type.scope, indent, output, type);
+//		generateIndexers(type.scope, indent, output, type);
 		
 		if(type.methods != null){
 			
@@ -2146,7 +2118,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	private void generateProperties(Scope scope, int indent, StringBuffer output, TypeDeclaration type){
 		if(type.fields != null){
 			for(int i = 0, length = type.fields.length; i < length; i++){
-				if(!(type.fields[i] instanceof PropertyDeclaration)){
+				if((type.fields[i].modifiers & ClassFileConstants.AccProperty) == 0){
 					continue;
 				}
 				if((this.fields[i].modifiers & ClassFileConstants.AccNative) != 0){
@@ -2157,27 +2129,26 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 	}
 	
-	private void generateIndexers(Scope scope, int indent,
-			StringBuffer output, TypeDeclaration type) {
-		if(type.fields != null){
-			for(int i = 0, length = type.fields.length; i < length; i++){
-				if(!(type.fields[i] instanceof IndexerDeclaration)){
-					continue;
-				}
-				if((this.fields[i].modifiers & ClassFileConstants.AccNative) != 0){
-					continue;
-				}
-				this.fields[i].generateStatement(scope, indent, output);
-			}
-		}
-		
-	}
+//	private void generateIndexers(Scope scope, int indent,
+//			StringBuffer output, TypeDeclaration type) {
+//		if(type.fields != null){
+//			for(int i = 0, length = type.fields.length; i < length; i++){
+//				if(!(type.fields[i] instanceof IndexerDeclaration)){
+//					continue;
+//				}
+//				if((this.fields[i].modifiers & ClassFileConstants.AccNative) != 0){
+//					continue;
+//				}
+//				this.fields[i].generateStatement(scope, indent, output);
+//			}
+//		}
+//		
+//	}
 	
 	private void generateFields(Scope scope, int indent, StringBuffer output, boolean instance, TypeDeclaration type){
 		if(type.fields != null){
 			for(int i = 0, length = type.fields.length; i < length; i++){
-				if(type.fields[i] instanceof PropertyDeclaration 
-						|| type.fields[i] instanceof IndexerDeclaration){
+				if((type.fields[i].modifiers & (ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer)) != 0){
 					continue;
 				}
 				

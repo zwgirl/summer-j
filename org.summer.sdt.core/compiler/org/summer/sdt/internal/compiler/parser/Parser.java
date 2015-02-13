@@ -1083,38 +1083,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				}
 				continue;
 			}
-			//cym add 2014-11-01
-			if (node instanceof IndexerDeclaration){
-				IndexerDeclaration indexer = (IndexerDeclaration) node;
-				if (indexer.declarationSourceEnd == 0){
-					element = element.add(indexer, 0);
-					if (indexer.initialization == null){
-						this.lastCheckPoint = indexer.sourceEnd + 1;
-					} else {
-						this.lastCheckPoint = indexer.initialization.sourceEnd + 1;
-					}
-				} else {
-					element = element.add(indexer, 0);
-					this.lastCheckPoint = indexer.declarationSourceEnd + 1;
-				}
-				continue;
-			}
-			//cym add 2014-11-01
-			if (node instanceof PropertyDeclaration){
-				PropertyDeclaration property = (PropertyDeclaration) node;
-				if (property.declarationSourceEnd == 0){
-					element = element.add(property, 0);
-					if (property.initialization == null){
-						this.lastCheckPoint = property.sourceEnd + 1;
-					} else {
-						this.lastCheckPoint = property.initialization.sourceEnd + 1;
-					}
-				} else {
-					element = element.add(property, 0);
-					this.lastCheckPoint = property.declarationSourceEnd + 1;
-				}
-				continue;
-			}
 			if (node instanceof FieldDeclaration){
 				FieldDeclaration field = (FieldDeclaration) node;
 				if (field.declarationSourceEnd == 0){
@@ -8142,13 +8110,111 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		pushOnAstLengthStack(0);
 	}
 	
+//	protected void consumePropertyHeader() {
+//		// PropertyHeader ::=  '{'
+//		// do nothing by default
+//	
+//		char[] identifierName = this.identifierStack[this.identifierPtr];
+//		long namePosition = this.identifierPositionStack[this.identifierPtr];
+//		PropertyDeclaration declaration = new PropertyDeclaration(identifierName, (int) (namePosition >>> 32), (int) namePosition);
+//	
+//		this.identifierPtr--;
+//		this.identifierLengthPtr--;
+//		TypeReference type = getTypeReference(this.intStack[this.intPtr--]); // type dimension
+////		pushOnAstStack(type);
+//		declaration.declarationSourceStart = this.intStack[this.intPtr--];
+//		declaration.modifiers = this.intStack[this.intPtr--];
+//		
+//		// cym 		 2015-02-12
+//		declaration.modifiers |= ClassFileConstants.AccProperty;
+//		
+//		// consume annotations
+//		int length;
+//		if ((length = this.expressionLengthStack[this.expressionLengthPtr--]) != 0) {
+//			System.arraycopy(
+//				this.expressionStack,
+//				(this.expressionPtr -= length) + 1,
+//				declaration.annotations = new Annotation[length],
+//				0,
+//				length);
+//		}
+//		// Store javadoc only on first declaration as it is the same for all ones
+//		PropertyDeclaration fieldDeclaration = (PropertyDeclaration) declaration;
+//		fieldDeclaration.javadoc = this.javadoc;
+//	
+//		declaration.type = type;
+//		declaration.bits |= (type.bits & ASTNode.HasTypeAnnotations);
+//		
+//		if(this.currentToken == TokenNameLBRACE){
+//			declaration.bodyStart = this.scanner.currentPosition;
+//		}
+//		
+//		pushOnAstStack(declaration);
+//		// recovery
+//		if (this.currentElement != null) {
+//			if (!(this.currentElement instanceof RecoveredType)
+//				&& (this.currentToken == TokenNameDOT
+//					//|| declaration.modifiers != 0
+//					|| (Util.getLineNumber(declaration.type.sourceStart, this.scanner.lineEnds, 0, this.scanner.linePtr)
+//							!= Util.getLineNumber((int) (namePosition >>> 32), this.scanner.lineEnds, 0, this.scanner.linePtr)))){
+//				this.lastCheckPoint = (int) (namePosition >>> 32);
+//				this.restartRecovery = true;
+//				return;
+//			}
+//			PropertyDeclaration propDecl = (PropertyDeclaration) this.astStack[this.astPtr];
+//			this.lastCheckPoint = propDecl.sourceEnd + 1;
+//			this.currentElement = this.currentElement.add(propDecl, 0);
+//			this.lastIgnoredToken = -1;
+//		}
+//	}
+//
+//	protected void consumePropertyDeclaration(){
+//		int length = this.astLengthStack[this.astLengthPtr--];
+//		this.astPtr -= length;
+//		MethodDeclaration[] methods = new MethodDeclaration[length];
+//		System.arraycopy(this.astStack, this.astPtr + 1, methods, 0, length);
+//		
+//		PropertyDeclaration property = (PropertyDeclaration) this.astStack[this.astPtr];
+//		for(MethodDeclaration method : methods){
+//			method.modifiers |= property.modifiers;
+//			if(method.accessorType == MethodDeclaration.GETTER){
+//				property.getter = method;
+//				method.returnType = property.type;
+//			} else {
+//				property.setter = method;
+//				method.returnType = new SingleTypeReference(TypeBinding.VOID.simpleName, 0);
+//				//value parameter
+//				method.arguments = new Argument[]{new Argument(MethodDeclaration.VALUE, 0, property.type, 0)};
+//			}
+//		}
+//		
+//		property.declarationSourceEnd = this.endStatementPosition;
+//		property.declarationEnd = this.endStatementPosition;	
+//		
+//		int endPos = flushCommentsDefinedPriorTo(this.endStatementPosition);
+//		if (endPos != this.endStatementPosition) {
+//			property.declarationSourceEnd = endPos;
+//		}
+//		
+//		// recovery
+//		if (this.currentElement != null) {
+//			this.lastCheckPoint = endPos + 1;
+//			if (this.currentElement.parent != null && this.currentElement instanceof RecoveredField){
+//				if (!(this.currentElement instanceof RecoveredInitializer)) {
+//					this.currentElement = this.currentElement.parent;
+//				}
+//			}
+//			this.restartRecovery = true;
+//		}
+//	}
+	
 	protected void consumePropertyHeader() {
 		// PropertyHeader ::=  '{'
 		// do nothing by default
 	
 		char[] identifierName = this.identifierStack[this.identifierPtr];
 		long namePosition = this.identifierPositionStack[this.identifierPtr];
-		PropertyDeclaration declaration = new PropertyDeclaration(identifierName, (int) (namePosition >>> 32), (int) namePosition);
+		FieldDeclaration declaration = new FieldDeclaration(identifierName, (int) (namePosition >>> 32), (int) namePosition);
 	
 		this.identifierPtr--;
 		this.identifierLengthPtr--;
@@ -8171,8 +8237,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				length);
 		}
 		// Store javadoc only on first declaration as it is the same for all ones
-		PropertyDeclaration fieldDeclaration = (PropertyDeclaration) declaration;
-		fieldDeclaration.javadoc = this.javadoc;
+		declaration.javadoc = this.javadoc;
 	
 		declaration.type = type;
 		declaration.bits |= (type.bits & ASTNode.HasTypeAnnotations);
@@ -8193,7 +8258,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				this.restartRecovery = true;
 				return;
 			}
-			PropertyDeclaration propDecl = (PropertyDeclaration) this.astStack[this.astPtr];
+			FieldDeclaration propDecl = (FieldDeclaration) this.astStack[this.astPtr];
 			this.lastCheckPoint = propDecl.sourceEnd + 1;
 			this.currentElement = this.currentElement.add(propDecl, 0);
 			this.lastIgnoredToken = -1;
@@ -8206,7 +8271,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		MethodDeclaration[] methods = new MethodDeclaration[length];
 		System.arraycopy(this.astStack, this.astPtr + 1, methods, 0, length);
 		
-		PropertyDeclaration property = (PropertyDeclaration) this.astStack[this.astPtr];
+		FieldDeclaration property = (FieldDeclaration) this.astStack[this.astPtr];
 		for(MethodDeclaration method : methods){
 			method.modifiers |= property.modifiers;
 			if(method.accessorType == MethodDeclaration.GETTER){
@@ -8318,11 +8383,108 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		concatNodeLists();
 	}
 
+//	protected void consumeIndexerHeader(){
+//		//IndexerHeader ::= Modifiersopt Type 'this' '['
+//		
+//		int startPosition = this.intStack[this.intPtr--];
+//		IndexerDeclaration declaration = new IndexerDeclaration(ConstantPool.This, startPosition, startPosition + 3);   //this.length
+//	
+//		declaration.type = getTypeReference(this.intStack[this.intPtr--]); // type dimension
+//		declaration.declarationSourceStart = this.intStack[this.intPtr--];
+//		declaration.modifiers = this.intStack[this.intPtr--];
+//		
+//		//cym 2012-02-12
+//		declaration.modifiers |= ClassFileConstants.AccIndexer;
+//		// consume annotations
+//		int length;
+//		if ((length = this.expressionLengthStack[this.expressionLengthPtr--]) != 0) {
+//			System.arraycopy(
+//				this.expressionStack,
+//				(this.expressionPtr -= length) + 1,
+//				declaration.annotations = new Annotation[length],
+//				0,
+//				length);
+//		}
+//		// Store javadoc only on first declaration as it is the same for all ones
+//		declaration.javadoc = this.javadoc;
+//		this.javadoc = null;
+//	
+//		declaration.bits |= (declaration.type.bits & ASTNode.HasTypeAnnotations);
+//		
+//		pushOnAstStack(declaration);
+//		// recovery
+//		if (this.currentElement != null) {
+//			if (!(this.currentElement instanceof RecoveredType)
+//				&& (this.currentToken == TokenNameDOT
+//					//|| declaration.modifiers != 0
+//					|| (Util.getLineNumber(declaration.type.sourceStart, this.scanner.lineEnds, 0, this.scanner.linePtr)
+//							!= Util.getLineNumber(startPosition, this.scanner.lineEnds, 0, this.scanner.linePtr)))){
+//				this.lastCheckPoint = startPosition;
+//				this.restartRecovery = true;
+//				return;
+//			}
+//			FieldDeclaration fieldDecl = (FieldDeclaration) this.astStack[this.astPtr];
+//			this.lastCheckPoint = fieldDecl.sourceEnd + 1;
+//			this.currentElement = this.currentElement.add(fieldDecl, 0);
+//			this.lastIgnoredToken = -1;
+//		}
+//	}
+//	
+//	protected void consumeIndexerDeclaration(){
+////		IndexerDeclaration ::= IndexerHeader FormalParameter  ']'  '{' AccessorDeclaration '}'
+//		
+//		int length = this.astLengthStack[this.astLengthPtr--];
+//		this.astPtr -= length;
+//		MethodDeclaration[] methods = new MethodDeclaration[length];
+//		System.arraycopy(this.astStack, this.astPtr + 1, methods, 0, length);
+//		
+//		int argLength = this.astLengthStack[this.astLengthPtr--];
+//		this.astPtr -= argLength;
+//		Argument[] args = new Argument[argLength];
+//		if(argLength != 0){
+//			System.arraycopy(this.astStack, this.astPtr + 1, args, 0, argLength);
+//		}
+//		
+//		IndexerDeclaration indexer = (IndexerDeclaration) this.astStack[this.astPtr];
+//		indexer.declarationSourceEnd = this.endStatementPosition;
+//		indexer.declarationEnd = this.endStatementPosition;	// semi-colon included
+//		for(MethodDeclaration method : methods){
+//			if(method.accessorType == MethodDeclaration.GETTER){
+//				method.returnType = indexer.type;
+//				indexer.getter = method;
+//				method.arguments = args;
+//			} else {
+//				method.returnType = new SingleTypeReference(TypeBinding.VOID.simpleName, 0);
+//				method.arguments = new Argument[argLength + 1];
+//				System.arraycopy(args, 0, method.arguments, 0, argLength);
+//				method.arguments[argLength] = new Argument(MethodDeclaration.VALUE, 0, indexer.type, 0);
+//				indexer.setter = method;
+//			}
+//		}
+//		indexer.arguments = args;
+//		
+//		int endPos = flushCommentsDefinedPriorTo(this.endStatementPosition);
+//		if (endPos != this.endStatementPosition) {
+//			indexer.declarationSourceEnd = endPos;
+//		}
+//	
+//		// recovery
+//		if (this.currentElement != null) {
+//			this.lastCheckPoint = endPos + 1;
+//			if (this.currentElement.parent != null && this.currentElement instanceof RecoveredIndexer){
+//				if (!(this.currentElement instanceof RecoveredIndexer)) {
+//					this.currentElement = this.currentElement.parent;
+//				}
+//			}
+//			this.restartRecovery = true;
+//		}
+//	}
+	
 	protected void consumeIndexerHeader(){
 		//IndexerHeader ::= Modifiersopt Type 'this' '['
 		
 		int startPosition = this.intStack[this.intPtr--];
-		IndexerDeclaration declaration = new IndexerDeclaration(ConstantPool.This, startPosition, startPosition + 3);   //this.length
+		FieldDeclaration declaration = new FieldDeclaration(ConstantPool.This, startPosition, startPosition + 3);   //this.length
 	
 		declaration.type = getTypeReference(this.intStack[this.intPtr--]); // type dimension
 		declaration.declarationSourceStart = this.intStack[this.intPtr--];
@@ -8380,7 +8542,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			System.arraycopy(this.astStack, this.astPtr + 1, args, 0, argLength);
 		}
 		
-		IndexerDeclaration indexer = (IndexerDeclaration) this.astStack[this.astPtr];
+		FieldDeclaration indexer = (FieldDeclaration) this.astStack[this.astPtr];
 		indexer.declarationSourceEnd = this.endStatementPosition;
 		indexer.declarationEnd = this.endStatementPosition;	// semi-colon included
 		for(MethodDeclaration method : methods){
@@ -8424,7 +8586,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			System.arraycopy(this.astStack, this.astPtr + 1, args, 0, length);
 		}
 		
-		IndexerDeclaration declaration = (IndexerDeclaration) this.astStack[this.astPtr];
+		FieldDeclaration declaration = (FieldDeclaration) this.astStack[this.astPtr];
 		declaration.declarationSourceEnd = this.endStatementPosition;
 		declaration.declarationEnd = this.endStatementPosition;	// semi-colon included
 		

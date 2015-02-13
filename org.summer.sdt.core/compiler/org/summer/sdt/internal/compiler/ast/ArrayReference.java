@@ -21,9 +21,9 @@ import org.summer.sdt.internal.compiler.flow.FlowContext;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
+import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.MissingTypeBinding;
-import org.summer.sdt.internal.compiler.lookup.ProblemIndexerBinding;
+import org.summer.sdt.internal.compiler.lookup.ProblemFieldBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
@@ -38,7 +38,7 @@ public class ArrayReference extends Reference {
 	public Expression receiver;
 	public Expression position;
 	
-	public IndexerBinding binding;
+	public FieldBinding binding;
 
 	public ArrayReference(Expression rec, Expression pos) {
 		this.receiver = rec;
@@ -221,7 +221,7 @@ public class ArrayReference extends Reference {
 		}
 		
 		//cym 2014-11-24
-		IndexerBinding indexerBinding = this.binding = scope.getIndexer((TypeBinding) this.resolvedType, new TypeBinding[] {positionType}, null);
+		FieldBinding indexerBinding = this.binding = scope.getIndexer((TypeBinding) this.resolvedType, new TypeBinding[] {positionType}, null);
 		if (!indexerBinding.isValidBinding()) {
 			this.constant = Constant.NotAConstant;
 			if (this.receiver.resolvedType instanceof ProblemReferenceBinding) {
@@ -237,9 +237,9 @@ public class ArrayReference extends Reference {
 			if (!avoidSecondary) {
 				scope.problemReporter().invalidIndexer(this, this.resolvedType);
 			}
-			if (indexerBinding instanceof ProblemIndexerBinding) {
-				ProblemIndexerBinding problemFieldBinding = (ProblemIndexerBinding) indexerBinding;
-				IndexerBinding closestMatch = problemFieldBinding.closestMatch;
+			if (indexerBinding instanceof ProblemFieldBinding) {
+				ProblemFieldBinding problemFieldBinding = (ProblemFieldBinding) indexerBinding;
+				FieldBinding closestMatch = problemFieldBinding.closestMatch;
 				switch(problemFieldBinding.problemId()) {
 					case ProblemReasons.InheritedNameHidesEnclosingName :
 					case ProblemReasons.NotVisible :

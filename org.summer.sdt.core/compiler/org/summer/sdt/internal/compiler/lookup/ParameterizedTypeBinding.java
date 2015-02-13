@@ -43,7 +43,6 @@ package org.summer.sdt.internal.compiler.lookup;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
@@ -459,31 +458,6 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 		return this.type.fieldCount(); // same as erasure (lazy)
 	}
 
-//	/**
-//	 * @see org.summer.sdt.internal.compiler.lookup.ReferenceBinding#fields()
-//	 */
-//	public FieldBinding[] fields() {
-//		if ((this.tagBits & TagBits.AreFieldsComplete) != 0)
-//			return this.fields;
-//
-//		try {
-//			FieldBinding[] originalFields = this.type.fields();
-//			int length = originalFields.length;
-//			FieldBinding[] parameterizedFields = new FieldBinding[length];
-//			for (int i = 0; i < length; i++)
-//				// substitute all fields, so as to get updated declaring class at least
-//				parameterizedFields[i] = new ParameterizedFieldBinding(this, originalFields[i]);
-//			this.fields = parameterizedFields;
-//		} finally {
-//			// if the original fields cannot be retrieved (ex. AbortCompilation), then assume we do not have any fields
-//			if (this.fields == null)
-//				this.fields = Binding.NO_FIELDS;
-//			this.tagBits |= TagBits.AreFieldsComplete;
-//		}
-//		return this.fields;
-//	}
-	
-	//cym 2014-12-04
 	/**
 	 * @see org.summer.sdt.internal.compiler.lookup.ReferenceBinding#fields()
 	 */
@@ -495,16 +469,9 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 			FieldBinding[] originalFields = this.type.fields();
 			int length = originalFields.length;
 			FieldBinding[] parameterizedFields = new FieldBinding[length];
-			for (int i = 0; i < length; i++){
-				if(originalFields[i] instanceof IndexerBinding){
-					// substitute all fields, so as to get updated declaring class at least
-					parameterizedFields[i] = new ParameterizedIndexerBinding(this, (IndexerBinding) originalFields[i]);
-				} else {
-					// substitute all fields, so as to get updated declaring class at least
-					parameterizedFields[i] = new ParameterizedFieldBinding(this, originalFields[i]);
-				}
-				
-			}
+			for (int i = 0; i < length; i++)
+				// substitute all fields, so as to get updated declaring class at least
+				parameterizedFields[i] = new ParameterizedFieldBinding(this, originalFields[i]);
 			this.fields = parameterizedFields;
 		} finally {
 			// if the original fields cannot be retrieved (ex. AbortCompilation), then assume we do not have any fields
@@ -683,7 +650,7 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	//cym 2014-11-24
 	//NOTE: the return type, arg & exception types of each method of a source type are resolved when needed
 	//searches up the hierarchy as long as no potential (but not exact) match was found.
-	public IndexerBinding getExactIndexer(TypeBinding[] argumentTypes, CompilationUnitScope refScope) {
+	public FieldBinding getExactIndexer(TypeBinding[] argumentTypes, CompilationUnitScope refScope) {
 		fields(); // ensure fields have been initialized... must create all at once unlike methods
 		// sender from refScope calls recordTypeReference(this)
 		int argCount = argumentTypes.length;
@@ -693,10 +660,10 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 			long range;
 			if ((range = ReferenceBinding.binarySearch(this.fields)) >= 0) {
 				nextIndexer: for (int ifield = (int)range, end = (int)(range >> 32); ifield <= end; ifield++) {
-					if(!(this.fields[ifield] instanceof IndexerBinding)){
+					if((this.fields[ifield].modifiers & ClassFileConstants.AccIndexer) == 0){
 						continue;
 					}
-					IndexerBinding indexer = (IndexerBinding) this.fields[ifield];
+					FieldBinding indexer = this.fields[ifield];
 					foundNothing = false; // inner type lookups must know that a method with this name exists
 					if (indexer.parameters.length == argCount) {
 						TypeBinding[] toMatch = indexer.parameters;
@@ -721,17 +688,16 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 				// check unresolved method
 				int start = (int) range, end = (int) (range >> 32);
 				nextIndexer: for (int ifield = start; ifield <= end; ifield++) {
-					if(!(this.fields[ifield] instanceof IndexerBinding)){
+					if((this.fields[ifield].modifiers & ClassFileConstants.AccIndexer) == 0){
 						continue;
 					}
 					
-					IndexerBinding indexer = (IndexerBinding) this.fields[ifield];
-					TypeBinding[] toMatch = indexer.parameters;
+					TypeBinding[] toMatch = this.fields[ifield].parameters;
 					if (toMatch.length == argCount) {
 						for (int iarg = 0; iarg < argCount; iarg++)
 							if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
 								continue nextIndexer;
-						return indexer;
+						return this.fields[ifield];
 					}
 				}
 			}

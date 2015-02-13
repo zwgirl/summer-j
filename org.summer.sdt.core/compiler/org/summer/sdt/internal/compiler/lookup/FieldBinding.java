@@ -27,6 +27,9 @@ public class FieldBinding extends VariableBinding {
 	public ReferenceBinding declaringClass;
 	public int compoundUseFlag = 0; // number or accesses via postIncrement or compoundAssignment
 	
+	//cym 2015-02-13
+	public TypeBinding[] parameters;
+	
 	protected FieldBinding() {
 		super(null, null, 0, null);
 		// for creating problem field
@@ -46,7 +49,9 @@ public class FieldBinding extends VariableBinding {
 	* Answer the receiver's binding type from Binding.BindingID.
 	*/
 	public FieldBinding(FieldDeclaration field, TypeBinding type, int modifiers, ReferenceBinding declaringClass) {
-		this(field.name, type, modifiers, declaringClass, null);
+		//cym 2015-02-13 
+//		this(field.name, type, modifiers, declaringClass, null);
+		this((field.modifiers & ClassFileConstants.AccIndexer) != 0 ? TypeConstants.INDEXER : field.name, type, modifiers, declaringClass, null);
 		field.binding = this; // record binding in declaration
 	}
 	

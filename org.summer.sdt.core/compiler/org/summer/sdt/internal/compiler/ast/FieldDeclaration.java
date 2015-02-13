@@ -64,6 +64,15 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 
 	public int endPart1Position;
 	public int endPart2Position;
+	
+	//cym 2015-02-13
+	public int bodyStart;
+	public int bodyEnd;
+	public Argument[] arguments;
+
+	public MethodDeclaration setter;
+	public MethodDeclaration getter;
+	//cym 2015-02-13 end
 
 	public FieldDeclaration() {
 		// for subtypes or conversion
@@ -420,5 +429,13 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		}
 //		output.append(";");
 		return output;
+	}
+	
+	//cym 2015-02-13
+	public void parseBlockStatements(
+			Initializer initializer,
+			TypeDeclaration type,
+			CompilationUnitDeclaration unit){
+		
 	}
 }

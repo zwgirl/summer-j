@@ -16,6 +16,7 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ClassFile;
 import org.summer.sdt.internal.compiler.CompilationResult;
+import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.BranchLabel;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.codegen.ConstantPool;
@@ -27,7 +28,6 @@ import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.PropertyBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.SyntheticMethodBinding;
@@ -74,7 +74,7 @@ public class Clinit extends AbstractMethodDeclaration {
 			FieldBinding[] fields = this.scope.enclosingSourceType().fields();
 			for (int i = 0, count = fields.length; i < count; i++) {
 				FieldBinding field = fields[i];
-				if(field instanceof PropertyBinding){
+				if((field.modifiers & (ClassFileConstants.AccProperty | ClassFileConstants.AccIndexer)) != 0){
 					continue;
 				}
 				if (field.isStatic()) {
