@@ -35,6 +35,11 @@ public interface OperatorIds {
 
 	public static final int QUESTIONCOLON = 23;
 
+	//cym 2015-02-13
+	public static final int NOT_EQUAL_EQUAL = 26;
+	public static final int EQUAL_EQUAL_EQUAL = 27;
+	//cym 2015-02-13 end
+	
 	public static final int NOT_EQUAL = 29;
 	public static final int EQUAL = 30;
 	public static final int INSTANCEOF = 31;

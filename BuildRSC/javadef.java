@@ -2,23 +2,23 @@ interface javadef
 {
     public final static int
 
-      ERROR_SYMBOL      = 127,
+      ERROR_SYMBOL      = 128,
       MAX_NAME_LENGTH   = 41,
-      NUM_STATES        = 1056,
+      NUM_STATES        = 1060,
 
-      NT_OFFSET         = 127,
+      NT_OFFSET         = 128,
       SCOPE_UBOUND      = 289,
       SCOPE_SIZE        = 290,
-      LA_STATE_OFFSET   = 15425,
+      LA_STATE_OFFSET   = 15451,
       MAX_LA            = 1,
-      NUM_RULES         = 842,
-      NUM_TERMINALS     = 127,
+      NUM_RULES         = 844,
+      NUM_TERMINALS     = 128,
       NUM_NON_TERMINALS = 383,
-      NUM_SYMBOLS       = 510,
-      START_STATE       = 1383,
-      EOFT_SYMBOL       = 60,
-      EOLT_SYMBOL       = 60,
-      ACCEPT_ACTION     = 15424,
-      ERROR_ACTION      = 15425;
+      NUM_SYMBOLS       = 511,
+      START_STATE       = 1385,
+      EOFT_SYMBOL       = 62,
+      EOLT_SYMBOL       = 62,
+      ACCEPT_ACTION     = 15450,
+      ERROR_ACTION      = 15451;
 };
 

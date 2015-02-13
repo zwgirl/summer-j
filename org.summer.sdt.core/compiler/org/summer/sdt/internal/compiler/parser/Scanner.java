@@ -1389,8 +1389,18 @@ public class Scanner implements TerminalTokens {
 					case '~' :
 						return TokenNameTWIDDLE;
 					case '!' :
-						if (getNextChar('='))
+						//cym 2015-02-03
+//						if (getNextChar('='))
+//							return TokenNameNOT_EQUAL;
+//						return TokenNameNOT;
+						
+						if (getNextChar('=')){
+							if(getNextChar('=')){
+								return TokenNameNOT_EQUAL_EQUAL;
+							}
 							return TokenNameNOT_EQUAL;
+						}
+							
 						return TokenNameNOT;
 					case '*' :
 						if (getNextChar('='))
@@ -1450,8 +1460,18 @@ public class Scanner implements TerminalTokens {
 							return TokenNameGREATER;
 						}
 					case '=' :
-						if (getNextChar('='))
+						//cym 2015-02-03
+//						if (getNextChar('='))
+//							return TokenNameEQUAL_EQUAL;
+//						return TokenNameEQUAL;
+						
+						if (getNextChar('=')){
+							if(getNextChar('=')){
+								return TokenNameEQUAL_EQUAL_EQUAL;
+							}
 							return TokenNameEQUAL_EQUAL;
+						}
+
 						return TokenNameEQUAL;
 					case '&' :
 						{
