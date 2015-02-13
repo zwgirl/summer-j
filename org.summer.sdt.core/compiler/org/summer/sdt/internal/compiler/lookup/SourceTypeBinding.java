@@ -55,11 +55,9 @@ import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.summer.sdt.internal.compiler.ast.Annotation;
 import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
-import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.MemberValuePair;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
-import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeParameter;
 import org.summer.sdt.internal.compiler.ast.TypeReference;
@@ -886,33 +884,13 @@ public class SourceTypeBinding extends ReferenceBinding {
 				this.tagBits |= TagBits.AreFieldsSorted;
 			}
 			for (int i = 0, length = this.fields.length; i < length; i++) {
-				if(this.fields[i] instanceof PropertyBinding){
-					if (resolveTypeFor((PropertyBinding)this.fields[i]) == null) {
-						// do not alter original field array until resolution is over, due to reentrance (143259)
-						if (resolvedFields == this.fields) {
-							System.arraycopy(this.fields, 0, resolvedFields = new FieldBinding[length], 0, length);
-						}
-						resolvedFields[i] = null;
-						failed++;
+				if (resolveTypeFor(this.fields[i]) == null) {
+					// do not alter original field array until resolution is over, due to reentrance (143259)
+					if (resolvedFields == this.fields) {
+						System.arraycopy(this.fields, 0, resolvedFields = new FieldBinding[length], 0, length);
 					}
-				} else if(this.fields[i] instanceof IndexerBinding){
-					if (resolveTypeFor((IndexerBinding)this.fields[i]) == null) {
-						// do not alter original field array until resolution is over, due to reentrance (143259)
-						if (resolvedFields == this.fields) {
-							System.arraycopy(this.fields, 0, resolvedFields = new FieldBinding[length], 0, length);
-						}
-						resolvedFields[i] = null;
-						failed++;
-					}
-				} else{
-					if (resolveTypeFor(this.fields[i]) == null) {
-						// do not alter original field array until resolution is over, due to reentrance (143259)
-						if (resolvedFields == this.fields) {
-							System.arraycopy(this.fields, 0, resolvedFields = new FieldBinding[length], 0, length);
-						}
-						resolvedFields[i] = null;
-						failed++;
-					}
+					resolvedFields[i] = null;
+					failed++;
 				}
 			}
 		} finally {
@@ -1072,7 +1050,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 	//cym 2014-11-24
 	//NOTE: the return type, arg & exception types of each method of a source type are resolved when needed
 	//searches up the hierarchy as long as no potential (but not exact) match was found.
-	public IndexerBinding getExactIndexer(TypeBinding[] argumentTypes, CompilationUnitScope refScope) {
+	public FieldBinding getExactIndexer(TypeBinding[] argumentTypes, CompilationUnitScope refScope) {
 		if (!isPrototype())
 			return this.prototype.getExactIndexer(argumentTypes, refScope);
 		
@@ -1084,10 +1062,10 @@ public class SourceTypeBinding extends ReferenceBinding {
 			long range;
 			if ((range = ReferenceBinding.binarySearch(this.fields)) >= 0) {
 				nextIndexer: for (int ifield = (int)range, end = (int)(range >> 32); ifield <= end; ifield++) {
-					if(!(this.fields[ifield] instanceof IndexerBinding)){
+					if(!(this.fields[ifield] instanceof FieldBinding)){
 						continue;
 					}
-					IndexerBinding indexer = (IndexerBinding) this.fields[ifield];
+					FieldBinding indexer = (FieldBinding) this.fields[ifield];
 					foundNothing = false; // inner type lookups must know that a method with this name exists
 					if (indexer.parameters.length == argCount) {
 						TypeBinding[] toMatch = indexer.parameters;
@@ -1112,11 +1090,11 @@ public class SourceTypeBinding extends ReferenceBinding {
 				// check unresolved method
 				int start = (int) range, end = (int) (range >> 32);
 				for (int ifield = start; ifield <= end; ifield++) {
-					if(!(this.fields[ifield] instanceof IndexerBinding)){
+					if((this.fields[ifield].modifiers & ClassFileConstants.AccIndexer ) == 0){
 						continue;
 					}
-					IndexerBinding indexer = (IndexerBinding) this.fields[ifield];
-					if (resolveTypeFor((IndexerBinding)indexer) == null || indexer.type == null) {
+					FieldBinding indexer = (FieldBinding) this.fields[ifield];
+					if (resolveTypeFor(indexer) == null || indexer.type == null) {
 						fields();
 						return getExactIndexer(argumentTypes, refScope); // try again since the problem indexers have been removed
 					}
@@ -1145,11 +1123,11 @@ public class SourceTypeBinding extends ReferenceBinding {
 //					}
 //				}
 				nextIndexer: for (int ifield = start; ifield <= end; ifield++) {
-					if(!(this.fields[ifield] instanceof IndexerBinding)){
+					if((this.fields[ifield].modifiers & ClassFileConstants.AccIndexer ) == 0){
 						continue;
 					}
 					
-					IndexerBinding indexer = (IndexerBinding) this.fields[ifield];
+					FieldBinding indexer = this.fields[ifield];
 					TypeBinding[] toMatch = indexer.parameters;
 					if (toMatch.length == argCount) {
 						for (int iarg = 0; iarg < argCount; iarg++)
@@ -1788,58 +1766,6 @@ public class SourceTypeBinding extends ReferenceBinding {
 		return this.methods;
 	}
 	
-//	// NOTE: the return type, arg & exception types of each method of a source type are resolved when needed
-//	public PropertyBinding[] properties() {
-//		
-//		if (!isPrototype()) {
-//			if ((this.tagBits & TagBits.ArePropertiesComplete) != 0)
-//				return this.properties;
-//			this.tagBits |= TagBits.ArePropertiesComplete;
-//			return this.properties = this.prototype.properties();
-//		}
-//		
-////		if ((this.tagBits & TagBits.ArePropertiesComplete) != 0)
-////			return this.properties;
-//	
-//		int failed = 0;
-//		PropertyBinding[] resolvedProperties = this.properties;
-//		try {
-//			// lazily sort fields
-//			if ((this.tagBits & TagBits.ArePropertiesSorted) == 0) {
-//				int length = this.properties.length;
-//				if (length > 1)
-//					ReferenceBinding.sortProperties(this.properties, 0, length);
-//				this.tagBits |= TagBits.ArePropertiesSorted;
-//			}
-//			for (int i = 0, length = this.properties.length; i < length; i++) {
-//				if (resolveTypeFor(this.properties[i]) == null) {
-//					// do not alter original field array until resolution is over, due to reentrance (143259)
-//					if (resolvedProperties == this.properties) {
-//						System.arraycopy(this.properties, 0, resolvedProperties = new PropertyBinding[length], 0, length);
-//					}
-//					resolvedProperties[i] = null;
-//					failed++;
-//				}
-//			}
-//		} finally {
-//			if (failed > 0) {
-//				// ensure fields are consistent reqardless of the error
-//				int newSize = resolvedProperties.length - failed;
-//				if (newSize == 0)
-//					return setProperties(Binding.NO_PROPERTIES);
-//	
-//				PropertyBinding[] newProperties = new PropertyBinding[newSize];
-//				for (int i = 0, j = 0, length = resolvedProperties.length; i < length; i++) {
-//					if (resolvedProperties[i] != null)
-//						newProperties[j++] = resolvedProperties[i];
-//				}
-//				setProperties(newProperties);
-//			}
-//		}
-//		this.tagBits |= TagBits.AreFieldsComplete;
-//		return this.properties;
-//	}
-	
 	public TypeBinding prototype() {
 		return this.prototype;
 	}
@@ -1939,193 +1865,18 @@ public class SourceTypeBinding extends ReferenceBinding {
 							field.tagBits &= ~TagBits.AnnotationNullMASK;
 					}
 				}
-			} finally {
-			    initializationScope.initializedField = previousField;
-			}
-			return field;
-		}
-		return null; // should never reach this point
-	}
-	
-	public PropertyBinding resolveTypeFor(PropertyBinding property) {
-		
-		if (!isPrototype())
-			return this.prototype.resolveTypeFor(property);
-	
-//		if ((property.modifiers & ExtraCompilerModifiers.AccUnresolved) == 0)
-//			return property;
-	
-		long sourceLevel = this.scope.compilerOptions().sourceLevel;
-		if (sourceLevel >= ClassFileConstants.JDK1_5) {
-			if ((property.getAnnotationTagBits() & TagBits.AnnotationDeprecated) != 0)
-				property.modifiers |= ClassFileConstants.AccDeprecated;
-		}
-		if (isViewedAsDeprecated() && !property.isDeprecated())
-			property.modifiers |= ExtraCompilerModifiers.AccDeprecatedImplicitly;
-		if (hasRestrictedAccess())
-			property.modifiers |= ExtraCompilerModifiers.AccRestrictedAccess;
-		FieldDeclaration[] fields = this.scope.referenceContext.fields;
-		int length = fields == null ? 0 : fields.length;
-		for (int f = 0; f < length; f++) {
-			if (fields[f].binding != property)
-				continue;
-			
-			try {
-				PropertyDeclaration propertyDecl = (PropertyDeclaration) fields[f];
-				MethodScope methodScope = new MethodScope(this.scope, this.scope.referenceContext, false);
-				TypeBinding propType = propertyDecl.type.resolveType(methodScope, true /* check bounds*/);
-				property.type = propType;
-				property.modifiers &= ~ExtraCompilerModifiers.AccUnresolved;
-				if (propType == null) {
-					propertyDecl.binding = null;
-					return null;
-				}
-				if (propType == TypeBinding.VOID) {
-					this.scope.problemReporter().variableTypeCannotBeVoid(propertyDecl);
-					propertyDecl.binding = null;
-					return null;
-				}
-				if (propType.isArrayType() && ((ArrayBinding) propType).leafComponentType == TypeBinding.VOID) {
-					this.scope.problemReporter().variableTypeCannotBeVoidArray(propertyDecl);
-					propertyDecl.binding = null;
-					return null;
-				}
 				
-				if ((propType.tagBits & TagBits.HasMissingType) != 0) {
-					property.tagBits |= TagBits.HasMissingType;
-				}
-				TypeBinding leafType = propType.leafComponentType();
-				if (leafType instanceof ReferenceBinding && (((ReferenceBinding)leafType).modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0) {
-					property.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
-				}
-	
-				if (sourceLevel >= ClassFileConstants.JDK1_8) {
-					Annotation [] annotations = propertyDecl.annotations;
-					if (annotations != null && annotations.length != 0) {
-						ASTNode.copySE8AnnotationsToType(methodScope, property, annotations,
-								propertyDecl.getKind() != AbstractVariableDeclaration.ENUM_CONSTANT); // type annotation is illegal on enum constant
-					}
-					Annotation.isTypeUseCompatible(propertyDecl.type, this.scope, annotations);
-				}
-//				// apply null default:
-//				if (this.environment.globalOptions.isAnnotationBasedNullAnalysisEnabled) {
-//					// TODO(SH): different strategy for 1.8, or is "repair" below enough?
-//					if (propertyDecl.getKind() == AbstractVariableDeclaration.ENUM_CONSTANT) {
-//						// enum constants neither have a type declaration nor can they be null
-//						property.tagBits |= TagBits.AnnotationNonNull;
-//					} else {
-//						if (hasNonNullDefaultFor(DefaultLocationField, sourceLevel >= ClassFileConstants.JDK1_8)) {
-//							property.fillInDefaultNonNullness(propertyDecl, initializationScope);
-//						}
-//						// validate null annotation:
-//						if (!this.scope.validateNullAnnotation(property.tagBits, propertyDecl.type, propertyDecl.annotations))
-//							property.tagBits &= ~TagBits.AnnotationNullMASK;
-//					}
-//				}
-				
-				//cym add 
-				MethodDeclaration setter = ((PropertyDeclaration)fields[f]).setter;
-				if(setter != null){
-					resolveTypesFor2(setter.binding);
-				}
-				
-				MethodDeclaration getter = ((PropertyDeclaration)fields[f]).getter;
-				if(getter != null){
-					resolveTypesFor2(getter.binding);
-				}
-				// cym end
-			} finally {
-//			    initializationScope.initializedField = previousField;
-			}
-			return property;
-		}
-		return null; // should never reach this point
-	}
-	
-	public IndexerBinding resolveTypeFor(IndexerBinding indexer) {
-		
-		if (!isPrototype())
-			return this.prototype.resolveTypeFor(indexer);
-	
-//		if ((indexer.modifiers & ExtraCompilerModifiers.AccUnresolved) == 0)
-//			return indexer;
-	
-		long sourceLevel = this.scope.compilerOptions().sourceLevel;
-		if (sourceLevel >= ClassFileConstants.JDK1_5) {
-			if ((indexer.getAnnotationTagBits() & TagBits.AnnotationDeprecated) != 0)
-				indexer.modifiers |= ClassFileConstants.AccDeprecated;
-		}
-		if (isViewedAsDeprecated() && !indexer.isDeprecated())
-			indexer.modifiers |= ExtraCompilerModifiers.AccDeprecatedImplicitly;
-		if (hasRestrictedAccess())
-			indexer.modifiers |= ExtraCompilerModifiers.AccRestrictedAccess;
-		FieldDeclaration[] fields = this.scope.referenceContext.fields;
-		int length = fields == null ? 0 : fields.length;
-		for (int f = 0; f < length; f++) {
-			if (fields[f].binding != indexer)
-				continue;
-			
-			try {
-				IndexerDeclaration indexerDecl = (IndexerDeclaration) fields[f];
-				MethodScope methodScope = new MethodScope(this.scope, this.scope.referenceContext, false);
-				TypeBinding propType = indexerDecl.type.resolveType(methodScope, true /* check bounds*/);
-				indexer.type = propType;
-				indexer.modifiers &= ~ExtraCompilerModifiers.AccUnresolved;
-				if (propType == null) {
-					indexerDecl.binding = null;
-					return null;
-				}
-				if (propType == TypeBinding.VOID) {
-					this.scope.problemReporter().variableTypeCannotBeVoid(indexerDecl);
-					indexerDecl.binding = null;
-					return null;
-				}
-				if (propType.isArrayType() && ((ArrayBinding) propType).leafComponentType == TypeBinding.VOID) {
-					this.scope.problemReporter().variableTypeCannotBeVoidArray(indexerDecl);
-					indexerDecl.binding = null;
-					return null;
-				}
-				if ((propType.tagBits & TagBits.HasMissingType) != 0) {
-					indexer.tagBits |= TagBits.HasMissingType;
-				}
-				TypeBinding leafType = propType.leafComponentType();
-				if (leafType instanceof ReferenceBinding && (((ReferenceBinding)leafType).modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0) {
-					indexer.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
-				}
-	
-				if (sourceLevel >= ClassFileConstants.JDK1_8) {
-					Annotation [] annotations = indexerDecl.annotations;
-					if (annotations != null && annotations.length != 0) {
-						ASTNode.copySE8AnnotationsToType(methodScope, indexer, annotations,
-								indexerDecl.getKind() != AbstractVariableDeclaration.ENUM_CONSTANT); // type annotation is illegal on enum constant
-					}
-					Annotation.isTypeUseCompatible(indexerDecl.type, this.scope, annotations);
-				}
-//				// apply null default:
-//				if (this.environment.globalOptions.isAnnotationBasedNullAnalysisEnabled) {
-//					// TODO(SH): different strategy for 1.8, or is "repair" below enough?
-//					if (propertyDecl.getKind() == AbstractVariableDeclaration.ENUM_CONSTANT) {
-//						// enum constants neither have a type declaration nor can they be null
-//						property.tagBits |= TagBits.AnnotationNonNull;
-//					} else {
-//						if (hasNonNullDefaultFor(DefaultLocationField, sourceLevel >= ClassFileConstants.JDK1_8)) {
-//							property.fillInDefaultNonNullness(propertyDecl, initializationScope);
-//						}
-//						// validate null annotation:
-//						if (!this.scope.validateNullAnnotation(property.tagBits, propertyDecl.type, propertyDecl.annotations))
-//							property.tagBits &= ~TagBits.AnnotationNullMASK;
-//					}
-//				}
-				
+				//cym 2015-02-13
 				boolean foundArgProblem = false;
-				Argument[] arguments = indexerDecl.arguments;
+				Argument[] arguments = fieldDecls[f].arguments;
 				if (arguments != null) {
+					MethodScope methodScope = new MethodScope(this.scope, this.scope.referenceContext, false);
 					int size = arguments.length;
 					TypeBinding[] newParameters = new TypeBinding[size];
 					for (int i = 0; i < size; i++) {
 						Argument arg = arguments[i];
 						if (arg.annotations != null) {
-							indexer.tagBits |= TagBits.HasParameterAnnotations;
+							field.tagBits |= TagBits.HasParameterAnnotations;
 						}
 //						// https://bugs.eclipse.org/bugs/show_bug.cgi?id=322817
 //						boolean deferRawTypeCheck = !reportUnavoidableGenericTypeProblems && !method.isConstructor() && (arg.type.bits & ASTNode.IgnoreRawTypeCheck) == 0;
@@ -2144,40 +1895,41 @@ public class SourceTypeBinding extends ReferenceBinding {
 						if (parameterType == null) {
 							foundArgProblem = true;
 						} else if (parameterType == TypeBinding.VOID) {
-							methodScope.problemReporter().argumentTypeCannotBeVoid(indexerDecl, arg);
+							methodScope.problemReporter().argumentTypeCannotBeVoid(fieldDecls[f], arg);
 							foundArgProblem = true;
 						} else {
 							if ((parameterType.tagBits & TagBits.HasMissingType) != 0) {
-								indexer.tagBits |= TagBits.HasMissingType;
+								field.tagBits |= TagBits.HasMissingType;
 							}
 							leafType = parameterType.leafComponentType();
 							if (leafType instanceof ReferenceBinding && (((ReferenceBinding) leafType).modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0)
-								indexer.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
+								field.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
 							newParameters[i] = parameterType;
 							arg.binding = new LocalVariableBinding(arg, parameterType, arg.modifiers, methodScope);
 						}
 					}
 					// only assign parameters if no problems are found
 					if (!foundArgProblem) {
-						indexer.parameters = newParameters;
+						field.parameters = newParameters;
 					}
 				}
 				
-				//cym add 
-				MethodDeclaration setter = ((IndexerDeclaration)fields[f]).setter;
+				//cym add 2015-02-13
+				MethodDeclaration setter = fieldDecls[f].setter;
 				if(setter != null){
 					resolveTypesFor2(setter.binding);
 				}
 				
-				MethodDeclaration getter = ((IndexerDeclaration)fields[f]).getter;
+				MethodDeclaration getter = fieldDecls[f].getter;
 				if(getter != null){
 					resolveTypesFor2(getter.binding);
 				}
 				// cym end
 			} finally {
-//			    initializationScope.initializedField = previousField;
+			    initializationScope.initializedField = previousField;
 			}
-			return indexer;
+			
+			return field;
 		}
 		return null; // should never reach this point
 	}

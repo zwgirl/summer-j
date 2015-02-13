@@ -37,10 +37,8 @@ import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
-import org.summer.sdt.internal.compiler.ast.IndexerDeclaration;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
-import org.summer.sdt.internal.compiler.ast.PropertyDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.ConstantPool;
@@ -1231,6 +1229,7 @@ public class MethodBinding extends Binding {
 		return null;
 	}
 	
+	//cym 2015-02-13
 	public AbstractMethodDeclaration sourceMethod2() {
 		if (isSynthetic()) {
 			return null;
@@ -1245,20 +1244,10 @@ public class MethodBinding extends Binding {
 		FieldDeclaration[] fields = sourceType.scope != null ? sourceType.scope.referenceContext.fields : null;
 		if (fields != null) {
 			for (int i = fields.length; --i >= 0;){
-				if(fields[i] instanceof PropertyDeclaration){
-					PropertyDeclaration prop = (PropertyDeclaration) fields[i];
-					if (prop.setter != null && prop.setter.binding == this)
-						return prop.setter;
-					if (prop.getter != null && prop.getter.binding == this)
-					return prop.getter;
-				} else if(fields[i] instanceof IndexerDeclaration){
-					IndexerDeclaration indexer = (IndexerDeclaration) fields[i];
-					if (indexer.setter != null && indexer.setter.binding == this)
-						return indexer.setter;
-					if (indexer.getter != null && indexer.getter.binding == this)
-					return indexer.getter;
-				}
-
+				if (fields[i].setter != null && fields[i].setter.binding == this)
+					return fields[i].setter;
+				if (fields[i].getter != null && fields[i].getter.binding == this)
+				return fields[i].getter;
 			}
 		}
 		

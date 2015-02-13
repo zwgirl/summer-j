@@ -154,7 +154,6 @@ import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.CaptureBinding;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
 import org.summer.sdt.internal.compiler.lookup.InvocationSite;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
@@ -3830,7 +3829,7 @@ public class ProblemReporter extends ProblemHandler {
 	public void invalidIndexer(ArrayReference arrayRef, TypeBinding searchedType) {
 	
 		int id = IProblem.UndefinedField;
-		IndexerBinding indexer = arrayRef.binding;
+		FieldBinding indexer = arrayRef.binding;
 		switch (indexer.problemId()) {
 			case ProblemReasons.NotFound :
 				if ((searchedType.tagBits & TagBits.HasMissingType) != 0) {

@@ -79,7 +79,6 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.StringConstant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
@@ -459,8 +458,8 @@ public class ClassFile implements TypeConstants, TypeIds {
 		}
 		
 		//cym 2014-12-04
-		if(fieldBinding instanceof IndexerBinding){
-			attributesNumber += generateExceptionsAttribute1(((IndexerBinding)fieldBinding).parameters);
+		if((fieldBinding.modifiers & ClassFileConstants.AccIndexer) != 0){
+			attributesNumber += generateExceptionsAttribute1(fieldBinding.parameters);
 		}
 		if (this.targetJDK >= ClassFileConstants.JDK1_4) {
 			FieldDeclaration fieldDeclaration = fieldBinding.sourceField();

@@ -64,10 +64,8 @@ import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
-import org.summer.sdt.internal.compiler.lookup.IndexerBinding;
 import org.summer.sdt.internal.compiler.lookup.InvocationSite;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
-import org.summer.sdt.internal.compiler.lookup.ProblemIndexerBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
@@ -1441,16 +1439,16 @@ public abstract class Scope {
 	
 	//cym 2014-11-24
 	// Internal use only - use findMethod()
-	public IndexerBinding findIndexer(TypeBinding receiverType, TypeBinding[] argumentTypes, InvocationSite invocationSite, boolean invisibleFieldsOk) {
+	public FieldBinding findIndexer(TypeBinding receiverType, TypeBinding[] argumentTypes, InvocationSite invocationSite, boolean invisibleFieldsOk) {
 		CompilationUnitScope unitScope = compilationUnitScope();
 		unitScope.recordTypeReference(receiverType);
 
 		ReferenceBinding currentType = (ReferenceBinding) receiverType;
 		if (!currentType.canBeSeenBy(this))
-			return new ProblemIndexerBinding(currentType, TypeConstants.INDEXER, ProblemReasons.ReceiverTypeNotVisible);
+			return new ProblemFieldBinding(currentType, TypeConstants.INDEXER, ProblemReasons.ReceiverTypeNotVisible);
 
 		currentType.initializeForStaticImports();
-		IndexerBinding field = currentType.getExactIndexer(argumentTypes, unitScope);
+		FieldBinding field = currentType.getExactIndexer(argumentTypes, unitScope);
 		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=316456
 		boolean insideTypeAnnotations = this instanceof MethodScope && ((MethodScope) this).insideTypeAnnotation;
 		if (field != null) {
@@ -1461,14 +1459,14 @@ public abstract class Scope {
 				? field.canBeSeenBy(getCurrentPackage())
 				: field.canBeSeenBy(currentType, invocationSite, this))
 					return field;
-			return new ProblemIndexerBinding(field /* closest match*/, field.declaringClass, TypeConstants.INDEXER, ProblemReasons.NotVisible);
+			return new ProblemFieldBinding(field /* closest match*/, field.declaringClass, TypeConstants.INDEXER, ProblemReasons.NotVisible);
 		}
 		// collect all superinterfaces of receiverType until the field is found in a supertype
 		ReferenceBinding[] interfacesToVisit = null;
 		int nextPosition = 0;
-		IndexerBinding visibleField = null;
+		FieldBinding visibleField = null;
 		boolean keepLooking = true;
-		IndexerBinding notVisibleField = null;
+		FieldBinding notVisibleField = null;
 		// we could hold onto the not visible field for extra error reporting
 		while (keepLooking) {
 			ReferenceBinding[] itsInterfaces = currentType.superInterfaces();
@@ -1503,7 +1501,7 @@ public abstract class Scope {
 					if (visibleField == null)
 						visibleField = field;
 					else
-						return new ProblemIndexerBinding(visibleField /* closest match*/, visibleField.declaringClass, TypeConstants.INDEXER, ProblemReasons.Ambiguous);
+						return new ProblemFieldBinding(visibleField /* closest match*/, visibleField.declaringClass, TypeConstants.INDEXER, ProblemReasons.Ambiguous);
 				} else {
 					if (notVisibleField == null)
 						notVisibleField = field;
@@ -1513,7 +1511,7 @@ public abstract class Scope {
 
 		// walk all visible interfaces to find ambiguous references
 		if (interfacesToVisit != null) {
-			ProblemIndexerBinding ambiguous = null;
+			ProblemFieldBinding ambiguous = null;
 			done : for (int i = 0; i < nextPosition; i++) {
 				ReferenceBinding anInterface = interfacesToVisit[i];
 				unitScope.recordTypeReference(anInterface);
@@ -1525,7 +1523,7 @@ public abstract class Scope {
 					if (visibleField == null) {
 						visibleField = field;
 					} else {
-						ambiguous = new ProblemIndexerBinding(visibleField /* closest match*/, visibleField.declaringClass, TypeConstants.INDEXER, ProblemReasons.Ambiguous);
+						ambiguous = new ProblemFieldBinding(visibleField /* closest match*/, visibleField.declaringClass, TypeConstants.INDEXER, ProblemReasons.Ambiguous);
 						break done;
 					}
 				} else {
@@ -1550,7 +1548,7 @@ public abstract class Scope {
 		if (visibleField != null)
 			return visibleField;
 		if (notVisibleField != null) {
-			return new ProblemIndexerBinding(notVisibleField, currentType, TypeConstants.INDEXER, ProblemReasons.NotVisible);
+			return new ProblemFieldBinding(notVisibleField, currentType, TypeConstants.INDEXER, ProblemReasons.NotVisible);
 		}
 		return null;
 	}
@@ -2778,14 +2776,14 @@ public abstract class Scope {
 	}
 	
 	//cym 2014-11-24
-	public IndexerBinding getIndexer(TypeBinding receiverType, TypeBinding[] argumentTypes, InvocationSite invocationSite) {
+	public FieldBinding getIndexer(TypeBinding receiverType, TypeBinding[] argumentTypes, InvocationSite invocationSite) {
 		LookupEnvironment env = environment();
 		try {
 			env.missingClassFileLocation = invocationSite;
-			IndexerBinding indexer = findIndexer(receiverType, argumentTypes, invocationSite, true /*resolve*/);
+			FieldBinding indexer = findIndexer(receiverType, argumentTypes, invocationSite, true /*resolve*/);
 			if (indexer != null) return indexer;
 
-			return new ProblemIndexerBinding(
+			return new ProblemFieldBinding(
 					receiverType instanceof ReferenceBinding ? (ReferenceBinding) receiverType : null,
 					TypeConstants.INDEXER,
 					ProblemReasons.NotFound);
