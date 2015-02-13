@@ -58,7 +58,7 @@ $Terminals
 --	debugger 
 	default do double else enum 
 	--event 
-	export 
+--	export 
 	extends false final finally float
 	for function goto if implements import 
 	in 
@@ -143,6 +143,8 @@ $Terminals
 	CLOSE_ELEMENT
 	AT308
 --	AT308DOTDOTDOT
+	EQUAL_EQUAL_EQUAL
+	NOT_EQUAL_EQUAL
 	SCRIPT_START  --cym 2015-01-03
 	SCRIPT_END  --cym 2015-01-03
 --	XML_COMMENT  --cym 2015-01-04
@@ -205,6 +207,8 @@ $Alias
 	'@308' ::= AT308
 	'<%' ::= SCRIPT_START   --cym 2015-01-03
 	'%>' ::= SCRIPT_END  --cym 2015-01-03
+	'===' ::= EQUAL_EQUAL_EQUAL  --cym 2015-02-13
+	'!==' ::= NOT_EQUAL_EQUAL --cym 2015-02-13
 	
 --	'@308...' ::= AT308DOTDOTDOT
 	
@@ -2115,6 +2119,15 @@ InstanceofExpression ::= InstanceofExpression 'instanceof' ReferenceType
 EqualityExpression -> InstanceofExpression
 EqualityExpression ::= EqualityExpression '==' InstanceofExpression
 /.$putCase consumeEqualityExpression(OperatorIds.EQUAL_EQUAL); $break ./
+
+--cym 2015-02-13
+EqualityExpression ::= EqualityExpression '===' InstanceofExpression
+/.$putCase consumeEqualityExpression(OperatorIds.EQUAL_EQUAL_EQUAL); $break ./
+
+EqualityExpression ::= EqualityExpression '!==' InstanceofExpression
+/.$putCase consumeEqualityExpression(OperatorIds.NOT_EQUAL_EQUAL); $break ./
+--cym 2015-02-13 end
+
 EqualityExpression ::= EqualityExpression '!=' InstanceofExpression
 /.$putCase consumeEqualityExpression(OperatorIds.NOT_EQUAL); $break ./
 /:$readableName Expression:/
@@ -3066,6 +3079,8 @@ COLON_COLON ::= '::'
 
 SCRIPT_START ::= '<%'  --cym 2015-01-03
 SCRIPT_END ::= '%>'  --cym 2015-01-03
+EQUAL_EQUAL_EQUAL ::= '===' --cym 2015-02-13
+NOT_EQUAL_EQUAL ::= '!==' --cym 2015-02-13
 
 $end
 -- need a carriage return after the $end

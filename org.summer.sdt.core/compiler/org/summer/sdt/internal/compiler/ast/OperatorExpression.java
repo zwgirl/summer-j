@@ -1553,6 +1553,10 @@ public abstract class OperatorExpression extends Expression implements OperatorI
 				return "?:"; //$NON-NLS-1$
 			case EQUAL :
 				return "="; //$NON-NLS-1$
+			case EQUAL_EQUAL_EQUAL :   //cym 2015-02-13
+				return "==="; //$NON-NLS-1$
+			case NOT_EQUAL_EQUAL :   //cym 2015-02-13
+				return "!=="; //$NON-NLS-1$
 		}
 		return "unknown operator"; //$NON-NLS-1$
 	}
