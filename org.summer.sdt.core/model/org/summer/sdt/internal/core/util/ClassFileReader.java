@@ -54,6 +54,14 @@ public class ClassFileReader extends ClassFileStruct implements IClassFileReader
 	private ISourceAttribute sourceFileAttribute;
 	private char[] superclassName;
 	private int superclassNameIndex;
+	
+	//cym 2015-02-14 function type
+	private static final char[][] NO_PARAMETER_NAMES = CharOperation.NO_CHAR_CHAR;
+	private int[] parameterIndexes;
+	private int parametersCount;
+	private char[][] parameterNames;
+	private char[] returnTypeName;
+	private int returnTypeNameIndex;
 
 	/**
 	 * Constructor for ClassFileReader.
@@ -196,6 +204,37 @@ public class ClassFileReader extends ClassFileStruct implements IClassFileReader
 					readOffset += (2 * this.interfacesCount);
 				}
 			}
+			
+			//cym 2015-02-06
+			// Read the return type name
+			this.returnTypeNameIndex = u2At(classFileBytes, readOffset, 0);
+			readOffset += 2;
+			// if superclassNameIndex is equals to 0 there is no need to set a value for the
+			// field this.superclassName. null is fine.
+			if (this.returnTypeNameIndex != 0) {
+				this.returnTypeName = getConstantClassNameAt(classFileBytes, constantPoolOffsets, this.returnTypeNameIndex);
+			}
+
+			// Read the interfaces, use exception handlers to catch bad format
+			this.parametersCount = u2At(classFileBytes, readOffset, 0);
+			readOffset += 2;
+			this.parameterNames = NO_PARAMETER_NAMES;
+			this.parameterIndexes = Util.EMPTY_INT_ARRAY;
+			if (this.parametersCount != 0) {
+				if ((decodingFlags & IClassFileReader.PARAMETERS) != IClassFileReader.CONSTANT_POOL) {
+					this.parameterNames = new char[this.parametersCount][];
+					this.parameterIndexes = new int[this.parametersCount];
+					for (int i = 0; i < this.parametersCount; i++) {
+						this.parameterIndexes[i] = u2At(classFileBytes, readOffset, 0);
+						this.parameterNames[i] = getConstantClassNameAt(classFileBytes, constantPoolOffsets, this.parameterIndexes[i]);
+						readOffset += 2;
+					}
+				} else {
+					readOffset += (2 * this.parametersCount);
+				}
+			}
+			//cym 2015-02-06 end
+			
 			// Read the this.fields, use exception handlers to catch bad format
 			this.fieldsCount = u2At(classFileBytes, readOffset, 0);
 			readOffset += 2;
@@ -450,5 +489,37 @@ public class ClassFileReader extends ClassFileStruct implements IClassFileReader
 	 */
 	public boolean isInterface() {
 		return (getAccessFlags() & IModifierConstants.ACC_INTERFACE) != 0;
+	}
+	
+	/**
+	 * 2015-02-14 for function type
+	 */
+	@Override
+	public char[] getReturnTypeName() {
+		return this.returnTypeName;
+	}
+
+	/**
+	 * 2015-02-14 for function type
+	 */
+	@Override
+	public int getReturnTypeIndex() {
+		return this.returnTypeNameIndex;
+	}
+
+	/**
+	 * 2015-02-14 for function type
+	 */
+	@Override
+	public char[][] getParameterNames() {
+		return this.parameterNames;
+	}
+
+	/**
+	 * 2015-02-14 for function type
+	 */
+	@Override
+	public int[] getParameterIndexes() {
+		return this.parameterIndexes;
 	}
 }

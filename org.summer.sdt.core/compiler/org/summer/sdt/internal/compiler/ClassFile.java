@@ -5019,6 +5019,34 @@ public class ClassFile implements TypeConstants, TypeIds {
 		this.contents[interfacesCountPosition++] = (byte) (interfaceCounter >> 8);
 		this.contents[interfacesCountPosition] = (byte) interfaceCounter;
 		this.creatingProblemType = createProblemType;
+		
+		//cym 2015-02-14
+		int returnTypeIndex;
+		if (aType.returnType != null) {
+			 returnTypeIndex = this.constantPool.literalIndexForType(aType.returnType);
+		} else {
+			returnTypeIndex = 0;
+		}
+		this.contents[this.contentsOffset++] = (byte) (returnTypeIndex >> 8);
+		this.contents[this.contentsOffset++] = (byte) returnTypeIndex;
+		TypeBinding[] parametersBinding = aType.parameterTypes();
+		int parametersCount = parametersBinding.length;
+		int parametersCountPosition = this.contentsOffset;
+		this.contentsOffset += 2;
+		int parameterCounter = 0;
+		for (int i = 0; i < parametersCount; i++) {
+			TypeBinding binding = parametersBinding[i];
+			if ((binding.tagBits & TagBits.HasMissingType) != 0) {
+				continue;
+			}
+			parameterCounter++;
+			int parameterIndex = this.constantPool.literalIndexForType(binding);
+			this.contents[this.contentsOffset++] = (byte) (parameterIndex >> 8);
+			this.contents[this.contentsOffset++] = (byte) parameterIndex;
+		}
+		this.contents[parametersCountPosition++] = (byte) (parameterCounter >> 8);
+		this.contents[parametersCountPosition] = (byte) parameterCounter;
+		//cym 2015-02-14 end
 
 		// retrieve the enclosing one guaranteed to be the one matching the propagated flow info
 		// 1FF9ZBU: LFCOM:ALL - Local variable attributes busted (Sanity check)

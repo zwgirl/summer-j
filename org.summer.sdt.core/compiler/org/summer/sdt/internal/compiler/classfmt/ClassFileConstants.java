@@ -48,6 +48,9 @@ public interface ClassFileConstants {
 	int AccField        = AccStrictfp;
 	int AccMethod        = AccSynchronized;
 	
+	//2015-02-14  cym
+	int AccFunction     = AccSynchronized;
+	
 	//cym 2014-12-12
 	int AccModule       = AccBridge;
 //	int AccModuleMerge		= AccNative;

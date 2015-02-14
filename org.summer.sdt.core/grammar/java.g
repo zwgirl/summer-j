@@ -661,6 +661,7 @@ TypeImportOnDemandDeclarationName ::= 'import' Name '.' RejectTypeAnnotations '*
 /.$putCase consumeTypeImportOnDemandDeclarationName(); $break ./
 /:$readableName TypeImportOnDemandDeclarationName:/
 
+TypeDeclaration -> FunctionTypeDeclaration  --cym 2015-02-13
 TypeDeclaration -> ClassDeclaration
 TypeDeclaration -> InterfaceDeclaration
 -- this declaration in part of a list od declaration and we will
@@ -696,6 +697,25 @@ Modifier -> 'strictfp'
 Modifier ::= Annotation
 /.$putCase consumeAnnotationAsModifier(); $break ./
 /:$readableName Modifier:/
+
+--cym 2015-02-03
+FunctionTypeDeclaration ::= FunctionTypeHeaderName FormalParameterListopt FunctionTypeHeaderRightParen 
+/.$putCase consumeFunctionTypeDeclaration(); $break ./
+/:$readableName FunctionTypeDeclaration:/
+
+FunctionTypeHeaderName ::= Modifiersopt function Type 'Identifier' TypeParameters '('   --cym 2014-09-29
+/.$putCase consumeFunctionTypeHeaderNameWithTypeParameters(); $break ./
+
+FunctionTypeHeaderName ::= Modifiersopt function Type 'Identifier' '('
+/.$putCase consumeFunctionTypeHeaderName(); $break ./
+/:$readableName FunctionTypeHeaderName:/
+
+FunctionTypeHeaderRightParen ::= ')' ';'
+/.$putCase consumeFunctionTypeHeaderRightParen(); $break ./
+/:$readableName ):/
+/:$recovery_template ):/
+/:$readableName FunctionTypeHeaderRightParen:/
+--cym 2015-02-03
 
 --18.8 Productions from 8: Class Declarations
 --ClassModifier ::=
@@ -1954,12 +1974,14 @@ MethodInvocation ::= Name '(' ArgumentListopt ')'
 MethodInvocation ::= Name '.' OnlyTypeArguments 'Identifier' '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationNameWithTypeArguments(); $break ./
 
-MethodInvocation ::= MethodInvocation '(' ArgumentListopt ')' --cym add 2014-10-27
-/.$putCase consumeMethodInvocationName(); $break ./   --cym add 2014-10-27
+MethodInvocation ::= MethodInvocation '(' ArgumentListopt ')' --cym add 2015-02-13
+/.$putCase consumeMethodInvocationInvocation(); $break ./  
 
-MethodInvocation ::= ArrayAccess '(' ArgumentListopt ')'  --cym add 2014-10-27
---MethodInvocation ::= FunctionExpression  '(' ArgumentListopt ')'   --cym add 2014-10-27
-MethodInvocation ::= LambdaExpression  '(' ArgumentListopt ')'   --cym add 2014-10-27
+MethodInvocation ::= ArrayAccess '(' ArgumentListopt ')'  --cym add 2015-02-13
+/.$putCase consumeMethodInvocationArraySccess(); $break ./
+
+MethodInvocation ::= LambdaExpression  '(' ArgumentListopt ')'   --cym add 2015-02-13
+/.$putCase consumeMethodInvocationLambdaExpression(); $break ./
 
 MethodInvocation ::= Primary '.' OnlyTypeArguments 'Identifier' '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationPrimaryWithTypeArguments(); $break ./

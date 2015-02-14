@@ -86,6 +86,10 @@ public class BinaryTypeBinding extends ReferenceBinding {
 
 	private ReferenceBinding containerAnnotationType;
 	int defaultNullness = 0;
+	
+	//cym 2015-02-14
+	protected TypeBinding returnType;
+	protected TypeBinding[] parameterTypes;
 
 	static Object convertMemberValue(Object binaryValue, LookupEnvironment env, char[][][] missingTypeNames, boolean resolveEnumConstants) {
 		if (binaryValue == null) return null;
@@ -2017,5 +2021,76 @@ public class BinaryTypeBinding extends ReferenceBinding {
 			return this.prototype.unResolvedFields();
 		
 		return this.fields;
+	}
+	
+	//cym 2015-02-14
+	@Override
+	public TypeBinding returnType() {
+		if (!isPrototype()) {
+			return this.returnType = this.prototype.returnType();
+		}
+		
+		if ((this.tagBits & TagBits.HasUnresolvedReturnType) == 0)
+			return this.returnType;
+	
+		// finish resolving the type
+		this.returnType = resolveType(this.returnType, this.environment, true /* raw conversion */);
+		this.tagBits &= ~TagBits.HasUnresolvedReturnType;
+//		if (this.superclass.problemId() == ProblemReasons.NotFound) {
+//			this.tagBits |= TagBits.HierarchyHasProblems; // propagate type inconsistency
+//		} else {
+//			// make super-type resolving recursive for propagating typeBits downwards
+//			boolean wasToleratingMissingTypeProcessingAnnotations = this.environment.mayTolerateMissingType;
+//			this.environment.mayTolerateMissingType = true; // https://bugs.eclipse.org/bugs/show_bug.cgi?id=360164
+//			try {
+//				this.superclass.superclass();
+//				this.superclass.superInterfaces();
+//			} finally {
+//				this.environment.mayTolerateMissingType = wasToleratingMissingTypeProcessingAnnotations;
+//			}
+//		}
+//		this.typeBits |= (this.superclass.typeBits & TypeIds.InheritableBits);
+//		if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
+//			this.typeBits |= applyCloseableClassWhitelists();
+		return this.returnType;
+	}
+	
+	//cym 2015-02-14
+	@Override
+	public TypeBinding[] parameterTypes() {
+		if (!isPrototype()) {
+			return this.parameterTypes = this.prototype.parameterTypes();
+		}
+		if ((this.tagBits & TagBits.HasUnresolvedParameterTypes) == 0)
+			return this.parameterTypes;
+	
+		for (int i = this.parameterTypes.length; --i >= 0;) {
+			this.parameterTypes[i] = (ReferenceBinding) resolveType(this.parameterTypes[i], this.environment, true /* raw conversion */);
+//			if (this.parameterTypes[i].problemId() == ProblemReasons.NotFound) {
+//				this.tagBits |= TagBits.HierarchyHasProblems; // propagate type inconsistency
+//			} else {
+//				// make super-type resolving recursive for propagating typeBits downwards
+//				boolean wasToleratingMissingTypeProcessingAnnotations = this.environment.mayTolerateMissingType;
+//				this.environment.mayTolerateMissingType = true; // https://bugs.eclipse.org/bugs/show_bug.cgi?id=360164
+//				try {
+//					this.superInterfaces[i].superclass();
+//					if (this.superInterfaces[i].isParameterizedType()) {
+//						ReferenceBinding superType = this.superInterfaces[i].actualType();
+//						if (TypeBinding.equalsEquals(superType, this)) {
+//							this.tagBits |= TagBits.HierarchyHasProblems;
+//							continue;
+//						}
+//					}
+//					this.superInterfaces[i].superInterfaces();
+//				} finally {
+//					this.environment.mayTolerateMissingType = wasToleratingMissingTypeProcessingAnnotations;
+//				}	
+//			}
+//			this.typeBits |= (this.parameterTypes[i].typeBits & TypeIds.InheritableBits);
+//			if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
+//				this.typeBits |= applyCloseableInterfaceWhitelists();
+		}
+		this.tagBits &= ~TagBits.HasUnresolvedParameterTypes;
+		return this.parameterTypes;
 	}
 }

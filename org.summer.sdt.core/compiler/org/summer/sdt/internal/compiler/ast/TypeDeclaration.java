@@ -111,6 +111,10 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	
 	//XAML root element
 	public XAMLElement element;
+	
+	//cym 2015-02-13 for function type
+	public Argument[] arguments = ASTNode.NO_ARGUMENTS;
+	public TypeReference returnType;
 
 	public TypeDeclaration(CompilationResult compilationResult){
 		this.compilationResult = compilationResult;

@@ -100,6 +100,10 @@ public class SourceTypeBinding extends ReferenceBinding {
 	private int lambdaOrdinal = 0;
 	private ReferenceBinding containerAnnotationType = null;
 	
+	//cym 2015-02-14 function type
+	public TypeBinding returnType;                    // MUST NOT be modified directly, use setter !
+	public TypeBinding[] parameterTypes = NO_PARAMETERS;             // MUST NOT be modified directly, use setter !
+	
 	public SourceTypeBinding(char[][] compoundName, PackageBinding fPackage, ClassScope scope) {
 		this.compoundName = compoundName;
 		this.fPackage = fPackage;
@@ -113,6 +117,10 @@ public class SourceTypeBinding extends ReferenceBinding {
 		this.fields = Binding.UNINITIALIZED_FIELDS;
 		this.methods = Binding.UNINITIALIZED_METHODS;
 		this.prototype = this;
+		
+		//cym 2015-02-14
+		this.parameterTypes = Binding.NO_PARAMETERS; 
+		
 		computeId();
 	}
 	
@@ -2977,5 +2985,16 @@ public class SourceTypeBinding extends ReferenceBinding {
 		if (this.superclass.isPrivate()) 
 			if (this.superclass instanceof SourceTypeBinding)  // should always be true because private super type can only be accessed in same CU
 				((SourceTypeBinding) this.superclass).tagIndirectlyAccessibleMembers();
+	}
+	
+	//cym 2015-02-06
+	@Override
+	public TypeBinding returnType() {
+		return this.returnType;
+	}
+	
+	@Override
+	public TypeBinding[] parameterTypes() {
+		return this.parameterTypes;
 	}
 }

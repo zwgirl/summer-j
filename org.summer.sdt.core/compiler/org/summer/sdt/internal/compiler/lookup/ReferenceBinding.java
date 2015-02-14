@@ -2188,4 +2188,14 @@ abstract public class ReferenceBinding extends TypeBinding {
 		
 		return output;
 	}
+	
+	//cym 2015-02-13 function type
+	public TypeBinding returnType() {
+		return null;
+	}
+	
+	//cym 2015-02-13 function type
+	public TypeBinding[] parameterTypes() {
+		return Binding.NO_PARAMETERS;
+	}
 }

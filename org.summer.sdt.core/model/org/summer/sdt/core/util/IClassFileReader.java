@@ -72,6 +72,13 @@ public interface IClassFileReader {
 	 * method bodies.
 	 */
 	int ALL_BUT_METHOD_BODIES   = ALL & ~METHOD_BODIES;
+	
+	/**
+	 * cym 2015-02-14
+	 * This value should be used to read the function type parameters.
+	 * It has to be used with METHOD_INFOS.
+	 */
+	int PARAMETERS 	= 0x0040 + CONSTANT_POOL;
 
 	/**
 	 * Answer back the access flag of the .class file.
@@ -236,4 +243,16 @@ public interface IClassFileReader {
 	 * @return the number of method infos
 	 */
 	int getMethodsCount();
+	
+	//cym 2015-02-14
+	char[] getReturnTypeName();
+
+	//cym 2015-02-14
+	int getReturnTypeIndex();
+
+	//cym 2015-02-14
+	char[][] getParameterNames();
+
+	//cym 2015-02-14
+	int[] getParameterIndexes();
 }
