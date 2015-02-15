@@ -868,6 +868,58 @@ public class SourceTypeBinding extends ReferenceBinding {
 		for (int i = 0, length = this.memberTypes.length; i < length; i++)
 			((SourceTypeBinding) this.memberTypes[i]).faultInTypesForFieldsAndMethods();
 	}
+//	// NOTE: the type of each field of a source type is resolved when needed
+//	public FieldBinding[] fields() {
+//		
+//		if (!isPrototype()) {
+//			if ((this.tagBits & TagBits.AreFieldsComplete) != 0)
+//				return this.fields;
+//			this.tagBits |= TagBits.AreFieldsComplete;
+//			return this.fields = this.prototype.fields();
+//		}
+//		
+//		if ((this.tagBits & TagBits.AreFieldsComplete) != 0)
+//			return this.fields;
+//	
+//		int failed = 0;
+//		FieldBinding[] resolvedFields = this.fields;
+//		try {
+//			// lazily sort fields
+//			if ((this.tagBits & TagBits.AreFieldsSorted) == 0) {
+//				int length = this.fields.length;
+//				if (length > 1)
+//					ReferenceBinding.sortFields(this.fields, 0, length);
+//				this.tagBits |= TagBits.AreFieldsSorted;
+//			}
+//			for (int i = 0, length = this.fields.length; i < length; i++) {
+//				if (resolveTypeFor(this.fields[i]) == null) {
+//					// do not alter original field array until resolution is over, due to reentrance (143259)
+//					if (resolvedFields == this.fields) {
+//						System.arraycopy(this.fields, 0, resolvedFields = new FieldBinding[length], 0, length);
+//					}
+//					resolvedFields[i] = null;
+//					failed++;
+//				}
+//			}
+//		} finally {
+//			if (failed > 0) {
+//				// ensure fields are consistent reqardless of the error
+//				int newSize = resolvedFields.length - failed;
+//				if (newSize == 0)
+//					return setFields(Binding.NO_FIELDS);
+//	
+//				FieldBinding[] newFields = new FieldBinding[newSize];
+//				for (int i = 0, j = 0, length = resolvedFields.length; i < length; i++) {
+//					if (resolvedFields[i] != null)
+//						newFields[j++] = resolvedFields[i];
+//				}
+//				setFields(newFields);
+//			}
+//		}
+//		this.tagBits |= TagBits.AreFieldsComplete;
+//		return this.fields;
+//	}
+	
 	// NOTE: the type of each field of a source type is resolved when needed
 	public FieldBinding[] fields() {
 		
@@ -892,13 +944,24 @@ public class SourceTypeBinding extends ReferenceBinding {
 				this.tagBits |= TagBits.AreFieldsSorted;
 			}
 			for (int i = 0, length = this.fields.length; i < length; i++) {
-				if (resolveTypeFor(this.fields[i]) == null) {
-					// do not alter original field array until resolution is over, due to reentrance (143259)
-					if (resolvedFields == this.fields) {
-						System.arraycopy(this.fields, 0, resolvedFields = new FieldBinding[length], 0, length);
+				if(this.fields[i] instanceof MethodBinding){
+					if (resolveTypesFor((MethodBinding)this.fields[i]) == null) {
+						// do not alter original method array until resolution is over, due to reentrance (143259)
+						if (resolvedFields == this.fields) {
+							System.arraycopy(this.fields, 0, resolvedFields = new FieldBinding[length], 0, length);
+						}
+						resolvedFields[i] = null; // unable to resolve parameters
+						failed++;
 					}
-					resolvedFields[i] = null;
-					failed++;
+				} else{
+					if (resolveTypeFor(this.fields[i]) == null) {
+						// do not alter original field array until resolution is over, due to reentrance (143259)
+						if (resolvedFields == this.fields) {
+							System.arraycopy(this.fields, 0, resolvedFields = new FieldBinding[length], 0, length);
+						}
+						resolvedFields[i] = null;
+						failed++;
+					}
 				}
 			}
 		} finally {
@@ -1949,6 +2012,8 @@ public class SourceTypeBinding extends ReferenceBinding {
 		
 		if ((method.modifiers & ExtraCompilerModifiers.AccUnresolved) == 0)
 			return method;
+		
+		method.type = scope.getJavaLangFunction();   //cym 2015-02-15
 	
 		final long sourceLevel = this.scope.compilerOptions().sourceLevel;
 		if (sourceLevel >= ClassFileConstants.JDK1_5) {

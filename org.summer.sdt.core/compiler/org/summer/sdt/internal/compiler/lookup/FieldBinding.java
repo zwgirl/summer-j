@@ -382,7 +382,7 @@ public class FieldBinding extends VariableBinding {
 		return (this.modifiers & ClassFileConstants.AccVolatile) != 0;
 	}
 	
-	public final int kind() {
+	public /*final*/ int kind() {
 		return FIELD;
 	}
 	/* Answer true if the receiver is visible to the invocationPackage.

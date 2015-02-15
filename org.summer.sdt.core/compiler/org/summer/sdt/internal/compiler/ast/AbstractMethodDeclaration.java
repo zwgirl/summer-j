@@ -160,7 +160,11 @@ public abstract class AbstractMethodDeclaration
 			AnnotationBinding[][] paramAnnotations = null;
 			for (int i = 0, length = this.arguments.length; i < length; i++) {
 				Argument argument = this.arguments[i];
+				try{
 				this.binding.parameters[i] = argument.bind(this.scope, this.binding.parameters[i], used);
+				} catch(ArrayIndexOutOfBoundsException e){
+					e.printStackTrace();
+				}
 				if (argument.annotations != null) {
 					if (paramAnnotations == null) {
 						paramAnnotations = new AnnotationBinding[length][];

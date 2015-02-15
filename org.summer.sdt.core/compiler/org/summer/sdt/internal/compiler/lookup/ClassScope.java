@@ -218,6 +218,171 @@ public class ClassScope extends Scope {
 //		sourceType.setFields(fieldBindings);
 //	}
 	
+//	void buildFields() {
+//		SourceTypeBinding sourceType = this.referenceContext.binding;
+//		if (sourceType.areFieldsInitialized()) return;
+//		if (this.referenceContext.fields == null) {
+//			sourceType.setFields(Binding.NO_FIELDS);
+//			this.referenceContext.fields = new FieldDeclaration[0];
+////			return;
+//		}
+//		// count the number of fields vs. initializers
+//		FieldDeclaration[] fields = this.referenceContext.fields;
+//		int size = fields.length;
+//		int count = 0;
+//		for (int i = 0; i < size; i++) {
+//			switch (fields[i].getKind()) {
+//				case AbstractVariableDeclaration.FIELD:
+//				case AbstractVariableDeclaration.ENUM_CONSTANT:
+//					count++;
+//			}
+//		}
+//
+//		// iterate the field declarations to create the bindings, lose all duplicates
+//		FieldBinding[] fieldBindings = new FieldBinding[count];
+//		HashtableOfObject knownFieldNames = new HashtableOfObject(count);
+//		count = 0;
+//		for (int i = 0; i < size; i++) {
+//			FieldDeclaration field = fields[i];
+//			if (field.getKind() == AbstractVariableDeclaration.INITIALIZER ) {
+//				// We used to report an error for initializers declared inside interfaces, but
+//				// now this error reporting is moved into the parser itself. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=212713
+//			} else {
+//				FieldBinding fieldBinding = new FieldBinding(field, null, field.modifiers | ExtraCompilerModifiers.AccUnresolved, sourceType);
+//				fieldBinding.id = count;
+//				
+//				//cym 2015-02-13
+//				if((fieldBinding.modifiers & ClassFileConstants.AccProperty) != 0){
+//					if(field.getter != null){
+//						fieldBinding.tagBits |= TagBits.canReadAccess;
+//					}
+//					
+//					if(field.setter != null){
+//						fieldBinding.tagBits |= TagBits.canWriteAccess;
+//					}
+//				}
+//				
+//				// field's type will be resolved when needed for top level types
+//				checkAndSetModifiersForField(fieldBinding, field);
+//
+////				if (knownFieldNames.containsKey(field.name)) {
+//				if (knownFieldNames.containsKey(field.name) && (field.modifiers & ClassFileConstants.AccIndexer) == 0) {   //cym 2014-11-24
+//					FieldBinding previousBinding = (FieldBinding) knownFieldNames.get(field.name);
+//					if (previousBinding != null) {
+//						for (int f = 0; f < i; f++) {
+//							FieldDeclaration previousField = fields[f];
+//							if (previousField.binding == previousBinding) {
+//								problemReporter().duplicateFieldInType(sourceType, previousField);
+//								break;
+//							}
+//						}
+//					}
+//					knownFieldNames.put(field.name, null); // ensure that the duplicate field is found & removed
+//					problemReporter().duplicateFieldInType(sourceType, field);
+//					field.binding = null;
+//				} else {
+//					knownFieldNames.put(field.name, fieldBinding);
+//					// remember that we have seen a field with this name
+//					fieldBindings[count++] = fieldBinding;
+//					
+//					//cym 2015-02-13
+//					if(field.setter != null){
+//						MethodScope scope = new MethodScope(this, field.setter, field.isStatic());
+//						scope.createMethod1(field.setter);
+//					}
+//					
+//					if(field.getter != null){
+//						MethodScope scope = new MethodScope(this, field.getter, field.isStatic());
+//						scope.createMethod1(field.getter);
+//					}
+//				}
+//			}
+//		}
+//		
+//
+//		// remove duplicate fields
+//		if (count != fieldBindings.length)
+//			System.arraycopy(fieldBindings, 0, fieldBindings = new FieldBinding[count], 0, count);
+//		
+//		boolean isEnum = TypeDeclaration.kind(this.referenceContext.modifiers) == TypeDeclaration.ENUM_DECL;
+////		if (this.referenceContext.methods == null && !isEnum) {
+////			this.referenceContext.binding.setMethods(Binding.NO_METHODS);
+////			return;
+////		}
+//
+//		// iterate the method declarations to create the bindings
+//		AbstractMethodDeclaration[] methods = this.referenceContext.methods;
+//		size = methods == null ? 0 : methods.length;
+//		// look for <clinit> method
+//		int clinitIndex = -1;
+//		for (int i = 0; i < size; i++) {
+//			if (methods[i].isClinit()) {
+//				clinitIndex = i;
+//				break;
+//			}
+//		}
+//
+//		count = isEnum ? 2 : 0; // reserve 2 slots for special enum methods: #values() and #valueOf(String)
+//		MethodBinding[] methodBindings = new MethodBinding[(clinitIndex == -1 ? size : size - 1) + count];
+//		// create special methods for enums
+//		if (isEnum) {
+//			methodBindings[0] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUES); // add <EnumType>[] values()
+//			methodBindings[1] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUEOF); // add <EnumType> valueOf()
+//		}
+//		// create bindings for source methods
+//		boolean hasNativeMethods = false;
+//		if (sourceType.isAbstract()) {
+//			for (int i = 0; i < size; i++) {
+//				if (i != clinitIndex) {
+//					MethodScope scope = new MethodScope(this, methods[i], false);
+//					MethodBinding methodBinding = scope.createMethod(methods[i]);
+//					if (methodBinding != null) { // is null if binding could not be created
+//						methodBindings[count++] = methodBinding;
+//						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
+//					}
+//				}
+//			}
+//		} else {
+//			boolean hasAbstractMethods = false;
+//			for (int i = 0; i < size; i++) {
+//				if (i != clinitIndex) {
+//					MethodScope scope = new MethodScope(this, methods[i], false);
+//					MethodBinding methodBinding = scope.createMethod(methods[i]);
+//					if (methodBinding != null) { // is null if binding could not be created
+//						methodBindings[count++] = methodBinding;
+//						hasAbstractMethods = hasAbstractMethods || methodBinding.isAbstract();
+//						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
+//					}
+//				}
+//			}
+//			if (hasAbstractMethods)
+//				problemReporter().abstractMethodInConcreteClass(sourceType);
+//		}
+//		if (count != methodBindings.length)
+//			System.arraycopy(methodBindings, 0, methodBindings = new MethodBinding[count], 0, count);
+//		sourceType.tagBits &= ~(TagBits.AreMethodsSorted|TagBits.AreMethodsComplete); // in case some static imports reached already into this type
+////		sourceType.setMethods(methodBindings);
+//		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=243917, conservatively tag all methods and fields as
+//		// being in use if there is a native method in the class.
+//		if (hasNativeMethods) {
+//			for (int i = 0; i < methodBindings.length; i++) {
+//				methodBindings[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;
+//			}
+//			FieldBinding[] fields1 = sourceType.unResolvedFields(); // https://bugs.eclipse.org/bugs/show_bug.cgi?id=301683
+//			for (int i = 0; i < fields1.length; i++) {
+//				fields1[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;	
+//			}
+//		}
+//		
+//		FieldBinding[] fieldBindings1 = new FieldBinding[fieldBindings.length + methodBindings.length];
+//		System.arraycopy(fieldBindings, 0, fieldBindings1, 0, fieldBindings.length);
+//		
+//		System.arraycopy(methodBindings, 0, fieldBindings1, fieldBindings.length ==0 ? 0 : fieldBindings.length-1, methodBindings.length);
+//		
+//		sourceType.tagBits &= ~(TagBits.AreFieldsSorted|TagBits.AreFieldsComplete); // in case some static imports reached already into this type
+//		sourceType.setFields(fieldBindings1);
+//	}
+	
 	void buildFields() {
 		SourceTypeBinding sourceType = this.referenceContext.binding;
 		if (sourceType.areFieldsInitialized()) return;
@@ -434,6 +599,159 @@ public class ClassScope extends Scope {
 		sourceType.setMemberTypes(memberTypeBindings);
 	}
 
+//	void buildMethods() {
+//		SourceTypeBinding sourceType = this.referenceContext.binding;
+//		if (sourceType.areMethodsInitialized()) return;
+//
+//		boolean isEnum = TypeDeclaration.kind(this.referenceContext.modifiers) == TypeDeclaration.ENUM_DECL;
+//		if (this.referenceContext.methods == null && !isEnum) {
+//			this.referenceContext.binding.setMethods(Binding.NO_METHODS);
+//			return;
+//		}
+//
+//		// iterate the method declarations to create the bindings
+//		AbstractMethodDeclaration[] methods = this.referenceContext.methods;
+//		int size = methods == null ? 0 : methods.length;
+//		// look for <clinit> method
+//		int clinitIndex = -1;
+//		for (int i = 0; i < size; i++) {
+//			if (methods[i].isClinit()) {
+//				clinitIndex = i;
+//				break;
+//			}
+//		}
+//
+//		int count = isEnum ? 2 : 0; // reserve 2 slots for special enum methods: #values() and #valueOf(String)
+//		MethodBinding[] methodBindings = new MethodBinding[(clinitIndex == -1 ? size : size - 1) + count];
+//		// create special methods for enums
+//		if (isEnum) {
+//			methodBindings[0] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUES); // add <EnumType>[] values()
+//			methodBindings[1] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUEOF); // add <EnumType> valueOf()
+//		}
+//		// create bindings for source methods
+//		boolean hasNativeMethods = false;
+//		if (sourceType.isAbstract()) {
+//			for (int i = 0; i < size; i++) {
+//				if (i != clinitIndex) {
+//					MethodScope scope = new MethodScope(this, methods[i], false);
+//					MethodBinding methodBinding = scope.createMethod(methods[i]);
+//					if (methodBinding != null) { // is null if binding could not be created
+//						methodBindings[count++] = methodBinding;
+//						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
+//					}
+//				}
+//			}
+//		} else {
+//			boolean hasAbstractMethods = false;
+//			for (int i = 0; i < size; i++) {
+//				if (i != clinitIndex) {
+//					MethodScope scope = new MethodScope(this, methods[i], false);
+//					MethodBinding methodBinding = scope.createMethod(methods[i]);
+//					if (methodBinding != null) { // is null if binding could not be created
+//						methodBindings[count++] = methodBinding;
+//						hasAbstractMethods = hasAbstractMethods || methodBinding.isAbstract();
+//						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
+//					}
+//				}
+//			}
+//			if (hasAbstractMethods)
+//				problemReporter().abstractMethodInConcreteClass(sourceType);
+//		}
+//		if (count != methodBindings.length)
+//			System.arraycopy(methodBindings, 0, methodBindings = new MethodBinding[count], 0, count);
+//		sourceType.tagBits &= ~(TagBits.AreMethodsSorted|TagBits.AreMethodsComplete); // in case some static imports reached already into this type
+//		sourceType.setMethods(methodBindings);
+//		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=243917, conservatively tag all methods and fields as
+//		// being in use if there is a native method in the class.
+//		if (hasNativeMethods) {
+//			for (int i = 0; i < methodBindings.length; i++) {
+//				methodBindings[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;
+//			}
+//			FieldBinding[] fields = sourceType.unResolvedFields(); // https://bugs.eclipse.org/bugs/show_bug.cgi?id=301683
+//			for (int i = 0; i < fields.length; i++) {
+//				fields[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;	
+//			}
+//		}
+//	}
+	
+//	void buildMethods() {
+//		SourceTypeBinding sourceType = this.referenceContext.binding;
+//		if (sourceType.areMethodsInitialized()) return;
+//
+//		boolean isEnum = TypeDeclaration.kind(this.referenceContext.modifiers) == TypeDeclaration.ENUM_DECL;
+//		if (this.referenceContext.methods == null && !isEnum) {
+//			this.referenceContext.binding.setMethods(Binding.NO_METHODS);
+//			return;
+//		}
+//
+//		// iterate the method declarations to create the bindings
+//		AbstractMethodDeclaration[] methods = this.referenceContext.methods;
+//		int size = methods == null ? 0 : methods.length;
+//		// look for <clinit> method
+//		int clinitIndex = -1;
+//		for (int i = 0; i < size; i++) {
+//			if (methods[i].isClinit()) {
+//				clinitIndex = i;
+//				break;
+//			}
+//		}
+//
+//		int count = isEnum ? 2 : 0; // reserve 2 slots for special enum methods: #values() and #valueOf(String)
+//		MethodBinding[] methodBindings = new MethodBinding[(clinitIndex == -1 ? size : size - 1) + count];
+//		// create special methods for enums
+//		if (isEnum) {
+//			methodBindings[0] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUES); // add <EnumType>[] values()
+//			methodBindings[1] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUEOF); // add <EnumType> valueOf()
+//		}
+//		// create bindings for source methods
+//		boolean hasNativeMethods = false;
+//		if (sourceType.isAbstract()) {
+//			for (int i = 0; i < size; i++) {
+//				if (i != clinitIndex) {
+//					MethodScope scope = new MethodScope(this, methods[i], false);
+//					MethodBinding methodBinding = scope.createMethod(methods[i]);
+//					if (methodBinding != null) { // is null if binding could not be created
+//						methodBindings[count++] = methodBinding;
+//						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
+//					}
+//				}
+//			}
+//		} else {
+//			boolean hasAbstractMethods = false;
+//			for (int i = 0; i < size; i++) {
+//				if (i != clinitIndex) {
+//					MethodScope scope = new MethodScope(this, methods[i], false);
+//					MethodBinding methodBinding = scope.createMethod(methods[i]);
+//					if (methodBinding != null) { // is null if binding could not be created
+//						methodBindings[count++] = methodBinding;
+//						hasAbstractMethods = hasAbstractMethods || methodBinding.isAbstract();
+//						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
+//					}
+//				}
+//			}
+//			if (hasAbstractMethods)
+//				problemReporter().abstractMethodInConcreteClass(sourceType);
+//		}
+//		if (count != methodBindings.length)
+//			System.arraycopy(methodBindings, 0, methodBindings = new MethodBinding[count], 0, count);
+//		sourceType.tagBits &= ~(TagBits.AreMethodsSorted|TagBits.AreMethodsComplete); // in case some static imports reached already into this type
+//		sourceType.setMethods(methodBindings);
+//		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=243917, conservatively tag all methods and fields as
+//		// being in use if there is a native method in the class.
+//		if (hasNativeMethods) {
+//			for (int i = 0; i < methodBindings.length; i++) {
+//				methodBindings[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;
+//			}
+//			FieldBinding[] fields = sourceType.unResolvedFields(); // https://bugs.eclipse.org/bugs/show_bug.cgi?id=301683
+//			for (int i = 0; i < fields.length; i++) {
+//				fields[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;	
+//			}
+//		}
+//		
+//		
+//	}
+	
+	//cym 2015-02-04
 	void buildMethods() {
 		SourceTypeBinding sourceType = this.referenceContext.binding;
 		if (sourceType.areMethodsInitialized()) return;
@@ -455,7 +773,7 @@ public class ClassScope extends Scope {
 				break;
 			}
 		}
-
+		
 		int count = isEnum ? 2 : 0; // reserve 2 slots for special enum methods: #values() and #valueOf(String)
 		MethodBinding[] methodBindings = new MethodBinding[(clinitIndex == -1 ? size : size - 1) + count];
 		// create special methods for enums
@@ -463,6 +781,7 @@ public class ClassScope extends Scope {
 			methodBindings[0] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUES); // add <EnumType>[] values()
 			methodBindings[1] = sourceType.addSyntheticEnumMethod(TypeConstants.VALUEOF); // add <EnumType> valueOf()
 		}
+		
 		// create bindings for source methods
 		boolean hasNativeMethods = false;
 		if (sourceType.isAbstract()) {
@@ -471,6 +790,8 @@ public class ClassScope extends Scope {
 					MethodScope scope = new MethodScope(this, methods[i], false);
 					MethodBinding methodBinding = scope.createMethod(methods[i]);
 					if (methodBinding != null) { // is null if binding could not be created
+						//cym 2015-02-05
+						methodBinding.type = environment().getType(TypeConstants.JAVA_LANG_FUNCTION);
 						methodBindings[count++] = methodBinding;
 						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
 					}
@@ -483,6 +804,8 @@ public class ClassScope extends Scope {
 					MethodScope scope = new MethodScope(this, methods[i], false);
 					MethodBinding methodBinding = scope.createMethod(methods[i]);
 					if (methodBinding != null) { // is null if binding could not be created
+						//cym 2015-02-05
+						methodBinding.type = environment().getType(TypeConstants.JAVA_LANG_FUNCTION);
 						methodBindings[count++] = methodBinding;
 						hasAbstractMethods = hasAbstractMethods || methodBinding.isAbstract();
 						hasNativeMethods = hasNativeMethods || methodBinding.isNative();
@@ -495,7 +818,7 @@ public class ClassScope extends Scope {
 		if (count != methodBindings.length)
 			System.arraycopy(methodBindings, 0, methodBindings = new MethodBinding[count], 0, count);
 		sourceType.tagBits &= ~(TagBits.AreMethodsSorted|TagBits.AreMethodsComplete); // in case some static imports reached already into this type
-		sourceType.setMethods(methodBindings);
+		sourceType.setMethods(new MethodBinding[0]);
 		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=243917, conservatively tag all methods and fields as
 		// being in use if there is a native method in the class.
 		if (hasNativeMethods) {
@@ -507,6 +830,13 @@ public class ClassScope extends Scope {
 				fields[i].modifiers |= ExtraCompilerModifiers.AccLocallyUsed;	
 			}
 		}
+		int fieldsSize = sourceType.fields().length;
+		FieldBinding[] newfields = new FieldBinding[methodBindings.length + fieldsSize];
+		System.arraycopy(sourceType.fields(), 0, newfields, 0, fieldsSize);
+		System.arraycopy(methodBindings, 0, newfields, fieldsSize, methodBindings.length);
+		sourceType.setFields(newfields);
+		
+		sourceType.tagBits &= ~(TagBits.AreFieldsSorted | TagBits.AreFieldsComplete);
 	}
 
 	SourceTypeBinding buildType(SourceTypeBinding enclosingType, PackageBinding packageBinding, AccessRestriction accessRestriction) {

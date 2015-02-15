@@ -584,11 +584,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		//cym 2015-01-11
 		if((this.bits & (ASTNode.IsAnonymousType | ASTNode.IsLocalType | ASTNode.IsMemberType)) == 0){
 			if((this.binding.modifiers & ClassFileConstants.AccModule) == 0){
-				generateJavascript(scope);
+//				generateJavascript(scope);
 			}
 
 			if(this.element != null && CharOperation.equals(((ReferenceBinding)this.element.type.resolvedType).compoundName, TypeConstants.ORG_W3C_HTML_HTML)){
-				generateHtml(this.scope);
+//				generateHtml(this.scope);
 			}
 		}
 		

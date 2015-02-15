@@ -896,10 +896,10 @@ public class MethodBinding extends FieldBinding {
 //	public final boolean isViewedAsDeprecated() {
 //		return (this.modifiers & (ClassFileConstants.AccDeprecated | ExtraCompilerModifiers.AccDeprecatedImplicitly)) != 0;
 //	}
-//	
-//	public final int kind() {
-//		return Binding.METHOD;
-//	}
+	
+	public final int kind() {
+		return Binding.METHOD;
+	}
 	/* Answer true if the receiver is visible to the invocationPackage.
 	*/
 	
