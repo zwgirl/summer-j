@@ -290,7 +290,7 @@ public abstract class FunctionalExpression extends Expression {
 
 			BridgeCollector(ReferenceBinding functionalType, MethodBinding method) {
 				this.method = method;
-				this.selector = method.selector;
+				this.selector = method.name;
 				this.environment = FunctionalExpression.this.enclosingScope.environment();
 				this.scope = FunctionalExpression.this.enclosingScope;
 				collectBridges(functionalType.superInterfaces());

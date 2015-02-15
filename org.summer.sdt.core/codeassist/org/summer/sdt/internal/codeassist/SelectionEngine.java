@@ -1087,10 +1087,10 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 
 			if (!method.isStatic()) continue next;
 
-			if (methodLength > method.selector.length)
+			if (methodLength > method.name.length)
 				continue next;
 
-			if (!CharOperation.equals(lastToken, method.selector, true))
+			if (!CharOperation.equals(lastToken, method.name, true))
 				continue next;
 
 			selectFrom(method, parsedUnit, false);
@@ -1129,7 +1129,7 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 						enclosingMethod.declaringClass.qualifiedSourceName(),
 						enclosingMethod.isConstructor()
 								? enclosingMethod.declaringClass.sourceName()
-								: enclosingMethod.selector,
+								: enclosingMethod.name,
 						enclosingMethod.sourceStart(),
 						enclosingMethod.sourceEnd(),
 						typeVariableBinding.sourceName(),
@@ -1226,7 +1226,7 @@ public final class SelectionEngine extends Engine implements ISearchRequestor {
 						declaringClass.enclosingType() == null ? null : new String(getSignature(declaringClass.enclosingType())),
 						methodBinding.isConstructor()
 							? declaringClass.sourceName()
-							: methodBinding.selector,
+							: methodBinding.name,
 						parameterPackageNames,
 						parameterTypeNames,
 						parameterSignatures,

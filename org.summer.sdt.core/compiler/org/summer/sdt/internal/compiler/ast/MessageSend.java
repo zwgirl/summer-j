@@ -857,7 +857,7 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 				final AbstractMethodDeclaration abstractMethodDeclaration = (AbstractMethodDeclaration) referenceContext;
 				MethodBinding enclosingMethodBinding = abstractMethodDeclaration.binding;
 				if (enclosingMethodBinding.isOverriding()
-						&& CharOperation.equals(this.binding.selector, enclosingMethodBinding.selector)
+						&& CharOperation.equals(this.binding.name, enclosingMethodBinding.name)
 						&& this.binding.areParametersEqual(enclosingMethodBinding)) {
 					abstractMethodDeclaration.bits |= ASTNode.OverridingMethodWithSupercall;
 				}

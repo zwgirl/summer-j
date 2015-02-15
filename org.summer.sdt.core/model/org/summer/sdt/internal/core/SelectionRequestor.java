@@ -375,7 +375,7 @@ public void acceptLocalMethod(MethodBinding methodBinding) {
 				System.out.print(res.toString());
 				System.out.println(")"); //$NON-NLS-1$
 			}
-		} else if(methodBinding.selector == TypeConstants.INIT && res.getElementType() == IJavaElement.TYPE) {
+		} else if(methodBinding.name == TypeConstants.INIT && res.getElementType() == IJavaElement.TYPE) {
 			// it's a default constructor
 			res = ((JavaElement)res).resolved(methodBinding.declaringClass);
 			addElement(res);
@@ -897,12 +897,12 @@ public IJavaElement findMethodFromBinding(MethodBinding method, String[] signatu
 	if (foundType != null) {
 		if (foundType instanceof BinaryType) {
 			try {
-				return Util.findMethod(foundType, method.selector, signatures, method.isConstructor());
+				return Util.findMethod(foundType, method.name, signatures, method.isConstructor());
 			} catch (JavaModelException e) {
 				return null;
 			}
 		} else {
-			return foundType.getMethod(new String(method.selector), signatures);
+			return foundType.getMethod(new String(method.name), signatures);
 		}
 	}
 	return null;

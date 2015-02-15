@@ -209,7 +209,7 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 			signature.append(this.expectedType.signature());
 		}
 		int invokeDynamicNumber = codeStream.classFile.recordBootstrapMethod(this);
-		codeStream.invokeDynamic(invokeDynamicNumber, (this.shouldCaptureInstance ? 1 : 0) + this.outerLocalVariablesSlotSize, 1, this.descriptor.selector, signature.toString().toCharArray());
+		codeStream.invokeDynamic(invokeDynamicNumber, (this.shouldCaptureInstance ? 1 : 0) + this.outerLocalVariablesSlotSize, 1, this.descriptor.name, signature.toString().toCharArray());
 		if (!valueRequired)
 			codeStream.pop();
 		codeStream.recordPositionsFrom(pc, this.sourceStart);		
@@ -1213,7 +1213,7 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 				} else {
 					newParams = this.binding.parameters;
 				}
-				this.actualMethodBinding = new MethodBinding(this.binding.modifiers, this.binding.selector,
+				this.actualMethodBinding = new MethodBinding(this.binding.modifiers, this.binding.name,
 						this.binding.returnType, newParams, this.binding.thrownExceptions, this.binding.declaringClass);
 				this.actualMethodBinding.tagBits = this.binding.tagBits;
 			} else {

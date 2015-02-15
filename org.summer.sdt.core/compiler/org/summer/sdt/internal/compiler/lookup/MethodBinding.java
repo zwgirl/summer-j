@@ -46,18 +46,18 @@ import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.util.Util;
 
 @SuppressWarnings("rawtypes")
-public class MethodBinding extends Binding {
+public class MethodBinding extends FieldBinding {
 
-	public int modifiers;
-	public char[] selector;
+//	public int modifiers;   //in fieldBinding  cym 2015-02-15
+//	public char[] name;     //in fieldBinding  cym 2015-02-15
 	public TypeBinding returnType;
-	public TypeBinding[] parameters;
+//	public TypeBinding[] parameters;   //in fieldBinding  cym 2015-02-15
 	public TypeBinding receiver;  // JSR308 - explicit this parameter
 	public ReferenceBinding[] thrownExceptions;
-	public ReferenceBinding declaringClass;
+//	public ReferenceBinding declaringClass;   //in fieldBinding
 	public TypeVariableBinding[] typeVariables = Binding.NO_TYPE_VARIABLES;
 	char[] signature;
-	public long tagBits;
+//	public long tagBits;   //in fieldBinding  cym 2015-02-15
 	
 	public String overload;  //cym 2015-01-15
 
@@ -72,12 +72,13 @@ public class MethodBinding extends Binding {
 		// for creating problem or synthetic method
 	}
 	public MethodBinding(int modifiers, char[] selector, TypeBinding returnType, TypeBinding[] parameters, ReferenceBinding[] thrownExceptions, ReferenceBinding declaringClass) {
-		this.modifiers = modifiers;
-		this.selector = selector;
+		super(selector, null, modifiers, declaringClass, null);   //cym 2015-02-15
+//		this.modifiers = modifiers;   //cym 2015-02-15 
+//		this.name = selector;  //cym 2015-02-15
 		this.returnType = returnType;
 		this.parameters = (parameters == null || parameters.length == 0) ? Binding.NO_PARAMETERS : parameters;
 		this.thrownExceptions = (thrownExceptions == null || thrownExceptions.length == 0) ? Binding.NO_EXCEPTIONS : thrownExceptions;
-		this.declaringClass = declaringClass;
+//		this.declaringClass = declaringClass;  //cym 2015-02-15
 	
 		// propagate the strictfp & deprecated modifiers
 		if (this.declaringClass != null) {
@@ -86,13 +87,15 @@ public class MethodBinding extends Binding {
 					this.modifiers |= ClassFileConstants.AccStrictfp;
 		}
 	}
+	
 	public MethodBinding(int modifiers, TypeBinding[] parameters, ReferenceBinding[] thrownExceptions, ReferenceBinding declaringClass) {
 		this(modifiers, TypeConstants.INIT, TypeBinding.VOID, parameters, thrownExceptions, declaringClass);
 	}
+	
 	// special API used to change method declaring class for runtime visibility check
 	public MethodBinding(MethodBinding initialMethodBinding, ReferenceBinding declaringClass) {
 		this.modifiers = initialMethodBinding.modifiers;
-		this.selector = initialMethodBinding.selector;
+		this.name = initialMethodBinding.name;
 		this.returnType = initialMethodBinding.returnType;
 		this.parameters = initialMethodBinding.parameters;
 		this.thrownExceptions = initialMethodBinding.thrownExceptions;
@@ -258,13 +261,13 @@ public class MethodBinding extends Binding {
 		// isDefault()
 		return invocationType.fPackage == this.declaringClass.fPackage;
 	}
-	public final boolean canBeSeenBy(PackageBinding invocationPackage) {
-		if (isPublic()) return true;
-		if (isPrivate()) return false;
-	
-		// isProtected() or isDefault()
-		return invocationPackage == this.declaringClass.getPackage();
-	}
+//	public final boolean canBeSeenBy(PackageBinding invocationPackage) {
+//		if (isPublic()) return true;
+//		if (isPrivate()) return false;
+//	
+//		// isProtected() or isDefault()
+//		return invocationPackage == this.declaringClass.getPackage();
+//	}
 	
 	/* Answer true if the receiver is visible to the type provided by the scope.
 	* InvocationSite implements isSuperAccess() to provide additional information
@@ -272,7 +275,7 @@ public class MethodBinding extends Binding {
 	*
 	* NOTE: Cannot invoke this method with a compilation unit scope.
 	*/
-	public final boolean canBeSeenBy(TypeBinding receiverType, InvocationSite invocationSite, Scope scope) {
+	public /*final*/ boolean canBeSeenBy(TypeBinding receiverType, InvocationSite invocationSite, Scope scope) {
 	
 		SourceTypeBinding invocationType = scope.enclosingSourceType();
 		if (this.declaringClass.isInterface() && isStatic()) {
@@ -428,7 +431,7 @@ public class MethodBinding extends Binding {
 		int declaringLength = declaringKey.length;
 	
 		// selector
-		int selectorLength = this.selector == TypeConstants.INIT ? 0 : this.selector.length;
+		int selectorLength = this.name == TypeConstants.INIT ? 0 : this.name.length;
 	
 		// generic signature
 		char[] sig = genericSignature();
@@ -456,7 +459,7 @@ public class MethodBinding extends Binding {
 		System.arraycopy(declaringKey, 0, uniqueKey, index, declaringLength);
 		index = declaringLength;
 		uniqueKey[index++] = '.';
-		System.arraycopy(this.selector, 0, uniqueKey, index, selectorLength);
+		System.arraycopy(this.name, 0, uniqueKey, index, selectorLength);
 		index += selectorLength;
 		System.arraycopy(sig, 0, uniqueKey, index, signatureLength);
 		if (thrownExceptionsSignatureLength > 0) {
@@ -481,7 +484,7 @@ public class MethodBinding extends Binding {
 	* or the source name of the method
 	*/
 	public final char[] constantPoolName() {
-		return this.selector;
+		return this.name;
 	}
 	
 	/**
@@ -559,7 +562,7 @@ public class MethodBinding extends Binding {
 	
 		if (TypeBinding.notEquals(inheritedOriginal.declaringClass, superType)) {
 			// must find inherited method with the same substituted variables
-			MethodBinding[] superMethods = ((ReferenceBinding) superType).getMethods(inheritedOriginal.selector, inheritedOriginal.parameters.length);
+			MethodBinding[] superMethods = ((ReferenceBinding) superType).getMethods(inheritedOriginal.name, inheritedOriginal.parameters.length);
 			for (int m = 0, l = superMethods.length; m < l; m++)
 				if (superMethods[m].original() == inheritedOriginal)
 					return superMethods[m];
@@ -614,9 +617,9 @@ public class MethodBinding extends Binding {
 		return genericSignature;
 	}
 	
-	public final int getAccessFlags() {
-		return this.modifiers & (ExtraCompilerModifiers.AccJustFlag | ExtraCompilerModifiers.AccDefaultMethod);
-	}
+//	public final int getAccessFlags() {
+//		return this.modifiers & (ExtraCompilerModifiers.AccJustFlag | ExtraCompilerModifiers.AccDefaultMethod);
+//	}
 	
 	public AnnotationBinding[] getAnnotations() {
 		MethodBinding originalMethod = original();
@@ -756,14 +759,14 @@ public class MethodBinding extends Binding {
 	/* Answer true if the receiver is a constructor
 	*/
 	public final boolean isConstructor() {
-		return this.selector == TypeConstants.INIT;
+		return this.name == TypeConstants.INIT;
 	}
 	
-	/* Answer true if the receiver has default visibility
-	*/
-	public final boolean isDefault() {
-		return !isPublic() && !isProtected() && !isPrivate();
-	}
+//	/* Answer true if the receiver has default visibility
+//	*/
+//	public final boolean isDefault() {
+//		return !isPublic() && !isProtected() && !isPrivate();
+//	}
 	
 	/* Answer true if the receiver is a system generated default abstract method
 	*/
@@ -776,17 +779,17 @@ public class MethodBinding extends Binding {
 		return (this.modifiers & ExtraCompilerModifiers.AccDefaultMethod) != 0;
 	}
 	
-	/* Answer true if the receiver is a deprecated method
-	*/
-	public final boolean isDeprecated() {
-		return (this.modifiers & ClassFileConstants.AccDeprecated) != 0;
-	}
-	
-	/* Answer true if the receiver is final and cannot be overridden
-	*/
-	public final boolean isFinal() {
-		return (this.modifiers & ClassFileConstants.AccFinal) != 0;
-	}
+//	/* Answer true if the receiver is a deprecated method
+//	*/
+//	public final boolean isDeprecated() {
+//		return (this.modifiers & ClassFileConstants.AccDeprecated) != 0;
+//	}
+//	
+//	/* Answer true if the receiver is final and cannot be overridden
+//	*/
+//	public final boolean isFinal() {
+//		return (this.modifiers & ClassFileConstants.AccFinal) != 0;
+//	}
 	
 	/* Answer true if the receiver is implementing another method
 	 * in other words, it is overriding and concrete, and overriden method is abstract
@@ -800,7 +803,7 @@ public class MethodBinding extends Binding {
 	 * Answer true if the receiver is a "public static void main(String[])" method
 	 */
 	public final boolean isMain() {
-		if (this.selector.length == 4 && CharOperation.equals(this.selector, TypeConstants.MAIN)
+		if (this.name.length == 4 && CharOperation.equals(this.name, TypeConstants.MAIN)
 				&& ((this.modifiers & (ClassFileConstants.AccPublic | ClassFileConstants.AccStatic)) != 0)
 				&& TypeBinding.VOID == this.returnType
 				&& this.parameters.length == 1) {
@@ -824,37 +827,37 @@ public class MethodBinding extends Binding {
 	public final boolean isOverriding() {
 		return (this.modifiers & ExtraCompilerModifiers.AccOverriding) != 0;
 	}
-	/* Answer true if the receiver has private visibility
-	*/
-	public final boolean isPrivate() {
-		return (this.modifiers & ClassFileConstants.AccPrivate) != 0;
-	}
-	
-	/* Answer true if the receiver has private visibility or if any of its enclosing types do.
-	*/
-	public final boolean isOrEnclosedByPrivateType() {
-		if ((this.modifiers & ClassFileConstants.AccPrivate) != 0)
-			return true;
-		return this.declaringClass != null && this.declaringClass.isOrEnclosedByPrivateType();
-	}
-	
-	/* Answer true if the receiver has protected visibility
-	*/
-	public final boolean isProtected() {
-		return (this.modifiers & ClassFileConstants.AccProtected) != 0;
-	}
-	
-	/* Answer true if the receiver has public visibility
-	*/
-	public final boolean isPublic() {
-		return (this.modifiers & ClassFileConstants.AccPublic) != 0;
-	}
-	
-	/* Answer true if the receiver is a static method
-	*/
-	public final boolean isStatic() {
-		return (this.modifiers & ClassFileConstants.AccStatic) != 0;
-	}
+//	/* Answer true if the receiver has private visibility
+//	*/
+//	public final boolean isPrivate() {
+//		return (this.modifiers & ClassFileConstants.AccPrivate) != 0;
+//	}
+//	
+//	/* Answer true if the receiver has private visibility or if any of its enclosing types do.
+//	*/
+//	public final boolean isOrEnclosedByPrivateType() {
+//		if ((this.modifiers & ClassFileConstants.AccPrivate) != 0)
+//			return true;
+//		return this.declaringClass != null && this.declaringClass.isOrEnclosedByPrivateType();
+//	}
+//	
+//	/* Answer true if the receiver has protected visibility
+//	*/
+//	public final boolean isProtected() {
+//		return (this.modifiers & ClassFileConstants.AccProtected) != 0;
+//	}
+//	
+//	/* Answer true if the receiver has public visibility
+//	*/
+//	public final boolean isPublic() {
+//		return (this.modifiers & ClassFileConstants.AccPublic) != 0;
+//	}
+//	
+//	/* Answer true if the receiver is a static method
+//	*/
+//	public final boolean isStatic() {
+//		return (this.modifiers & ClassFileConstants.AccStatic) != 0;
+//	}
 	
 	/* Answer true if all float operations must adher to IEEE 754 float/double rules
 	*/
@@ -868,17 +871,17 @@ public class MethodBinding extends Binding {
 		return (this.modifiers & ClassFileConstants.AccSynchronized) != 0;
 	}
 	
-	/* Answer true if the receiver has public visibility
-	*/
-	public final boolean isSynthetic() {
-		return (this.modifiers & ClassFileConstants.AccSynthetic) != 0;
-	}
-	
-	/* Answer true if the receiver has private visibility and is used locally
-	*/
-	public final boolean isUsed() {
-		return (this.modifiers & ExtraCompilerModifiers.AccLocallyUsed) != 0;
-	}
+//	/* Answer true if the receiver has public visibility
+//	*/
+//	public final boolean isSynthetic() {
+//		return (this.modifiers & ClassFileConstants.AccSynthetic) != 0;
+//	}
+//	
+//	/* Answer true if the receiver has private visibility and is used locally
+//	*/
+//	public final boolean isUsed() {
+//		return (this.modifiers & ExtraCompilerModifiers.AccLocallyUsed) != 0;
+//	}
 	
 	/* Answer true if the receiver method has varargs
 	*/
@@ -888,15 +891,15 @@ public class MethodBinding extends Binding {
 	public boolean isPolymorphic() {
 		return false;
 	}
-	/* Answer true if the receiver's declaring type is deprecated (or any of its enclosing types)
-	*/
-	public final boolean isViewedAsDeprecated() {
-		return (this.modifiers & (ClassFileConstants.AccDeprecated | ExtraCompilerModifiers.AccDeprecatedImplicitly)) != 0;
-	}
-	
-	public final int kind() {
-		return Binding.METHOD;
-	}
+//	/* Answer true if the receiver's declaring type is deprecated (or any of its enclosing types)
+//	*/
+//	public final boolean isViewedAsDeprecated() {
+//		return (this.modifiers & (ClassFileConstants.AccDeprecated | ExtraCompilerModifiers.AccDeprecatedImplicitly)) != 0;
+//	}
+//	
+//	public final int kind() {
+//		return Binding.METHOD;
+//	}
 	/* Answer true if the receiver is visible to the invocationPackage.
 	*/
 	
@@ -924,7 +927,7 @@ public class MethodBinding extends Binding {
 		if (isConstructor())
 			buffer.append(this.declaringClass.sourceName());
 		else
-			buffer.append(this.selector);
+			buffer.append(this.name);
 		buffer.append('(');
 		if (this.parameters != Binding.NO_PARAMETERS) {
 			for (int i = 0, length = this.parameters.length; i < length; i++) {
@@ -960,7 +963,7 @@ public class MethodBinding extends Binding {
 			setAnnotations(holder.getAnnotations(), parameterAnnotations, holder.getDefaultValue(), null);
 	}
 	protected final void setSelector(char[] selector) {
-		this.selector = selector;
+		this.name = selector;
 		this.signature = null;
 	}
 	
@@ -972,7 +975,7 @@ public class MethodBinding extends Binding {
 		if (isConstructor())
 			buffer.append(this.declaringClass.shortReadableName());
 		else
-			buffer.append(this.selector);
+			buffer.append(this.name);
 		buffer.append('(');
 		if (this.parameters != Binding.NO_PARAMETERS) {
 			for (int i = 0, length = this.parameters.length; i < length; i++) {
@@ -1282,7 +1285,7 @@ public class MethodBinding extends Binding {
 		ASTNode.printModifiers(this.modifiers, output);
 		output.append(this.returnType != null ? this.returnType.debugName() : "<no type>"); //$NON-NLS-1$
 		output.append(" "); //$NON-NLS-1$
-		output.append(this.selector != null ? new String(this.selector) : "<no selector>"); //$NON-NLS-1$
+		output.append(this.name != null ? new String(this.name) : "<no selector>"); //$NON-NLS-1$
 		output.append("("); //$NON-NLS-1$
 		if (this.parameters != null) {
 			if (this.parameters != Binding.NO_PARAMETERS) {
@@ -1332,7 +1335,7 @@ public class MethodBinding extends Binding {
 	
 	public boolean redeclaresPublicObjectMethod(Scope scope) {
 		ReferenceBinding javaLangObject = scope.getJavaLangObject();
-		MethodBinding [] methods = javaLangObject.getMethods(this.selector);
+		MethodBinding [] methods = javaLangObject.getMethods(this.name);
 		for (int i = 0, length = methods == null ? 0 : methods.length; i < length; i++) {
 			final MethodBinding method = methods[i];
 			if (!method.isPublic() || method.isStatic() || method.parameters.length != this.parameters.length) 

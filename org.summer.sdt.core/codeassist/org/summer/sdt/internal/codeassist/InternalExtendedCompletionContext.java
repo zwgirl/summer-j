@@ -645,7 +645,7 @@ public class InternalExtendedCompletionContext {
 				if (method == otherMethod)
 					continue next;
 
-				if (CharOperation.equals(method.selector, otherMethod.selector, true)) {
+				if (CharOperation.equals(method.name, otherMethod.name, true)) {
 					if (this.lookupEnvironment.methodVerifier().isMethodSubsignature(otherMethod, method)) {
 						continue next;
 					}
@@ -885,7 +885,7 @@ public class InternalExtendedCompletionContext {
 							MethodBinding methodBinding = (MethodBinding)binding;
 
 							searchVisibleLocalMethods(
-									methodBinding.declaringClass.getMethods(methodBinding.selector),
+									methodBinding.declaringClass.getMethods(methodBinding.name),
 									methodBinding.declaringClass,
 									scope,
 									invocationSite,

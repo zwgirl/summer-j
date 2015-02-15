@@ -182,7 +182,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		int argumentsLength = argumentTypes.length;
 		//the constructor
 		MethodDeclaration methodDeclaration = new MethodDeclaration(this.compilationResult);
-		methodDeclaration.selector = methodBinding.selector;
+		methodDeclaration.selector = methodBinding.name;
 		methodDeclaration.sourceStart = this.sourceStart;
 		methodDeclaration.sourceEnd = this.sourceEnd;
 		methodDeclaration.modifiers = methodBinding.getAccessFlags() & ~ClassFileConstants.AccAbstract;
@@ -213,7 +213,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		//============BINDING UPDATE==========================
 		methodDeclaration.binding = new MethodBinding(
 				methodDeclaration.modifiers | ClassFileConstants.AccSynthetic, //methodDeclaration
-				methodBinding.selector,
+				methodBinding.name,
 				methodBinding.returnType,
 				argumentsLength == 0 ? Binding.NO_PARAMETERS : argumentTypes, //arguments bindings
 				methodBinding.thrownExceptions, //exceptions

@@ -2602,7 +2602,7 @@ public final class CompletionEngine
 							this.requestor.isAllowingRequiredProposals(CompletionProposal.METHOD_REF, CompletionProposal.TYPE_REF))) {
 				ProblemMethodBinding problemMethodBinding = (ProblemMethodBinding) qualifiedBinding;
 				findFieldsAndMethodsFromMissingReturnType(
-						problemMethodBinding.selector,
+						problemMethodBinding.name,
 						problemMethodBinding.parameters,
 						scope,
 						access,
@@ -3783,7 +3783,7 @@ public final class CompletionEngine
 						((ReferenceBinding)annotation.resolvedType).availableMethods();
 					if (methodBindings != null &&
 							methodBindings.length > 0 &&
-							CharOperation.equals(methodBindings[0].selector, VALUE)) {
+							CharOperation.equals(methodBindings[0].name, VALUE)) {
 						boolean canBeSingleMemberAnnotation = true;
 						done : for (int i = 1; i < methodBindings.length; i++) {
 							if((methodBindings[i].modifiers & ClassFileConstants.AccAnnotationDefault) == 0) {
@@ -3943,7 +3943,7 @@ public final class CompletionEngine
 
 			if (this.options.checkVisibility && !method.canBeSeenBy(receiverType, invocationSite, scope)) continue nextMethod;
 
-			if(!CharOperation.equals(method.selector, selector)) continue nextMethod;
+			if(!CharOperation.equals(method.name, selector)) continue nextMethod;
 
 			TypeBinding[] parameters = method.parameters;
 			if(parameters.length < arguments.length)
@@ -4342,7 +4342,7 @@ public final class CompletionEngine
 				if (referenceContext instanceof AbstractMethodDeclaration) {  // LE is anonymous.
 					MethodBinding binding = ((AbstractMethodDeclaration) referenceContext).binding;
 					if (binding != null) {
-						if (CharOperation.equals(binding.selector, method.selector)) {
+						if (CharOperation.equals(binding.name, method.name)) {
 							if (binding.areParameterErasuresEqual(method)) {
 								return R_EXACT_NAME + R_METHOD_OVERIDE;
 							}
@@ -4478,7 +4478,7 @@ public final class CompletionEngine
 		completion.append(' ');
 
 		//// Selector
-		completion.append(method.selector);
+		completion.append(method.name);
 
 		completion.append('(');
 
@@ -4842,18 +4842,18 @@ public final class CompletionEngine
 		nextAttribute: for (int i = 0; i < methods.length; i++) {
 			MethodBinding method = methods[i];
 
-			if(!CharOperation.prefixEquals(token, method.selector, false)
-					&& !(this.options.camelCaseMatch && CharOperation.camelCaseMatch(token, method.selector))) continue nextAttribute;
+			if(!CharOperation.prefixEquals(token, method.name, false)
+					&& !(this.options.camelCaseMatch && CharOperation.camelCaseMatch(token, method.name))) continue nextAttribute;
 
 			int length = attributesFound == null ? 0 : attributesFound.length;
 			for (int j = 0; j < length; j++) {
-				if(CharOperation.equals(method.selector, attributesFound[j].name, false)) continue nextAttribute;
+				if(CharOperation.equals(method.name, attributesFound[j].name, false)) continue nextAttribute;
 			}
 
 			int relevance = computeBaseRelevance();
 			relevance += computeRelevanceForResolution();
 			relevance += computeRelevanceForInterestingProposal(method);
-			relevance += computeRelevanceForCaseMatching(token, method.selector);
+			relevance += computeRelevanceForCaseMatching(token, method.name);
 			relevance += computeRelevanceForQualification(false);
 			relevance += computeRelevanceForRestrictions(IAccessRule.K_ACCESSIBLE);
 
@@ -4862,8 +4862,8 @@ public final class CompletionEngine
 				CompletionProposal proposal = createProposal(CompletionProposal.ANNOTATION_ATTRIBUTE_REF, this.actualCompletionPosition);
 				proposal.setDeclarationSignature(getSignature(method.declaringClass));
 				proposal.setSignature(getSignature(method.returnType));
-				proposal.setName(method.selector);
-				proposal.setCompletion(method.selector);
+				proposal.setName(method.name);
+				proposal.setCompletion(method.name);
 				proposal.setFlags(method.modifiers);
 				proposal.setReplaceRange(this.startPosition - this.offset, this.endPosition - this.offset);
 				proposal.setTokenRange(this.tokenStart - this.offset, this.tokenEnd - this.offset);
@@ -7190,7 +7190,7 @@ public final class CompletionEngine
 						MethodBinding methodBinding = (MethodBinding) favoriteBinding.resolvedImport;
 						MethodBinding[] methods = methodBinding.declaringClass.availableMethods();
 						long range;
-						if ((range = ReferenceBinding.binarySearch(methodBinding.selector, methods)) >= 0) {
+						if ((range = ReferenceBinding.binarySearch(methodBinding.name, methods)) >= 0) {
 							int start = (int) range, end = (int) (range >> 32);
 							int length = end - start + 1;
 							System.arraycopy(methods, start, methods = new MethodBinding[length], 0, length);
@@ -7490,12 +7490,12 @@ public final class CompletionEngine
 						} else if ((binding.kind() & Binding.METHOD) != 0) {
 							if(proposeMethod && !insideAnnotationAttribute) {
 								MethodBinding methodBinding = (MethodBinding)binding;
-								if ((exactMatch && CharOperation.equals(token, methodBinding.selector)) ||
-										!exactMatch && CharOperation.prefixEquals(token, methodBinding.selector) ||
-										(this.options.camelCaseMatch && CharOperation.camelCaseMatch(token, methodBinding.selector))) {
+								if ((exactMatch && CharOperation.equals(token, methodBinding.name)) ||
+										!exactMatch && CharOperation.prefixEquals(token, methodBinding.name) ||
+										(this.options.camelCaseMatch && CharOperation.camelCaseMatch(token, methodBinding.name))) {
 									findLocalMethodsFromStaticImports(
 											token,
-											methodBinding.declaringClass.getMethods(methodBinding.selector),
+											methodBinding.declaringClass.getMethods(methodBinding.name),
 											scope,
 											exactMatch,
 											methodsFound,
@@ -7890,11 +7890,11 @@ public final class CompletionEngine
 			if (this.options.checkVisibility
 				&& !method.canBeSeenBy(this.unitScope.fPackage)) continue next;
 
-			if (methodLength > method.selector.length)
+			if (methodLength > method.name.length)
 				continue next;
 
-			if (!CharOperation.prefixEquals(methodName, method.selector, false/* ignore case */)
-					&& !(this.options.camelCaseMatch && CharOperation.camelCaseMatch(methodName, method.selector)))
+			if (!CharOperation.prefixEquals(methodName, method.name, false/* ignore case */)
+					&& !(this.options.camelCaseMatch && CharOperation.camelCaseMatch(methodName, method.name)))
 				continue next;
 
 			int length = method.parameters.length;
@@ -7908,12 +7908,12 @@ public final class CompletionEngine
 			}
 			char[][] parameterNames = findMethodParameterNames(method,parameterTypeNames);
 
-			char[] completionName = CharOperation.concat(method.selector, SEMICOLON);
+			char[] completionName = CharOperation.concat(method.name, SEMICOLON);
 
 			int relevance = computeBaseRelevance();
 			relevance += computeRelevanceForResolution();
 			relevance += computeRelevanceForInterestingProposal();
-			relevance += computeRelevanceForCaseMatching(methodName, method.selector);
+			relevance += computeRelevanceForCaseMatching(methodName, method.name);
 			relevance += computeRelevanceForRestrictions(IAccessRule.K_ACCESSIBLE);
 
 			this.noProposal = false;
@@ -7927,7 +7927,7 @@ public final class CompletionEngine
 				proposal.setParameterTypeNames(parameterTypeNames);
 				proposal.setPackageName(method.returnType.qualifiedPackageName());
 				proposal.setTypeName(method.returnType.qualifiedSourceName());
-				proposal.setName(method.selector);
+				proposal.setName(method.name);
 				proposal.setCompletion(completionName);
 				proposal.setFlags(method.modifiers);
 				proposal.setReplaceRange(this.startPosition - this.offset, this.endPosition - this.offset);
@@ -8381,17 +8381,17 @@ public final class CompletionEngine
 			if (!method.canBeSeenBy(receiverType, FakeInvocationSite , scope)) continue next;
 
 			if (exactMatch) {
-				if (!CharOperation.equals(methodName, method.selector, false /* ignore case */
+				if (!CharOperation.equals(methodName, method.name, false /* ignore case */
 					))
 					continue next;
 
 			} else {
 
-				if (methodLength > method.selector.length)
+				if (methodLength > method.name.length)
 					continue next;
 
-				if (!CharOperation.prefixEquals(methodName, method.selector, false/* ignore case */)
-						&& !(this.options.camelCaseMatch && CharOperation.camelCaseMatch(methodName, method.selector)))
+				if (!CharOperation.prefixEquals(methodName, method.name, false/* ignore case */)
+						&& !(this.options.camelCaseMatch && CharOperation.camelCaseMatch(methodName, method.name)))
 					continue next;
 			}
 
@@ -8400,7 +8400,7 @@ public final class CompletionEngine
 				if (method == otherMethod)
 					continue next;
 
-				if (CharOperation.equals(method.selector, otherMethod.selector, true)
+				if (CharOperation.equals(method.name, otherMethod.name, true)
 						&& this.lookupEnvironment.methodVerifier().isMethodSubsignature(otherMethod, method)) {
 					continue next;
 				}
@@ -8440,7 +8440,7 @@ public final class CompletionEngine
 			int relevance = computeBaseRelevance();
 			relevance += computeRelevanceForResolution();
 			relevance += computeRelevanceForInterestingProposal();
-			relevance += computeRelevanceForCaseMatching(methodName, method.selector);
+			relevance += computeRelevanceForCaseMatching(methodName, method.name);
 			relevance += R_METHOD_OVERIDE;
 			if(method.isAbstract()) relevance += R_ABSTRACT_METHOD;
 			relevance += computeRelevanceForRestrictions(IAccessRule.K_ACCESSIBLE);
@@ -8463,7 +8463,7 @@ public final class CompletionEngine
 				proposal.setPackageName(method.returnType.qualifiedPackageName());
 				proposal.setTypeName(method.returnType.qualifiedSourceName());
 				proposal.setCompletion(completion.toString().toCharArray());
-				proposal.setName(method.selector);
+				proposal.setName(method.name);
 				proposal.setFlags(method.modifiers);
 				proposal.setReplaceRange(this.startPosition - this.offset, this.endPosition - this.offset);
 				proposal.setTokenRange(this.tokenStart - this.offset, this.tokenEnd - this.offset);
@@ -8539,13 +8539,13 @@ public final class CompletionEngine
 			}
 
 			if (exactMatch) {
-				if (!CharOperation.equals(methodName, method.selector, false /* ignore case */)) {
+				if (!CharOperation.equals(methodName, method.name, false /* ignore case */)) {
 					continue next;
 				}
 			} else {
-				if (methodLength > method.selector.length) continue next;
-				if (!CharOperation.prefixEquals(methodName, method.selector, false /* ignore case */)
-						&& !(this.options.camelCaseMatch && CharOperation.camelCaseMatch(methodName, method.selector))) {
+				if (methodLength > method.name.length) continue next;
+				if (!CharOperation.prefixEquals(methodName, method.name, false /* ignore case */)
+						&& !(this.options.camelCaseMatch && CharOperation.camelCaseMatch(methodName, method.name))) {
 					continue next;
 				}
 			}
@@ -8577,7 +8577,7 @@ public final class CompletionEngine
 				if (method == otherMethod && TypeBinding.equalsEquals(receiverType, otherReceiverType))
 					continue next;
 
-				if (CharOperation.equals(method.selector, otherMethod.selector, true)) {
+				if (CharOperation.equals(method.name, otherMethod.name, true)) {
 					if (TypeBinding.equalsEquals(receiverType, otherReceiverType)) {
 						if (this.lookupEnvironment.methodVerifier().isMethodSubsignature(otherMethod, method)) {
 							if (!superCall || !otherMethod.declaringClass.isInterface()) {
@@ -8602,7 +8602,7 @@ public final class CompletionEngine
 
 			ReferenceBinding superTypeWithSameErasure = (ReferenceBinding)receiverType.findSuperTypeOriginatingFrom(method.declaringClass);
 			if (TypeBinding.notEquals(method.declaringClass, superTypeWithSameErasure)) {
-				MethodBinding[] otherMethods = superTypeWithSameErasure.getMethods(method.selector);
+				MethodBinding[] otherMethods = superTypeWithSameErasure.getMethods(method.name);
 				for (int i = 0; i < otherMethods.length; i++) {
 					if(otherMethods[i].original() == method.original()) {
 						method = otherMethods[i];
@@ -8649,7 +8649,7 @@ public final class CompletionEngine
 							javadocCompletion.append('#');
 						} else if (receiver instanceof JavadocQualifiedTypeReference) {
 							JavadocQualifiedTypeReference typeRef = (JavadocQualifiedTypeReference) receiver;
-							completion = CharOperation.concat(CharOperation.concatWith(typeRef.tokens, '.'), method.selector, '#');
+							completion = CharOperation.concat(CharOperation.concatWith(typeRef.tokens, '.'), method.name, '#');
 							for (int t=0,nt =typeRef.tokens.length; t<nt; t++) {
 								if (t>0) javadocCompletion.append('.');
 								javadocCompletion.append(typeRef.tokens[t]);
@@ -8657,7 +8657,7 @@ public final class CompletionEngine
 							javadocCompletion.append('#');
 						}
 					}
-					javadocCompletion.append(method.selector);
+					javadocCompletion.append(method.name);
 					// Append parameters types
 					javadocCompletion.append('(');
 					if (method.parameters != null) {
@@ -8679,13 +8679,13 @@ public final class CompletionEngine
 				// nothing to insert - do not want to replace the existing selector & arguments
 				if (!exactMatch) {
 					if (completionOnReferenceExpressionName)
-						completion = method.selector;
+						completion = method.name;
 					else if (this.source != null
 						&& this.source.length > this.endPosition
 						&& this.source[this.endPosition] == '(')
-						completion = method.selector;
+						completion = method.name;
 					else 
-						completion = CharOperation.concat(method.selector, new char[] { '(', ')' });
+						completion = CharOperation.concat(method.name, new char[] { '(', ')' });
 
 					if (castedReceiver != null) {
 						completion = CharOperation.concat(castedReceiver, completion);
@@ -8708,7 +8708,7 @@ public final class CompletionEngine
 			int relevance = computeBaseRelevance();
 			relevance += computeRelevanceForResolution();
 			relevance += computeRelevanceForInterestingProposal();
-			relevance += computeRelevanceForCaseMatching(methodName, method.selector);
+			relevance += computeRelevanceForCaseMatching(methodName, method.name);
 			relevance += computeRelevanceForExpectingType(method.returnType);
 			relevance += computeRelevanceForEnumConstant(method.returnType);
 			relevance += computeRelevanceForStatic(onlyStaticMethods, method.isStatic());
@@ -8739,7 +8739,7 @@ public final class CompletionEngine
 					proposal.setParameterTypeNames(parameterTypeNames);
 					proposal.setPackageName(method.returnType.qualifiedPackageName());
 					proposal.setTypeName(method.returnType.qualifiedSourceName());
-					proposal.setName(method.selector);
+					proposal.setName(method.name);
 					if (missingElements != null) {
 						CompletionProposal[] subProposals = new CompletionProposal[missingElements.length];
 						for (int i = 0; i < missingElements.length; i++) {
@@ -8780,7 +8780,7 @@ public final class CompletionEngine
 					proposal.setParameterTypeNames(parameterTypeNames);
 					proposal.setPackageName(method.returnType.qualifiedPackageName());
 					proposal.setTypeName(method.returnType.qualifiedSourceName());
-					proposal.setName(method.selector);
+					proposal.setName(method.name);
 					proposal.setCompletion(javadocCompletion);
 					proposal.setFlags(method.modifiers);
 					int start = (this.assistNodeInJavadoc & CompletionOnJavadoc.REPLACE_TAG) != 0 ? this.javadocTagPosition : this.startPosition;
@@ -8809,7 +8809,7 @@ public final class CompletionEngine
 					proposal.setParameterTypeNames(parameterTypeNames);
 					proposal.setPackageName(method.returnType.qualifiedPackageName());
 					proposal.setTypeName(method.returnType.qualifiedSourceName());
-					proposal.setName(method.selector);
+					proposal.setName(method.name);
 					if (missingElements != null) {
 						CompletionProposal[] subProposals = new CompletionProposal[missingElements.length];
 						for (int i = 0; i < missingElements.length; i++) {
@@ -8874,10 +8874,10 @@ public final class CompletionEngine
 				if (this.options.checkVisibility
 					&& !method.canBeSeenBy(receiverType, invocationSite, scope)) continue next;
 
-				if (methodLength > method.selector.length) continue next;
+				if (methodLength > method.name.length) continue next;
 
-				if (!CharOperation.prefixEquals(methodName, method.selector, false /* ignore case */)
-						&& !(this.options.camelCaseMatch && CharOperation.camelCaseMatch(methodName, method.selector))) {
+				if (!CharOperation.prefixEquals(methodName, method.name, false /* ignore case */)
+						&& !(this.options.camelCaseMatch && CharOperation.camelCaseMatch(methodName, method.name))) {
 					continue next;
 				}
 
@@ -8887,7 +8887,7 @@ public final class CompletionEngine
 
 					if (method == otherMethod) continue next;
 
-					if (CharOperation.equals(method.selector, otherMethod.selector, true)) {
+					if (CharOperation.equals(method.name, otherMethod.name, true)) {
 						if (TypeBinding.equalsEquals(otherMethod.declaringClass, method.declaringClass) &&
 								this.lookupEnvironment.methodVerifier().isMethodSubsignature(otherMethod, method)) {
 							continue next;
@@ -8901,7 +8901,7 @@ public final class CompletionEngine
 
 					if (method == otherMethod) continue next;
 
-					if (CharOperation.equals(method.selector, otherMethod.selector, true)) {
+					if (CharOperation.equals(method.name, otherMethod.name, true)) {
 						if (this.lookupEnvironment.methodVerifier().isMethodSubsignature(otherMethod, method)) {
 							continue next;
 						}
@@ -8932,7 +8932,7 @@ public final class CompletionEngine
 
 				ReferenceBinding superTypeWithSameErasure = (ReferenceBinding)receiverType.findSuperTypeOriginatingFrom(method.declaringClass);
 				if (TypeBinding.notEquals(method.declaringClass, superTypeWithSameErasure)) {
-					MethodBinding[] otherMethods = superTypeWithSameErasure.getMethods(method.selector);
+					MethodBinding[] otherMethods = superTypeWithSameErasure.getMethods(method.name);
 					for (int i = 0; i < otherMethods.length; i++) {
 						if(otherMethods[i].original() == method.original()) {
 							method = otherMethods[i];
@@ -8959,15 +8959,15 @@ public final class CompletionEngine
 				if (this.source != null
 					&& this.source.length > this.endPosition
 					&& this.source[this.endPosition] == '(') {
-					completion = method.selector;
+					completion = method.name;
 				} else {
-					completion = CharOperation.concat(method.selector, new char[] { '(', ')' });
+					completion = CharOperation.concat(method.name, new char[] { '(', ')' });
 				}
 
 				int relevance = computeBaseRelevance();
 				relevance += computeRelevanceForResolution();
 				relevance += computeRelevanceForInterestingProposal();
-				relevance += computeRelevanceForCaseMatching(methodName, method.selector);
+				relevance += computeRelevanceForCaseMatching(methodName, method.name);
 				relevance += computeRelevanceForExpectingType(method.returnType);
 				relevance += computeRelevanceForEnumConstant(method.returnType);
 				relevance += computeRelevanceForStatic(true, method.isStatic());
@@ -8998,7 +8998,7 @@ public final class CompletionEngine
 							proposal.setParameterTypeNames(parameterTypeNames);
 							proposal.setPackageName(method.returnType.qualifiedPackageName());
 							proposal.setTypeName(method.returnType.qualifiedSourceName());
-							proposal.setName(method.selector);
+							proposal.setName(method.name);
 							proposal.setCompletion(completion);
 							proposal.setFlags(method.modifiers);
 							proposal.setReplaceRange(this.startPosition - this.offset, this.endPosition - this.offset);
@@ -9027,7 +9027,7 @@ public final class CompletionEngine
 						proposal.setParameterTypeNames(parameterTypeNames);
 						proposal.setPackageName(method.returnType.qualifiedPackageName());
 						proposal.setTypeName(method.returnType.qualifiedSourceName());
-						proposal.setName(method.selector);
+						proposal.setName(method.name);
 						proposal.setCompletion(completion);
 						proposal.setFlags(method.modifiers);
 						proposal.setReplaceRange(this.startPosition - this.offset, this.endPosition - this.offset);
@@ -9074,7 +9074,7 @@ public final class CompletionEngine
 						proposal.setParameterTypeNames(parameterTypeNames);
 						proposal.setPackageName(method.returnType.qualifiedPackageName());
 						proposal.setTypeName(method.returnType.qualifiedSourceName());
-						proposal.setName(method.selector);
+						proposal.setName(method.name);
 						proposal.setCompletion(completion);
 						proposal.setFlags(method.modifiers);
 						proposal.setReplaceRange(this.startPosition - this.offset, this.endPosition - this.offset);
@@ -9082,7 +9082,7 @@ public final class CompletionEngine
 						proposal.setRelevance(relevance);
 						if(parameterNames != null) proposal.setParameterNames(parameterNames);
 
-						char[] methodImportCompletion = createImportCharArray(CharOperation.concat(typeName, method.selector, '.'), true, false);
+						char[] methodImportCompletion = createImportCharArray(CharOperation.concat(typeName, method.name, '.'), true, false);
 
 						InternalCompletionProposal methodImportProposal = createProposal(CompletionProposal.METHOD_IMPORT, this.actualCompletionPosition);
 						methodImportProposal.setDeclarationSignature(getSignature(method.declaringClass));
@@ -9096,7 +9096,7 @@ public final class CompletionEngine
 						methodImportProposal.setParameterTypeNames(parameterTypeNames);
 						methodImportProposal.setPackageName(method.returnType.qualifiedPackageName());
 						methodImportProposal.setTypeName(method.returnType.qualifiedSourceName());
-						methodImportProposal.setName(method.selector);
+						methodImportProposal.setName(method.name);
 						methodImportProposal.setCompletion(methodImportCompletion);
 						methodImportProposal.setFlags(method.modifiers);
 						methodImportProposal.setAdditionalFlags(CompletionFlags.StaticImport);
@@ -9163,7 +9163,7 @@ public final class CompletionEngine
 				if (method == otherMethod && TypeBinding.equalsEquals(receiverType, otherReceiverType))
 					continue next;
 
-				if (CharOperation.equals(method.selector, otherMethod.selector, true)) {
+				if (CharOperation.equals(method.name, otherMethod.name, true)) {
 					if (this.lookupEnvironment.methodVerifier().isMethodSubsignature(otherMethod, method)) {
 						continue next;
 					}
@@ -9192,9 +9192,9 @@ public final class CompletionEngine
 				if (this.source != null
 					&& this.source.length > this.endPosition
 					&& this.source[this.endPosition] == '(') {
-					completion = method.selector;
+					completion = method.name;
 				} else {
-					completion = CharOperation.concat(method.selector, new char[] { '(', ')' });
+					completion = CharOperation.concat(method.name, new char[] { '(', ')' });
 				}
 			} else {
 				this.startPosition = this.endPosition;
@@ -9204,7 +9204,7 @@ public final class CompletionEngine
 			int relevance = computeBaseRelevance();
 			relevance += computeRelevanceForResolution();
 			relevance += computeRelevanceForInterestingProposal();
-			relevance += computeRelevanceForCaseMatching(methodName, method.selector);
+			relevance += computeRelevanceForCaseMatching(methodName, method.name);
 			relevance += computeRelevanceForExpectingType(method.returnType);
 			relevance += computeRelevanceForEnumConstant(method.returnType);
 			relevance += computeRelevanceForStatic(true, method.isStatic());
@@ -9226,7 +9226,7 @@ public final class CompletionEngine
 				proposal.setParameterTypeNames(parameterTypeNames);
 				proposal.setPackageName(method.returnType.qualifiedPackageName());
 				proposal.setTypeName(method.returnType.qualifiedSourceName());
-				proposal.setName(method.selector);
+				proposal.setName(method.name);
 				proposal.setCompletion(completion);
 				proposal.setFlags(method.modifiers);
 				proposal.setReplaceRange(this.startPosition - this.offset, this.endPosition - this.offset);
@@ -9957,7 +9957,7 @@ public final class CompletionEngine
 				for (int i = 0; i < length; i++) {
 					parameterTypeSignatures[i] = Signature.createTypeSignature(parameterTypeNames[i], false);
 				}
-				IMethod searchedMethod = typeHandle.getMethod(String.valueOf(method.selector), parameterTypeSignatures);
+				IMethod searchedMethod = typeHandle.getMethod(String.valueOf(method.name), parameterTypeSignatures);
 				IMethod[] foundMethods = typeHandle.findMethods(searchedMethod);
 
 				if(foundMethods != null) {

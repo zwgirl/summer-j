@@ -445,7 +445,7 @@ public class NullAnnotationMatching {
 		TypeBindingVisitor.visit(searchContradiction, method.returnType);
 		if (searchContradiction.typeWithContradiction != null) {
 			if (scope == null)
-				return new ProblemMethodBinding(method, method.selector, method.parameters, ProblemReasons.ContradictoryNullAnnotations);
+				return new ProblemMethodBinding(method, method.name, method.parameters, ProblemReasons.ContradictoryNullAnnotations);
 			scope.problemReporter().contradictoryNullAnnotationsInferred(method, invocationSite);
 			// note: if needed, we might want to update the method by removing the contradictory annotations??
 			return method;
@@ -458,7 +458,7 @@ public class NullAnnotationMatching {
 			TypeBindingVisitor.visit(searchContradiction, method.parameters[i]);
 			if (searchContradiction.typeWithContradiction != null) {
 				if (scope == null)
-					return new ProblemMethodBinding(method, method.selector, method.parameters, ProblemReasons.ContradictoryNullAnnotations);
+					return new ProblemMethodBinding(method, method.name, method.parameters, ProblemReasons.ContradictoryNullAnnotations);
 				if (arguments != null && i < arguments.length)
 					scope.problemReporter().contradictoryNullAnnotationsInferred(method, arguments[i]);
 				else

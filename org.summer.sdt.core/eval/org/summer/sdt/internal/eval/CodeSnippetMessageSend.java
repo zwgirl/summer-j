@@ -338,7 +338,7 @@ public TypeBinding resolveType(BlockScope scope) {
 	if (this.actualReceiverType.isArrayType()
 			&& this.binding.parameters == Binding.NO_PARAMETERS
 			&& scope.compilerOptions().complianceLevel >= ClassFileConstants.JDK1_5
-			&& CharOperation.equals(this.binding.selector, CLONE)) {
+			&& CharOperation.equals(this.binding.name, CLONE)) {
 		this.resolvedType = this.actualReceiverType;
 	} else {
 		TypeBinding returnType = this.binding.returnType;

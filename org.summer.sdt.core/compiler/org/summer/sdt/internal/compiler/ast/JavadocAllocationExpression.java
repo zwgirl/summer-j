@@ -115,11 +115,11 @@ public class JavadocAllocationExpression extends AllocationExpression {
 		} else if (this.binding.isVarargs()) {
 			int length = this.argumentTypes.length;
 			if (!(this.binding.parameters.length == length && this.argumentTypes[length-1].isArrayType())) {
-				MethodBinding problem = new ProblemMethodBinding(this.binding, this.binding.selector, this.argumentTypes, ProblemReasons.NotFound);
+				MethodBinding problem = new ProblemMethodBinding(this.binding, this.binding.name, this.argumentTypes, ProblemReasons.NotFound);
 				scope.problemReporter().javadocInvalidConstructor(this, problem, scope.getDeclarationModifiers());
 			}
 		} else if (hasTypeVarArgs) {
-			MethodBinding problem = new ProblemMethodBinding(this.binding, this.binding.selector, this.argumentTypes, ProblemReasons.NotFound);
+			MethodBinding problem = new ProblemMethodBinding(this.binding, this.binding.name, this.argumentTypes, ProblemReasons.NotFound);
 			scope.problemReporter().javadocInvalidConstructor(this, problem, scope.getDeclarationModifiers());
 		} else if (this.binding instanceof ParameterizedMethodBinding) {
 			ParameterizedMethodBinding paramMethodBinding = (ParameterizedMethodBinding) this.binding;
@@ -128,7 +128,7 @@ public class JavadocAllocationExpression extends AllocationExpression {
 				for (int i=0; i<length; i++) {
 					if (TypeBinding.notEquals(paramMethodBinding.parameters[i], this.argumentTypes[i]) &&
 							TypeBinding.notEquals(paramMethodBinding.parameters[i].erasure(), this.argumentTypes[i].erasure())) {
-						MethodBinding problem = new ProblemMethodBinding(this.binding, this.binding.selector, this.argumentTypes, ProblemReasons.NotFound);
+						MethodBinding problem = new ProblemMethodBinding(this.binding, this.binding.name, this.argumentTypes, ProblemReasons.NotFound);
 						scope.problemReporter().javadocInvalidConstructor(this, problem, scope.getDeclarationModifiers());
 						break;
 					}

@@ -85,7 +85,7 @@ public class TypeParameterLocator extends PatternLocator {
 		} else if (variable.declaringElement instanceof MethodBinding) {
 			MethodBinding methBinding  = (MethodBinding) variable.declaringElement;
 			if (matchesName(methBinding.declaringClass.sourceName, this.pattern.methodDeclaringClassName) &&
-				(methBinding.isConstructor() || matchesName(methBinding.selector, this.pattern.declaringMemberName))) {
+				(methBinding.isConstructor() || matchesName(methBinding.name, this.pattern.declaringMemberName))) {
 				int length = this.pattern.methodArgumentTypes==null ? 0 : this.pattern.methodArgumentTypes.length;
 				if (methBinding.parameters == null) {
 					if (length == 0) return ACCURATE_MATCH;

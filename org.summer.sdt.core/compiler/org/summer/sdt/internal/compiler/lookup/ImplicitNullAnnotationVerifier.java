@@ -98,7 +98,7 @@ public class ImplicitNullAnnotationVerifier {
 				}
 
 				int paramLen = currentMethod.parameters.length;
-				findAllOverriddenMethods(currentMethod.original(), currentMethod.selector, paramLen,
+				findAllOverriddenMethods(currentMethod.original(), currentMethod.name, paramLen,
 								currentType, new HashSet(), superMethodList);
 				
 				// prepare interim storage for nullness info so we don't pollute currentMethod before we know its conflict-free: 

@@ -52,7 +52,7 @@ public class SelectionOnMessageSend extends MessageSend {
 
 			for (int i = 0; i < nextPosition; i++) {
 				ReferenceBinding currentType = interfacesToVisit[i];
-				MethodBinding[] methods = currentType.getMethods(methodBinding.selector);
+				MethodBinding[] methods = currentType.getMethods(methodBinding.name);
 				if(methods != null) {
 					for (int k = 0; k < methods.length; k++) {
 						if(methodBinding.areParametersEqual(methods[k]))

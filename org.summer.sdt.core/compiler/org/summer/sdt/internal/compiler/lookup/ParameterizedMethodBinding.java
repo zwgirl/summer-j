@@ -37,7 +37,7 @@ public class ParameterizedMethodBinding extends MethodBinding {
 	public ParameterizedMethodBinding(final ParameterizedTypeBinding parameterizedDeclaringClass, MethodBinding originalMethod) {
 		super(
 				originalMethod.modifiers,
-				originalMethod.selector,
+				originalMethod.name,
 				originalMethod.returnType,
 				originalMethod.parameters,
 				originalMethod.thrownExceptions,
@@ -174,7 +174,7 @@ public class ParameterizedMethodBinding extends MethodBinding {
 	public ParameterizedMethodBinding(final ReferenceBinding declaringClass, MethodBinding originalMethod, char[][] alternateParamaterNames, final LookupEnvironment environment) {
 		super(
 				originalMethod.modifiers,
-				originalMethod.selector,
+				originalMethod.name,
 				 originalMethod.returnType,
 				originalMethod.parameters,
 				originalMethod.thrownExceptions,
@@ -297,7 +297,7 @@ public class ParameterizedMethodBinding extends MethodBinding {
 	public static ParameterizedMethodBinding instantiateGetClass(TypeBinding receiverType, MethodBinding originalMethod, Scope scope) {
 		ParameterizedMethodBinding method = new ParameterizedMethodBinding();
 		method.modifiers = originalMethod.modifiers;
-		method.selector = originalMethod.selector;
+		method.name = originalMethod.name;
 		method.declaringClass = originalMethod.declaringClass;
 		method.typeVariables = Binding.NO_TYPE_VARIABLES;
 		method.originalMethod = originalMethod;

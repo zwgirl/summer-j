@@ -755,9 +755,9 @@ public abstract class Scope {
 			if (method instanceof ParameterizedGenericMethodBinding) {
 				if (!((ParameterizedGenericMethodBinding) method).wasInferred)
 					// attempt to invoke generic method of raw type with type hints <String>foo()
-					return new ProblemMethodBinding(method, method.selector, genericTypeArguments, ProblemReasons.TypeArgumentsForRawGenericMethod);
+					return new ProblemMethodBinding(method, method.name, genericTypeArguments, ProblemReasons.TypeArgumentsForRawGenericMethod);
 			} else if (!method.isOverriding() || !isOverriddenMethodGeneric(method)) {
-				return new ProblemMethodBinding(method, method.selector, genericTypeArguments, ProblemReasons.TypeParameterArityMismatch);
+				return new ProblemMethodBinding(method, method.name, genericTypeArguments, ProblemReasons.TypeParameterArityMismatch);
 			}
 		}
 
@@ -776,10 +776,10 @@ public abstract class Scope {
 		// of ParameterizedMethodTypeMismatch, else a non-generic method was invoked using type arguments
 		// in which case this problem category will be bogus
 		if (genericTypeArguments != null && typeVariables != Binding.NO_TYPE_VARIABLES)
-			return new ProblemMethodBinding(method, method.selector, arguments, ProblemReasons.ParameterizedMethodTypeMismatch);
+			return new ProblemMethodBinding(method, method.name, arguments, ProblemReasons.ParameterizedMethodTypeMismatch);
 		// 18.5.1 ignores arguments not pertinent to applicability. When these are taken into consideration method could fail applicability (e.g, lambda shape/arity mismatch ...)
 		if (method instanceof PolyParameterizedGenericMethodBinding) // Not reached, but left in for now.
-			return new ProblemMethodBinding(method, method.selector, method.parameters, ProblemReasons.InferredApplicableMethodInapplicable);
+			return new ProblemMethodBinding(method, method.name, method.parameters, ProblemReasons.InferredApplicableMethodInapplicable);
 		return null; // incompatible
 	}
 
@@ -1672,7 +1672,7 @@ public abstract class Scope {
 			TypeBinding elementType = method.parameters[method.parameters.length - 1].leafComponentType();
 			if (elementType instanceof ReferenceBinding) {
 				if (!((ReferenceBinding) elementType).canBeSeenBy(this)) {
-					return new ProblemMethodBinding(method, method.selector, invocationSite.genericTypeArguments(), ProblemReasons.VarargsElementTypeNotVisible);
+					return new ProblemMethodBinding(method, method.name, invocationSite.genericTypeArguments(), ProblemReasons.VarargsElementTypeNotVisible);
 				}
 			}
 		}
@@ -1856,7 +1856,7 @@ public abstract class Scope {
 				bestArgMatches = argMatches;
 				bestGuess = methodBinding;
 			}
-			return new ProblemMethodBinding(bestGuess, bestGuess.selector, argumentTypes, ProblemReasons.NotFound);
+			return new ProblemMethodBinding(bestGuess, bestGuess.name, argumentTypes, ProblemReasons.NotFound);
 		}
 
 		// tiebreak using visibility check
@@ -1878,7 +1878,7 @@ public abstract class Scope {
 				findDefaultAbstractMethod(receiverType, selector, argumentTypes, invocationSite, classHierarchyStart, found, null);
 				if (interfaceMethod != null) return interfaceMethod;
 				MethodBinding candidate = candidates[0];
-				return new ProblemMethodBinding(candidates[0], candidates[0].selector, candidates[0].parameters, 
+				return new ProblemMethodBinding(candidates[0], candidates[0].name, candidates[0].parameters, 
 						candidate.isStatic() && candidate.declaringClass.isInterface() ? ProblemReasons.NonStaticOrAlienTypeReceiver : ProblemReasons.NotVisible);
 			case 1 :
 				if (searchForDefaultAbstractMethod)
@@ -1910,7 +1910,7 @@ public abstract class Scope {
 						if (otherCandidate.hasSubstitutedParameters()) {
 							if (otherCandidate == candidate
 									|| (TypeBinding.equalsEquals(candidate.declaringClass, otherCandidate.declaringClass) && candidate.areParametersEqual(otherCandidate))) {
-								return new ProblemMethodBinding(candidates[i], candidates[i].selector, candidates[i].parameters, ProblemReasons.Ambiguous);
+								return new ProblemMethodBinding(candidates[i], candidates[i].name, candidates[i].parameters, ProblemReasons.Ambiguous);
 							}
 						}
 					}
@@ -2643,7 +2643,7 @@ public abstract class Scope {
 			TypeBinding elementType = method.parameters[method.parameters.length - 1].leafComponentType();
 			if (elementType instanceof ReferenceBinding) {
 				if (!((ReferenceBinding) elementType).canBeSeenBy(this)) {
-					return new ProblemMethodBinding(method, method.selector, invocationSite.genericTypeArguments(), ProblemReasons.VarargsElementTypeNotVisible);
+					return new ProblemMethodBinding(method, method.name, invocationSite.genericTypeArguments(), ProblemReasons.VarargsElementTypeNotVisible);
 				}
 			}
 		}
@@ -2848,7 +2848,7 @@ public abstract class Scope {
 											return foundProblem; // takes precedence
 										return new ProblemMethodBinding(
 											methodBinding, // closest match
-											methodBinding.selector,
+											methodBinding.name,
 											methodBinding.parameters,
 											insideConstructorCall
 												? ProblemReasons.NonStaticReferenceInConstructorInvocation
@@ -3156,7 +3156,7 @@ public abstract class Scope {
 						} else {
 							if (resolvedImport instanceof MethodBinding) {
 								MethodBinding staticMethod = (MethodBinding) resolvedImport;
-								if (CharOperation.equals(staticMethod.selector, selector))
+								if (CharOperation.equals(staticMethod.name, selector))
 									// answers closest approximation, may not check argumentTypes or visibility
 									possible = findMethod(staticMethod.declaringClass, selector, argumentTypes, invocationSite, true);
 							} else if (resolvedImport instanceof FieldBinding) {
@@ -3305,6 +3305,13 @@ public abstract class Scope {
 		CompilationUnitScope unitScope = compilationUnitScope();
 		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_ARRAY);
 		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_ARRAY, this);
+	}
+	
+	//cym 2015-02-15
+	public final ReferenceBinding getJavaLangFunction() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_FUNCTION);
+		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_FUNCTION, this);
 	}
 
 	public final ReferenceBinding getJavaLangThrowable() {
@@ -4172,7 +4179,7 @@ public abstract class Scope {
 		MethodVerifier verifier = environment().methodVerifier();
 		ReferenceBinding currentType = method.declaringClass.superclass();
 		while (currentType != null) {
-			MethodBinding[] currentMethods = currentType.getMethods(method.selector);
+			MethodBinding[] currentMethods = currentType.getMethods(method.name);
 			for (int i = 0, l = currentMethods.length; i < l; i++) {
 				MethodBinding currentMethod = currentMethods[i];
 				if (currentMethod != null && currentMethod.original().typeVariables != Binding.NO_TYPE_VARIABLES)
@@ -4746,7 +4753,7 @@ public abstract class Scope {
 			compilationUnitScope().recordTypeReferences(method.thrownExceptions);
 			return method;
 		}
-		return new ProblemMethodBinding(visible[0], visible[0].selector, visible[0].parameters, ProblemReasons.Ambiguous);
+		return new ProblemMethodBinding(visible[0], visible[0].name, visible[0].parameters, ProblemReasons.Ambiguous);
 	}
 
 	// Internal use only
@@ -4789,7 +4796,7 @@ public abstract class Scope {
 			compilationUnitScope().recordTypeReferences(method.thrownExceptions);
 			return method;
 		}
-		return new ProblemMethodBinding(visible[0], visible[0].selector, visible[0].parameters, ProblemReasons.Ambiguous);
+		return new ProblemMethodBinding(visible[0], visible[0].name, visible[0].parameters, ProblemReasons.Ambiguous);
 	}
 
 	// caveat: this is not a direct implementation of JLS
@@ -4814,7 +4821,7 @@ public abstract class Scope {
 			}
 		
 		if (compatibleCount == 0) {
-			return new ProblemMethodBinding(visible[0].selector, argumentTypes, ProblemReasons.NotFound);
+			return new ProblemMethodBinding(visible[0].name, argumentTypes, ProblemReasons.NotFound);
 		} else if (compatibleCount == 1) {
 			MethodBinding candidate = visible[0];
 			if (candidate != null)
@@ -4884,7 +4891,7 @@ public abstract class Scope {
 				moreSpecific[count++] = visible[j];
 			}
 			if (count == 0) {
-				return new ProblemMethodBinding(visible[0], visible[0].selector, visible[0].parameters, ProblemReasons.Ambiguous);
+				return new ProblemMethodBinding(visible[0], visible[0].name, visible[0].parameters, ProblemReasons.Ambiguous);
 			} else if (count == 1) {
 				MethodBinding candidate = moreSpecific[0];
 				if (candidate != null)
@@ -4973,7 +4980,7 @@ public abstract class Scope {
 					}
 				}
 			} else if (count == 0) {
-				return new ProblemMethodBinding(visible[0], visible[0].selector, visible[0].parameters, ProblemReasons.Ambiguous);
+				return new ProblemMethodBinding(visible[0], visible[0].name, visible[0].parameters, ProblemReasons.Ambiguous);
 			}
 		}
 
@@ -5012,7 +5019,7 @@ public abstract class Scope {
 							// keep original
 						} else {
 							// must find inherited method with the same substituted variables
-							MethodBinding[] superMethods = ((ReferenceBinding) superType).getMethods(original.selector, argumentTypes.length);
+							MethodBinding[] superMethods = ((ReferenceBinding) superType).getMethods(original.name, argumentTypes.length);
 							for (int m = 0, l = superMethods.length; m < l; m++) {
 								if (superMethods[m].original() == original) {
 									original = superMethods[m];
@@ -5025,7 +5032,7 @@ public abstract class Scope {
 							// keep original2
 						} else {
 							// must find inherited method with the same substituted variables
-							MethodBinding[] superMethods = ((ReferenceBinding) superType).getMethods(original2.selector, argumentTypes.length);
+							MethodBinding[] superMethods = ((ReferenceBinding) superType).getMethods(original2.name, argumentTypes.length);
 							for (int m = 0, l = superMethods.length; m < l; m++) {
 								if (superMethods[m].original() == original2) {
 									original2 = superMethods[m];
@@ -5091,7 +5098,7 @@ public abstract class Scope {
 			}
 		}
 
-		return new ProblemMethodBinding(visible[0], visible[0].selector, visible[0].parameters, ProblemReasons.Ambiguous);
+		return new ProblemMethodBinding(visible[0], visible[0].name, visible[0].parameters, ProblemReasons.Ambiguous);
 	}
 
 	private ReferenceBinding[] getFilteredExceptions(MethodBinding method) {

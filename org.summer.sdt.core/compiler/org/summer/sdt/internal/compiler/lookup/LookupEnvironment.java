@@ -849,7 +849,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 	}
 	public PolymorphicMethodBinding createPolymorphicMethod(MethodBinding originalPolymorphicMethod, TypeBinding[] parameters) {
 		// cached info is array of already created polymorphic methods for this type
-		String key = new String(originalPolymorphicMethod.selector);
+		String key = new String(originalPolymorphicMethod.name);
 		PolymorphicMethodBinding[] cachedInfo = (PolymorphicMethodBinding[]) this.uniquePolymorphicMethodBindings.get(key);
 		int parametersLength = parameters == null ? 0: parameters.length;
 		TypeBinding[] parametersTypeBinding = new TypeBinding[parametersLength]; 
@@ -900,7 +900,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 	
 	public MethodBinding updatePolymorphicMethodReturnType(PolymorphicMethodBinding binding, TypeBinding typeBinding) {
 		// update the return type to be the given return type, but reuse existing binding if one can match
-		String key = new String(binding.selector);
+		String key = new String(binding.name);
 		PolymorphicMethodBinding[] cachedInfo = (PolymorphicMethodBinding[]) this.uniquePolymorphicMethodBindings.get(key);
 		boolean needToGrow = false;
 		int index = 0;

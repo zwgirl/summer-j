@@ -456,7 +456,7 @@ void checkPackagePrivateAbstractMethod(MethodBinding abstractMethod) {
 	if (necessaryPackage == this.type.fPackage) return; // not a problem
 
 	ReferenceBinding superType = this.type.superclass();
-	char[] selector = abstractMethod.selector;
+	char[] selector = abstractMethod.name;
 	do {
 		if (!superType.isValidBinding()) return;
 		if (!superType.isAbstract()) return; // closer non abstract super type will be flagged instead
@@ -513,7 +513,7 @@ void computeInheritedMethods(ReferenceBinding superclass, ReferenceBinding[] sup
 			MethodBinding inheritedMethod = methods[m];
 			if (inheritedMethod.isPrivate() || inheritedMethod.isConstructor() || inheritedMethod.isDefaultAbstract())
 				continue nextMethod;
-			MethodBinding[] existingMethods = (MethodBinding[]) this.inheritedMethods.get(inheritedMethod.selector);
+			MethodBinding[] existingMethods = (MethodBinding[]) this.inheritedMethods.get(inheritedMethod.name);
 			if (existingMethods != null) {
 				existing : for (int i = 0, length = existingMethods.length; i < length; i++) {
 					MethodBinding existingMethod = existingMethods[i];
@@ -541,9 +541,9 @@ void computeInheritedMethods(ReferenceBinding superclass, ReferenceBinding[] sup
 					System.arraycopy(existingMethods, 0, existingMethods = new MethodBinding[length + 1], 0, length);
 					existingMethods[length] = inheritedMethod;
 				}
-				this.inheritedMethods.put(inheritedMethod.selector, existingMethods);
+				this.inheritedMethods.put(inheritedMethod.name, existingMethods);
 			} else {
-				MethodBinding[] nonVisible = (MethodBinding[]) nonVisibleDefaultMethods.get(inheritedMethod.selector);
+				MethodBinding[] nonVisible = (MethodBinding[]) nonVisibleDefaultMethods.get(inheritedMethod.name);
 				if (nonVisible != null)
 					for (int i = 0, l = nonVisible.length; i < l; i++)
 						if (areMethodsCompatible(nonVisible[i], inheritedMethod))
@@ -555,12 +555,12 @@ void computeInheritedMethods(ReferenceBinding superclass, ReferenceBinding[] sup
 					System.arraycopy(nonVisible, 0, nonVisible = new MethodBinding[length + 1], 0, length);
 					nonVisible[length] = inheritedMethod;
 				}
-				nonVisibleDefaultMethods.put(inheritedMethod.selector, nonVisible);
+				nonVisibleDefaultMethods.put(inheritedMethod.name, nonVisible);
 
 				if (inheritedMethod.isAbstract() && !this.type.isAbstract()) // non visible abstract methods cannot be overridden so the type must be defined abstract
 					problemReporter().abstractMethodCannotBeOverridden(this.type, inheritedMethod);
 
-				MethodBinding[] current = (MethodBinding[]) this.currentMethods.get(inheritedMethod.selector);
+				MethodBinding[] current = (MethodBinding[]) this.currentMethods.get(inheritedMethod.name);
 				if (current != null && !inheritedMethod.isStatic()) { // non visible methods cannot be overridden so a warning is issued
 					foundMatch : for (int i = 0, length = current.length; i < length; i++) {
 						if (!current[i].isStatic() && areMethodsCompatible(current[i], inheritedMethod)) {
@@ -603,7 +603,7 @@ void computeInheritedMethods(ReferenceBinding superclass, ReferenceBinding[] sup
 			nextMethod : for (int m = methods.length; --m >= 0;) { // Interface methods are all abstract public
 				MethodBinding inheritedMethod = methods[m];
 				if (inheritedMethod.isStatic()) continue nextMethod;
-				MethodBinding[] existingMethods = (MethodBinding[]) this.inheritedMethods.get(inheritedMethod.selector);
+				MethodBinding[] existingMethods = (MethodBinding[]) this.inheritedMethods.get(inheritedMethod.name);
 				if (existingMethods == null) {
 					existingMethods = new MethodBinding[] {inheritedMethod};
 				} else {
@@ -617,7 +617,7 @@ void computeInheritedMethods(ReferenceBinding superclass, ReferenceBinding[] sup
 					System.arraycopy(existingMethods, 0, existingMethods = new MethodBinding[length + 1], 0, length);
 					existingMethods[length] = inheritedMethod;
 				}
-				this.inheritedMethods.put(inheritedMethod.selector, existingMethods);
+				this.inheritedMethods.put(inheritedMethod.name, existingMethods);
 			}
 		}
 	}
@@ -647,14 +647,14 @@ void computeMethods() {
 	for (int m = size; --m >= 0;) {
 		MethodBinding method = methods[m];
 		if (!(method.isConstructor() || method.isDefaultAbstract())) { // keep all methods which are NOT constructors or default abstract
-			MethodBinding[] existingMethods = (MethodBinding[]) this.currentMethods.get(method.selector);
+			MethodBinding[] existingMethods = (MethodBinding[]) this.currentMethods.get(method.name);
 			if (existingMethods == null)
 				existingMethods = new MethodBinding[1];
 			else
 				System.arraycopy(existingMethods, 0,
 					(existingMethods = new MethodBinding[existingMethods.length + 1]), 0, existingMethods.length - 1);
 			existingMethods[existingMethods.length - 1] = method;
-			this.currentMethods.put(method.selector, existingMethods);
+			this.currentMethods.put(method.name, existingMethods);
 		}
 	}
 }
@@ -718,7 +718,7 @@ public static MethodBinding computeSubstituteMethod(MethodBinding inheritedMetho
 }
 
 static boolean couldMethodOverride(MethodBinding method, MethodBinding inheritedMethod) {
-	if (!org.summer.sdt.core.compiler.CharOperation.equals(method.selector, inheritedMethod.selector))
+	if (!org.summer.sdt.core.compiler.CharOperation.equals(method.name, inheritedMethod.name))
 		return false;
 	if (method == inheritedMethod || method.isStatic() || inheritedMethod.isStatic())
 		return false;
@@ -835,7 +835,7 @@ boolean isInterfaceMethodImplemented(MethodBinding inheritedMethod, MethodBindin
 }
 
 public boolean isMethodSubsignature(MethodBinding method, MethodBinding inheritedMethod) {
-	return org.summer.sdt.core.compiler.CharOperation.equals(method.selector, inheritedMethod.selector)
+	return org.summer.sdt.core.compiler.CharOperation.equals(method.name, inheritedMethod.name)
 		&& isParameterSubsignature(method, inheritedMethod);
 }
 

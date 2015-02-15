@@ -69,7 +69,7 @@ public class FieldBinding extends VariableBinding {
 	* NOTE: Cannot invoke this method with a compilation unit scope.
 	*/
 	
-	public final boolean canBeSeenBy(TypeBinding receiverType, InvocationSite invocationSite, Scope scope) {
+	public /*final*/ boolean canBeSeenBy(TypeBinding receiverType, InvocationSite invocationSite, Scope scope) {
 		if (isPublic()) return true;
 	
 		SourceTypeBinding invocationType = scope.enclosingSourceType();

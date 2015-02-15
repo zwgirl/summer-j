@@ -42,7 +42,7 @@ class DefaultValuePairBinding extends MemberValuePairBinding {
 	}
 
 	public String getName() {
-		return new String(this.method.selector);
+		return new String(this.method.name);
 	}
 
 	public Object getValue() {

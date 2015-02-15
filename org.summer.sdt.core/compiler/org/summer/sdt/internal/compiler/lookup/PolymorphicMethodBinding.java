@@ -20,7 +20,7 @@ public class PolymorphicMethodBinding extends MethodBinding {
 	public PolymorphicMethodBinding(MethodBinding polymorphicMethod, TypeBinding[] parameterTypes) {
 		super(
 				polymorphicMethod.modifiers,
-				polymorphicMethod.selector,
+				polymorphicMethod.name,
 				polymorphicMethod.returnType,
 				parameterTypes,
 				polymorphicMethod.thrownExceptions,
@@ -32,7 +32,7 @@ public class PolymorphicMethodBinding extends MethodBinding {
 	public PolymorphicMethodBinding(MethodBinding polymorphicMethod, TypeBinding returnType, TypeBinding[] parameterTypes) {
 		super(
 				polymorphicMethod.modifiers,
-				polymorphicMethod.selector,
+				polymorphicMethod.name,
 				returnType,
 				parameterTypes,
 				polymorphicMethod.thrownExceptions,

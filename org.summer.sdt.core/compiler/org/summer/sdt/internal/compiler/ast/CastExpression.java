@@ -293,8 +293,8 @@ public class CastExpression extends Expression {
 				bindingIfNoCast = scope.getConstructor((ReferenceBinding)receiverType, alternateArgumentTypes, fakeInvocationSite);
 			} else {
 				bindingIfNoCast = receiver.isImplicitThis()
-					? scope.getImplicitMethod(binding.selector, alternateArgumentTypes, fakeInvocationSite)
-					: scope.getMethod(receiverType, binding.selector, alternateArgumentTypes, fakeInvocationSite);
+					? scope.getImplicitMethod(binding.name, alternateArgumentTypes, fakeInvocationSite)
+					: scope.getMethod(receiverType, binding.name, alternateArgumentTypes, fakeInvocationSite);
 			}
 			if (bindingIfNoCast == binding) {
 				int argumentLength = originalArgumentTypes.length;

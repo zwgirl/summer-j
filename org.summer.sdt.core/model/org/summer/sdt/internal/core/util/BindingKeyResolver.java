@@ -309,7 +309,7 @@ public class BindingKeyResolver extends BindingKeyParser {
 		MethodBinding[] methods = ((ReferenceBinding) this.typeBinding).availableMethods(); // resilience
 	 	for (int i = 0, methodLength = methods.length; i < methodLength; i++) {
 			MethodBinding method = methods[i];
-			if (CharOperation.equals(selector, method.selector) || (selector.length == 0 && method.isConstructor())) {
+			if (CharOperation.equals(selector, method.name) || (selector.length == 0 && method.isConstructor())) {
 				char[] methodSignature = method.genericSignature();
 				if (methodSignature == null)
 					methodSignature = method.signature();
