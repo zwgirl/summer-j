@@ -5046,6 +5046,24 @@ public class ClassFile implements TypeConstants, TypeIds {
 		}
 		this.contents[parametersCountPosition++] = (byte) (parameterCounter >> 8);
 		this.contents[parametersCountPosition] = (byte) parameterCounter;
+		
+		TypeBinding[] throwExceptionsBinding = aType.throwExceptionTypes();
+		int throwExceptionsCount = throwExceptionsBinding.length;
+		int throwExceptionsCountPosition = this.contentsOffset;
+		this.contentsOffset += 2;
+		int throwExceptionsCounter = 0;
+		for (int i = 0; i < throwExceptionsCount; i++) {
+			TypeBinding binding = throwExceptionsBinding[i];
+			if ((binding.tagBits & TagBits.HasMissingType) != 0) {
+				continue;
+			}
+			throwExceptionsCounter++;
+			int throwExceptionIndex = this.constantPool.literalIndexForType(binding);
+			this.contents[this.contentsOffset++] = (byte) (throwExceptionIndex >> 8);
+			this.contents[this.contentsOffset++] = (byte) throwExceptionIndex;
+		}
+		this.contents[throwExceptionsCountPosition++] = (byte) (throwExceptionsCounter >> 8);
+		this.contents[throwExceptionsCountPosition] = (byte) throwExceptionsCounter;
 		//cym 2015-02-14 end
 
 		// retrieve the enclosing one guaranteed to be the one matching the propagated flow info

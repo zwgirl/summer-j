@@ -61,6 +61,9 @@ public class ClassFileReader extends ClassFileStruct implements IBinaryType {
 	private int parametersCount;
 	private char[][] parameterNames;
 	private char[] returnTypeName;
+	
+	private int throwExceptionsCount;
+	private char[][] throwExceptionNames;
 
 	private static String printTypeModifiers(int modifiers) {
 		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
@@ -276,6 +279,17 @@ public class ClassFileReader extends ClassFileStruct implements IBinaryType {
 				this.parameterNames = new char[this.parametersCount][];
 				for (int i = 0; i < this.parametersCount; i++) {
 					this.parameterNames[i] = getConstantClassNameAt(u2At(readOffset));
+					readOffset += 2;
+				}
+			}
+			
+			// Read the parameters, use exception handlers to catch bad format
+			this.throwExceptionsCount = u2At(readOffset);
+			readOffset += 2;
+			if (this.throwExceptionsCount != 0) {
+				this.throwExceptionNames = new char[this.throwExceptionsCount][];
+				for (int i = 0; i < this.throwExceptionsCount; i++) {
+					this.throwExceptionNames[i] = getConstantClassNameAt(u2At(readOffset));
 					readOffset += 2;
 				}
 			}

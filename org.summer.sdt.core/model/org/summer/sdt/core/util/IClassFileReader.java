@@ -79,6 +79,13 @@ public interface IClassFileReader {
 	 * It has to be used with METHOD_INFOS.
 	 */
 	int PARAMETERS 	= 0x0040 + CONSTANT_POOL;
+	
+	/**
+	 * cym 2015-02-14
+	 * This value should be used to read the function type exceptions.
+	 * It has to be used with FUNCTION type.
+	 */
+	int THROW_EXCEPTIONS 	= 0x0080 + CONSTANT_POOL;
 
 	/**
 	 * Answer back the access flag of the .class file.
@@ -255,4 +262,10 @@ public interface IClassFileReader {
 
 	//cym 2015-02-14
 	int[] getParameterIndexes();
+	
+	//cym 2015-02-14
+	char[][] getThrowExceptionNames();
+
+	//cym 2015-02-14
+	int[] getThrowExceptionIndexes();
 }

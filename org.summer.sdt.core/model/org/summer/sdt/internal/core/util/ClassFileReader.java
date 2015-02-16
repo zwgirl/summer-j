@@ -62,6 +62,11 @@ public class ClassFileReader extends ClassFileStruct implements IClassFileReader
 	private char[][] parameterNames;
 	private char[] returnTypeName;
 	private int returnTypeNameIndex;
+	
+	private static final char[][] NO_THROW_EXCEPTION_NAMES = CharOperation.NO_CHAR_CHAR;
+	private int[] throwExceptionIndexes;
+	private int throwExceptionsCount;
+	private char[][] throwExceptionNames;
 
 	/**
 	 * Constructor for ClassFileReader.
@@ -231,6 +236,24 @@ public class ClassFileReader extends ClassFileStruct implements IClassFileReader
 					}
 				} else {
 					readOffset += (2 * this.parametersCount);
+				}
+			}
+			
+			this.throwExceptionsCount = u2At(classFileBytes, readOffset, 0);
+			readOffset += 2;
+			this.throwExceptionNames = NO_PARAMETER_NAMES;
+			this.throwExceptionIndexes = Util.EMPTY_INT_ARRAY;
+			if (this.throwExceptionsCount != 0) {
+				if ((decodingFlags & IClassFileReader.PARAMETERS) != IClassFileReader.CONSTANT_POOL) {
+					this.throwExceptionNames = new char[this.throwExceptionsCount][];
+					this.throwExceptionIndexes = new int[this.throwExceptionsCount];
+					for (int i = 0; i < this.throwExceptionsCount; i++) {
+						this.throwExceptionIndexes[i] = u2At(classFileBytes, readOffset, 0);
+						this.throwExceptionNames[i] = getConstantClassNameAt(classFileBytes, constantPoolOffsets, this.throwExceptionIndexes[i]);
+						readOffset += 2;
+					}
+				} else {
+					readOffset += (2 * this.throwExceptionsCount);
 				}
 			}
 			//cym 2015-02-06 end
@@ -521,5 +544,21 @@ public class ClassFileReader extends ClassFileStruct implements IClassFileReader
 	@Override
 	public int[] getParameterIndexes() {
 		return this.parameterIndexes;
+	}
+	
+	/**
+	 * 2015-02-14 for function type
+	 */
+	@Override
+	public char[][] getThrowExceptionNames() {
+		return this.throwExceptionNames;
+	}
+
+	/**
+	 * 2015-02-14 for function type
+	 */
+	@Override
+	public int[] getThrowExceptionIndexes() {
+		return this.throwExceptionIndexes;
 	}
 }

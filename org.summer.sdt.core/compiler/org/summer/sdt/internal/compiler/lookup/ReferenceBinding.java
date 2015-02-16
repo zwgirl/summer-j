@@ -2198,4 +2198,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 	public TypeBinding[] parameterTypes() {
 		return Binding.NO_PARAMETERS;
 	}
+	
+	
+	//cym 2015-02-16 function type
+	public TypeBinding[] throwExceptionTypes() {
+		return Binding.NO_EXCEPTIONS;
+	}
 }

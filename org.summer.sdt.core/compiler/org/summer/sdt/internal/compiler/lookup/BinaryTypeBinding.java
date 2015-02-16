@@ -90,6 +90,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 	//cym 2015-02-14
 	protected TypeBinding returnType;
 	protected TypeBinding[] parameterTypes;
+	protected TypeBinding[] throwExceptionTypes;
 
 	static Object convertMemberValue(Object binaryValue, LookupEnvironment env, char[][][] missingTypeNames, boolean resolveEnumConstants) {
 		if (binaryValue == null) return null;
@@ -2092,5 +2093,44 @@ public class BinaryTypeBinding extends ReferenceBinding {
 		}
 		this.tagBits &= ~TagBits.HasUnresolvedParameterTypes;
 		return this.parameterTypes;
+	}
+	
+	//cym 2015-02-14
+	@Override
+	public TypeBinding[] throwExceptionTypes() {
+		if (!isPrototype()) {
+			return this.throwExceptionTypes = this.prototype.throwExceptionTypes();
+		}
+		if ((this.tagBits & TagBits.HasUnresolvedParameterTypes) == 0)
+			return this.throwExceptionTypes;
+	
+		for (int i = this.throwExceptionTypes.length; --i >= 0;) {
+			this.throwExceptionTypes[i] = (ReferenceBinding) resolveType(this.throwExceptionTypes[i], this.environment, true /* raw conversion */);
+//			if (this.parameterTypes[i].problemId() == ProblemReasons.NotFound) {
+//				this.tagBits |= TagBits.HierarchyHasProblems; // propagate type inconsistency
+//			} else {
+//				// make super-type resolving recursive for propagating typeBits downwards
+//				boolean wasToleratingMissingTypeProcessingAnnotations = this.environment.mayTolerateMissingType;
+//				this.environment.mayTolerateMissingType = true; // https://bugs.eclipse.org/bugs/show_bug.cgi?id=360164
+//				try {
+//					this.superInterfaces[i].superclass();
+//					if (this.superInterfaces[i].isParameterizedType()) {
+//						ReferenceBinding superType = this.superInterfaces[i].actualType();
+//						if (TypeBinding.equalsEquals(superType, this)) {
+//							this.tagBits |= TagBits.HierarchyHasProblems;
+//							continue;
+//						}
+//					}
+//					this.superInterfaces[i].superInterfaces();
+//				} finally {
+//					this.environment.mayTolerateMissingType = wasToleratingMissingTypeProcessingAnnotations;
+//				}	
+//			}
+//			this.typeBits |= (this.parameterTypes[i].typeBits & TypeIds.InheritableBits);
+//			if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
+//				this.typeBits |= applyCloseableInterfaceWhitelists();
+		}
+		this.tagBits &= ~TagBits.HasUnresolvedParameterTypes;
+		return this.throwExceptionTypes;
 	}
 }

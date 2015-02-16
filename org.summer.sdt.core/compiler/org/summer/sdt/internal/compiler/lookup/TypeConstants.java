@@ -47,6 +47,7 @@ public interface TypeConstants {
 	char[] TEMPLATE = "Template".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] COMPONENT = "Component".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] MODULE = "Module".toCharArray(); //$NON-NLS-1$  //cym 2015-02-12
+	char[] FUNCTION = "Function".toCharArray(); //$NON-NLS-1$  //cym 2015-02-16
 	char[] ANONYM = "Anonym".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] HTML = "html".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] ARRAY = "Array".toCharArray(); //$NON-NLS-1$  //cym 2014-12-03
@@ -137,6 +138,8 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_ASSERTIONERROR = {JAVA, LANG, "AssertionError".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_CLASS = {JAVA, LANG, "Class".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ARRAY = {JAVA, LANG, "Array".toCharArray()}; //$NON-NLS-1$   --cym 2014-12-03
+	char[][] JAVA_LANG_FUNCTION = {JAVA, LANG, FUNCTION}; //$NON-NLS-1$   --cym 2015-02-16
+	
 	char[][] JAVA_LANG_CLASSNOTFOUNDEXCEPTION = {JAVA, LANG, "ClassNotFoundException".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_CLONEABLE = {JAVA, LANG, "Cloneable".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ENUM = {JAVA, LANG, "Enum".toCharArray()}; //$NON-NLS-1$

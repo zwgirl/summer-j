@@ -699,7 +699,7 @@ Modifier ::= Annotation
 /:$readableName Modifier:/
 
 --cym 2015-02-03
-FunctionTypeDeclaration ::= FunctionTypeHeaderName FormalParameterListopt FunctionTypeHeaderRightParen 
+FunctionTypeDeclaration ::= FunctionTypeHeaderName FormalParameterListopt FunctionTypeHeaderRightParen FunctionHeaderThrowsClauseopt ';'
 /.$putCase consumeFunctionTypeDeclaration(); $break ./
 /:$readableName FunctionTypeDeclaration:/
 
@@ -710,11 +710,19 @@ FunctionTypeHeaderName ::= Modifiersopt function Type 'Identifier' '('
 /.$putCase consumeFunctionTypeHeaderName(); $break ./
 /:$readableName FunctionTypeHeaderName:/
 
-FunctionTypeHeaderRightParen ::= ')' ';'
+FunctionTypeHeaderRightParen ::= ')' 
 /.$putCase consumeFunctionTypeHeaderRightParen(); $break ./
 /:$readableName ):/
 /:$recovery_template ):/
 /:$readableName FunctionTypeHeaderRightParen:/
+
+FunctionHeaderThrowsClauseopt ::= $empty
+FunctionHeaderThrowsClauseopt -> FunctionHeaderThrowsClause
+/:$readableName FunctionHeaderThrowsClause:/
+
+FunctionHeaderThrowsClause ::= 'throws' ClassTypeList
+/.$putCase consumeFunctionHeaderThrowsClause(); $break ./
+/:$readableName FunctionHeaderThrowsClause:/
 --cym 2015-02-03
 
 --18.8 Productions from 8: Class Declarations

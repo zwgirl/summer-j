@@ -34,6 +34,7 @@ import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
+import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
@@ -1167,7 +1168,11 @@ public class ClassScope extends Scope {
 		if (this.referenceContext.superclass == null) {
 			if (sourceType.isEnum() && compilerOptions().sourceLevel >= ClassFileConstants.JDK1_5) // do not connect if source < 1.5 as enum already got flagged as syntax error
 				return connectEnumSuperclass();
-			sourceType.setSuperClass(getJavaLangObject());
+			if((sourceType.modifiers & ClassFileConstants.AccFunction) != 0){   //cym 2015-02-16
+				sourceType.setSuperClass(getJavaLangFunction());
+			} else {
+				sourceType.setSuperClass(getJavaLangObject());
+			}
 			return !detectHierarchyCycle(sourceType, sourceType.superclass, null);
 		}
 		TypeReference superclassRef = this.referenceContext.superclass;
@@ -1201,6 +1206,25 @@ public class ClassScope extends Scope {
 		if ((sourceType.superclass.tagBits & TagBits.BeginHierarchyCheck) == 0)
 			detectHierarchyCycle(sourceType, sourceType.superclass, null);
 		return false; // reported some error against the source type
+	}
+	
+	//cym 2014-02-06
+	private boolean connectFunctionType() {
+		boolean noProblems = true;
+		SourceTypeBinding sourceType = this.referenceContext.binding;
+		if(this.referenceContext.returnType != null){
+			sourceType.returnType = this.referenceContext.returnType.resolveType(this);
+		}
+		
+		if(this.referenceContext.arguments != ASTNode.NO_ARGUMENTS){
+			sourceType.parameterTypes = new TypeBinding[this.referenceContext.arguments.length];
+			int count = 0;
+			for(Argument arg : this.referenceContext.arguments){
+				sourceType.parameterTypes[count++] = arg.type.resolveType(this);
+			}
+		}
+
+		return noProblems;
 	}
 
 	/**
@@ -1333,6 +1357,9 @@ public class ClassScope extends Scope {
 				sourceType.tagBits |= TagBits.BeginHierarchyCheck;
 				environment().typesBeingConnected.add(sourceType);
 				boolean noProblems = connectSuperclass();
+				
+				connectFunctionType();   //cym 2015-02-16
+				
 				noProblems &= connectSuperInterfaces();
 				environment().typesBeingConnected.remove(sourceType);
 				sourceType.tagBits |= TagBits.EndHierarchyCheck;

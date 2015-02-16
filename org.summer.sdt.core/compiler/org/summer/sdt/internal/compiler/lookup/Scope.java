@@ -3306,6 +3306,13 @@ public abstract class Scope {
 		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_ARRAY);
 		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_ARRAY, this);
 	}
+	
+	//cym 2015-02-16
+	public final ReferenceBinding getJavaLangFunction() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_FUNCTION);
+		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_FUNCTION, this);
+	}
 
 	public final ReferenceBinding getJavaLangThrowable() {
 		CompilationUnitScope unitScope = compilationUnitScope();
