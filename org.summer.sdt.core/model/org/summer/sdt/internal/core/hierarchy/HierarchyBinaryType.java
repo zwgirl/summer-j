@@ -279,4 +279,10 @@ public class HierarchyBinaryType implements IBinaryType {
 	public char[][] getParameterNames() {
 		return null;
 	}
+	
+	//cym 2015-02-14
+	@Override
+	public char[][] getThrownExceptionNames() {
+		return null;
+	}
 }

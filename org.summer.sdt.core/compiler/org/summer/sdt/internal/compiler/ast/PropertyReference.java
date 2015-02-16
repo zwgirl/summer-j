@@ -98,7 +98,7 @@ public class PropertyReference extends Expression{
 		//cym 2012-02-12
 		if((fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
 			//TODO complete me
-			System.err.println("只能是属性！！！！！！！！！！！！！！！！！！！");
+//			System.err.println("只能是属性！！！！！！！！！！！！！！！！！！！");
 		}
 		if (!fieldBinding.isValidBinding()) {
 			this.constant = Constant.NotAConstant;

@@ -103,7 +103,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 	//cym 2015-02-14 function type
 	public TypeBinding returnType;                    // MUST NOT be modified directly, use setter !
 	public TypeBinding[] parameterTypes = NO_PARAMETERS;             // MUST NOT be modified directly, use setter !
-	public TypeBinding[] throwExceptionTypes = NO_EXCEPTIONS;             // MUST NOT be modified directly, use setter !
+	public TypeBinding[] thrownExceptionTypes = NO_EXCEPTIONS;             // MUST NOT be modified directly, use setter !
 	
 	public SourceTypeBinding(char[][] compoundName, PackageBinding fPackage, ClassScope scope) {
 		this.compoundName = compoundName;
@@ -3000,7 +3000,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 	}
 	
 	@Override
-	public TypeBinding[] throwExceptionTypes() {
-		return this.throwExceptionTypes;
+	public TypeBinding[] thrownExceptionTypes() {
+		return this.thrownExceptionTypes;
 	}
 }

@@ -62,8 +62,8 @@ public class ClassFileReader extends ClassFileStruct implements IBinaryType {
 	private char[][] parameterNames;
 	private char[] returnTypeName;
 	
-	private int throwExceptionsCount;
-	private char[][] throwExceptionNames;
+	private int thrownExceptionsCount;
+	private char[][] thrownExceptionNames;
 
 	private static String printTypeModifiers(int modifiers) {
 		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
@@ -284,12 +284,12 @@ public class ClassFileReader extends ClassFileStruct implements IBinaryType {
 			}
 			
 			// Read the parameters, use exception handlers to catch bad format
-			this.throwExceptionsCount = u2At(readOffset);
+			this.thrownExceptionsCount = u2At(readOffset);
 			readOffset += 2;
-			if (this.throwExceptionsCount != 0) {
-				this.throwExceptionNames = new char[this.throwExceptionsCount][];
-				for (int i = 0; i < this.throwExceptionsCount; i++) {
-					this.throwExceptionNames[i] = getConstantClassNameAt(u2At(readOffset));
+			if (this.thrownExceptionsCount != 0) {
+				this.thrownExceptionNames = new char[this.thrownExceptionsCount][];
+				for (int i = 0; i < this.thrownExceptionsCount; i++) {
+					this.thrownExceptionNames[i] = getConstantClassNameAt(u2At(readOffset));
 					readOffset += 2;
 				}
 			}
@@ -1287,6 +1287,14 @@ public class ClassFileReader extends ClassFileStruct implements IBinaryType {
 	@Override
 	public char[][] getParameterNames() {
 		return this.parameterNames;
+	}
+	
+	/**
+	 * 2015-02-14 for function type
+	 */
+	@Override
+	public char[][] getThrownExceptionNames() {
+		return this.thrownExceptionNames;
 	}
 	
 	public String toString() {

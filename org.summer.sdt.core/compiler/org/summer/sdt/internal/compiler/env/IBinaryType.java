@@ -158,4 +158,9 @@ public interface IBinaryType extends IGenericType {
 	 */
 	char[][] getParameterNames();
 	
+	/**
+	 * 2015-02-14 for function type
+	 */
+	char[][] getThrownExceptionNames();
+	
 }

@@ -35,23 +35,57 @@ public class LambdaFactory {
 		}
 	}
 
+//	public static LambdaMethod createLambdaMethod(JavaElement parent, org.summer.sdt.internal.compiler.ast.LambdaExpression lambdaExpression) {
+//		int length;
+//		JavaModelManager manager = JavaModelManager.getJavaModelManager();
+//		String [] parameterTypes = new String[length = lambdaExpression.descriptor.parameters.length];
+//		for (int i = 0; i < length; i++)
+//			parameterTypes[i] = getTypeSignature(manager, lambdaExpression.descriptor.parameters[i]);
+//		String [] parameterNames = new String[length];
+//		for (int i = 0; i < length; i++)
+//			parameterNames[i] = manager.intern(new String(lambdaExpression.arguments[i].name));
+//		String returnType = getTypeSignature(manager, lambdaExpression.descriptor.returnType);
+//		String selector = manager.intern(new String(lambdaExpression.descriptor.selector));
+//		String key = new String(lambdaExpression.descriptor.computeUniqueKey());
+//		LambdaMethod lambdaMethod = createLambdaMethod(parent, selector, key, lambdaExpression.sourceStart, lambdaExpression.sourceEnd, lambdaExpression.arrowPosition, parameterTypes, parameterNames, returnType);
+//		ILocalVariable [] parameters = new ILocalVariable[length = lambdaExpression.arguments.length];
+//		for (int i = 0; i < length; i++) {
+//			Argument argument = lambdaExpression.arguments[i];
+//			String signature = manager.intern(new String(lambdaExpression.descriptor.parameters[i].signature()));
+//			parameters[i] = new LocalVariable(
+//					lambdaMethod,
+//					new String(argument.name),
+//					argument.declarationSourceStart,
+//					argument.declarationSourceEnd,
+//					argument.sourceStart,
+//					argument.sourceEnd,
+//					signature,
+//					null, // we are not hooking up argument.annotations ATM,
+//					argument.modifiers,
+//					true);
+//		}
+//		lambdaMethod.elementInfo.arguments = parameters;
+//		return lambdaMethod;
+//	}
+	
+	//cym 2015-02-16
 	public static LambdaMethod createLambdaMethod(JavaElement parent, org.summer.sdt.internal.compiler.ast.LambdaExpression lambdaExpression) {
 		int length;
 		JavaModelManager manager = JavaModelManager.getJavaModelManager();
-		String [] parameterTypes = new String[length = lambdaExpression.descriptor.parameters.length];
+		String [] parameterTypes = new String[length = lambdaExpression.descriptor.parameterTypes().length];
 		for (int i = 0; i < length; i++)
-			parameterTypes[i] = getTypeSignature(manager, lambdaExpression.descriptor.parameters[i]);
+			parameterTypes[i] = getTypeSignature(manager, lambdaExpression.descriptor.parameterTypes()[i]);
 		String [] parameterNames = new String[length];
 		for (int i = 0; i < length; i++)
 			parameterNames[i] = manager.intern(new String(lambdaExpression.arguments[i].name));
-		String returnType = getTypeSignature(manager, lambdaExpression.descriptor.returnType);
-		String selector = manager.intern(new String(lambdaExpression.descriptor.selector));
+		String returnType = getTypeSignature(manager, lambdaExpression.descriptor.returnType());
+		String selector = manager.intern(new String(lambdaExpression.descriptor.sourceName));
 		String key = new String(lambdaExpression.descriptor.computeUniqueKey());
 		LambdaMethod lambdaMethod = createLambdaMethod(parent, selector, key, lambdaExpression.sourceStart, lambdaExpression.sourceEnd, lambdaExpression.arrowPosition, parameterTypes, parameterNames, returnType);
 		ILocalVariable [] parameters = new ILocalVariable[length = lambdaExpression.arguments.length];
 		for (int i = 0; i < length; i++) {
 			Argument argument = lambdaExpression.arguments[i];
-			String signature = manager.intern(new String(lambdaExpression.descriptor.parameters[i].signature()));
+			String signature = manager.intern(new String(lambdaExpression.descriptor.parameterTypes()[i].signature()));
 			parameters[i] = new LocalVariable(
 					lambdaMethod,
 					new String(argument.name),

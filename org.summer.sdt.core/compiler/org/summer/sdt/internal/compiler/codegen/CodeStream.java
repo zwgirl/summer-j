@@ -2667,7 +2667,8 @@ public class CodeStream {
 			aload_0();
 			invoke(Opcodes.OPC_invokevirtual, 1, 1, ConstantPool.JavaLangInvokeSerializedLambdaConstantPoolName, 
 					ConstantPool.GetFunctionalInterfaceMethodName, ConstantPool.GetFunctionalInterfaceMethodNameSignature);
-			ldc(new String(lambdaEx.descriptor.selector)); // e.g. "m"
+//			ldc(new String(lambdaEx.descriptor.selector)); // e.g. "m"  //cym 2015-02-16
+			ldc(new String(lambdaEx.descriptor.sourceName)); // e.g. "m"
 			invokeObjectEquals();
 			ifeq(errorLabel);
 	
@@ -2733,7 +2734,9 @@ public class CodeStream {
 				sig.append(lambdaEx.resolvedType.signature());
 			}
 			// Example: invokeDynamic(0, 0, 1, "m".toCharArray(), "()Lcom/foo/X$Foo;".toCharArray());
-			invokeDynamic(lambdaEx.bootstrapMethodNumber, index, 1, lambdaEx.descriptor.selector, sig.toString().toCharArray());
+			//cym 2015-02-16
+//			invokeDynamic(lambdaEx.bootstrapMethodNumber, index, 1, lambdaEx.descriptor.selector, sig.toString().toCharArray());
+			invokeDynamic(lambdaEx.bootstrapMethodNumber, index, 1, lambdaEx.descriptor.sourceName, sig.toString().toCharArray());
 			areturn();
 		}
 		

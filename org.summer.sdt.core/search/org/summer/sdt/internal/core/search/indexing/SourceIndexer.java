@@ -196,6 +196,61 @@ public class SourceIndexer extends AbstractIndexer implements ITypeRequestor, Su
 				purgeMethodStatements(memberTypes[i]);
 	}
 
+//	public void indexResolvedDocument() {
+//		try {
+//			if (DEBUG) System.out.println(new String(this.cud.compilationResult.fileName) + ':');
+//			for (int i = 0, length = this.cud.functionalExpressionsCount; i < length; i++) {
+//				FunctionalExpression expression = this.cud.functionalExpressions[i];
+//				if (expression instanceof LambdaExpression) {
+//					LambdaExpression lambdaExpression = (LambdaExpression) expression;
+//					if (lambdaExpression.binding != null && lambdaExpression.binding.isValidBinding()) {
+//						final char[] superinterface = lambdaExpression.resolvedType.sourceName();
+//						if (DEBUG) {
+//							System.out.println('\t' + new String(superinterface) + '.' + 
+//									new String(lambdaExpression.descriptor.selector) + "-> {}"); //$NON-NLS-1$
+//						}
+//						SourceIndexer.this.addIndexEntry(IIndexConstants.METHOD_DECL, MethodPattern.createIndexKey(lambdaExpression.descriptor.selector, lambdaExpression.descriptor.parameters.length));
+//					
+//						addClassDeclaration(0,  // most entries are blank, that is fine, since lambda type/method cannot be searched.
+//								CharOperation.NO_CHAR, // package name
+//								ONE_ZERO,
+//								ONE_ZERO_CHAR, // enclosing types.
+//								CharOperation.NO_CHAR, // super class
+//								new char[][] { superinterface },
+//								CharOperation.NO_CHAR_CHAR,
+//								true); // not primary.
+//
+//					} else {
+//						if (DEBUG) System.out.println("\tnull/bad binding in lambda"); //$NON-NLS-1$
+//					}
+//				} else {
+//					ReferenceExpression referenceExpression = (ReferenceExpression) expression;
+//					if (referenceExpression.isArrayConstructorReference())
+//						continue;
+//					MethodBinding binding = referenceExpression.getMethodBinding();
+//					if (binding != null && binding.isValidBinding()) {
+//						if (DEBUG) {
+//							System.out.println('\t' + new String(referenceExpression.resolvedType.sourceName()) + "::"  //$NON-NLS-1$
+//									+ new String(referenceExpression.descriptor.selector) + " == " + new String(binding.declaringClass.sourceName()) + '.' + //$NON-NLS-1$
+//									new String(binding.selector));
+//						}
+//						if (referenceExpression.isMethodReference())
+//							SourceIndexer.this.addMethodReference(binding.selector, binding.parameters.length);
+//						else
+//							SourceIndexer.this.addConstructorReference(binding.declaringClass.sourceName(), binding.parameters.length);
+//					} else {
+//						if (DEBUG) System.out.println("\tnull/bad binding in reference expression"); //$NON-NLS-1$
+//					}
+//				}
+//			}
+//		} catch (Exception e) {
+//			if (JobManager.VERBOSE) {
+//				e.printStackTrace();
+//			}
+//		}
+//	}
+	
+	//cym 2015-02-16
 	public void indexResolvedDocument() {
 		try {
 			if (DEBUG) System.out.println(new String(this.cud.compilationResult.fileName) + ':');
@@ -207,9 +262,9 @@ public class SourceIndexer extends AbstractIndexer implements ITypeRequestor, Su
 						final char[] superinterface = lambdaExpression.resolvedType.sourceName();
 						if (DEBUG) {
 							System.out.println('\t' + new String(superinterface) + '.' + 
-									new String(lambdaExpression.descriptor.selector) + "-> {}"); //$NON-NLS-1$
+									new String(lambdaExpression.descriptor.sourceName) + "-> {}"); //$NON-NLS-1$
 						}
-						SourceIndexer.this.addIndexEntry(IIndexConstants.METHOD_DECL, MethodPattern.createIndexKey(lambdaExpression.descriptor.selector, lambdaExpression.descriptor.parameters.length));
+						SourceIndexer.this.addIndexEntry(IIndexConstants.METHOD_DECL, MethodPattern.createIndexKey(lambdaExpression.descriptor.sourceName, lambdaExpression.descriptor.parameterTypes().length));
 					
 						addClassDeclaration(0,  // most entries are blank, that is fine, since lambda type/method cannot be searched.
 								CharOperation.NO_CHAR, // package name
@@ -231,7 +286,7 @@ public class SourceIndexer extends AbstractIndexer implements ITypeRequestor, Su
 					if (binding != null && binding.isValidBinding()) {
 						if (DEBUG) {
 							System.out.println('\t' + new String(referenceExpression.resolvedType.sourceName()) + "::"  //$NON-NLS-1$
-									+ new String(referenceExpression.descriptor.selector) + " == " + new String(binding.declaringClass.sourceName()) + '.' + //$NON-NLS-1$
+									+ new String(referenceExpression.descriptor.sourceName) + " == " + new String(binding.declaringClass.sourceName()) + '.' + //$NON-NLS-1$
 									new String(binding.selector));
 						}
 						if (referenceExpression.isMethodReference())

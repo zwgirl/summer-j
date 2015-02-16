@@ -135,6 +135,11 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 	public static final char[] NO_SELECTOR = new char[0];
 
 	public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext, FlowInfo flowInfo) {
+		//cym 2015-02-16
+		if(this.binding == null){
+			return flowInfo;
+		}
+		
 		boolean nonStatic = !this.binding.isStatic();
 		boolean wasInsideAssert = ((flowContext.tagBits & FlowContext.HIDE_NULL_COMPARISON_WARNING) != 0);
 		flowInfo = this.receiver.analyseCode(currentScope, flowContext, flowInfo, nonStatic).unconditionalInits();
@@ -421,6 +426,12 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 	 * @param valueRequired boolean
 	 */
 	public void generateCode(BlockScope currentScope, CodeStream codeStream, boolean valueRequired) {
+		//cym 2015-02-16
+		if(this.binding == null){
+			return;
+		}
+		
+		
 		int pc = codeStream.position;
 		// generate receiver/enclosing instance access
 		MethodBinding codegenBinding = this.binding instanceof PolymorphicMethodBinding ? this.binding : this.binding.original();
@@ -531,6 +542,10 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 		}
 	}
 	public int nullStatus(FlowInfo flowInfo, FlowContext flowContext) {
+		if(this.binding == null){  //cym 2015-02-16
+			return FlowInfo.UNKNOWN;
+		}
+		
 		if (this.binding.isValidBinding()) {
 			// try to retrieve null status of this message send from an annotation of the called method:
 			long tagBits = this.binding.tagBits;
@@ -623,6 +638,24 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 					scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
 				}
 			}
+			
+			if(this.selector == NO_SELECTOR){
+//				TypeBinding receiverType = this.receiver.resolveType(scope);
+				if(this.actualReceiverType != null){
+					if(this.receiver instanceof LambdaExpression){
+//						LambdaExpression lambda = (LambdaExpression) this.receiver;
+//						TypeBinding[] argumentTypes = lambda.argumentTypes();
+//						lambda.returnsExpression(expression, resultType);
+						return scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION); 
+					}
+					if(this.actualReceiverType.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
+						return ((ReferenceBinding)this.actualReceiverType).returnType();
+//						return scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION);
+					}
+				}
+//				scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
+			}
+			
 			// resolve type arguments (for generic constructor call)
 			if (this.typeArguments != null) {
 				int length = this.typeArguments.length;

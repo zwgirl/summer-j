@@ -9588,6 +9588,32 @@ public class ProblemReporter extends ProblemHandler {
 				location.sourceStart,
 				location.sourceEnd);
 	}
+	
+	public void referenceExpressionArgumentNullityMismatch(ReferenceExpression location, TypeBinding requiredType, TypeBinding providedType,
+			ReferenceBinding descriptor, int idx, NullAnnotationMatching status) {
+		StringBuffer methodSignature = new StringBuffer();
+		methodSignature
+			.append(descriptor.readableName())
+			.append('.')
+			.append(descriptor.readableName());
+		StringBuffer shortSignature = new StringBuffer();
+		shortSignature
+			.append(descriptor.shortReadableName())
+			.append('.')
+			.append(descriptor.shortReadableName());
+		this.handle(
+				status.isUnchecked() ? IProblem.ReferenceExpressionParameterNullityUnchecked : IProblem.ReferenceExpressionParameterNullityMismatch,
+				new String[] { String.valueOf(idx+1), 
+								String.valueOf(requiredType.nullAnnotatedReadableName(this.options, false)),
+								String.valueOf(providedType.nullAnnotatedReadableName(this.options, false)),
+								methodSignature.toString() },
+				new String[] { String.valueOf(idx+1), 
+								String.valueOf(requiredType.nullAnnotatedReadableName(this.options, true)),
+								String.valueOf(providedType.nullAnnotatedReadableName(this.options, true)),
+								shortSignature.toString() },
+				location.sourceStart,
+				location.sourceEnd);
+	}
 	public void illegalReturnRedefinition(ASTNode location, MethodBinding descriptorMethod,
 				char[][] nonNullAnnotationName, 
 				char/*@Nullable*/[][] providedAnnotationName, TypeBinding providedType) {
@@ -9614,6 +9640,38 @@ public class ProblemReporter extends ProblemHandler {
 							providedPrefix.toString(), String.valueOf(providedType.readableName())},
 			new String[] { shortSignature.toString(),
 							String.valueOf(nonNullAnnotationName[nonNullAnnotationName.length-1]), String.valueOf(descriptorMethod.returnType.shortReadableName()),
+							providedShortPrefix.toString(), String.valueOf(providedType.shortReadableName())},
+			location.sourceStart,
+			location.sourceEnd);
+	}
+	
+	//cym 2015-02-16
+	public void illegalReturnRedefinition(ASTNode location, ReferenceBinding descriptor,
+			char[][] nonNullAnnotationName, 
+			char/*@Nullable*/[][] providedAnnotationName, TypeBinding providedType) {
+		StringBuffer methodSignature = new StringBuffer()
+			.append(descriptor.readableName())
+			.append('.')
+			.append(descriptor.readableName());
+		StringBuffer shortSignature = new StringBuffer()
+			.append(descriptor.shortReadableName())
+			.append('.')
+			.append(descriptor.shortReadableName());
+		StringBuffer providedPrefix = new StringBuffer(); 
+		StringBuffer providedShortPrefix = new StringBuffer(); 
+		if (providedAnnotationName != null) {
+			providedPrefix.append('@').append(CharOperation.toString(providedAnnotationName)).append(' ');
+			providedShortPrefix.append('@').append(providedAnnotationName[providedAnnotationName.length-1]).append(' ');
+		}
+		this.handle(
+			providedAnnotationName == null
+				? IProblem.ReferenceExpressionReturnNullRedefUnchecked
+				: IProblem.ReferenceExpressionReturnNullRedef,
+			new String[] { methodSignature.toString(),
+							CharOperation.toString(nonNullAnnotationName), String.valueOf(descriptor.returnType().readableName()),
+							providedPrefix.toString(), String.valueOf(providedType.readableName())},
+			new String[] { shortSignature.toString(),
+							String.valueOf(nonNullAnnotationName[nonNullAnnotationName.length-1]), String.valueOf(descriptor.returnType().shortReadableName()),
 							providedShortPrefix.toString(), String.valueOf(providedType.shortReadableName())},
 			location.sourceStart,
 			location.sourceEnd);

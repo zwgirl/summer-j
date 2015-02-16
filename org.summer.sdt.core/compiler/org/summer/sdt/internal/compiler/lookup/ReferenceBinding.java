@@ -2201,7 +2201,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 	
 	
 	//cym 2015-02-16 function type
-	public TypeBinding[] throwExceptionTypes() {
+	public TypeBinding[] thrownExceptionTypes() {
 		return Binding.NO_EXCEPTIONS;
 	}
 }

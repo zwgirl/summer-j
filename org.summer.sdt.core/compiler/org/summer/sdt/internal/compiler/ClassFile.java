@@ -532,8 +532,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 		this.contents[localContentsOffset++] = (byte) length;
 		for (int i = 0; i < length; i++) {
 			//2015-02-01
-			int exceptionIndex = this.constantPool.literalIndexForType(arguments[i]);
-//			int exceptionIndex = this.constantPool.literalIndex(arguments[i].signature());
+			int exceptionIndex = this.constantPool.literalIndex(arguments[i]);
 			this.contents[localContentsOffset++] = (byte) (exceptionIndex >> 8);
 			this.contents[localContentsOffset++] = (byte) exceptionIndex;
 		}
@@ -5047,7 +5046,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 		this.contents[parametersCountPosition++] = (byte) (parameterCounter >> 8);
 		this.contents[parametersCountPosition] = (byte) parameterCounter;
 		
-		TypeBinding[] throwExceptionsBinding = aType.throwExceptionTypes();
+		TypeBinding[] throwExceptionsBinding = aType.thrownExceptionTypes();
 		int throwExceptionsCount = throwExceptionsBinding.length;
 		int throwExceptionsCountPosition = this.contentsOffset;
 		this.contentsOffset += 2;

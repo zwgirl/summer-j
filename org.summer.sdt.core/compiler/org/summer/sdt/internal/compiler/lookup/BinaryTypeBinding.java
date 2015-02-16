@@ -90,7 +90,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 	//cym 2015-02-14
 	protected TypeBinding returnType;
 	protected TypeBinding[] parameterTypes;
-	protected TypeBinding[] throwExceptionTypes;
+	protected TypeBinding[] thrownExceptionTypes;
 
 	static Object convertMemberValue(Object binaryValue, LookupEnvironment env, char[][][] missingTypeNames, boolean resolveEnumConstants) {
 		if (binaryValue == null) return null;
@@ -571,9 +571,8 @@ public class BinaryTypeBinding extends ReferenceBinding {
 						if (parSize > 0) {
 							parameters = new TypeBinding[parSize];
 							for (int j = 0; j < parSize; j++){
-								parameters[j] = this.environment.getTypeFromConstantPoolName(parameterTypes[j], 0, -1, false, missingTypeNames, walker.toMethodParameter((short) j));
-//									parameters[j] = this.environment.getTypeFromSignature(parameterTypes[j], 0, -1, false, null, 
-//										missingTypeNames, walker.toMethodParameter((short) j));
+									parameters[j] = this.environment.getTypeFromSignature(parameterTypes[j], 0, -1, false, null, 
+										missingTypeNames, walker.toMethodParameter((short) j));
 //									TypeBinding result = this.environment.getTypeFromSignature(parameterTypes[j], 0, -1, false, null, 
 //											missingTypeNames, walker.toMethodParameter((short) j));
 //											this.environment.getTypeFromConstantPoolName(parameterTypes[j], 0, -1, false, missingTypeNames, walker.toThrows(j));
@@ -2097,15 +2096,15 @@ public class BinaryTypeBinding extends ReferenceBinding {
 	
 	//cym 2015-02-14
 	@Override
-	public TypeBinding[] throwExceptionTypes() {
+	public TypeBinding[] thrownExceptionTypes() {
 		if (!isPrototype()) {
-			return this.throwExceptionTypes = this.prototype.throwExceptionTypes();
+			return this.thrownExceptionTypes = this.prototype.thrownExceptionTypes();
 		}
 		if ((this.tagBits & TagBits.HasUnresolvedParameterTypes) == 0)
-			return this.throwExceptionTypes;
+			return this.thrownExceptionTypes;
 	
-		for (int i = this.throwExceptionTypes.length; --i >= 0;) {
-			this.throwExceptionTypes[i] = (ReferenceBinding) resolveType(this.throwExceptionTypes[i], this.environment, true /* raw conversion */);
+		for (int i = this.thrownExceptionTypes.length; --i >= 0;) {
+			this.thrownExceptionTypes[i] = (ReferenceBinding) resolveType(this.thrownExceptionTypes[i], this.environment, true /* raw conversion */);
 //			if (this.parameterTypes[i].problemId() == ProblemReasons.NotFound) {
 //				this.tagBits |= TagBits.HierarchyHasProblems; // propagate type inconsistency
 //			} else {
@@ -2131,6 +2130,6 @@ public class BinaryTypeBinding extends ReferenceBinding {
 //				this.typeBits |= applyCloseableInterfaceWhitelists();
 		}
 		this.tagBits &= ~TagBits.HasUnresolvedParameterTypes;
-		return this.throwExceptionTypes;
+		return this.thrownExceptionTypes;
 	}
 }

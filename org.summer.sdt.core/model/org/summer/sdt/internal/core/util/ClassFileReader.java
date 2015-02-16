@@ -64,9 +64,9 @@ public class ClassFileReader extends ClassFileStruct implements IClassFileReader
 	private int returnTypeNameIndex;
 	
 	private static final char[][] NO_THROW_EXCEPTION_NAMES = CharOperation.NO_CHAR_CHAR;
-	private int[] throwExceptionIndexes;
-	private int throwExceptionsCount;
-	private char[][] throwExceptionNames;
+	private int[] thrownExceptionIndexes;
+	private int thrownExceptionsCount;
+	private char[][] thrownExceptionNames;
 
 	/**
 	 * Constructor for ClassFileReader.
@@ -239,21 +239,21 @@ public class ClassFileReader extends ClassFileStruct implements IClassFileReader
 				}
 			}
 			
-			this.throwExceptionsCount = u2At(classFileBytes, readOffset, 0);
+			this.thrownExceptionsCount = u2At(classFileBytes, readOffset, 0);
 			readOffset += 2;
-			this.throwExceptionNames = NO_PARAMETER_NAMES;
-			this.throwExceptionIndexes = Util.EMPTY_INT_ARRAY;
-			if (this.throwExceptionsCount != 0) {
+			this.thrownExceptionNames = NO_THROW_EXCEPTION_NAMES;
+			this.thrownExceptionIndexes = Util.EMPTY_INT_ARRAY;
+			if (this.thrownExceptionsCount != 0) {
 				if ((decodingFlags & IClassFileReader.PARAMETERS) != IClassFileReader.CONSTANT_POOL) {
-					this.throwExceptionNames = new char[this.throwExceptionsCount][];
-					this.throwExceptionIndexes = new int[this.throwExceptionsCount];
-					for (int i = 0; i < this.throwExceptionsCount; i++) {
-						this.throwExceptionIndexes[i] = u2At(classFileBytes, readOffset, 0);
-						this.throwExceptionNames[i] = getConstantClassNameAt(classFileBytes, constantPoolOffsets, this.throwExceptionIndexes[i]);
+					this.thrownExceptionNames = new char[this.thrownExceptionsCount][];
+					this.thrownExceptionIndexes = new int[this.thrownExceptionsCount];
+					for (int i = 0; i < this.thrownExceptionsCount; i++) {
+						this.thrownExceptionIndexes[i] = u2At(classFileBytes, readOffset, 0);
+						this.thrownExceptionNames[i] = getConstantClassNameAt(classFileBytes, constantPoolOffsets, this.thrownExceptionIndexes[i]);
 						readOffset += 2;
 					}
 				} else {
-					readOffset += (2 * this.throwExceptionsCount);
+					readOffset += (2 * this.thrownExceptionsCount);
 				}
 			}
 			//cym 2015-02-06 end
@@ -551,7 +551,7 @@ public class ClassFileReader extends ClassFileStruct implements IClassFileReader
 	 */
 	@Override
 	public char[][] getThrowExceptionNames() {
-		return this.throwExceptionNames;
+		return this.thrownExceptionNames;
 	}
 
 	/**
@@ -559,6 +559,6 @@ public class ClassFileReader extends ClassFileStruct implements IClassFileReader
 	 */
 	@Override
 	public int[] getThrowExceptionIndexes() {
-		return this.throwExceptionIndexes;
+		return this.thrownExceptionIndexes;
 	}
 }
