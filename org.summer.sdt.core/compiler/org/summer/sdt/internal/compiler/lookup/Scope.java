@@ -1443,7 +1443,14 @@ public abstract class Scope {
 		CompilationUnitScope unitScope = compilationUnitScope();
 		unitScope.recordTypeReference(receiverType);
 
-		ReferenceBinding currentType = (ReferenceBinding) receiverType;
+		//cym 2015-02-17 sometime receiverType is primitive type
+		ReferenceBinding currentType = null; //(ReferenceBinding) receiverType;
+		if(receiverType.isBaseType()){
+			currentType = (ReferenceBinding) environment().computeBoxingType(receiverType);
+		} else {
+			currentType = (ReferenceBinding) receiverType;
+		}
+		
 		if (!currentType.canBeSeenBy(this))
 			return new ProblemFieldBinding(currentType, TypeConstants.INDEXER, ProblemReasons.ReceiverTypeNotVisible);
 

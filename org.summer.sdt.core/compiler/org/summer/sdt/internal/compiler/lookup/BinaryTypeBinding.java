@@ -580,7 +580,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 //										result = this.environment.getTypeFromSignature(parameterTypes[j], 0, -1, false, null, 
 //												missingTypeNames, walker.toMethodParameter((short) j));
 //									}
-//									parameters[j] = result; //this.environment.getTypeFromConstantPoolName(parameterTypes[j], 0, -1, false, missingTypeNames, walker.toThrows(j));
+//								parameters[j] = this.environment.getTypeFromConstantPoolName(parameterTypes[j], 0, -1, false, missingTypeNames, walker.toMethodParameter((short) j));
 							}
 						}
 					}
@@ -1130,54 +1130,53 @@ public class BinaryTypeBinding extends ReferenceBinding {
 		return needResolve && field != null ? resolveTypeFor(field) : field;
 	}
 	
-//	//cym 2014-11-24
-//	//NOTE: the type of a field of a binary type is resolved when needed
-//	public IndexerBinding getExactIndexer(TypeBinding[] argumentTypes, CompilationUnitScope refScope) {
-//
-//		if (!isPrototype())
-//			return this.prototype.getExactIndexer(argumentTypes, refScope);
-//	
-//		// lazily sort fields
-//		if ((this.tagBits & TagBits.AreFieldsSorted) == 0) {
-//			int length = this.fields.length;
-//			if (length > 1)
-//				ReferenceBinding.sortFields(this.fields, 0, length);
-//			this.tagBits |= TagBits.AreFieldsSorted;
-//		}
-//	
-//		int argCount = argumentTypes.length;
-//		boolean foundNothing = true;
-//		
-//		long range;
-//		if ((range = ReferenceBinding.binarySearch(this.fields)) >= 0) {
-//			nextMethod: for (int ifield = 0, end = (int)(range >> 32); ifield <= end; ifield++) {
-//				FieldBinding field = this.fields[ifield];
-//				foundNothing = false; // inner type lookups must know that a method with this name exists
-//				if (field instanceof IndexerBinding && ((IndexerBinding)field).parameters.length == argCount) {
-//					resolveTypeFor((IndexerBinding)field);
-//					TypeBinding[] toMatch = ((IndexerBinding)field).parameters;
-//					for (int iarg = 0; iarg < argCount; iarg++)
-//						if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
-//							continue nextMethod;
-//					return (IndexerBinding) field;
-//				}
-//			}
-//		}
-//		if (foundNothing) {
-//			if (isInterface()) {
-//				 if (superInterfaces().length == 1) { // ensure superinterfaces are resolved before checking
-//					if (refScope != null)
-//						refScope.recordTypeReference(this.superInterfaces[0]);
-//					return this.superInterfaces[0].getExactIndexer(argumentTypes, refScope);
-//				 }
-//			} else if (superclass() != null) { // ensure superclass is resolved before checking
-//				if (refScope != null)
-//					refScope.recordTypeReference(this.superclass);
-//				return this.superclass.getExactIndexer(argumentTypes, refScope);
-//			}
-//		}
-//		return null;
-//	}
+	//cym 2014-11-24
+	//NOTE: the type of a field of a binary type is resolved when needed
+	public FieldBinding getExactIndexer(TypeBinding[] argumentTypes, CompilationUnitScope refScope) {
+
+		if (!isPrototype())
+			return this.prototype.getExactIndexer(argumentTypes, refScope);
+	
+		// lazily sort fields
+		if ((this.tagBits & TagBits.AreFieldsSorted) == 0) {
+			int length = this.fields.length;
+			if (length > 1)
+				ReferenceBinding.sortFields(this.fields, 0, length);
+			this.tagBits |= TagBits.AreFieldsSorted;
+		}
+	
+		int argCount = argumentTypes.length;
+		boolean foundNothing = true;
+		
+		long range;
+		if ((range = ReferenceBinding.binarySearch(this.fields)) >= 0) {
+			nextMethod: for (int ifield = 0, end = (int)(range >> 32); ifield <= end; ifield++) {
+				FieldBinding field = this.fields[ifield];
+				foundNothing = false; // inner type lookups must know that a method with this name exists
+				if ((field.modifiers & ClassFileConstants.AccIndexer) !=0 && field.parameters.length == argCount) {
+					TypeBinding[] toMatch = field.parameters;
+					for (int iarg = 0; iarg < argCount; iarg++)
+						if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
+							continue nextMethod;
+					return field;
+				}
+			}
+		}
+		if (foundNothing) {
+			if (isInterface()) {
+				 if (superInterfaces().length == 1) { // ensure superinterfaces are resolved before checking
+					if (refScope != null)
+						refScope.recordTypeReference(this.superInterfaces[0]);
+					return this.superInterfaces[0].getExactIndexer(argumentTypes, refScope);
+				 }
+			} else if (superclass() != null) { // ensure superclass is resolved before checking
+				if (refScope != null)
+					refScope.recordTypeReference(this.superclass);
+				return this.superclass.getExactIndexer(argumentTypes, refScope);
+			}
+		}
+		return null;
+	}
 	/**
 	 *  Rewrite of default memberTypes() to avoid resolving eagerly all member types when one is requested
 	 */

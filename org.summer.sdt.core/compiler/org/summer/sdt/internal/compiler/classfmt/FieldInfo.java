@@ -66,17 +66,13 @@ public class FieldInfo extends ClassFileStruct implements IBinaryField, Comparab
 							} else {
 								fieldInfo.parameters = new char[entriesNumber][];
 								for (int j = 0; j < entriesNumber; j++) {
-									utf8Offset =
-											fieldInfo.constantPoolOffsets[fieldInfo.u2At(
-													fieldInfo.constantPoolOffsets[fieldInfo.u2At(pos)] - fieldInfo.structOffset + 1)]
-											- fieldInfo.structOffset;
+									utf8Offset = fieldInfo.constantPoolOffsets[fieldInfo.u2At(pos)] - fieldInfo.structOffset;
 									fieldInfo.parameters[j] = fieldInfo.utf8At(utf8Offset + 3, fieldInfo.u2At(utf8Offset + 1));
 									pos += 2;
 								}
 							}
 						}
 						break;
-						
 					case 'R' :
 						AnnotationInfo[] decodedAnnotations = null;
 						TypeAnnotationInfo[] decodedTypeAnnotations = null;

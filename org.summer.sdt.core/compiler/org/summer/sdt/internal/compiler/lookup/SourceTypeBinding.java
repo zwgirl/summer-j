@@ -1088,9 +1088,9 @@ public class SourceTypeBinding extends ReferenceBinding {
 		} else {
 			// lazily sort methods
 			if ((this.tagBits & TagBits.AreFieldsSorted) == 0) {
-				int length = this.methods.length;
+				int length = this.fields.length;
 				if (length > 1)
-					ReferenceBinding.sortMethods(this.methods, 0, length);
+					ReferenceBinding.sortFields(this.fields, 0, length);
 				this.tagBits |= TagBits.AreFieldsSorted;
 			}
 	
@@ -1108,6 +1108,34 @@ public class SourceTypeBinding extends ReferenceBinding {
 						return getExactIndexer(argumentTypes, refScope); // try again since the problem indexers have been removed
 					}
 				}
+				
+				
+//				// always resolve anyway on source types
+//				FieldBinding field = ReferenceBinding.binarySearch(fieldName, this.fields);
+//				if (field != null) {
+//					FieldBinding result = null;
+//					try {
+//						result = resolveTypeFor(field);
+//						return result;
+//					} finally {
+//						if (result == null) {
+//							// ensure fields are consistent reqardless of the error
+//							int newSize = this.fields.length - 1;
+//							if (newSize == 0) {
+//								setFields(Binding.NO_FIELDS);
+//							} else {
+//								FieldBinding[] newFields = new FieldBinding[newSize];
+//								int index = 0;
+//								for (int i = 0, length = this.fields.length; i < length; i++) {
+//									FieldBinding f = this.fields[i];
+//									if (f == field) continue;
+//									newFields[index++] = f;
+//								}
+//								setFields(newFields);
+//							}
+//						}
+//					}
+//				}
 //				// check dup collisions
 //				boolean isSource15 = this.scope.compilerOptions().sourceLevel >= ClassFileConstants.JDK1_5;
 //				for (int i = start; i <= end; i++) {
