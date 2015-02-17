@@ -1166,6 +1166,38 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 	
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output){
 		if(this.binding == null){
+			if(this.actualReceiverType == null){
+				return output;
+			}
+			this.receiver.doGenerateExpression(scope, 0, output).append('(');
+			boolean comma = false;
+			if (this.arguments != null) {
+				if(comma) output.append(", "); //$NON-NLS-1$
+				if((((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccNative) != 0 || (((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccVarargs) == 0){
+					for (int i = 0; i < this.arguments.length ; i ++) {
+						if (i > 0) output.append(", "); //$NON-NLS-1$
+						this.arguments[i].doGenerateExpression(scope, 0, output);
+					}
+				} else{
+					if((((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccVarargs) != 0){
+						int argIndex = this.binding.parameters.length - 1;
+						for (int i = 0; i < argIndex ; i ++) {
+							if (i > 0) output.append(", "); //$NON-NLS-1$
+							this.arguments[i].doGenerateExpression(scope, 0, output);
+						}
+						
+						if (argIndex > 0) output.append(",");
+						output.append("["); //$NON-NLS-1$
+						for(int i = argIndex; i < this.arguments.length; i++){
+							if (i > argIndex) output.append(", "); //$NON-NLS-1$
+							this.arguments[i].doGenerateExpression(scope, 0, output);
+						}
+						output.append("]");
+					}
+				}
+
+			}
+			output.append(')');
 			return output;
 		}
 		

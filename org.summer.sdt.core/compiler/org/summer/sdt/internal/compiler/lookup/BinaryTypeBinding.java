@@ -476,6 +476,74 @@ public class BinaryTypeBinding extends ReferenceBinding {
 					this.tagBits |= TagBits.HasUnresolvedSuperinterfaces;
 				}
 			}
+			
+			//cym 2015-02-06
+			if (typeSignature == null)  {
+				char[] returnTypeName = binaryType.getReturnTypeName();
+				if (returnTypeName != null) {
+					// attempt to find the superclass if it exists in the cache (otherwise - resolve it when requested)
+					this.returnType = this.environment.getTypeFromConstantPoolName(returnTypeName, 0, -1, false, missingTypeNames, walker.toSupertype((short) -1));
+					this.tagBits |= TagBits.HasUnresolvedReturnType;
+				}
+	
+				this.parameterTypes = Binding.NO_PARAMETERS;
+				char[][] parameterNames = binaryType.getParameterNames();
+				if (parameterNames != null) {
+					int size = parameterNames.length;
+					if (size > 0) {
+						this.parameterTypes = new TypeBinding[size];
+						for (short i = 0; i < size; i++)
+							// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+							this.parameterTypes[i] = this.environment.getTypeFromConstantPoolName(parameterNames[i], 0, -1, false, missingTypeNames, walker.toSupertype(i));
+						this.tagBits |= TagBits.HasUnresolvedParameterTypes;
+					}
+				}
+				
+				this.thrownExceptionTypes = Binding.NO_EXCEPTIONS;
+				char[][] thrownExceptionTypeNames = binaryType.getThrownExceptionNames();
+				if (thrownExceptionTypeNames != null) {
+					int size = thrownExceptionTypeNames.length;
+					if (size > 0) {
+						this.thrownExceptionTypes = new TypeBinding[size];
+						for (short i = 0; i < size; i++)
+							// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+							this.thrownExceptionTypes[i] = this.environment.getTypeFromConstantPoolName(thrownExceptionTypeNames[i], 0, -1, false, missingTypeNames, walker.toSupertype(i));
+						this.tagBits |= TagBits.HasUnresolvedThrownExceptionTypes;
+					}
+				}
+			} else {
+				// attempt to find the return type if it exists in the cache (otherwise - resolve it when requested)
+				this.returnType = this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, 
+																			walker.toSupertype((short) -1));
+				this.tagBits |= TagBits.HasUnresolvedSuperclass;
+	
+				this.parameterTypes = Binding.NO_PARAMETERS;
+				if (!wrapper.atEnd()) {
+					// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+					java.util.ArrayList types = new java.util.ArrayList(2);
+					short rank = 0;
+					do {
+						types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toSupertype(rank++)));
+					} while (!wrapper.atEnd());
+					this.parameterTypes = new TypeBinding[types.size()];
+					types.toArray(this.parameterTypes);
+					this.tagBits |= TagBits.HasUnresolvedParameterTypes;
+				}
+				
+				this.thrownExceptionTypes = Binding.NO_EXCEPTIONS;
+				if (!wrapper.atEnd()) {
+					// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+					java.util.ArrayList types = new java.util.ArrayList(2);
+					short rank = 0;
+					do {
+						types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toSupertype(rank++)));
+					} while (!wrapper.atEnd());
+					this.thrownExceptionTypes = new TypeBinding[types.size()];
+					types.toArray(this.thrownExceptionTypes);
+					this.tagBits |= TagBits.HasUnresolvedThrownExceptionTypes;
+				}
+			}
+			//cym 2015-02-06 end
 	
 			if (needFieldsAndMethods) {
 				IBinaryField[] iFields = binaryType.getFields();
@@ -2099,7 +2167,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 		if (!isPrototype()) {
 			return this.thrownExceptionTypes = this.prototype.thrownExceptionTypes();
 		}
-		if ((this.tagBits & TagBits.HasUnresolvedParameterTypes) == 0)
+		if ((this.tagBits & TagBits.HasUnresolvedThrownExceptionTypes) == 0)
 			return this.thrownExceptionTypes;
 	
 		for (int i = this.thrownExceptionTypes.length; --i >= 0;) {
@@ -2128,7 +2196,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 //			if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
 //				this.typeBits |= applyCloseableInterfaceWhitelists();
 		}
-		this.tagBits &= ~TagBits.HasUnresolvedParameterTypes;
+		this.tagBits &= ~TagBits.HasUnresolvedThrownExceptionTypes;
 		return this.thrownExceptionTypes;
 	}
 }

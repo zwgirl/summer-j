@@ -74,20 +74,20 @@ public abstract class Attribute extends XAMLNode implements InvocationSite{
 			
 			if((property.binding.type.tagBits & TagBits.AnnotationEventCallback) != 0){
 				this.bits |= ASTNode.IsEventCallback;
-				StringLiteral str = (StringLiteral) this.value;
-				this.method = scope.findMethod(scope.classScope().referenceContext.binding, str.source, new TypeBinding[0], this, false);
+				StringLiteral stringLiteral = (StringLiteral) this.value;
+				this.method = scope.findMethod(scope.classScope().referenceContext.binding, stringLiteral.source, new TypeBinding[0], this, false);
 				if(this.method == null){
-					scope.problemReporter().errorNoMethodFor(str, property.binding.type, new TypeBinding[0]); 
+					scope.problemReporter().errorNoMethodFor(stringLiteral, property.binding.type, new TypeBinding[0]); 
 				}
 			}
 			
-			ReferenceBinding temBinding = scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE);
+			ReferenceBinding temBinding = scope.getJavaLangTemplate();
 			if(property.binding.type.isSubtypeOf(temBinding)) {
 				this.bits |= ASTNode.IsTemplate;
-				StringLiteral str = (StringLiteral) this.value;
-				this.template = (ReferenceBinding) scope.getType(str.source);
+				StringLiteral stringLiteral = (StringLiteral) this.value;
+				this.template = (ReferenceBinding) scope.getType(stringLiteral.source);
 				if(this.template == null){
-					scope.problemReporter().errorNoMethodFor(str, property.binding.type, new TypeBinding[0]); 
+					scope.problemReporter().errorNoMethodFor(stringLiteral, property.binding.type, new TypeBinding[0]); 
 				}
 				
 				classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;

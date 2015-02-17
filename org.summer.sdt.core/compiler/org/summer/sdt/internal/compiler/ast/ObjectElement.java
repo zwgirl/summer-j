@@ -208,13 +208,15 @@ public class ObjectElement extends XAMLElement {
 						if(attr.method.isStatic()){
 							output.append(attr.method.declaringClass.sourceName).append('.');
 							if(attr.value instanceof StringLiteral){
-								output.append(((StringLiteral)attr.value).source).append(".bind(").append(attr.method.declaringClass.sourceName)
-								.append("); ");
+//								output.append(((StringLiteral)attr.value).source).append(".bind(").append(attr.method.declaringClass.sourceName)
+//								.append("); ");
+								output.append(((StringLiteral)attr.value).source).append("); ");
 							}
 						} else {
 							output.append("__this.");
 							if(attr.value instanceof StringLiteral){
-								output.append(((StringLiteral)attr.value).source).append(".bind(__this); ");
+//								output.append(((StringLiteral)attr.value).source).append(".bind(__this); ");
+								output.append(((StringLiteral)attr.value).source); //.append(".bind(__this); ");
 							}
 						}
 						
