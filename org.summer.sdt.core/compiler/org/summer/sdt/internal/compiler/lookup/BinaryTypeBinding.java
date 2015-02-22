@@ -89,8 +89,8 @@ public class BinaryTypeBinding extends ReferenceBinding {
 	
 	//cym 2015-02-14
 	protected TypeBinding returnType;
-	protected TypeBinding[] parameterTypes;
-	protected TypeBinding[] thrownExceptionTypes;
+	protected TypeBinding[] parameters;
+	protected TypeBinding[] thrownExceptions;
 
 	static Object convertMemberValue(Object binaryValue, LookupEnvironment env, char[][][] missingTypeNames, boolean resolveEnumConstants) {
 		if (binaryValue == null) return null;
@@ -376,6 +376,279 @@ public class BinaryTypeBinding extends ReferenceBinding {
 		return availableMethods;
 	}
 	
+//	void cachePartsFrom(IBinaryType binaryType, boolean needFieldsAndMethods) {
+//		if (!isPrototype()) throw new IllegalStateException();
+//		try {
+//			// default initialization for super-interfaces early, in case some aborting compilation error occurs,
+//			// and still want to use binaries passed that point (e.g. type hierarchy resolver, see bug 63748).
+//			this.typeVariables = Binding.NO_TYPE_VARIABLES;
+//			this.superInterfaces = Binding.NO_SUPERINTERFACES;
+//	
+//			// must retrieve member types in case superclass/interfaces need them
+//			this.memberTypes = Binding.NO_MEMBER_TYPES;
+//			IBinaryNestedType[] memberTypeStructures = binaryType.getMemberTypes();
+//			if (memberTypeStructures != null) {
+//				int size = memberTypeStructures.length;
+//				if (size > 0) {
+//					this.memberTypes = new ReferenceBinding[size];
+//					for (int i = 0; i < size; i++) {
+//						// attempt to find each member type if it exists in the cache (otherwise - resolve it when requested)
+//						this.memberTypes[i] = this.environment.getTypeFromConstantPoolName(memberTypeStructures[i].getName(), 0, -1, false, null /* could not be missing */);
+//					}
+//					this.tagBits |= TagBits.HasUnresolvedMemberTypes;
+//				}
+//			}
+//	
+//			CompilerOptions globalOptions = this.environment.globalOptions;
+//			long sourceLevel = globalOptions.originalSourceLevel;
+//			/* https://bugs.eclipse.org/bugs/show_bug.cgi?id=324850, even in a 1.4 project, we
+//			   must internalize type variables and observe any parameterization of super class
+//			   and/or super interfaces in order to be able to detect overriding in the presence
+//			   of generics.
+//			 */
+//			if (this.environment.globalOptions.isAnnotationBasedNullAnalysisEnabled) {
+//				// need annotations on the type before processing null annotations on members respecting any @NonNullByDefault:
+//				scanTypeForNullDefaultAnnotation(binaryType, this.fPackage);
+//			}
+//			TypeAnnotationWalker walker = getTypeAnnotationWalker(binaryType.getTypeAnnotations());
+//			char[] typeSignature = binaryType.getGenericSignature(); // use generic signature even in 1.4
+//			this.tagBits |= binaryType.getTagBits();
+//			
+//			char[][][] missingTypeNames = binaryType.getMissingTypeNames();
+//			SignatureWrapper wrapper = null;
+//			if (typeSignature != null) {
+//				// ClassSignature = ParameterPart(optional) super_TypeSignature interface_signature
+//				wrapper = new SignatureWrapper(typeSignature);
+//				if (wrapper.signature[wrapper.start] == Util.C_GENERIC_START) {
+//					// ParameterPart = '<' ParameterSignature(s) '>'
+//					wrapper.start++; // skip '<'
+//					this.typeVariables = createTypeVariables(wrapper, true, missingTypeNames, walker, true/*class*/);
+//					wrapper.start++; // skip '>'
+//					this.tagBits |=  TagBits.HasUnresolvedTypeVariables;
+//					this.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
+//				}
+//			}
+//			TypeVariableBinding[] typeVars = Binding.NO_TYPE_VARIABLES;
+//			char[] methodDescriptor = binaryType.getEnclosingMethod();
+//			if (methodDescriptor != null) {
+//				MethodBinding enclosingMethod = findMethod(methodDescriptor, missingTypeNames);
+//				if (enclosingMethod != null) {
+//					typeVars = enclosingMethod.typeVariables;
+//					this.typeVariables = addMethodTypeVariables(typeVars);			
+//				}
+//			}
+//			if (typeSignature == null)  {
+//				char[] superclassName = binaryType.getSuperclassName();
+//				if (superclassName != null) {
+//					// attempt to find the superclass if it exists in the cache (otherwise - resolve it when requested)
+//					this.superclass = this.environment.getTypeFromConstantPoolName(superclassName, 0, -1, false, missingTypeNames, walker.toSupertype((short) -1));
+//					this.tagBits |= TagBits.HasUnresolvedSuperclass;
+//				}
+//	
+//				this.superInterfaces = Binding.NO_SUPERINTERFACES;
+//				char[][] interfaceNames = binaryType.getInterfaceNames();
+//				if (interfaceNames != null) {
+//					int size = interfaceNames.length;
+//					if (size > 0) {
+//						this.superInterfaces = new ReferenceBinding[size];
+//						for (short i = 0; i < size; i++)
+//							// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+//							this.superInterfaces[i] = this.environment.getTypeFromConstantPoolName(interfaceNames[i], 0, -1, false, missingTypeNames, walker.toSupertype(i));
+//						this.tagBits |= TagBits.HasUnresolvedSuperinterfaces;
+//					}
+//				}
+//			} else {
+//				// attempt to find the superclass if it exists in the cache (otherwise - resolve it when requested)
+//				this.superclass = (ReferenceBinding) this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, 
+//																			walker.toSupertype((short) -1));
+//				this.tagBits |= TagBits.HasUnresolvedSuperclass;
+//	
+//				this.superInterfaces = Binding.NO_SUPERINTERFACES;
+//				if (!wrapper.atEnd()) {
+//					// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+//					java.util.ArrayList types = new java.util.ArrayList(2);
+//					short rank = 0;
+//					do {
+//						types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toSupertype(rank++)));
+//					} while (!wrapper.atEnd());
+//					this.superInterfaces = new ReferenceBinding[types.size()];
+//					types.toArray(this.superInterfaces);
+//					this.tagBits |= TagBits.HasUnresolvedSuperinterfaces;
+//				}
+//			}
+//			
+//			char[] functionTypeSignature = binaryType.getGenericSignature(); // use generic signature even in 1.4
+//			//cym 2015-02-06
+//			if (functionTypeSignature == null)  {
+//				char[] returnTypeName = binaryType.getReturnTypeName();
+//				if (returnTypeName != null) {
+//					// attempt to find the superclass if it exists in the cache (otherwise - resolve it when requested)
+//					this.returnType = this.environment.getTypeFromConstantPoolName1(returnTypeName, 0, -1, false, missingTypeNames, walker.toSupertype((short) -1));
+//					this.tagBits |= TagBits.HasUnresolvedReturnType;
+//				}
+//	
+//				this.parameters = Binding.NO_PARAMETERS;
+//				char[][] parameterNames = binaryType.getParameterNames();
+//				if (parameterNames != null) {
+//					int size = parameterNames.length;
+//					if (size > 0) {
+//						this.parameters = new TypeBinding[size];
+//						for (short i = 0; i < size; i++)
+//							// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+//							this.parameters[i] = this.environment.getTypeFromConstantPoolName1(parameterNames[i], 0, -1, false, missingTypeNames, walker.toSupertype(i));
+//						this.tagBits |= TagBits.HasUnresolvedParameterTypes;
+//					}
+//				}
+//				
+//				this.thrownExceptions = Binding.NO_EXCEPTIONS;
+//				char[][] thrownExceptionNames = binaryType.getThrownExceptionNames();
+//				if (thrownExceptionNames != null) {
+//					int size = thrownExceptionNames.length;
+//					if (size > 0) {
+//						this.thrownExceptions = new TypeBinding[size];
+//						for (short i = 0; i < size; i++)
+//							// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+//							this.thrownExceptions[i] = this.environment.getTypeFromConstantPoolName1(thrownExceptionNames[i], 0, -1, false, missingTypeNames, walker.toSupertype(i));
+//						this.tagBits |= TagBits.HasUnresolvedThrownExceptionTypes;
+//					}
+//				}
+//			} else {
+//				// attempt to find the return type if it exists in the cache (otherwise - resolve it when requested)
+////				this.returnType = this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, 
+////																			walker.toSupertype((short) -1));
+////				this.tagBits |= TagBits.HasUnresolvedSuperclass;
+////	
+////				this.parameters = Binding.NO_PARAMETERS;
+////				if (!wrapper.atEnd()) {
+////					// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+////					java.util.ArrayList types = new java.util.ArrayList(2);
+////					short rank = 0;
+////					do {
+////						types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toSupertype(rank++)));
+////					} while (!wrapper.atEnd());
+////					this.parameters = new TypeBinding[types.size()];
+////					types.toArray(this.parameters);
+////					this.tagBits |= TagBits.HasUnresolvedParameterTypes;
+////				}
+////				
+////				this.thrownExceptions = Binding.NO_EXCEPTIONS;
+////				if (!wrapper.atEnd()) {
+////					// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+////					java.util.ArrayList types = new java.util.ArrayList(2);
+////					short rank = 0;
+////					do {
+////						types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toSupertype(rank++)));
+////					} while (!wrapper.atEnd());
+////					this.thrownExceptions = new TypeBinding[types.size()];
+////					types.toArray(this.thrownExceptions);
+////					this.tagBits |= TagBits.HasUnresolvedThrownExceptionTypes;
+////				}
+//				
+//				
+//				///////////////////
+////				this.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
+//				// MethodTypeSignature = ParameterPart(optional) '(' TypeSignatures ')' return_typeSignature ['^' TypeSignature (optional)]
+//				wrapper = new SignatureWrapper(functionTypeSignature, true);
+//				if (wrapper.signature[wrapper.start] == Util.C_GENERIC_START) {
+//					// <A::Ljava/lang/annotation/Annotation;>(Ljava/lang/Class<TA;>;)TA;
+//					// ParameterPart = '<' ParameterSignature(s) '>'
+//					wrapper.start++; // skip '<'
+//					typeVars = createTypeVariables(wrapper, false, missingTypeNames, walker, false/*class*/);
+//					wrapper.start++; // skip '>'
+//				}
+//		
+//				if (wrapper.signature[wrapper.start] == Util.C_PARAM_START) {
+//					wrapper.start++; // skip '('
+//					if (wrapper.signature[wrapper.start] == Util.C_PARAM_END) {
+//						wrapper.start++; // skip ')'
+//					} else {
+//						java.util.ArrayList types = new java.util.ArrayList(2);
+//						short rank = 0;
+//						while (wrapper.signature[wrapper.start] != Util.C_PARAM_END)
+//							types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toMethodParameter(rank++)));
+//						wrapper.start++; // skip ')'
+//						int numParam = types.size();
+//						parameters = new TypeBinding[numParam];
+//						types.toArray(parameters);
+////						if (this.environment.globalOptions.storeAnnotations) {
+////							paramAnnotations = new AnnotationBinding[numParam][];
+////							for (int i = 0; i < numParam; i++)
+////								paramAnnotations[i] = createAnnotations(method.getParameterAnnotations(i), this.environment, missingTypeNames);
+////						}
+//					}
+//				}
+//		
+//				// always retrieve return type (for constructors, its V for void - will be ignored)
+//				returnType = this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toMethodReturn());
+//		
+//				if (!wrapper.atEnd() && wrapper.signature[wrapper.start] == Util.C_EXCEPTION_START) {
+//					// attempt to find each exception if it exists in the cache (otherwise - resolve it when requested)
+//					java.util.ArrayList types = new java.util.ArrayList(2);
+//					int excRank = 0;
+//					do {
+//						wrapper.start++; // skip '^'
+//						types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames,
+//							walker.toThrows(excRank++)));
+//					} while (!wrapper.atEnd() && wrapper.signature[wrapper.start] == Util.C_EXCEPTION_START);
+//					thrownExceptions = new ReferenceBinding[types.size()];
+//					types.toArray(thrownExceptions);
+//				} else { // get the exceptions the old way
+//					char[][] exceptionTypes = binaryType.getThrownExceptionNames();
+//					if (exceptionTypes != null) {
+//						int size = exceptionTypes.length;
+//						if (size > 0) {
+//							thrownExceptions = new ReferenceBinding[size];
+//							for (int i = 0; i < size; i++)
+//								thrownExceptions[i] = this.environment.getTypeFromConstantPoolName(exceptionTypes[i], 0, -1, false, missingTypeNames, walker.toThrows(i));
+//						}
+//					}
+//				}
+//			}
+//			//cym 2015-02-06 end
+//	
+//			if (needFieldsAndMethods) {
+//				IBinaryField[] iFields = binaryType.getFields();
+//				createFields(iFields, sourceLevel, missingTypeNames);
+//				IBinaryMethod[] iMethods = createMethods(binaryType.getMethods(), sourceLevel, missingTypeNames);
+//				boolean isViewedAsDeprecated = isViewedAsDeprecated();
+//				if (isViewedAsDeprecated) {
+//					for (int i = 0, max = this.fields.length; i < max; i++) {
+//						FieldBinding field = this.fields[i];
+//						if (!field.isDeprecated()) {
+//							field.modifiers |= ExtraCompilerModifiers.AccDeprecatedImplicitly;
+//						}
+//					}
+//					for (int i = 0, max = this.methods.length; i < max; i++) {
+//						MethodBinding method = this.methods[i];
+//						if (!method.isDeprecated()) {
+//							method.modifiers |= ExtraCompilerModifiers.AccDeprecatedImplicitly;
+//						}
+//					}
+//				}
+//				if (this.environment.globalOptions.isAnnotationBasedNullAnalysisEnabled) {
+//					if (iFields != null) {
+//						for (int i = 0; i < iFields.length; i++)
+//							scanFieldForNullAnnotation(iFields[i], this.fields[i], this.isEnum());
+//					}
+//					if (iMethods != null) {
+//						for (int i = 0; i < iMethods.length; i++)
+//							scanMethodForNullAnnotation(iMethods[i], this.methods[i]);
+//					}
+//				}
+//			}
+//			if (this.environment.globalOptions.storeAnnotations)
+//				setAnnotations(createAnnotations(binaryType.getAnnotations(), this.environment, missingTypeNames));
+//			if (this.isAnnotationType())
+//				scanTypeForContainerAnnotation(binaryType, missingTypeNames);
+//		} finally {
+//			// protect against incorrect use of the needFieldsAndMethods flag, see 48459
+//			if (this.fields == null)
+//				this.fields = Binding.NO_FIELDS;
+//			if (this.methods == null)
+//				this.methods = Binding.NO_METHODS;
+//		}
+//	}
+	//cym 2015-02-19
 	void cachePartsFrom(IBinaryType binaryType, boolean needFieldsAndMethods) {
 		if (!isPrototype()) throw new IllegalStateException();
 		try {
@@ -457,94 +730,122 @@ public class BinaryTypeBinding extends ReferenceBinding {
 						this.tagBits |= TagBits.HasUnresolvedSuperinterfaces;
 					}
 				}
+				
+				if((this.modifiers & ClassFileConstants.AccFunction) != 0){
+					char[] returnTypeName = binaryType.getReturnTypeName();
+					if (returnTypeName != null) {
+						// attempt to find the superclass if it exists in the cache (otherwise - resolve it when requested)
+						this.returnType = this.environment.getTypeFromConstantPoolName1(returnTypeName, 0, -1, false, missingTypeNames, walker.toSupertype((short) -1));
+						this.tagBits |= TagBits.HasUnresolvedReturnType;
+					}
+		
+					this.parameters = Binding.NO_PARAMETERS;
+					char[][] parameterNames = binaryType.getParameterNames();
+					if (parameterNames != null) {
+						int size = parameterNames.length;
+						if (size > 0) {
+							this.parameters = new TypeBinding[size];
+							for (short i = 0; i < size; i++)
+								// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+								this.parameters[i] = this.environment.getTypeFromConstantPoolName1(parameterNames[i], 0, -1, false, missingTypeNames, walker.toSupertype(i));
+							this.tagBits |= TagBits.HasUnresolvedParameterTypes;
+						}
+					}
+					
+					this.thrownExceptions = Binding.NO_EXCEPTIONS;
+					char[][] thrownExceptionNames = binaryType.getThrownExceptionNames();
+					if (thrownExceptionNames != null) {
+						int size = thrownExceptionNames.length;
+						if (size > 0) {
+							this.thrownExceptions = new TypeBinding[size];
+							for (short i = 0; i < size; i++)
+								// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+								this.thrownExceptions[i] = this.environment.getTypeFromConstantPoolName1(thrownExceptionNames[i], 0, -1, false, missingTypeNames, walker.toSupertype(i));
+							this.tagBits |= TagBits.HasUnresolvedThrownExceptionTypes;
+						}
+					}
+				}
 			} else {
-				// attempt to find the superclass if it exists in the cache (otherwise - resolve it when requested)
-				this.superclass = (ReferenceBinding) this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, 
-																			walker.toSupertype((short) -1));
-				this.tagBits |= TagBits.HasUnresolvedSuperclass;
-	
-				this.superInterfaces = Binding.NO_SUPERINTERFACES;
-				if (!wrapper.atEnd()) {
-					// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
-					java.util.ArrayList types = new java.util.ArrayList(2);
-					short rank = 0;
-					do {
-						types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toSupertype(rank++)));
-					} while (!wrapper.atEnd());
-					this.superInterfaces = new ReferenceBinding[types.size()];
-					types.toArray(this.superInterfaces);
-					this.tagBits |= TagBits.HasUnresolvedSuperinterfaces;
+				if((this.modifiers & ClassFileConstants.AccFunction) == 0){
+					// attempt to find the superclass if it exists in the cache (otherwise - resolve it when requested)
+					this.superclass = (ReferenceBinding) this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, 
+																				walker.toSupertype((short) -1));
+					this.tagBits |= TagBits.HasUnresolvedSuperclass;
+		
+					this.superInterfaces = Binding.NO_SUPERINTERFACES;
+					if (!wrapper.atEnd()) {
+						// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
+						java.util.ArrayList types = new java.util.ArrayList(2);
+						short rank = 0;
+						do {
+							types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toSupertype(rank++)));
+						} while (!wrapper.atEnd());
+						this.superInterfaces = new ReferenceBinding[types.size()];
+						types.toArray(this.superInterfaces);
+						this.tagBits |= TagBits.HasUnresolvedSuperinterfaces;
+					}
+				} else {
+//					this.tagBits |= TagBits.HasUnresolvedSuperclass;
+//					this.superclass = environment.getType(TypeConstants.JAVA_LANG_FUNCTION);
+					
+					char[] superclassName = binaryType.getSuperclassName();
+					if (superclassName != null) {
+						// attempt to find the superclass if it exists in the cache (otherwise - resolve it when requested)
+						this.superclass = this.environment.getTypeFromConstantPoolName(superclassName, 0, -1, false, missingTypeNames, walker.toSupertype((short) -1));
+						this.tagBits |= TagBits.HasUnresolvedSuperclass;
+					}
+					
+					this.superInterfaces = Binding.NO_SUPERINTERFACES;
+					
+					if (wrapper.signature[wrapper.start] == Util.C_PARAM_START) {
+						wrapper.start++; // skip '('
+						if (wrapper.signature[wrapper.start] == Util.C_PARAM_END) {
+							wrapper.start++; // skip ')'
+						} else {
+							java.util.ArrayList types = new java.util.ArrayList(2);
+							short rank = 0;
+							while (wrapper.signature[wrapper.start] != Util.C_PARAM_END)
+								types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toMethodParameter(rank++)));
+							wrapper.start++; // skip ')'
+							int numParam = types.size();
+							this.parameters = new TypeBinding[numParam];
+							types.toArray(parameters);
+//							if (this.environment.globalOptions.storeAnnotations) {
+//								paramAnnotations = new AnnotationBinding[numParam][];
+//								for (int i = 0; i < numParam; i++)
+//									paramAnnotations[i] = createAnnotations(method.getParameterAnnotations(i), this.environment, missingTypeNames);
+//							}
+						}
+					}
+			
+					// always retrieve return type (for constructors, its V for void - will be ignored)
+					this.returnType = this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toMethodReturn());
+			
+					if (!wrapper.atEnd() && wrapper.signature[wrapper.start] == Util.C_EXCEPTION_START) {
+						// attempt to find each exception if it exists in the cache (otherwise - resolve it when requested)
+						java.util.ArrayList types = new java.util.ArrayList(2);
+						int excRank = 0;
+						do {
+							wrapper.start++; // skip '^'
+							types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames,
+								walker.toThrows(excRank++)));
+						} while (!wrapper.atEnd() && wrapper.signature[wrapper.start] == Util.C_EXCEPTION_START);
+						this.thrownExceptions = new ReferenceBinding[types.size()];
+						types.toArray(thrownExceptions);
+					} else { // get the exceptions the old way
+						char[][] exceptionTypes = binaryType.getThrownExceptionNames();
+						if (exceptionTypes != null) {
+							int size = exceptionTypes.length;
+							if (size > 0) {
+								this.thrownExceptions = new ReferenceBinding[size];
+								for (int i = 0; i < size; i++)
+									this.thrownExceptions[i] = this.environment.getTypeFromConstantPoolName(exceptionTypes[i], 0, -1, false, missingTypeNames, walker.toThrows(i));
+							}
+						}
+					}
 				}
 			}
 			
-			//cym 2015-02-06
-			if (typeSignature == null)  {
-				char[] returnTypeName = binaryType.getReturnTypeName();
-				if (returnTypeName != null) {
-					// attempt to find the superclass if it exists in the cache (otherwise - resolve it when requested)
-					this.returnType = this.environment.getTypeFromConstantPoolName(returnTypeName, 0, -1, false, missingTypeNames, walker.toSupertype((short) -1));
-					this.tagBits |= TagBits.HasUnresolvedReturnType;
-				}
-	
-				this.parameterTypes = Binding.NO_PARAMETERS;
-				char[][] parameterNames = binaryType.getParameterNames();
-				if (parameterNames != null) {
-					int size = parameterNames.length;
-					if (size > 0) {
-						this.parameterTypes = new TypeBinding[size];
-						for (short i = 0; i < size; i++)
-							// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
-							this.parameterTypes[i] = this.environment.getTypeFromConstantPoolName(parameterNames[i], 0, -1, false, missingTypeNames, walker.toSupertype(i));
-						this.tagBits |= TagBits.HasUnresolvedParameterTypes;
-					}
-				}
-				
-				this.thrownExceptionTypes = Binding.NO_EXCEPTIONS;
-				char[][] thrownExceptionTypeNames = binaryType.getThrownExceptionNames();
-				if (thrownExceptionTypeNames != null) {
-					int size = thrownExceptionTypeNames.length;
-					if (size > 0) {
-						this.thrownExceptionTypes = new TypeBinding[size];
-						for (short i = 0; i < size; i++)
-							// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
-							this.thrownExceptionTypes[i] = this.environment.getTypeFromConstantPoolName(thrownExceptionTypeNames[i], 0, -1, false, missingTypeNames, walker.toSupertype(i));
-						this.tagBits |= TagBits.HasUnresolvedThrownExceptionTypes;
-					}
-				}
-			} else {
-				// attempt to find the return type if it exists in the cache (otherwise - resolve it when requested)
-				this.returnType = this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, 
-																			walker.toSupertype((short) -1));
-				this.tagBits |= TagBits.HasUnresolvedSuperclass;
-	
-				this.parameterTypes = Binding.NO_PARAMETERS;
-				if (!wrapper.atEnd()) {
-					// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
-					java.util.ArrayList types = new java.util.ArrayList(2);
-					short rank = 0;
-					do {
-						types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toSupertype(rank++)));
-					} while (!wrapper.atEnd());
-					this.parameterTypes = new TypeBinding[types.size()];
-					types.toArray(this.parameterTypes);
-					this.tagBits |= TagBits.HasUnresolvedParameterTypes;
-				}
-				
-				this.thrownExceptionTypes = Binding.NO_EXCEPTIONS;
-				if (!wrapper.atEnd()) {
-					// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
-					java.util.ArrayList types = new java.util.ArrayList(2);
-					short rank = 0;
-					do {
-						types.add(this.environment.getTypeFromTypeSignature(wrapper, typeVars, this, missingTypeNames, walker.toSupertype(rank++)));
-					} while (!wrapper.atEnd());
-					this.thrownExceptionTypes = new TypeBinding[types.size()];
-					types.toArray(this.thrownExceptionTypes);
-					this.tagBits |= TagBits.HasUnresolvedThrownExceptionTypes;
-				}
-			}
-			//cym 2015-02-06 end
-	
 			if (needFieldsAndMethods) {
 				IBinaryField[] iFields = binaryType.getFields();
 				createFields(iFields, sourceLevel, missingTypeNames);
@@ -2124,15 +2425,15 @@ public class BinaryTypeBinding extends ReferenceBinding {
 	
 	//cym 2015-02-14
 	@Override
-	public TypeBinding[] parameterTypes() {
+	public TypeBinding[] parameters() {
 		if (!isPrototype()) {
-			return this.parameterTypes = this.prototype.parameterTypes();
+			return this.parameters = this.prototype.parameters();
 		}
 		if ((this.tagBits & TagBits.HasUnresolvedParameterTypes) == 0)
-			return this.parameterTypes;
+			return this.parameters;
 	
-		for (int i = this.parameterTypes.length; --i >= 0;) {
-			this.parameterTypes[i] = (ReferenceBinding) resolveType(this.parameterTypes[i], this.environment, true /* raw conversion */);
+		for (int i = this.parameters.length; --i >= 0;) {
+			this.parameters[i] = (ReferenceBinding) resolveType(this.parameters[i], this.environment, true /* raw conversion */);
 //			if (this.parameterTypes[i].problemId() == ProblemReasons.NotFound) {
 //				this.tagBits |= TagBits.HierarchyHasProblems; // propagate type inconsistency
 //			} else {
@@ -2158,20 +2459,20 @@ public class BinaryTypeBinding extends ReferenceBinding {
 //				this.typeBits |= applyCloseableInterfaceWhitelists();
 		}
 		this.tagBits &= ~TagBits.HasUnresolvedParameterTypes;
-		return this.parameterTypes;
+		return this.parameters;
 	}
 	
 	//cym 2015-02-14
 	@Override
-	public TypeBinding[] thrownExceptionTypes() {
+	public TypeBinding[] thrownExceptions() {
 		if (!isPrototype()) {
-			return this.thrownExceptionTypes = this.prototype.thrownExceptionTypes();
+			return this.thrownExceptions = this.prototype.thrownExceptions();
 		}
 		if ((this.tagBits & TagBits.HasUnresolvedThrownExceptionTypes) == 0)
-			return this.thrownExceptionTypes;
+			return this.thrownExceptions;
 	
-		for (int i = this.thrownExceptionTypes.length; --i >= 0;) {
-			this.thrownExceptionTypes[i] = (ReferenceBinding) resolveType(this.thrownExceptionTypes[i], this.environment, true /* raw conversion */);
+		for (int i = this.thrownExceptions.length; --i >= 0;) {
+			this.thrownExceptions[i] = (ReferenceBinding) resolveType(this.thrownExceptions[i], this.environment, true /* raw conversion */);
 //			if (this.parameterTypes[i].problemId() == ProblemReasons.NotFound) {
 //				this.tagBits |= TagBits.HierarchyHasProblems; // propagate type inconsistency
 //			} else {
@@ -2197,6 +2498,6 @@ public class BinaryTypeBinding extends ReferenceBinding {
 //				this.typeBits |= applyCloseableInterfaceWhitelists();
 		}
 		this.tagBits &= ~TagBits.HasUnresolvedThrownExceptionTypes;
-		return this.thrownExceptionTypes;
+		return this.thrownExceptions;
 	}
 }

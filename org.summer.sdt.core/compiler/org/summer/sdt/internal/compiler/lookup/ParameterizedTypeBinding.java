@@ -43,6 +43,7 @@ package org.summer.sdt.internal.compiler.lookup;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
@@ -67,6 +68,10 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	public ReferenceBinding[] memberTypes;
 	public MethodBinding[] methods;
 	protected ReferenceBinding enclosingType;
+	
+	public TypeBinding returnType;                    // MUST NOT be modified directly, use setter !
+	public TypeBinding[] parameters;             // MUST NOT be modified directly, use setter !
+	public ReferenceBinding[] thrownExceptions;   
 
 	public ParameterizedTypeBinding(ReferenceBinding type, TypeBinding[] arguments,  ReferenceBinding enclosingType, LookupEnvironment environment){
 		this.environment = environment;
@@ -1642,6 +1647,39 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	public boolean isArrayType2(){
 		if(this.type.id == TypeIds.T_JavaLangArray) return true;
 		return false;
+	}
+	
+	//cym 2015-02-19 function type
+	public TypeBinding returnType() {
+        if(this.returnType == null){
+	        TypeBinding returnType = this.type.returnType();
+		    this.returnType = (ReferenceBinding) Scope.substitute(this, returnType);
+        }
+		
+		return this.returnType;
+	}
+	
+	//cym 2015-02-19 function type
+	public TypeBinding[] parameters() {
+	    if (this.parameters == null) {
+    		if (this.type.parameters() == Binding.NO_PARAMETERS)
+    			this.parameters = Binding.NO_PARAMETERS; // prevent superinterfaces from being assigned before they are connected
+    		else
+    			this.parameters = Scope.substitute(this, this.type.parameters());
+	    }
+		return this.parameters;
+	}
+	
+	
+	//cym 2015-02-19 function type
+	public TypeBinding[] thrownExceptions() {
+	    if (this.thrownExceptions == null) {
+    		if (this.type.thrownExceptions() == Binding.NO_PARAMETERS)
+    			this.thrownExceptions = Binding.NO_EXCEPTIONS; // prevent superinterfaces from being assigned before they are connected
+    		else
+    			this.thrownExceptions = (ReferenceBinding[]) Scope.substitute(this, this.type.thrownExceptions());
+	    }
+		return this.thrownExceptions;
 	}
 
 }

@@ -29,6 +29,7 @@ import static org.summer.sdt.internal.compiler.ast.ExpressionContext.VANILLA_CON
 import org.summer.sdt.internal.compiler.CompilationResult;
 import org.summer.sdt.internal.compiler.DefaultErrorHandlingPolicies;
 import org.summer.sdt.internal.compiler.IErrorHandlingPolicy;
+import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.flow.FlowInfo;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
@@ -188,7 +189,8 @@ public abstract class FunctionalExpression extends Expression {
 		this.constant = Constant.NotAConstant;
 		this.enclosingScope = blockScope;
 //		MethodBinding sam = this.expectedType == null ? null : this.expectedType.getSingleAbstractMethod(blockScope, argumentsTypeElided());
-		if (this.expectedType == null || !this.expectedType.isSubtypeOf(blockScope.getJavaLangFunction())) {
+//		if (this.expectedType == null || !this.expectedType.isSubtypeOf(blockScope.getJavaLangFunction())) {
+		if (this.expectedType == null || (((ReferenceBinding)this.expectedType).modifiers & ClassFileConstants.AccFunction) == 0) {
 			blockScope.problemReporter().targetTypeIsNotAFunctionalInterface(this);
 			return null;
 		}
@@ -297,9 +299,9 @@ public abstract class FunctionalExpression extends Expression {
 		boolean status = true;
 		if (!inspector.visible(functionType.returnType()))
 			status = false;
-		if (!inspector.visible(functionType.parameterTypes()))
+		if (!inspector.visible(functionType.parameters()))
 			status = false;
-		if (!inspector.visible(functionType.thrownExceptionTypes()))
+		if (!inspector.visible(functionType.thrownExceptions()))
 			status = false;
 		if (!inspector.visible(functionType))
 			status = false;

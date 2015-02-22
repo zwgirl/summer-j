@@ -2103,7 +2103,7 @@ public class CompletionParser extends AssistParser {
 		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
 	}
 	
-	protected void consumeGeneralAttribute(SingleNameReference namespace) {
+	protected void consumeGeneralAttribute(SingleTypeReference namespace) {
 		if ((indexOfAssistIdentifier(true)) < 0) {
 			super.consumeGeneralAttribute(null);
 			return;
@@ -2357,10 +2357,29 @@ public class CompletionParser extends AssistParser {
 	/* (non-Javadoc)
 	 * @see org.summer.sdt.internal.compiler.parser.Parser#consumeClassDeclaration()
 	 */
+//	protected void consumeClassDeclaration() {
+//		if (this.astPtr >= 0) {
+//			int length = this.astLengthStack[this.astLengthPtr];
+//			TypeDeclaration typeDeclaration = (TypeDeclaration) this.astStack[this.astPtr-length];
+//			this.javadoc = null;
+//			CompletionJavadocParser completionJavadocParser = (CompletionJavadocParser)this.javadocParser;
+//			completionJavadocParser.allPossibleTags = true;
+//			checkComment();
+//			if (this.javadoc != null && this.cursorLocation > this.javadoc.sourceStart && this.cursorLocation < this.javadoc.sourceEnd) {
+//				// completion is in an orphan javadoc comment => replace in last read declaration to allow completion resolution
+//				typeDeclaration.javadoc = this.javadoc;
+//			}
+//			completionJavadocParser.allPossibleTags = false;
+//		}
+//		super.consumeClassDeclaration();
+//	}
+	
+	//cym 2015-02-22
 	protected void consumeClassDeclaration() {
-		if (this.astPtr >= 0) {
-			int length = this.astLengthStack[this.astLengthPtr];
-			TypeDeclaration typeDeclaration = (TypeDeclaration) this.astStack[this.astPtr-length];
+		super.consumeClassDeclaration();
+//		if (this.astPtr >= 0) {
+//			int length = this.astLengthStack[this.astLengthPtr];
+			TypeDeclaration typeDeclaration = (TypeDeclaration) this.astStack[this.astPtr];
 			this.javadoc = null;
 			CompletionJavadocParser completionJavadocParser = (CompletionJavadocParser)this.javadocParser;
 			completionJavadocParser.allPossibleTags = true;
@@ -2370,8 +2389,7 @@ public class CompletionParser extends AssistParser {
 				typeDeclaration.javadoc = this.javadoc;
 			}
 			completionJavadocParser.allPossibleTags = false;
-		}
-		super.consumeClassDeclaration();
+//		}
 	}
 	protected void consumeClassHeaderName1() {
 		super.consumeClassHeaderName1();

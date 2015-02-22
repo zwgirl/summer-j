@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.compiler.ClassFile;
 import org.summer.sdt.internal.compiler.ast.ASTNode;
 import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
@@ -62,6 +63,7 @@ import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeParameter;
 import org.summer.sdt.internal.compiler.ast.TypeReference;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
+import org.summer.sdt.internal.compiler.codegen.ConstantPool;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
@@ -102,8 +104,8 @@ public class SourceTypeBinding extends ReferenceBinding {
 	
 	//cym 2015-02-14 function type
 	public TypeBinding returnType;                    // MUST NOT be modified directly, use setter !
-	public TypeBinding[] parameterTypes = NO_PARAMETERS;             // MUST NOT be modified directly, use setter !
-	public TypeBinding[] thrownExceptionTypes = NO_EXCEPTIONS;             // MUST NOT be modified directly, use setter !
+	public TypeBinding[] parameters = NO_PARAMETERS;             // MUST NOT be modified directly, use setter !
+	public ReferenceBinding[] thrownExceptions = NO_EXCEPTIONS;             // MUST NOT be modified directly, use setter !
 	
 	public SourceTypeBinding(char[][] compoundName, PackageBinding fPackage, ClassScope scope) {
 		this.compoundName = compoundName;
@@ -120,7 +122,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 		this.prototype = this;
 		
 		//cym 2015-02-14
-		this.parameterTypes = Binding.NO_PARAMETERS; 
+		this.parameters = Binding.NO_PARAMETERS; 
 		
 		computeId();
 	}
@@ -935,35 +937,158 @@ public class SourceTypeBinding extends ReferenceBinding {
 	 * <param1 ... paramN>superclass superinterface1 ... superinterfaceN
 	 * <T:LY<TT;>;U:Ljava/lang/Object;V::Ljava/lang/Runnable;:Ljava/lang/Cloneable;:Ljava/util/Map;>Ljava/lang/Exception;Ljava/lang/Runnable;
 	 */
+//	public char[] genericSignature() {
+//		if (!isPrototype())
+//			return this.prototype.genericSignature();
+//		
+//	    StringBuffer sig = null;
+//		if (this.typeVariables != Binding.NO_TYPE_VARIABLES) {
+//		    sig = new StringBuffer(10);
+//		    sig.append('<');
+//		    for (int i = 0, length = this.typeVariables.length; i < length; i++)
+//		        sig.append(this.typeVariables[i].genericSignature());
+//		    sig.append('>');
+//		} else {
+//		    // could still need a signature if any of supertypes is parameterized
+//		    noSignature: if (this.superclass == null || !this.superclass.isParameterizedType()) {
+//			    for (int i = 0, length = this.superInterfaces.length; i < length; i++)
+//			        if (this.superInterfaces[i].isParameterizedType())
+//						break noSignature;
+//		        return null;
+//		    }
+//		    sig = new StringBuffer(10);
+//		}
+//		if (this.superclass != null)
+//			sig.append(this.superclass.genericTypeSignature());
+//		else // interface scenario only (as Object cannot be generic) - 65953
+//			sig.append(this.scope.getJavaLangObject().genericTypeSignature());
+//	    for (int i = 0, length = this.superInterfaces.length; i < length; i++)
+//	        sig.append(this.superInterfaces[i].genericTypeSignature());
+//	    
+//		return sig.toString().toCharArray();
+//	}
+	
+	//cym 2015-02-19 for function type
 	public char[] genericSignature() {
 		if (!isPrototype())
 			return this.prototype.genericSignature();
 		
-	    StringBuffer sig = null;
-		if (this.typeVariables != Binding.NO_TYPE_VARIABLES) {
-		    sig = new StringBuffer(10);
-		    sig.append('<');
-		    for (int i = 0, length = this.typeVariables.length; i < length; i++)
-		        sig.append(this.typeVariables[i].genericSignature());
-		    sig.append('>');
-		} else {
-		    // could still need a signature if any of supertypes is parameterized
-		    noSignature: if (this.superclass == null || !this.superclass.isParameterizedType()) {
-			    for (int i = 0, length = this.superInterfaces.length; i < length; i++)
-			        if (this.superInterfaces[i].isParameterizedType())
-						break noSignature;
-		        return null;
-		    }
-		    sig = new StringBuffer(10);
+		if((this.modifiers & ClassFileConstants.AccFunction) == 0){
+			/**
+			 * <param1 ... paramN>superclass superinterface1 ... superinterfaceN
+			 * <T:LY<TT;>;U:Ljava/lang/Object;V::Ljava/lang/Runnable;:Ljava/lang/Cloneable;:Ljava/util/Map;>Ljava/lang/Exception;Ljava/lang/Runnable;
+			 */
+		    StringBuffer sig = null;
+			if (this.typeVariables != Binding.NO_TYPE_VARIABLES) {
+			    sig = new StringBuffer(10);
+			    sig.append('<');
+			    for (int i = 0, length = this.typeVariables.length; i < length; i++)
+			        sig.append(this.typeVariables[i].genericSignature());
+			    sig.append('>');
+			} else {
+			    // could still need a signature if any of supertypes is parameterized
+			    noSignature: if (this.superclass == null || !this.superclass.isParameterizedType()) {
+				    for (int i = 0, length = this.superInterfaces.length; i < length; i++)
+				        if (this.superInterfaces[i].isParameterizedType())
+							break noSignature;
+			        return null;
+			    }
+			    sig = new StringBuffer(10);
+			}
+			if (this.superclass != null)
+				sig.append(this.superclass.genericTypeSignature());
+			else // interface scenario only (as Object cannot be generic) - 65953
+				sig.append(this.scope.getJavaLangObject().genericTypeSignature());
+		    for (int i = 0, length = this.superInterfaces.length; i < length; i++)
+		        sig.append(this.superInterfaces[i].genericTypeSignature());
+		    
+			return sig.toString().toCharArray();
+		} else {  //cym 2015-02-19 for function type
+			/**
+			 * <pre>
+			 *<typeParam1 ... typeParamM>(param1 ... paramN)returnType thrownException1 ... thrownExceptionP
+			 * T foo(T t) throws X<T>   --->   (TT;)TT;LX<TT;>;
+			 * void bar(X<T> t)   -->   (LX<TT;>;)V
+			 * <T> void bar(X<T> t)   -->  <T:Ljava.lang.Object;>(LX<TT;>;)V
+			 * </pre>
+			 */
+			if (this.typeVariables == Binding.NO_TYPE_VARIABLES) return null;
+			StringBuffer sig = new StringBuffer(10);
+			if (this.typeVariables != Binding.NO_TYPE_VARIABLES) {
+				sig.append('<');
+				for (int i = 0, length = this.typeVariables.length; i < length; i++) {
+					sig.append(this.typeVariables[i].genericSignature());
+				}
+				sig.append('>');
+			}
+			sig.append('(');
+			for (int i = 0, length = this.parameters.length; i < length; i++) {
+				sig.append(this.parameters[i].genericTypeSignature());
+			}
+			sig.append(')');
+			if (this.returnType != null)
+				sig.append(this.returnType.genericTypeSignature());
+		
+			// only append thrown exceptions if any is generic/parameterized
+			boolean needExceptionSignatures = false;
+			int length = this.thrownExceptions.length;
+			for (int i = 0; i < length; i++) {
+				if((this.thrownExceptions[i].modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0) {
+					needExceptionSignatures = true;
+					break;
+				}
+			}
+			if (needExceptionSignatures) {
+				for (int i = 0; i < length; i++) {
+					sig.append('^');
+					sig.append(this.thrownExceptions[i].genericTypeSignature());
+				}
+			}
+			int sigLength = sig.length();
+			char[] genericSignature = new char[sigLength];
+			sig.getChars(0, sigLength, genericSignature, 0);
+			return genericSignature;
 		}
-		if (this.superclass != null)
-			sig.append(this.superclass.genericTypeSignature());
-		else // interface scenario only (as Object cannot be generic) - 65953
-			sig.append(this.scope.getJavaLangObject().genericTypeSignature());
-	    for (int i = 0, length = this.superInterfaces.length; i < length; i++)
-	        sig.append(this.superInterfaces[i].genericTypeSignature());
-		return sig.toString().toCharArray();
 	}
+	
+//	public char[] genericSignature1() {
+//		if ((this.modifiers & ExtraCompilerModifiers.AccGenericSignature) == 0) return null;
+//		StringBuffer sig = new StringBuffer(10);
+//		if (this.typeVariables != Binding.NO_TYPE_VARIABLES) {
+//			sig.append('<');
+//			for (int i = 0, length = this.typeVariables.length; i < length; i++) {
+//				sig.append(this.typeVariables[i].genericSignature());
+//			}
+//			sig.append('>');
+//		}
+//		sig.append('(');
+//		for (int i = 0, length = this.parameters.length; i < length; i++) {
+//			sig.append(this.parameters[i].genericTypeSignature());
+//		}
+//		sig.append(')');
+//		if (this.returnType != null)
+//			sig.append(this.returnType.genericTypeSignature());
+//	
+//		// only append thrown exceptions if any is generic/parameterized
+//		boolean needExceptionSignatures = false;
+//		int length = this.thrownExceptions.length;
+//		for (int i = 0; i < length; i++) {
+//			if((this.thrownExceptions[i].modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0) {
+//				needExceptionSignatures = true;
+//				break;
+//			}
+//		}
+//		if (needExceptionSignatures) {
+//			for (int i = 0; i < length; i++) {
+//				sig.append('^');
+//				sig.append(this.thrownExceptions[i].genericTypeSignature());
+//			}
+//		}
+//		int sigLength = sig.length();
+//		char[] genericSignature = new char[sigLength];
+//		sig.getChars(0, sigLength, genericSignature, 0);
+//		return genericSignature;
+//	}
 	
 	/**
 	 * Compute the tagbits for standard annotations. For source types, these could require
@@ -3023,12 +3148,12 @@ public class SourceTypeBinding extends ReferenceBinding {
 	}
 	
 	@Override
-	public TypeBinding[] parameterTypes() {
-		return this.parameterTypes;
+	public TypeBinding[] parameters() {
+		return this.parameters;
 	}
 	
 	@Override
-	public TypeBinding[] thrownExceptionTypes() {
-		return this.thrownExceptionTypes;
+	public TypeBinding[] thrownExceptions() {
+		return this.thrownExceptions;
 	}
 }

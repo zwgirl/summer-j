@@ -1170,6 +1170,7 @@ public class ClassScope extends Scope {
 				return connectEnumSuperclass();
 			if((sourceType.modifiers & ClassFileConstants.AccFunction) != 0){   //cym 2015-02-16
 				sourceType.setSuperClass(getJavaLangFunction());
+//				return true;
 			} else {
 				sourceType.setSuperClass(getJavaLangObject());
 			}
@@ -1217,10 +1218,18 @@ public class ClassScope extends Scope {
 		}
 		
 		if(this.referenceContext.arguments != ASTNode.NO_ARGUMENTS){
-			sourceType.parameterTypes = new TypeBinding[this.referenceContext.arguments.length];
+			sourceType.parameters = new TypeBinding[this.referenceContext.arguments.length];
 			int count = 0;
 			for(Argument arg : this.referenceContext.arguments){
-				sourceType.parameterTypes[count++] = arg.type.resolveType(this);
+				sourceType.parameters[count++] = arg.type.resolveType(this);
+			}
+		}
+		
+		if(this.referenceContext.thrownExceptions != null){
+			sourceType.thrownExceptions = new ReferenceBinding[this.referenceContext.thrownExceptions.length];
+			int count = 0;
+			for(TypeReference type : this.referenceContext.thrownExceptions){
+				sourceType.thrownExceptions[count++] = (ReferenceBinding) type.resolveType(this);
 			}
 		}
 

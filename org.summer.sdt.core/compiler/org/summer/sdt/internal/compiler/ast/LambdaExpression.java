@@ -264,13 +264,13 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 		this.binding = new MethodBinding(ClassFileConstants.AccPrivate | ClassFileConstants.AccSynthetic | ExtraCompilerModifiers.AccUnresolved,
 							CharOperation.concat(TypeConstants.ANONYMOUS_METHOD, Integer.toString(this.ordinal).toCharArray()), // will be fixed up later.
 							haveDescriptor ? this.descriptor.returnType() : TypeBinding.VOID, Binding.NO_PARAMETERS, // for now. 
-							(ReferenceBinding[])(haveDescriptor ? this.descriptor.thrownExceptionTypes() : Binding.NO_EXCEPTIONS), 
+							(ReferenceBinding[])(haveDescriptor ? this.descriptor.thrownExceptions() : Binding.NO_EXCEPTIONS), 
 							blockScope.enclosingSourceType());
 		this.binding.typeVariables = Binding.NO_TYPE_VARIABLES;
 		
 		boolean argumentsHaveErrors = false;
 		if (haveDescriptor) {
-			int parametersLength = this.descriptor.parameterTypes().length;
+			int parametersLength = this.descriptor.parameters().length;
 			if (parametersLength != argumentsLength) {
             	this.scope.problemReporter().lambdaSignatureMismatched(this);
             	if (argumentsTypeElided || this.original != this) // no interest in continuing to error check copy.
@@ -297,7 +297,7 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 			}
 			
 			TypeBinding argumentType;
-			final TypeBinding expectedParameterType = haveDescriptor && i < this.descriptor.parameterTypes().length ? this.descriptor.parameterTypes()[i] : null;
+			final TypeBinding expectedParameterType = haveDescriptor && i < this.descriptor.parameters().length ? this.descriptor.parameters()[i] : null;
 			argumentType = argumentsTypeElided ? expectedParameterType : this.argumentTypes[i];
 			if (argumentType == null) {
 				argumentsHaveErrors = true;
@@ -342,7 +342,7 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 		for (int i = 0; i < argumentsLength; i++) {
 			Argument argument = this.arguments[i];
 			TypeBinding argumentType;
-			final TypeBinding expectedParameterType = haveDescriptor && i < this.descriptor.parameterTypes().length ? this.descriptor.parameterTypes()[i] : null;
+			final TypeBinding expectedParameterType = haveDescriptor && i < this.descriptor.parameters().length ? this.descriptor.parameters()[i] : null;
 			argumentType = argumentsTypeElided ? expectedParameterType : this.argumentTypes[i];
 			if (argumentType != null && argumentType != TypeBinding.VOID) {
 				if (haveDescriptor && expectedParameterType != null && argumentType.isValidBinding() && TypeBinding.notEquals(argumentType, expectedParameterType)) {
@@ -562,7 +562,7 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 	private void mergeParameterNullAnnotations(BlockScope currentScope) {
 		LookupEnvironment env = currentScope.environment();
 		TypeBinding[] ourParameters = this.binding.parameters;
-		TypeBinding[] descParameters = this.descriptor.parameterTypes();
+		TypeBinding[] descParameters = this.descriptor.parameters();
 		int len = Math.min(ourParameters.length, descParameters.length);
 		for (int i = 0; i < len; i++) {
 			long ourTagBits = ourParameters[i].tagBits & TagBits.AnnotationNullMASK;
@@ -1285,7 +1285,7 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 	}
 	
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append("function(");
+		output.append("(function(");
 		if (this.arguments != null) {
 			for (int i = 0; i < this.arguments.length; i++) {
 				if (i > 0) output.append(", "); //$NON-NLS-1$
@@ -1296,15 +1296,25 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 		output.append(")");
 		
 		if (this.body != null && this.body instanceof Block){
-			return this.body.doGenerateExpression(scope, indent, output);
-		}
-		output.append("{"); //$NON-NLS-1$
-		if (this.body != null){
+			this.body.doGenerateExpression(scope, indent, output);
+		} else {
+			output.append("{"); //$NON-NLS-1$
+			if (this.body != null){
+				printIndent(indent, output);
+				this.body.doGenerateExpression(scope, indent + 1, output);
+			}
 			printIndent(indent, output);
-			this.body.doGenerateExpression(scope, indent + 1, output);
+			output.append("}");
 		}
-		printIndent(indent, output);
-		output.append("}"); //$NON-NLS-1$
+		output.append(".bind("); //$NON-NLS-1$
+		if(this.scope.isStatic){
+			output.append(scope.classScope().referenceContext.binding.sourceName);
+		} else {
+			output.append("this");
+		}
+		
+		output.append(")");
+
 		return output;
 	}
 }

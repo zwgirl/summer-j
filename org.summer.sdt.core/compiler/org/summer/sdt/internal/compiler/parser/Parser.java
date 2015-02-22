@@ -940,7 +940,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	//XAML cym add
 	protected int elementLengthPtr;
 	protected int[] elementLengthStack = new int[0];
-	protected int elementPtr;
+	protected int elementPtr1;
 	protected Expression[] elementStack = new Expression[AstStackIncrement];
 	
 	protected int attributeLengthPtr;
@@ -2809,7 +2809,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		
 		//cym 2014-12-10
 		if(this.elementLengthPtr >= 0 && this.elementLengthStack[this.elementLengthPtr] > 0 ){
-			XAMLElement root = (XAMLElement) elementStack[this.elementPtr--];
+			XAMLElement root = (XAMLElement) elementStack[this.elementPtr1--];
 			root.bits |= ASTNode.IsRootElement;
 			this.elementLengthPtr--; 
 			typeDecl.element = root;
@@ -9182,7 +9182,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	protected void consumeGeneralAttributeWithNS(){
 //		GeneralAttribute ::= SimpleName ':' SimpleName '=' PropertyExpression
 		
-		ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr];
+		ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr1];
 		char[] attrName = this.identifierStack[this.identifierPtr];
 		long positions = this.identifierPositionStack[this.identifierPtr--];
 		
@@ -9246,11 +9246,11 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		XAMLElement[] childs = XAMLElement.NO_ELEMENTS;
 		int length;
 		if ((length = this.elementLengthStack[this.elementLengthPtr--]) != 0) {
-			this.elementPtr -= length;
-			System.arraycopy(this.elementStack, this.elementPtr + 1, childs = new XAMLElement[length], 0, length);
+			this.elementPtr1 -= length;
+			System.arraycopy(this.elementStack, this.elementPtr1 + 1, childs = new XAMLElement[length], 0, length);
 		}
 		
-		ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr];
+		ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr1];
 		element.children = childs;
 		
 		length = this.attributeLengthStack[this.attributeLengthPtr--];
@@ -9266,14 +9266,14 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	
 	protected void consumeEmptyElement(){
 		//EmptyElement ::=  ElementTag '/>'
-		ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr];
+		ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr1];
 		element.statementEnd = this.scanner.currentPosition - 1;
 		element.sourceEnd = this.scanner.currentPosition - 1;
 	}
 	
 	protected void consumeSimpleElement(){
 		//SimpleElement ::=  ElementTag AttributeList '/>'
-		XAMLElement element = (XAMLElement) this.elementStack[this.elementPtr];
+		XAMLElement element = (XAMLElement) this.elementStack[this.elementPtr1];
 		int length = this.attributeLengthStack[this.attributeLengthPtr--];
 		if(length != 0){
 			this.attributePtr = this.attributePtr - length;
@@ -9309,11 +9309,11 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		XAMLElement[] elements = new XAMLElement[0];
 		int length;
 		if ((length = this.elementLengthStack[this.elementLengthPtr--]) != 0) {
-			this.elementPtr -= length;
-			System.arraycopy(this.elementStack, this.elementPtr + 1, elements = new XAMLElement[length], 0, length);
+			this.elementPtr1 -= length;
+			System.arraycopy(this.elementStack, this.elementPtr1 + 1, elements = new XAMLElement[length], 0, length);
 		}
 		
-		AttributeElement element = (AttributeElement) this.elementStack[this.elementPtr];
+		AttributeElement element = (AttributeElement) this.elementStack[this.elementPtr1];
 		element.children = elements;
 	
 		element.statementEnd = this.scanner.currentPosition - 1;
@@ -9346,14 +9346,14 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		astPtr points on the top*/
 	
 		int stackLength = this.elementStack.length;
-		if (++this.elementPtr >= stackLength) {
+		if (++this.elementPtr1 >= stackLength) {
 			System.arraycopy(
 				this.elementStack, 0,
 				this.elementStack = new XAMLElement[stackLength + AstStackIncrement], 0,
 				stackLength);
-			this.elementPtr = stackLength;
+			this.elementPtr1 = stackLength;
 		}
-		this.elementStack[this.elementPtr] = node;
+		this.elementStack[this.elementPtr1] = node;
 	
 		stackLength = this.elementLengthStack.length;
 		if (++this.elementLengthPtr >= stackLength) {
@@ -12066,7 +12066,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		this.valueLambdaNestDepth = -1;
 		
 		//cym 2014-12-10
-		this.elementPtr = -1;
+		this.elementPtr1 = -1;
 		this.elementLengthPtr = -1;
 		this.attributeLengthPtr = -1;
 		this.attributePtr = -1;
@@ -13776,7 +13776,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		this.identifierPtr = -1;
 		this.identifierLengthPtr	= -1;
 		this.intPtr = -1;
-		this.elementPtr = -1;
+		this.elementPtr1 = -1;
 		this.elementLengthPtr = -1;
 		
 		this.nestedMethod[this.nestedType = 0] = 0; // need to reset for further reuse
@@ -14007,7 +14007,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		this.nestedType = parser.nestedType;
 		this.realBlockPtr = parser.realBlockPtr;
 		this.valueLambdaNestDepth = parser.valueLambdaNestDepth;
-		this.elementPtr = parser.elementPtr;
+		this.elementPtr1 = parser.elementPtr1;
 		this.elementLengthPtr = parser.elementLengthPtr;
 		
 		// Stacks.

@@ -643,17 +643,20 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 //				TypeBinding receiverType = this.receiver.resolveType(scope);
 				if(this.actualReceiverType != null){
 					if(this.receiver instanceof LambdaExpression){
-//						LambdaExpression lambda = (LambdaExpression) this.receiver;
-//						TypeBinding[] argumentTypes = lambda.argumentTypes();
-//						lambda.returnsExpression(expression, resultType);
+						LambdaExpression lambda = (LambdaExpression) this.receiver;
+						if(this.expectedType != null){
+							lambda.setExpectedType(expectedType);
+							return lambda.resolveType(scope);
+						}
 						return scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION); 
 					}
 					if(this.actualReceiverType.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
 						return ((ReferenceBinding)this.actualReceiverType).returnType();
-//						return scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION);
 					}
 				}
 //				scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
+			} else if(this.receiver == null){
+				
 			}
 			
 			// resolve type arguments (for generic constructor call)

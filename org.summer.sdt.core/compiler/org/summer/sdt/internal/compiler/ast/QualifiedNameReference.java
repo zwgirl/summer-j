@@ -1163,38 +1163,29 @@ public class QualifiedNameReference extends NameReference {
 	}
 	
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-//		if(this.otherBindings != null){
-//			for(int index = otherBindings.length-1; index >= 0; index--){
-//				FieldBinding field = otherBindings[index];
-//				if(field.isStatic()){
-//					output.append(field.declaringClass.sourceName).append('.').append(field.name);
-//					for(int i = index + 1; i < otherBindings.length; i++){
-//						output.append('.').append(this.tokens[i]);
-//					}
-//					return output;
-//				}
-//			}
-//		}
-//			
-//		if(this.binding instanceof LocalVariableBinding){
-//			output.append(((LocalVariableBinding) this.binding).name);
-//		} else if(this.binding instanceof FieldBinding){
-//			FieldBinding field = (FieldBinding) this.binding;
-//			if(field.isStatic()){
-//				output.append(field.declaringClass.sourceName).append('.');
-//			} else {
-//				output.append("this.");
-//			}
-//			output.append(field.name);
-//		} else if(this.binding instanceof TypeBinding){
-//			TypeBinding type = (TypeBinding) this.binding;
-//			output.append(type.sourceName());
-//		}
-//		
-//		for (int i = 1; i < this.tokens.length; i++) {
-//			if (i > 0) output.append('.');
-//			output.append(this.tokens[i]);
-//		}
-		return output;
+		if(this.otherBindings != null){
+			if(this.binding instanceof LocalVariableBinding){
+				output.append(((LocalVariableBinding) this.binding).name);
+			} else if(this.binding instanceof FieldBinding){
+				FieldBinding field = (FieldBinding) this.binding;
+				output.append("this.").append(field.name);
+			}
+			
+			for(int index = 0; index < otherBindings.length; index++){
+				FieldBinding field = otherBindings[index];
+				output.append('.').append(field.name);
+			}
+			return output;
+		} else {
+			if(this.binding instanceof FieldBinding){
+				FieldBinding fieldBinding = (FieldBinding) this.binding;
+				if(fieldBinding.isStatic()){
+					ReferenceBinding enclosing = fieldBinding.declaringClass;
+					enclosing.generate(output);
+					output.append('.').append(fieldBinding.name);
+				}
+			}
+			return output;
+		}
 	}
 }

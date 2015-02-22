@@ -535,7 +535,7 @@ public class ReferenceExpression extends FunctionalExpression implements IPolyEx
         }
     	
     	if (this.lhs.isSuper() && this.lhs.resolvedType.isInterface()) {
-    		scope.checkAppropriateMethodAgainstSupers(this.selector, someMethod, this.descriptor.parameterTypes(), this);
+    		scope.checkAppropriateMethodAgainstSupers(this.selector, someMethod, this.descriptor.parameters(), this);
     	}
 
         MethodBinding anotherMethod = null;
@@ -627,7 +627,7 @@ public class ReferenceExpression extends FunctionalExpression implements IPolyEx
 
         // OK, we have a compile time declaration, see if it passes muster.
         TypeBinding [] methodExceptions = this.binding.thrownExceptions;
-        TypeBinding [] kosherExceptions = this.descriptor.thrownExceptionTypes();
+        TypeBinding [] kosherExceptions = this.descriptor.thrownExceptions();
         next: for (int i = 0, iMax = methodExceptions.length; i < iMax; i++) {
         	if (methodExceptions[i].isUncheckedException(false)) {
         		continue next;
@@ -642,20 +642,20 @@ public class ReferenceExpression extends FunctionalExpression implements IPolyEx
         	// TODO: simplify by using this.freeParameters?
         	int len;
         	int expectedlen = this.binding.parameters.length;
-        	int providedLen = this.descriptor.parameterTypes().length;
+        	int providedLen = this.descriptor.parameters().length;
         	if (this.receiverPrecedesParameters)
         		providedLen--; // one parameter is 'consumed' as the receiver
         	boolean isVarArgs = false;
         	if (this.binding.isVarargs()) { 
         		isVarArgs = (providedLen == expectedlen)
-					? !this.descriptor.parameterTypes()[expectedlen-1].isCompatibleWith(this.binding.parameters[expectedlen-1])
+					? !this.descriptor.parameters()[expectedlen-1].isCompatibleWith(this.binding.parameters[expectedlen-1])
 					: true;
         		len = providedLen; // binding parameters will be padded from InferenceContext18.getParameter()
         	} else {
         		len = Math.min(expectedlen, providedLen);
         	}
     		for (int i = 0; i < len; i++) {
-    			TypeBinding descriptorParameter = this.descriptor.parameterTypes()[i + (this.receiverPrecedesParameters ? 1 : 0)];
+    			TypeBinding descriptorParameter = this.descriptor.parameters()[i + (this.receiverPrecedesParameters ? 1 : 0)];
     			TypeBinding bindingParameter = InferenceContext18.getParameter(this.binding.parameters, i, isVarArgs);
     			NullAnnotationMatching annotationStatus = NullAnnotationMatching.analyse(bindingParameter, descriptorParameter, FlowInfo.UNKNOWN);
     			if (annotationStatus.isAnyMismatch()) {
@@ -710,9 +710,29 @@ public class ReferenceExpression extends FunctionalExpression implements IPolyEx
     	return this.resolvedType; // Phew !
 	}
 
+//	private TypeBinding[] descriptorParametersAsArgumentExpressions() {
+//		
+//		if (this.descriptor == null || this.descriptor.parameters() == null || this.descriptor.parameters().length == 0)
+//			return Binding.NO_PARAMETERS;
+//		
+//		/* 15.13.1, " ... method reference is treated as if it were an invocation with argument expressions of types P1, ..., Pn;"
+//		   This implies/requires wildcard capture. This creates interesting complications, we can't just take the descriptor parameters
+//		   and apply captures - where a single wildcard type got "fanned out" and propagated into multiple locations through type variable
+//		   substitutions, we will end up creating distinct captures defeating the very idea of capture. We need to first capture and then
+//		   fan out. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=432759.
+//		*/
+//		if (this.expectedType.isParameterizedType()) {
+//			ParameterizedTypeBinding type = (ParameterizedTypeBinding) this.expectedType;
+//			MethodBinding method = type.getSingleAbstractMethod(this.enclosingScope, true, this.sourceStart, this.sourceEnd);
+//			return method.parameters;
+//		} 
+//		return this.descriptor.parameters();
+//	}
+	
+	//cym 2015-02-19
 	private TypeBinding[] descriptorParametersAsArgumentExpressions() {
 		
-		if (this.descriptor == null || this.descriptor.parameterTypes() == null || this.descriptor.parameterTypes().length == 0)
+		if (this.descriptor == null || this.descriptor.parameters() == null || this.descriptor.parameters().length == 0)
 			return Binding.NO_PARAMETERS;
 		
 		/* 15.13.1, " ... method reference is treated as if it were an invocation with argument expressions of types P1, ..., Pn;"
@@ -721,12 +741,12 @@ public class ReferenceExpression extends FunctionalExpression implements IPolyEx
 		   substitutions, we will end up creating distinct captures defeating the very idea of capture. We need to first capture and then
 		   fan out. See https://bugs.eclipse.org/bugs/show_bug.cgi?id=432759.
 		*/
-		if (this.expectedType.isParameterizedType()) {
-			ParameterizedTypeBinding type = (ParameterizedTypeBinding) this.expectedType;
-			MethodBinding method = type.getSingleAbstractMethod(this.enclosingScope, true, this.sourceStart, this.sourceEnd);
-			return method.parameters;
-		} 
-		return this.descriptor.parameterTypes();
+//		if (this.expectedType.isParameterizedType()) {
+//			ParameterizedTypeBinding type = (ParameterizedTypeBinding) this.expectedType;
+//			MethodBinding method = type.getSingleAbstractMethod(this.enclosingScope, true, this.sourceStart, this.sourceEnd);
+//			return method.parameters;
+//		} 
+		return this.descriptor.parameters();
 	}
 
 	// Cache resolved copies against various target types, so repeat overload resolution and possibly type inference could be avoided.

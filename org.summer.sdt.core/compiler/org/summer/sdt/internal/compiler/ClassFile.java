@@ -5029,7 +5029,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 		this.contents[this.contentsOffset++] = (byte) (returnTypeIndex >> 8);
 		this.contents[this.contentsOffset++] = (byte) returnTypeIndex;
 		
-		TypeBinding[] parametersBinding = aType.parameterTypes();
+		TypeBinding[] parametersBinding = aType.parameters();
 		int parametersCount = parametersBinding.length;
 		int parametersCountPosition = this.contentsOffset;
 		this.contentsOffset += 2;
@@ -5047,7 +5047,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 		this.contents[parametersCountPosition++] = (byte) (parameterCounter >> 8);
 		this.contents[parametersCountPosition] = (byte) parameterCounter;
 		
-		TypeBinding[] throwExceptionsBinding = aType.thrownExceptionTypes();
+		TypeBinding[] throwExceptionsBinding = aType.thrownExceptions();
 		int throwExceptionsCount = throwExceptionsBinding.length;
 		int throwExceptionsCountPosition = this.contentsOffset;
 		this.contentsOffset += 2;

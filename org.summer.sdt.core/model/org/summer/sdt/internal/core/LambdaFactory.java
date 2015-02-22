@@ -72,9 +72,9 @@ public class LambdaFactory {
 	public static LambdaMethod createLambdaMethod(JavaElement parent, org.summer.sdt.internal.compiler.ast.LambdaExpression lambdaExpression) {
 		int length;
 		JavaModelManager manager = JavaModelManager.getJavaModelManager();
-		String [] parameterTypes = new String[length = lambdaExpression.descriptor.parameterTypes().length];
+		String [] parameterTypes = new String[length = lambdaExpression.descriptor.parameters().length];
 		for (int i = 0; i < length; i++)
-			parameterTypes[i] = getTypeSignature(manager, lambdaExpression.descriptor.parameterTypes()[i]);
+			parameterTypes[i] = getTypeSignature(manager, lambdaExpression.descriptor.parameters()[i]);
 		String [] parameterNames = new String[length];
 		for (int i = 0; i < length; i++)
 			parameterNames[i] = manager.intern(new String(lambdaExpression.arguments[i].name));
@@ -85,7 +85,7 @@ public class LambdaFactory {
 		ILocalVariable [] parameters = new ILocalVariable[length = lambdaExpression.arguments.length];
 		for (int i = 0; i < length; i++) {
 			Argument argument = lambdaExpression.arguments[i];
-			String signature = manager.intern(new String(lambdaExpression.descriptor.parameterTypes()[i].signature()));
+			String signature = manager.intern(new String(lambdaExpression.descriptor.parameters()[i].signature()));
 			parameters[i] = new LocalVariable(
 					lambdaMethod,
 					new String(argument.name),

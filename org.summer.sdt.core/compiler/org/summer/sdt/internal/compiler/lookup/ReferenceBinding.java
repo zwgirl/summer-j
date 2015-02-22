@@ -47,6 +47,7 @@ import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.compiler.InvalidInputException;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
+import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
@@ -2195,13 +2196,44 @@ abstract public class ReferenceBinding extends TypeBinding {
 	}
 	
 	//cym 2015-02-13 function type
-	public TypeBinding[] parameterTypes() {
+	public TypeBinding[] parameters() {
 		return Binding.NO_PARAMETERS;
 	}
 	
 	
 	//cym 2015-02-16 function type
-	public TypeBinding[] thrownExceptionTypes() {
+	public TypeBinding[] thrownExceptions() {
 		return Binding.NO_EXCEPTIONS;
 	}
+	
+	public void generate(StringBuffer output){
+		if(this.isMemberType()){
+			Stack<ReferenceBinding> outters = new Stack<ReferenceBinding>();
+			ReferenceBinding outter = this;
+			while(true){
+				if(outter.enclosingType() == null){
+					break;
+				}
+				outters.push(outter);
+				outter = outter.enclosingType();
+			}
+			if((outter.modifiers & ClassFileConstants.AccModule) != 0){
+				output.append("__lc(\"").append(CharOperation.concatWith(outter.compoundName, '.'))
+					.append(", \"").append(TypeDeclaration.getFileName(outter)).append("\")");
+			} else {
+				output.append("__lc(\"").append(CharOperation.concatWith(outter.compoundName, '.')).append("\")");
+			}
+			while(!outters.isEmpty()){
+				output.append(".").append(outters.pop().sourceName);
+			}
+		} else {
+			if((this.modifiers & ClassFileConstants.AccModule) != 0){
+				output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.'))
+					.append(", \"").append(TypeDeclaration.getFileName(this)).append("\")");
+			} else {
+				output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.')).append("\")");
+			}
+		}
+	}
+	
 }

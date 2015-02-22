@@ -273,6 +273,7 @@ public abstract class Engine implements ITypeRequestor {
 		return null;
 	}
 	
+	//cym 2015-02-22
 	private ASTNode parserElement(XAMLElement element, int position){
 		for(Attribute attribute : element.attributes){
 			if(attribute.property.sourceStart < position && attribute.property.sourceEnd >= position){

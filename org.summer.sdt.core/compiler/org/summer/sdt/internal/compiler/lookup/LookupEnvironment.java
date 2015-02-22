@@ -362,7 +362,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 				return TypeBinding.INT;
 			case TypeIds.T_JavaLangLong :
 				return TypeBinding.LONG;
-	
+				
 			case TypeIds.T_int :
 				boxedType = getType(JAVA_LANG_INTEGER);
 				if (boxedType != null) return boxedType;
@@ -1256,6 +1256,76 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 	* NOTE: Does NOT answer base types nor array types!
 	*/
 	ReferenceBinding getTypeFromConstantPoolName(char[] signature, int start, int end, boolean isParameterized, char[][][] missingTypeNames, TypeAnnotationWalker walker) {
+		if (end == -1)
+			end = signature.length;
+		char[][] compoundName = CharOperation.splitOn('/', signature, start, end);
+		boolean wasMissingType = false;
+		if (missingTypeNames != null) {
+			for (int i = 0, max = missingTypeNames.length; i < max; i++) {
+				if (CharOperation.equals(compoundName, missingTypeNames[i])) {
+					wasMissingType = true;
+					break;
+				}
+			}
+		}
+		ReferenceBinding binding = getTypeFromCompoundName(compoundName, isParameterized, wasMissingType);
+		if (walker != TypeAnnotationWalker.EMPTY_ANNOTATION_WALKER) {
+			binding = (ReferenceBinding) annotateType(binding, walker, missingTypeNames);
+		}
+		return binding;
+	}
+	
+	//cym 2015-02-19
+	TypeBinding getTypeFromConstantPoolName1(char[] signature, int start, int end, boolean isParameterized, char[][][] missingTypeNames, TypeAnnotationWalker walker) {
+		if(signature.length == 1){
+//			switch (signature[0]) {
+//				case 'I' :
+//					return getType(TypeConstants.JAVA_LANG_INTEGER);
+//				case 'Z' :
+//					return getType(TypeConstants.JAVA_LANG_BOOLEAN);
+//				case 'V' :
+//					return getType(TypeConstants.JAVA_LANG_VOID);
+//				case 'C' :
+//					return getType(TypeConstants.JAVA_LANG_CHARACTER);
+//				case 'D' :
+//					return getType(TypeConstants.JAVA_LANG_DOUBLE);
+//				case 'B' :
+//					return getType(TypeConstants.JAVA_LANG_BYTE);
+//				case 'F' :
+//					return getType(TypeConstants.JAVA_LANG_FLOAT);
+//				case 'J' :
+//					return getType(TypeConstants.JAVA_LANG_LONG);
+//				case 'S' :
+//					return getType(TypeConstants.JAVA_LANG_SHORT);
+//				default :
+//					this.problemReporter.corruptedSignature(null, signature, start);
+//					// will never reach here, since error will cause abort
+//			}
+			switch (signature[start]) {
+			case 'I' :
+				return  TypeBinding.INT;
+			case 'Z' :
+				return  TypeBinding.BOOLEAN;
+			case 'V' :
+				return  TypeBinding.VOID;
+			case 'C' :
+				return  TypeBinding.CHAR;
+			case 'D' :
+				return  TypeBinding.DOUBLE;
+			case 'B' :
+				return  TypeBinding.BYTE;
+			case 'F' :
+				return  TypeBinding.FLOAT;
+			case 'J' :
+				return  TypeBinding.LONG;
+			case 'S' :
+				return  TypeBinding.SHORT;
+			default :
+				this.problemReporter.corruptedSignature(null, signature, start);
+				// will never reach here, since error will cause abort
+			}
+		}
+		
 		if (end == -1)
 			end = signature.length;
 		char[][] compoundName = CharOperation.splitOn('/', signature, start, end);

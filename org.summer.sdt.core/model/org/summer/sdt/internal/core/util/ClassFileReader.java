@@ -244,7 +244,7 @@ public class ClassFileReader extends ClassFileStruct implements IClassFileReader
 			this.thrownExceptionNames = NO_THROW_EXCEPTION_NAMES;
 			this.thrownExceptionIndexes = Util.EMPTY_INT_ARRAY;
 			if (this.thrownExceptionsCount != 0) {
-				if ((decodingFlags & IClassFileReader.PARAMETERS) != IClassFileReader.CONSTANT_POOL) {
+				if ((decodingFlags & IClassFileReader.THROW_EXCEPTIONS) != IClassFileReader.CONSTANT_POOL) {
 					this.thrownExceptionNames = new char[this.thrownExceptionsCount][];
 					this.thrownExceptionIndexes = new int[this.thrownExceptionsCount];
 					for (int i = 0; i < this.thrownExceptionsCount; i++) {

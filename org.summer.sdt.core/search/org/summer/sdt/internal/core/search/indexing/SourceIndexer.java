@@ -264,7 +264,7 @@ public class SourceIndexer extends AbstractIndexer implements ITypeRequestor, Su
 							System.out.println('\t' + new String(superinterface) + '.' + 
 									new String(lambdaExpression.descriptor.sourceName) + "-> {}"); //$NON-NLS-1$
 						}
-						SourceIndexer.this.addIndexEntry(IIndexConstants.METHOD_DECL, MethodPattern.createIndexKey(lambdaExpression.descriptor.sourceName, lambdaExpression.descriptor.parameterTypes().length));
+						SourceIndexer.this.addIndexEntry(IIndexConstants.METHOD_DECL, MethodPattern.createIndexKey(lambdaExpression.descriptor.sourceName, lambdaExpression.descriptor.parameters().length));
 					
 						addClassDeclaration(0,  // most entries are blank, that is fine, since lambda type/method cannot be searched.
 								CharOperation.NO_CHAR, // package name

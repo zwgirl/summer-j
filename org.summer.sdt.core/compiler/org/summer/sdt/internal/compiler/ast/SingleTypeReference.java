@@ -236,27 +236,28 @@ public class SingleTypeReference extends TypeReference {
 			}
 		} else {
 			ReferenceBinding binding = (ReferenceBinding) this.resolvedType;
-			if(binding.isMemberType()){
-				Stack<ReferenceBinding> outters = new Stack<ReferenceBinding>();
-				ReferenceBinding outter = binding;
-				outters.push(outter);
-				while(outter.enclosingType() != null){
-					outter = outter.enclosingType();
-					outters.push(outter);
-				}
-				output.append("__lc(\"").append(CharOperation.concatWith(outters.pop().compoundName, '.')).append("\").");
-				StringBuffer temp = new StringBuffer();
-				while(!outters.isEmpty()){
-					temp.append(".").append(outters.pop().sourceName);
-				}
-			} else {
-				if((binding.modifiers & ClassFileConstants.AccModule) != 0){
-					output.append("__lc(\"").append(CharOperation.concatWith(binding.compoundName, '.'))
-					.append(", \"").append(TypeDeclaration.getFileName(binding)).append("\")");
-				} else {
-					output.append("__lc(\"").append(CharOperation.concatWith(binding.compoundName, '.')).append("\")");
-				}
-			}
+//			if(binding.isMemberType()){
+//				Stack<ReferenceBinding> outters = new Stack<ReferenceBinding>();
+//				ReferenceBinding outter = binding;
+//				outters.push(outter);
+//				while(outter.enclosingType() != null){
+//					outter = outter.enclosingType();
+//					outters.push(outter);
+//				}
+//				output.append("__lc(\"").append(CharOperation.concatWith(outters.pop().compoundName, '.')).append("\").");
+//				StringBuffer temp = new StringBuffer();
+//				while(!outters.isEmpty()){
+//					temp.append(".").append(outters.pop().sourceName);
+//				}
+//			} else {
+//				if((binding.modifiers & ClassFileConstants.AccModule) != 0){
+//					output.append("__lc(\"").append(CharOperation.concatWith(binding.compoundName, '.'))
+//					.append(", \"").append(TypeDeclaration.getFileName(binding)).append("\")");
+//				} else {
+//					output.append("__lc(\"").append(CharOperation.concatWith(binding.compoundName, '.')).append("\")");
+//				}
+//			}
+			binding.generate(output);
 		}
 		return output;
 	}
