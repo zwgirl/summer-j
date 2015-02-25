@@ -771,6 +771,47 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 		return true;
 	}
 	
+//	public boolean isCompatibleWith(TypeBinding targetType, final Scope skope) {
+//		
+//		if (!super.isPertinentToApplicability(targetType, null))
+//			return true;
+//		
+//		LambdaExpression copy = null;
+//		try {
+//			copy = cachedResolvedCopy(targetType, argumentsTypeElided(), false, null); // if argument types are elided, we don't care for result expressions against *this* target, any valid target is OK.
+//		} catch (CopyFailureException cfe) {
+//			if (this.assistNode)
+//				return true; // can't type check result expressions, just say yes.
+//			return !isPertinentToApplicability(targetType, null); // don't expect to hit this ever.
+//		}
+//		if (copy == null)
+//			return false;
+//		
+//		// copy here is potentially compatible with the target type and has its shape fully computed: i.e value/void compatibility is determined and result expressions have been gathered.
+//		targetType = findGroundTargetType(this.enclosingScope, targetType, argumentsTypeElided());
+//		MethodBinding sam = targetType.getSingleAbstractMethod(this.enclosingScope, true);
+//		if (sam.returnType.id == TypeIds.T_void) {
+//			if (!copy.voidCompatible)
+//				return false;
+//		} else {
+//			if (!copy.valueCompatible)
+//				return false;
+//		}
+//
+//		if (!isPertinentToApplicability(targetType, null))
+//			return true;
+//
+//		Expression [] returnExpressions = copy.resultExpressions;
+//		for (int i = 0, length = returnExpressions.length; i < length; i++) {
+//			if (this.enclosingScope.parameterCompatibilityLevel(returnExpressions[i].resolvedType, sam.returnType) == Scope.NOT_COMPATIBLE) {
+//				if (!returnExpressions[i].isConstantValueOfTypeAssignableToType(returnExpressions[i].resolvedType, sam.returnType))
+//					if (sam.returnType.id != TypeIds.T_void || this.body instanceof Block)
+//						return false;
+//			}
+//		}
+//		return true;
+//	}
+	//cym 2015-02-25
 	public boolean isCompatibleWith(TypeBinding targetType, final Scope skope) {
 		
 		if (!super.isPertinentToApplicability(targetType, null))
@@ -789,8 +830,18 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 		
 		// copy here is potentially compatible with the target type and has its shape fully computed: i.e value/void compatibility is determined and result expressions have been gathered.
 		targetType = findGroundTargetType(this.enclosingScope, targetType, argumentsTypeElided());
-		MethodBinding sam = targetType.getSingleAbstractMethod(this.enclosingScope, true);
-		if (sam.returnType.id == TypeIds.T_void) {
+//		MethodBinding sam = targetType.getSingleAbstractMethod(this.enclosingScope, true);
+		if(!(targetType instanceof ReferenceBinding)){
+			return false;
+		}
+		
+		ReferenceBinding functionType = (ReferenceBinding) targetType;
+		
+		if((functionType.modifiers & ClassFileConstants.AccFunction) == 0){
+			return false;
+		}
+		
+		if (functionType.returnType().id == TypeIds.T_void) {
 			if (!copy.voidCompatible)
 				return false;
 		} else {
@@ -803,9 +854,9 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 
 		Expression [] returnExpressions = copy.resultExpressions;
 		for (int i = 0, length = returnExpressions.length; i < length; i++) {
-			if (this.enclosingScope.parameterCompatibilityLevel(returnExpressions[i].resolvedType, sam.returnType) == Scope.NOT_COMPATIBLE) {
-				if (!returnExpressions[i].isConstantValueOfTypeAssignableToType(returnExpressions[i].resolvedType, sam.returnType))
-					if (sam.returnType.id != TypeIds.T_void || this.body instanceof Block)
+			if (this.enclosingScope.parameterCompatibilityLevel(returnExpressions[i].resolvedType, functionType.returnType()) == Scope.NOT_COMPATIBLE) {
+				if (!returnExpressions[i].isConstantValueOfTypeAssignableToType(returnExpressions[i].resolvedType, functionType.returnType()))
+					if (functionType.returnType().id != TypeIds.T_void || this.body instanceof Block)
 						return false;
 			}
 		}
@@ -816,17 +867,76 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 		private static final long serialVersionUID = 1L;
 	}
 
+//	private LambdaExpression cachedResolvedCopy(TypeBinding targetType, boolean anyTargetOk, boolean requireExceptionAnalysis, InferenceContext18 context) {
+//
+//		targetType = findGroundTargetType(this.enclosingScope, targetType, argumentsTypeElided());
+//		if (targetType == null)
+//			return null;
+//		
+//		MethodBinding sam = targetType.getSingleAbstractMethod(this.enclosingScope, true);
+//		if (sam == null || !sam.isValidBinding())
+//			return null;
+//		
+//		if (sam.parameters.length != this.arguments.length)
+//			return null;
+//		
+//		LambdaExpression copy = null;
+//		if (this.copiesPerTargetType != null) {
+//			copy = this.copiesPerTargetType.get(targetType);
+//			if (copy == null) {
+//				if (anyTargetOk && this.copiesPerTargetType.values().size() > 0)
+//					copy = this.copiesPerTargetType.values().iterator().next();
+//			}
+//		}
+//		final CompilerOptions compilerOptions = this.enclosingScope.compilerOptions();
+//		boolean analyzeNPE = compilerOptions.isAnnotationBasedNullAnalysisEnabled;
+//		IErrorHandlingPolicy oldPolicy = this.enclosingScope.problemReporter().switchErrorHandlingPolicy(silentErrorHandlingPolicy);
+//		compilerOptions.isAnnotationBasedNullAnalysisEnabled = false;
+//		try {
+//			if (copy == null) {
+//				copy = copy();
+//				if (copy == null)
+//					throw new CopyFailureException();
+//
+//				copy.setExpressionContext(this.expressionContext);
+//				copy.setExpectedType(targetType);
+//				copy.inferenceContext = context;
+//				TypeBinding type = copy.resolveType(this.enclosingScope);
+//				if (type == null || !type.isValidBinding())
+//					return null;
+//
+//				if (this.copiesPerTargetType == null)
+//					this.copiesPerTargetType = new HashMap<TypeBinding, LambdaExpression>();
+//				this.copiesPerTargetType.put(targetType, copy);
+//			}
+//			if (!requireExceptionAnalysis)
+//				return copy;
+//			if (copy.thrownExceptions == null)
+//				if (!copy.hasIgnoredMandatoryErrors && !enclosingScopesHaveErrors())
+//					copy.analyzeExceptions();
+//			return copy;
+//		} finally {
+//			compilerOptions.isAnnotationBasedNullAnalysisEnabled = analyzeNPE;
+//			this.enclosingScope.problemReporter().switchErrorHandlingPolicy(oldPolicy);
+//		}
+//	}
+	
+	// cym  2015-02-24
 	private LambdaExpression cachedResolvedCopy(TypeBinding targetType, boolean anyTargetOk, boolean requireExceptionAnalysis, InferenceContext18 context) {
 
 		targetType = findGroundTargetType(this.enclosingScope, targetType, argumentsTypeElided());
-		if (targetType == null)
+		if (targetType == null || !(targetType instanceof ReferenceBinding))   //cym 2015-02-24
 			return null;
 		
-		MethodBinding sam = targetType.getSingleAbstractMethod(this.enclosingScope, true);
-		if (sam == null || !sam.isValidBinding())
+//		MethodBinding sam = targetType.getSingleAbstractMethod(this.enclosingScope, true);
+//		if (sam == null || !sam.isValidBinding())
+//			return null;
+		ReferenceBinding functionType = (ReferenceBinding) targetType;
+		if((functionType.modifiers & ClassFileConstants.AccFunction) == 0){
 			return null;
+		}
 		
-		if (sam.parameters.length != this.arguments.length)
+		if (((ReferenceBinding)targetType).parameters().length != this.arguments.length)
 			return null;
 		
 		LambdaExpression copy = null;
@@ -1306,7 +1416,7 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 			printIndent(indent, output);
 			output.append("}");
 		}
-		output.append(".bind("); //$NON-NLS-1$
+		output.append(").bind("); //$NON-NLS-1$
 		if(this.scope.isStatic){
 			output.append(scope.classScope().referenceContext.binding.sourceName);
 		} else {

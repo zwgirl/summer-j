@@ -1,5 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.html.Html2JsAttributeMapping;
 import org.summer.sdt.internal.compiler.impl.Constant;
@@ -72,7 +73,20 @@ public abstract class Attribute extends XAMLNode implements InvocationSite{
 				return;
 			}
 			
-			if((property.binding.type.tagBits & TagBits.AnnotationEventCallback) != 0){
+//			if((property.binding.type.tagBits & TagBits.AnnotationEventCallback) != 0){
+//				this.bits |= ASTNode.IsEventCallback;
+//				StringLiteral stringLiteral = (StringLiteral) this.value;
+//				this.method = scope.findMethod(scope.classScope().referenceContext.binding, stringLiteral.source, new TypeBinding[0], this, false);
+//				if(this.method == null){
+//					scope.problemReporter().errorNoMethodFor(stringLiteral, property.binding.type, new TypeBinding[0]); 
+//				}
+//			}
+			if(!(property.binding.type instanceof ReferenceBinding)){
+				return;
+			}
+			
+			ReferenceBinding refType = (ReferenceBinding) property.binding.type;
+			if((refType.modifiers & ClassFileConstants.AccFunction) != 0 ){
 				this.bits |= ASTNode.IsEventCallback;
 				StringLiteral stringLiteral = (StringLiteral) this.value;
 				this.method = scope.findMethod(scope.classScope().referenceContext.binding, stringLiteral.source, new TypeBinding[0], this, false);
@@ -103,15 +117,7 @@ public abstract class Attribute extends XAMLNode implements InvocationSite{
 	 * @param valueRequired boolean
 	 */
 	public void generateCode(BlockScope currentScope, CodeStream codeStream, boolean valueRequired) {
-//		if (this.constant != Constant.NotAConstant) {
-//			// generate a constant expression
-//			int pc = codeStream.position;
-//			codeStream.generateConstant(this.constant, this.implicitConversion);
-//			codeStream.recordPositionsFrom(pc, this.sourceStart);
-//		} else {
-//			// actual non-constant code generation
-//			throw new ShouldNotImplement(Messages.ast_missingCode);
-//		}
+
 	}
 	
 	@Override

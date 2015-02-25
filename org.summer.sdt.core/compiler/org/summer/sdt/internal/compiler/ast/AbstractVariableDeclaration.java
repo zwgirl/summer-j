@@ -150,7 +150,7 @@ public abstract class AbstractVariableDeclaration extends Statement implements I
 		doGenerateExpression(scope, indent, output);
 		switch(getKind()) {
 			case ENUM_CONSTANT:
-				return output.append(',');
+				return output.append(';');
 			default:
 				return output.append(';');
 		}

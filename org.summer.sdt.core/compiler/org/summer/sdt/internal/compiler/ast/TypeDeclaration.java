@@ -73,6 +73,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	public static final int INTERFACE_DECL = 2;
 	public static final int ENUM_DECL = 3;
 	public static final int ANNOTATION_TYPE_DECL = 4;
+	public static final int FUNCTION_TYPE_DECL = 5;   //cym 2015-02-23
 
 	public int modifiers = ClassFileConstants.AccDefault;
 	public int modifiersSourceStart;
@@ -81,9 +82,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	public TypeReference superclass;
 	public TypeReference[] superInterfaces;
 	public FieldDeclaration[] fields;
-//	public IndexerDeclaration[] indexers;
-//	public PropertyDeclaration[] properties;
-//	public EventDeclaration[] events;
 	public AbstractMethodDeclaration[] methods;
 	public TypeDeclaration[] memberTypes;
 	public SourceTypeBinding binding;
@@ -583,7 +581,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		
 		//cym 2015-01-11
-		if((this.bits & (ASTNode.IsAnonymousType | ASTNode.IsLocalType | ASTNode.IsMemberType)) == 0){
+		if((this.bits & (ASTNode.IsAnonymousType | ASTNode.IsLocalType | ASTNode.IsMemberType)) == 0 
+				&& (this.modifiers & ClassFileConstants.AccAnnotation) == 0 && (this.modifiers & ClassFileConstants.AccFunction) == 0){
 			if((this.binding.modifiers & ClassFileConstants.AccModule) == 0){
 				generateJavascript(scope);
 			}
@@ -750,6 +749,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		if(this.binding == null){
 			return;
 		}
+		
 		generateJavascript(unitScope, JsFile.getNewInstance(this.binding.compoundName));
 	}
 	
@@ -1771,7 +1771,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		
 		if((type.modifiers & ClassFileConstants.AccNative ) == 0 ){
 			output.append("\n");
-	
 			printIndent(indent, output).append("function ");
 			if(type.binding.isAnonymousType()){
 				output.append(TypeConstants.ANONYM);
@@ -1836,7 +1835,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				}
 			} 
 		} else {
-			output.append("){ };");
+			if((type.modifiers & ClassFileConstants.AccNative ) == 0 ){
+				output.append("){ };");
+			}
 		}
 		
 		//set prototype.__proto__
@@ -1849,29 +1850,28 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			} else {
 				output.append(type.binding.sourceName).append(".prototype.__proto__ = ");
 			}
-			if(superBinding.isMemberType()){
-				output.append("__lc('").append(CharOperation.concatWith(superBinding.compoundName, '.')).append("')");
-			} else {
-				if((superBinding.modifiers & ClassFileConstants.AccNative) != 0){
-					output.append(superBinding.sourceName);
-				} else {
-					if((superBinding.modifiers & ClassFileConstants.AccModule) != 0){
-						output.append("__lc('").append(CharOperation.concatWith(superBinding.compoundName, '.')).append("', ");
-						output.append("'").append(getFileName(superBinding)).append("'");
-					} else {
-						output.append("__lc('").append(CharOperation.concatWith(superBinding.compoundName, '.')).append("' ");
-					}
-					output.append(")");
-				}
-			}
+			superBinding.generate(output);
 			output.append(".prototype;");
 		}
 		
-		//generate static fields
-		generateFields(type.scope, indent, output, false, type);
+		output.append("\n");
+		printIndent(indent, output);
+		output.append("__cache[\"");
+		if(type.binding.isAnonymousType()){
+			output.append(CharOperation.replaceOnCopy(type.binding.constantPoolName(), '/', '.')).append("\"] = ");
+		} else {
+			output.append(CharOperation.concatWith(type.binding.compoundName, '.')).append("\"] = ");
+		}
+		
+		if(type.binding.isAnonymousType()){
+			output.append(TypeConstants.ANONYM);
+		} else {
+			output.append(type.binding.sourceName);
+		}
+		output.append(";");
+		
 		
 		generateProperties(type.scope, indent, output, type);
-		
 //		generateIndexers(type.scope, indent, output, type);
 		
 		if(type.methods != null){
@@ -1944,6 +1944,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				output.append(").bind(this));}});");
 			}
 		}
+		//generate static fields
+		generateFields(type.scope, indent, output, false, type);
 		
 		//process XAML Element
 		processXAML(type.scope, type, indent, output);
@@ -1964,6 +1966,18 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		
 		//type information
 		output.append("\n");
+//		if((type.binding.sourceName != null && type.binding.sourceName.length > 0) && type.binding.sourceName[0] == 'C' && CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_CLASS)){   //if Class Type
+//			printIndent(indent, output).append(type.getTypeName()).append(".prototype.__class = new Class(");
+//		} else {
+//			if(type.binding.isAnonymousType()){
+//				printIndent(indent, output).append(TypeConstants.ANONYM);
+//			} else {
+//				printIndent(indent, output).append(type.getTypeName());
+//			}
+//			
+//			output.append(".prototype.__class = new (__lc('java.lang.Class'))(");
+//		}
+		
 		if((type.binding.sourceName != null && type.binding.sourceName.length > 0) && type.binding.sourceName[0] == 'C' && CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_CLASS)){   //if Class Type
 			printIndent(indent, output).append(type.getTypeName()).append(".prototype.__class = new Class(");
 		} else {
@@ -1988,16 +2002,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		if(type.binding.superclass != null){
 			ReferenceBinding baseBinding = type.binding.superclass;
 			if((baseBinding.modifiers & ClassFileConstants.AccNative) != 0){
-				output.append(baseBinding.sourceName).append(", ");
+				output.append(baseBinding.sourceName);
 			} else {
-				if((baseBinding.modifiers & ClassFileConstants.AccModule) != 0){
-					output.append("__lc('").append(CharOperation.concatWith(baseBinding.compoundName, '.')).append("', ");
-					output.append("'").append(getFileName(baseBinding)).append("'");
-				} else {
-					output.append("__lc('").append(CharOperation.concatWith(baseBinding.compoundName, '.')).append("' ");
-				}
-				output.append("), ");
+				baseBinding.generate(output);
 			}
+			output.append(".prototype.__class, ");
 		} else{
 			output.append("null").append(", ");
 		}
@@ -2013,14 +2022,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				if((binding.modifiers & ClassFileConstants.AccNative) != 0){
 					output.append(type.binding.sourceName);
 				} else {
-					if((binding.modifiers & ClassFileConstants.AccModule) != 0){
-						output.append("__lc('").append(CharOperation.concatWith(binding.compoundName, '.')).append("', ");
-						output.append("'").append(getFileName(binding)).append("'");
-					} else {
-						output.append("__lc('").append(CharOperation.concatWith(binding.compoundName, '.')).append("'");
-					}
-					output.append(")");
+					binding.generate(output);
 				}
+				output.append(".prototype.__class");
 				
 				comma = true;
 			}
@@ -2058,12 +2062,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append('\n');
 		printIndent(indent, output);
 		
-		output.append("return  __cache[\"");
-		if(type.binding.isAnonymousType()){
-			output.append(CharOperation.replaceOnCopy(type.binding.constantPoolName(), '/', '.')).append("\"] = ");
-		} else {
-			output.append(CharOperation.concatWith(type.binding.compoundName, '.')).append("\"] = ");
-		}
+		output.append("return  ");
 		
 		if(type.binding.isAnonymousType()){
 			output.append(TypeConstants.ANONYM);
@@ -2072,38 +2071,46 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		
 		output.append(";");
+		
+//		output.append("return  __cache[\"");
+//		if(type.binding.isAnonymousType()){
+//			output.append(CharOperation.replaceOnCopy(type.binding.constantPoolName(), '/', '.')).append("\"] = ");
+//		} else {
+//			output.append(CharOperation.concatWith(type.binding.compoundName, '.')).append("\"] = ");
+//		}
+//		
+//		if(type.binding.isAnonymousType()){
+//			output.append(TypeConstants.ANONYM);
+//		} else {
+//			output.append(type.binding.sourceName);
+//		}
+//		
+//		output.append(";");
 	}
 	
 	private void processXAML(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
 		if(type.element != null && (type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE)) ||
 				type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_COMPONENT)))){
+//			output.append('\n');
+//			printIndent(indent, output);
+//			output.append(type.binding.sourceName).append(".prototype.").append("doCreate").append(" = function(parent) {");
+//			output.append('\n');
+//			printIndent(indent, output);
+//			((ObjectElement)type.element).buildElement(scope, indent, output, "parent");
+//			output.append('\n');
+//			printIndent(indent, output);
+//			output.append("};");
+			
 			output.append('\n');
 			printIndent(indent, output);
-			output.append(type.binding.sourceName).append(".prototype.").append("doCreate").append(" = function(parent) {");
+			output.append("Object.defineProperty(").append(type.binding.sourceName).append(".prototype, ").append("'doCreate', {get: function(){ return this.__proto__.__doCreate || (this.__proto__.__doCreate =  ").append(" (function(parent) {");
 			output.append('\n');
 			printIndent(indent, output);
 			((ObjectElement)type.element).buildElement(scope, indent, output, "parent");
 			output.append('\n');
 			printIndent(indent, output);
-			output.append("};");
+			output.append("}).bind(this));}});");
 		}
-	}
-	
-	public static char[] getFileName(ReferenceBinding typeBinding){
-		char[] fileName = typeBinding.getFileName();
-		if (fileName != null) {
-			// retrieve the actual file name from the full path (sources are generally only containing it already)
-			fileName = CharOperation.replaceOnCopy(fileName, '/', '\\'); // ensure to not do any side effect on file name (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=136016)
-			fileName = CharOperation.lastSegment(fileName, '\\');
-		}
-		fileName = CharOperation.subarray(fileName, 0, CharOperation.lastIndexOf('.', fileName));
-		char[][] compoundName = new char[1][];
-		if(typeBinding.fPackage != null){
-			compoundName = CharOperation.arrayConcat(typeBinding.fPackage.compoundName, fileName);
-		} else {
-			compoundName[0] = fileName;
-		}
-		return CharOperation.concatWith(compoundName, '.');
 	}
 	
 	private char[] getMethodName(AbstractMethodDeclaration method){
@@ -2151,10 +2158,10 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				if((type.fields[i].modifiers & ClassFileConstants.AccProperty) == 0){
 					continue;
 				}
-				if((this.fields[i].modifiers & ClassFileConstants.AccNative) != 0){
+				if((type.fields[i].modifiers & ClassFileConstants.AccNative) != 0){
 					continue;
 				}
-				this.fields[i].generateStatement(scope, indent, output);
+				type.fields[i].generateStatement(scope, indent, output);
 			}
 		}
 	}

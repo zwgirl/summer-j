@@ -40,13 +40,12 @@ public class GeneralAttribute extends Attribute{
 			if(this.method.isStatic()){
 				output.append(this.method.declaringClass.sourceName).append('.');
 				if(value instanceof StringLiteral){
-					output.append(((StringLiteral)value).source).append(".call(").append(this.method.declaringClass.sourceName)
-					.append(", event); \"");
+					output.append(((StringLiteral)value).source).append("(event); \"");
 				}
 			} else {
 				output.append("\"__this.");
 				if(value instanceof StringLiteral){
-					output.append(((StringLiteral)value).source).append(".call(__this, event); \"");
+					output.append(((StringLiteral)value).source).append("(event); \"");
 				}
 			}
 		} else {

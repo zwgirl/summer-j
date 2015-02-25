@@ -67,6 +67,11 @@ public class ObjectElement extends XAMLElement {
 			output.append("\n");
 			printIndent(indent, output);
 			output.append("<script type = 'text/javascript' >");
+			
+			output.append("\n");
+			printIndent(indent, output);
+			output.append("document.body.parentNode.dataContext = new (__lc('java.lang.DataContext', 'java.lang.bindings'))(__this, '2');");
+			 
 			output.append("\n");
 			printIndent(indent, output);
 			output.append("var _c = document.createElement.bind(document);");
@@ -89,6 +94,12 @@ public class ObjectElement extends XAMLElement {
 			output.append("\n");
 			printIndent(indent, output);
 			output.append("<script type = 'text/javascript' src = 'java/lang/buildins.js'> </script>");
+			output.append("\n");
+			printIndent(indent, output);
+			output.append("<script type = 'text/javascript' src = 'org/w3c/html/html5.js'> </script>");
+			output.append("\n");
+			printIndent(indent, output);
+			output.append("<script type = 'text/javascript' src = 'java/lang/bindings.js'> </script>");
 			//build class definition
 			ClassScope classScope = scope.enclosingClassScope();
 			TypeDeclaration typeDecl = classScope.referenceContext;
@@ -152,6 +163,10 @@ public class ObjectElement extends XAMLElement {
 				}
 				
 				output.append(" = _c(\"").append(child.type.getLastToken()).append("\");");
+				
+				output.append('\n');
+				printIndent(indent + 1, output).append("_p.appendChild(_n);");
+				
 				Attribute attrHasTem = null;
 				Attribute itemTemplate = null;
 				for(Attribute attr : child.attributes){
@@ -168,10 +183,11 @@ public class ObjectElement extends XAMLElement {
 					if(attr.value instanceof MarkupExtension){
 						output.append("\n");
 						printIndent(indent + 1, output);
-//						output.append("__this.add(new (__lc('java.lang.BindingExpression'))(_n, null));");
 						output.append("_n.").append(attr.property.token).append(" = ");
 						ReferenceBinding rb = (ReferenceBinding) attr.value.resolvedType;
-						output.append("new (__lc('").append(CharOperation.concatWith(rb.compoundName, '.')).append("', '").append(TypeDeclaration.getFileName(rb)).append("'))(");
+						output.append("new (");
+						rb.generate(output);
+						output.append(")(");
 						
 						output.append("{");
 						MarkupExtension markup = (MarkupExtension) attr.value;
@@ -192,36 +208,34 @@ public class ObjectElement extends XAMLElement {
 						output.append("}");
 						
 						output.append(")");
-						output.append(".providerValue(");
+						output.append(".provideValue(");
 						output.append("_n, \"").append(attr.property.token).append("\")");
 						output.append(";");
 						continue;
 					}
 					
-					if((attr.bits & TagBits.AnnotationEventCallback) != 0){
-						if(attr.method == null){
-							continue;
-						}
-						output.append("\n");
-						printIndent(indent + 1, output);
-						output.append("_n.").append(attr.property.token).append(" = ");
-						if(attr.method.isStatic()){
-							output.append(attr.method.declaringClass.sourceName).append('.');
-							if(attr.value instanceof StringLiteral){
-//								output.append(((StringLiteral)attr.value).source).append(".bind(").append(attr.method.declaringClass.sourceName)
-//								.append("); ");
-								output.append(((StringLiteral)attr.value).source).append("); ");
-							}
-						} else {
-							output.append("__this.");
-							if(attr.value instanceof StringLiteral){
-//								output.append(((StringLiteral)attr.value).source).append(".bind(__this); ");
-								output.append(((StringLiteral)attr.value).source); //.append(".bind(__this); ");
-							}
-						}
-						
-						continue;
-					}
+//					if((attr.bits & TagBits.AnnotationEventCallback) != 0){
+//						if(attr.method == null){
+//							continue;
+//						}
+//						output.append("\n");
+//						printIndent(indent + 1, output);
+//						output.append("_n.addEventListener('").append(CharOperation.subarray(attr.property.token, 2, -1)).append("', ");
+//						if(attr.method.isStatic()){
+//							output.append(attr.method.declaringClass.sourceName).append('.');
+//							if(attr.value instanceof StringLiteral){
+//								output.append(attr.method.selector).append("); ");
+//							}
+//						} else {
+//							output.append("__this.");
+//							if(attr.value instanceof StringLiteral){
+//								output.append(attr.method.selector); 
+//							}
+//						}
+//						output.append(", false);");
+//						
+//						continue;
+//					}
 					output.append("_n.").append(attr.property.token).append(" = ");
 					output.append("\n");
 					printIndent(indent + 1, output);
@@ -231,13 +245,9 @@ public class ObjectElement extends XAMLElement {
 					output.append("\n");
 					printIndent(indent + 1, output);
 					if(attrHasTem.template != null){
-						output.append("var _t = new (__lc('");
-						output.append(CharOperation.concatWith(attrHasTem.template.compoundName, '.'));
-						output.append("'");
-						if((attrHasTem.template.modifiers & ClassFileConstants.AccModule) != 0){
-							output.append(", ").append(TypeDeclaration.getFileName(attrHasTem.template)).append(",");
-						}
-						output.append("))();");
+						output.append("var _t = new (");
+						attrHasTem.template.generate(output);
+						output.append(")();");
 						output.append("\n");
 						printIndent(indent + 1, output);
 						output.append("_t.create(_n);");
@@ -252,13 +262,9 @@ public class ObjectElement extends XAMLElement {
 						output.append("\n");
 						printIndent(indent + 1, output);
 						if(itemTemplate.template != null){
-							output.append("var _t = new (__lc('");
-							output.append(CharOperation.concatWith(itemTemplate.template.compoundName, '.'));
-							output.append("'");
-							if((itemTemplate.template.modifiers & ClassFileConstants.AccModule) != 0){
-								output.append(", ").append(TypeDeclaration.getFileName(itemTemplate.template)).append(",");
-							}
-							output.append("))();");
+							output.append("var _t = new (");
+							itemTemplate.template.generate(output);
+							output.append(")();");
 							output.append("\n");
 							printIndent(indent + 1, output);
 							output.append("_t.create(_n);");
@@ -271,8 +277,8 @@ public class ObjectElement extends XAMLElement {
 				if(child.children != null && child.children.length > 0){
 					child.buildDOMScript(scope, indent + 1, output, "_n");
 				}
-				output.append('\n');
-				printIndent(indent + 1, output).append("_p.appendChild(_n);");
+//				output.append('\n');
+//				printIndent(indent + 1, output).append("_p.appendChild(_n);");
 			}
 		}
 			
@@ -294,6 +300,10 @@ public class ObjectElement extends XAMLElement {
 //		}
 		
 		output.append(" = _c(\"").append(this.type.getLastToken()).append("\");");
+		
+		output.append('\n');
+		printIndent(indent + 1, output).append(parent).append(".appendChild(_n);");
+		
 		Attribute attrHasTem = null;
 		Attribute itemTemplate = null;
 		for(Attribute attr : this.attributes){
@@ -323,7 +333,9 @@ public class ObjectElement extends XAMLElement {
 				output.append(CharOperation.concatWith(attrHasTem.template.compoundName, '.'));
 				output.append("'");
 				if((attrHasTem.template.modifiers & ClassFileConstants.AccModule) != 0){
-					output.append(", ").append(TypeDeclaration.getFileName(attrHasTem.template)).append(",");
+					output.append(", ");
+					attrHasTem.template.generate(output);
+					output.append(",");
 				}
 				output.append("))();");
 				output.append("\n");
@@ -344,7 +356,9 @@ public class ObjectElement extends XAMLElement {
 					output.append(CharOperation.concatWith(itemTemplate.template.compoundName, '.'));
 					output.append("'");
 					if((itemTemplate.template.modifiers & ClassFileConstants.AccModule) != 0){
-						output.append(", ").append(TypeDeclaration.getFileName(itemTemplate.template)).append(",");
+						output.append(", ");
+						itemTemplate.template.generate(output);
+						output.append(",");
 					}
 					output.append("))();");
 					output.append("\n");
@@ -359,8 +373,8 @@ public class ObjectElement extends XAMLElement {
 		if(this.children != null && this.children.length > 0){
 			this.buildDOMScript(scope, indent + 1, output, "_n");
 		}
-		output.append('\n');
-		printIndent(indent + 1, output).append(parent).append(".appendChild(_n);");
+//		output.append('\n');
+//		printIndent(indent + 1, output).append(parent).append(".appendChild(_n);");
 	}
 	
 	public StringBuffer generateHTML(Scope scope, int indent, StringBuffer output) {

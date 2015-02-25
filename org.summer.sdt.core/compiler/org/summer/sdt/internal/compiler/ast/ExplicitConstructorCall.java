@@ -544,7 +544,11 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 			output.append(')');
 			return output;
 		} else {
-			output.append("new "); 
+			
+			MethodBinding codegenBinding = this.binding.original();
+			ReferenceBinding targetType = codegenBinding.declaringClass;
+
+//			output.append("new "); 
 			if((this.binding.declaringClass.modifiers & ClassFileConstants.AccNative) !=0){
 					int id = this.binding.declaringClass.id;
 					if(id != TypeIds.NoId){
@@ -563,17 +567,26 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 						case TypeIds.T_JavaLangFloat:
 						case TypeIds.T_double:
 						case TypeIds.T_JavaLangDouble:
-							output.append("Number");
+							output.append("return Number");
 						}
 					} else { // type null for enum constant initializations
 					output.append(this.binding.declaringClass.sourceName()); 
 				}
 			} else {
-				output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')");
+				// special name&ordinal argument generation for enum constructors
+//				if (targetType.erasure().id == TypeIds.T_JavaLangEnum || targetType.isEnum()) {
+//					output.append("Enum");
+//				} else {
+					output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')");
+//				}
 			}
 			
 			output.append('(');
 			outputArguments(scope, indent, output, false);
+			// special name&ordinal argument generation for enum constructors
+			if (targetType.erasure().id == TypeIds.T_JavaLangEnum || targetType.isEnum()) {
+				output.append("arguments[arguments.length-2], arguments[arguments.length-1]");
+			}
 			
 			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
 				if(this.arguments != null && this.arguments.length > 0){
@@ -582,7 +595,6 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 				if(this.binding.overload != null){
 					output.append("\"").append(this.binding.overload).append("\"");
 				}
-				
 			}
 			output.append(')');
 		}

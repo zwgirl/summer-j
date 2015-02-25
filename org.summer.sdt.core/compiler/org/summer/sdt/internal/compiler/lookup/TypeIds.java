@@ -125,7 +125,7 @@ public interface TypeIds {
 	final int T_JavaLangFunctionalInterface = 77;
 
 	//summer cym 2014-11-20
-	final int T_JavaLangAnnotationOverload = 78;
+	final int T_JavaLangOverload = 78;
 	
 	//summer cym 2015-01-01
 	final int T_JavaLangAnnotationEventCallback = 79;

@@ -101,6 +101,7 @@ import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
+import org.summer.sdt.internal.compiler.lookup.VariableBinding;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 import org.summer.sdt.internal.compiler.util.SimpleLookupTable;
 
@@ -133,6 +134,10 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 	
 	//cym 2015-02-14
 	public static final char[] NO_SELECTOR = new char[0];
+	
+	//cym 2015-02-25
+	public VariableBinding otherBinding;
+	public ReferenceBinding functionType;
 
 	public FlowInfo analyseCode(BlockScope currentScope, FlowContext flowContext, FlowInfo flowInfo) {
 		//cym 2015-02-16
@@ -639,26 +644,6 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 				}
 			}
 			
-			if(this.selector == NO_SELECTOR){
-//				TypeBinding receiverType = this.receiver.resolveType(scope);
-				if(this.actualReceiverType != null){
-					if(this.receiver instanceof LambdaExpression){
-						LambdaExpression lambda = (LambdaExpression) this.receiver;
-						if(this.expectedType != null){
-							lambda.setExpectedType(expectedType);
-							return lambda.resolveType(scope);
-						}
-						return scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION); 
-					}
-					if(this.actualReceiverType.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
-						return ((ReferenceBinding)this.actualReceiverType).returnType();
-					}
-				}
-//				scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
-			} else if(this.receiver == null){
-				
-			}
-			
 			// resolve type arguments (for generic constructor call)
 			if (this.typeArguments != null) {
 				int length = this.typeArguments.length;
@@ -682,6 +667,70 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 					return null;
 				}
 			}
+			
+			if(this.selector == NO_SELECTOR){
+//				TypeBinding receiverType = this.receiver.resolveType(scope);
+				if(this.actualReceiverType != null){
+					if(this.receiver instanceof LambdaExpression){
+						LambdaExpression lambda = (LambdaExpression) this.receiver;
+						if(this.expectedType != null){
+							lambda.setExpectedType(expectedType);
+							return lambda.resolveType(scope);
+						}
+						return scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION); 
+					}
+					if(this.actualReceiverType.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
+						return ((ReferenceBinding)this.actualReceiverType).returnType();
+					}
+				}
+//				scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
+			} else {
+				LocalVariableBinding local = scope.findVariable(this.selector);
+				if(local != null && local.isValidBinding()){
+					if(local.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
+						this.otherBinding = local;
+						this.functionType = (ReferenceBinding) local.type;
+						return this.functionType.returnType();
+					} else {
+//						scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
+					}
+				}
+				
+				FieldBinding field = scope.findField(scope.enclosingSourceType(), this.selector, this, true);
+				if(field != null && field.isValidBinding()){
+					if(field.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
+						this.otherBinding = field;
+						this.functionType = (ReferenceBinding) local.type;
+						return this.functionType.returnType();
+					} else {
+//						scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
+					}
+				}
+			}
+			
+//			// resolve type arguments (for generic constructor call)
+//			if (this.typeArguments != null) {
+//				int length = this.typeArguments.length;
+//				this.argumentsHaveErrors = sourceLevel < ClassFileConstants.JDK1_5; // typeChecks all arguments
+//				this.genericTypeArguments = new TypeBinding[length];
+//				for (int i = 0; i < length; i++) {
+//					TypeReference typeReference = this.typeArguments[i];
+//					if ((this.genericTypeArguments[i] = typeReference.resolveType(scope, true /* check bounds*/)) == null) {
+//						this.argumentsHaveErrors = true;
+//					}
+//					if (this.argumentsHaveErrors && typeReference instanceof Wildcard) {
+//						scope.problemReporter().illegalUsageOfWildcard(typeReference);
+//					}
+//				}
+//				if (this.argumentsHaveErrors) {
+//					if (this.arguments != null) { // still attempt to resolve arguments
+//						for (int i = 0, max = this.arguments.length; i < max; i++) {
+//							this.arguments[i].resolveType(scope);
+//						}
+//					}
+//					return null;
+//				}
+//			}
 			// will check for null after args are resolved
 			if (this.arguments != null) {
 				this.argumentsHaveErrors = false; // typeChecks all arguments
@@ -1113,20 +1162,6 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 		return this.receiver.isQualifiedSuper();
 	}
 	
-//	private boolean hasRefOrOutArgument(){
-//		if(this.arguments == null || this.arguments.length == 0){
-//			return false;
-//		}
-//		
-//		for(Expression arg : this.arguments){
-//			if((arg.bits & (ASTNode.IsRefArgument |  ASTNode.IsRefArgument)) != 0){
-//				return true;
-//			}
-//		}
-//		
-//		return false;
-//	}
-	
 	ReferenceBinding[] getPath(ReferenceBinding targetEnclosingType, MethodScope currentMethodScope){
 		SourceTypeBinding sourceType = currentMethodScope.enclosingSourceType();
 		ReferenceBinding currentType = sourceType; //sourceType.enclosingType();
@@ -1168,94 +1203,131 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 	}
 	
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output){
-		if(this.binding == null){
-			if(this.actualReceiverType == null){
-				return output;
+		boolean comma = false;	
+		if(otherBinding != null){
+			if(otherBinding instanceof FieldBinding){
+				FieldBinding field  = (FieldBinding) otherBinding;
+				if (field.isStatic()) {
+					output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append('.');
+				} else {
+					output.append("this.");
+				}
 			}
-			this.receiver.doGenerateExpression(scope, 0, output).append('(');
-			boolean comma = false;
+			output.append(this.selector).append('(');
+			
 			if (this.arguments != null) {
 				if(comma) output.append(", "); //$NON-NLS-1$
-				if((((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccNative) != 0 || (((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccVarargs) == 0){
+//				if((this.binding.modifiers & ClassFileConstants.AccNative) != 0 || (this.binding.modifiers & ClassFileConstants.AccVarargs) == 0){
 					for (int i = 0; i < this.arguments.length ; i ++) {
 						if (i > 0) output.append(", "); //$NON-NLS-1$
 						this.arguments[i].doGenerateExpression(scope, 0, output);
 					}
-				} else{
-					if((((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccVarargs) != 0){
-						int argIndex = this.binding.parameters.length - 1;
-						for (int i = 0; i < argIndex ; i ++) {
+//				} else{
+//					if((this.binding.modifiers & ClassFileConstants.AccVarargs) != 0){
+//						int argIndex = this.binding.parameters.length - 1;
+//						for (int i = 0; i < argIndex ; i ++) {
+//							if (i > 0) output.append(", "); //$NON-NLS-1$
+//							this.arguments[i].doGenerateExpression(scope, 0, output);
+//						}
+//						
+//						if (argIndex > 0) output.append(",");
+//						output.append("["); //$NON-NLS-1$
+//						for(int i = argIndex; i < this.arguments.length; i++){
+//							if (i > argIndex) output.append(", "); //$NON-NLS-1$
+//							this.arguments[i].doGenerateExpression(scope, 0, output);
+//						}
+//						output.append("]");
+//					}
+//				}
+
+			}
+			
+			output.append(')');
+			
+			return output;
+		} else {
+			if(this.binding == null){
+				if(this.actualReceiverType == null){
+					return output;
+				}
+				this.receiver.doGenerateExpression(scope, 0, output).append('(');
+				if (this.arguments != null) {
+					if(comma) output.append(", "); //$NON-NLS-1$
+					if((((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccNative) != 0 || (((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccVarargs) == 0){
+						for (int i = 0; i < this.arguments.length ; i ++) {
 							if (i > 0) output.append(", "); //$NON-NLS-1$
 							this.arguments[i].doGenerateExpression(scope, 0, output);
 						}
-						
-						if (argIndex > 0) output.append(",");
-						output.append("["); //$NON-NLS-1$
-						for(int i = argIndex; i < this.arguments.length; i++){
-							if (i > argIndex) output.append(", "); //$NON-NLS-1$
-							this.arguments[i].doGenerateExpression(scope, 0, output);
+					} else{
+						if((((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccVarargs) != 0){
+							int argIndex = this.binding.parameters.length - 1;
+							for (int i = 0; i < argIndex ; i ++) {
+								if (i > 0) output.append(", "); //$NON-NLS-1$
+								this.arguments[i].doGenerateExpression(scope, 0, output);
+							}
+							
+							if (argIndex > 0) output.append(",");
+							output.append("["); //$NON-NLS-1$
+							for(int i = argIndex; i < this.arguments.length; i++){
+								if (i > argIndex) output.append(", "); //$NON-NLS-1$
+								this.arguments[i].doGenerateExpression(scope, 0, output);
+							}
+							output.append("]");
 						}
-						output.append("]");
+					}
+
+				}
+				output.append(')');
+				return output;
+			}
+			
+			comma = false;		
+			MethodBinding codegenBinding = this.binding instanceof PolymorphicMethodBinding ? this.binding : this.binding.original();
+			boolean isStatic = codegenBinding.isStatic();
+			if (isStatic) {
+				output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append('.');
+			} else if ((this.bits & ASTNode.DepthMASK) != 0 && this.receiver.isImplicitThis()) { // outer access ?
+				//process GLobal and Window
+				if((this.binding.declaringClass.sourceName[0] == 'W' || this.binding.declaringClass.sourceName[0] == 'G') &&
+						(CharOperation.equals(this.binding.declaringClass.compoundName, TypeConstants.JAVA_LANG_WINDOW) 
+							|| CharOperation.equals(this.binding.declaringClass.compoundName, TypeConstants.JAVA_LANG_GLOBAL))){
+				} else {
+					int depths = (this.bits & ASTNode.DepthMASK) >> ASTNode.DepthSHIFT;
+					output.append("this.");
+					for(int i = 0; i < depths; i++){
+						output.append("__enclosing.");
 					}
 				}
-
-			}
-			output.append(')');
-			return output;
-		}
-		
-		MethodBinding codegenBinding = this.binding instanceof PolymorphicMethodBinding ? this.binding : this.binding.original();
-		boolean isStatic = codegenBinding.isStatic();
-		if (isStatic) {
-//			if(this.binding.declaringClass.isMemberType()){
-//				output.append(CharOperation.concatWith(this.binding.declaringClass.getQualifiedName(), '.')).append('.');
-//			} else{
-//				output.append(this.binding.declaringClass.sourceName);
-//				output.append('.');
-//			}
-			output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append('.');;
-		} else if ((this.bits & ASTNode.DepthMASK) != 0 && this.receiver.isImplicitThis()) { // outer access ?
-			//process GLobal and Window
-			if((this.binding.declaringClass.sourceName[0] == 'W' || this.binding.declaringClass.sourceName[0] == 'G') &&
-					(CharOperation.equals(this.binding.declaringClass.compoundName, TypeConstants.JAVA_LANG_WINDOW) 
-						|| CharOperation.equals(this.binding.declaringClass.compoundName, TypeConstants.JAVA_LANG_GLOBAL))){
+			} else if(this.binding.isDefaultMethod()){
+				output.append(this.binding.declaringClass.sourceName);
+				output.append(".prototype.");
+			} else if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0){
+				
 			} else {
-				int depths = (this.bits & ASTNode.DepthMASK) >> ASTNode.DepthSHIFT;
-				output.append("this.");
-				for(int i = 0; i < depths; i++){
-					output.append("__enclosing.");
+				this.receiver.doGenerateExpression(scope, 0, output).append('.');
+			}
+			
+			output.append(this.selector);
+			if((this.binding instanceof ParameterizedMethodBinding && (((ParameterizedMethodBinding)this.binding).original().tagBits & TagBits.AnnotationOverload) != 0) 
+					|| (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
+				if(this.binding.overload != null){
+					output.append(this.binding.overload);
 				}
 			}
-		} else if(this.binding.isDefaultMethod()){
-			output.append(this.binding.declaringClass.sourceName);
-			output.append(".prototype.");
-		} else if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0){
 			
-		} else {
-			this.receiver.doGenerateExpression(scope, 0, output).append('.');
-		}
-		
-		output.append(this.selector);
-		if((this.binding instanceof ParameterizedMethodBinding && (((ParameterizedMethodBinding)this.binding).original().tagBits & TagBits.AnnotationOverload) != 0) 
-				|| (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
-			if(this.binding.overload != null){
-				output.append(this.binding.overload);
+			if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0 || this.receiver instanceof SuperReference){
+				output.append(".call");
 			}
-		}
-		
-		if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0 || this.receiver instanceof SuperReference){
-			output.append(".call");
-		}
-		
-		boolean comma = false;
-		output.append('(') ;
-		if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0 || this.receiver instanceof SuperReference){
-			if (this.receiver.isImplicitThis() || this.receiver.isThis() || this.receiver.isSuper()){ 
-				output.append("this");
-				comma = true;
-			} else {
-				this.receiver.doGenerateExpression(scope, 0, output);
-				comma = true;
+			
+			output.append('(') ;
+			if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0 || this.receiver instanceof SuperReference){
+				if (this.receiver.isImplicitThis() || this.receiver.isThis() || this.receiver.isSuper()){ 
+					output.append("this");
+					comma = true;
+				} else {
+					this.receiver.doGenerateExpression(scope, 0, output);
+					comma = true;
+				}
 			}
 		}
 		

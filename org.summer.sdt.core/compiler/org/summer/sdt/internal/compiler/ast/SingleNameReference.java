@@ -1069,7 +1069,8 @@ public class SingleNameReference extends NameReference implements OperatorIds {
 		if(this.binding instanceof FieldBinding){
 			FieldBinding field = (FieldBinding) this.binding;
 			if(field.isStatic()){
-				output.append(field.declaringClass.sourceName).append(".").append(this.token);
+				field.declaringClass.generate(output);
+				output.append(".").append(this.token);
 			} else {
 				if(field.declaringClass.sourceName != null && field.declaringClass.sourceName.length > 0 && (field.declaringClass.sourceName[0] == 'W' || field.declaringClass.sourceName[0] == 'G') &&
 						(CharOperation.equals(field.declaringClass.compoundName, TypeConstants.JAVA_LANG_WINDOW) 

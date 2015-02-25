@@ -104,8 +104,8 @@ public class BreakStatement extends BranchStatement {
 	}
 
 	public StringBuffer doGenerateExpression(Scope scope, int tab, StringBuffer output) {
-		printIndent(tab, output).append("break"); 
+		output.append("break"); 
 		if (this.label != null) output.append(" ").append(this.label);
-		return output.append(';');
+		return output;
 	}
 }

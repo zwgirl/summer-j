@@ -139,7 +139,7 @@ public class InstanceOfExpression extends OperatorExpression {
 			return output;
 		}
 		this.type.generateExpression(scope, indent, output);
-		output.append(".__class.isInstance(");
+		output.append(".prototype.__class.isInstance(");
 		this.expression.generateExpression(scope, indent, output);
 		output.append(")");
 		return output;

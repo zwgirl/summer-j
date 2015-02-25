@@ -370,64 +370,126 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		if(this.binding == null){
 			return output;
 		}
-		printIndent(indent, output);
-		if(isStatic()){
-			output.append(this.binding.declaringClass.sourceName).append(".");
-		} else{
-			output.append("this.");
-		}
-		output.append(this.name);
-		if (this.initialization != null) {
-			output.append(" = "); //$NON-NLS-1$
-			this.initialization.doGenerateExpression(scope, indent, output);
+		
+		if((this.modifiers & ClassFileConstants.AccProperty) != 0){
+			doGenerateProperty(scope, indent, output);
+		} else if((this.modifiers & ClassFileConstants.AccIndexer) != 0){
+			
 		} else {
-			output.append(" = "); //$NON-NLS-1$
-			if(this.binding != null){
-				switch(this.binding.type.id){
-				case TypeIds.T_boolean:
-				case TypeIds.T_JavaLangBoolean:
-					output.append("false");
-					break;
-				case TypeIds.T_byte:
-				case TypeIds.T_JavaLangByte:
-					output.append("0");
-					break;
-				case TypeIds.T_char:
-				case TypeIds.T_JavaLangCharacter:
-					output.append("0");
-					break;
-				case TypeIds.T_short:
-				case TypeIds.T_JavaLangShort:
-					output.append("0");
-					break;
-				case TypeIds.T_double:
-				case TypeIds.T_JavaLangDouble:
-					output.append("0");
-					break;
-				case TypeIds.T_float:
-				case TypeIds.T_JavaLangFloat:
-					output.append("0");
-					break;
-				case TypeIds.T_int:
-				case TypeIds.T_JavaLangInteger:
-					output.append("0");
-					break;
-				case TypeIds.T_long:
-				case TypeIds.T_JavaLangLong:
-					output.append("0");
-					break;
-				case TypeIds.T_JavaLangObject:
-					output.append("null");
-					break;
-				case TypeIds.T_JavaLangString:
-					output.append("null");
-					break;
-				default:
-					output.append("null");
+			printIndent(indent, output);
+			if(isStatic()){
+				output.append(this.binding.declaringClass.sourceName).append(".");
+			} else{
+				output.append("this.");
+			}
+			output.append(this.name);
+			if (this.initialization != null) {
+				output.append(" = "); //$NON-NLS-1$
+				this.initialization.doGenerateExpression(scope, indent, output);
+			} else {
+				output.append(" = "); //$NON-NLS-1$
+				if(this.binding != null){
+					switch(this.binding.type.id){
+					case TypeIds.T_boolean:
+					case TypeIds.T_JavaLangBoolean:
+						output.append("false");
+						break;
+					case TypeIds.T_byte:
+					case TypeIds.T_JavaLangByte:
+						output.append("0");
+						break;
+					case TypeIds.T_char:
+					case TypeIds.T_JavaLangCharacter:
+						output.append("0");
+						break;
+					case TypeIds.T_short:
+					case TypeIds.T_JavaLangShort:
+						output.append("0");
+						break;
+					case TypeIds.T_double:
+					case TypeIds.T_JavaLangDouble:
+						output.append("0");
+						break;
+					case TypeIds.T_float:
+					case TypeIds.T_JavaLangFloat:
+						output.append("0");
+						break;
+					case TypeIds.T_int:
+					case TypeIds.T_JavaLangInteger:
+						output.append("0");
+						break;
+					case TypeIds.T_long:
+					case TypeIds.T_JavaLangLong:
+						output.append("0");
+						break;
+					case TypeIds.T_JavaLangObject:
+						output.append("null");
+						break;
+					case TypeIds.T_JavaLangString:
+						output.append("null");
+						break;
+					default:
+						output.append("null");
+					}
 				}
 			}
 		}
-//		output.append(";");
+		return output;
+	}
+	
+	public StringBuffer doGenerateProperty(Scope scope, int indent, StringBuffer output) {
+		output.append("\n");
+		
+		printIndent(indent, output);
+		output.append("Object.defineProperty(");
+		if(this.isStatic()){
+			output.append(binding.declaringClass.sourceName);
+		} else {
+			output.append(binding.declaringClass.sourceName).append(".prototype");
+		}
+		
+		output.append(", \"").append(this.name).append("\", ").append('{').append("\n");
+		boolean comma = false;
+		if(this.getter != null){
+			printIndent(indent + 1, output);
+			output.append("get : ").append("function() {");
+			if(this.getter.statements != null){
+				for(int i = 0, length = this.getter.statements.length; i < length; i++){
+					output.append("\n");
+					this.getter.statements[i].generateStatement(scope, indent + 2, output);
+				}
+			}
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append("}");
+			
+			comma = true;
+		}
+		
+		if(this.setter != null){
+			if(comma){
+				output.append(", ");
+			}
+			
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append("set : ").append("function(value) {");
+			if(this.setter.statements != null){
+				for(int i = 0, length = this.setter.statements.length; i < length; i++){
+					output.append("\n");
+					this.setter.statements[i].generateStatement(scope, indent + 2, output);
+				}
+			}
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append("}");
+			
+			comma = true;
+		}
+		
+		output.append("\n");
+		printIndent(indent, output).append("})");
+		
 		return output;
 	}
 	

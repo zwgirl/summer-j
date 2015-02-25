@@ -86,6 +86,8 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	int suppressWarningsCount;
 	public int functionalExpressionsCount;
 	public FunctionalExpression[] functionalExpressions;
+	
+	public boolean module;   //cym 2015-02-25
 
 	public CompilationUnitDeclaration(ProblemReporter problemReporter, CompilationResult compilationResult, int sourceLength) {
 		this.problemReporter = problemReporter;
@@ -355,7 +357,7 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	 * Bytecode generation
 	 */
 	public void generateCode() {
-		if(this.currentPackage != null && (this.currentPackage.modifiers & ClassFileConstants.AccModule) != 0 ){
+		if(module){
 			generateJavascriptModule();
 		}
 		
@@ -385,6 +387,14 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		JsFile jsFile = JsFile.getNewInstance(getCompoundName());
 		if (this.types != null) {
 			for (int i = 0, count = this.types.length; i < count; i++) {
+				if((this.types[i].modifiers & ClassFileConstants.AccFunction) != 0){
+					continue;
+				}
+				
+				if((this.types[i].modifiers & ClassFileConstants.AccAnnotation) != 0){
+					continue;
+				}
+				
 				this.types[i].generateJavascript(this.scope, jsFile);
 				jsFile.content.append(";");
 				jsFile.content.append("\n");
@@ -617,22 +627,29 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 //		if (this.currentPackage != null && this.currentPackage.annotations != null && !isPackageInfo) {
 //			this.scope.problemReporter().invalidFileNameForPackageAnnotations(this.currentPackage.annotations[0]);
 //		}
+		
 		try {
-			//cym 2015-02-09
-			if(this.currentPackage != null){
+			//cym 2015-02-25
+			if(this.currentPackage != null && this.currentPackage.annotations != null){
+				this.module = false;
 				BlockScope blockScope = new MethodScope(scope, this, false);
+				scope.fPackage.tagBits &= ~(TagBits.AnnotationResolved | TagBits.DeprecatedAnnotationResolved | TagBits.AnnotationModule);
 				ASTNode.resolveAnnotations(blockScope, this.currentPackage.annotations, scope.fPackage);
 				if((scope.fPackage.tagBits & TagBits.AnnotationModule) != 0){
-					this.currentPackage.modifiers |= ClassFileConstants.AccModule;
+					this.module = true;
 				}
+				scope.fPackage.tagBits &= ~(TagBits.AnnotationResolved | TagBits.DeprecatedAnnotationResolved | TagBits.AnnotationModule);
 			}
 			if (this.types != null) {
 				for (int i = startingTypeIndex, count = this.types.length; i < count; i++) {
-					//cym 2014-12-13
-					if((scope.fPackage.tagBits & TagBits.AnnotationModule) != 0){
-						this.types[i].binding.modifiers |= ClassFileConstants.AccModule;
+					//cym 2015-02-25
+					if(this.module){
+//						this.types[i].binding.modifiers |= ClassFileConstants.AccModule;
+//						this.types[i].modifiers |= ClassFileConstants.AccModule;
 					} else {
-						//cym 2014-12-13
+						//cym 2015-02-25
+						this.types[i].binding.modifiers &= ~ClassFileConstants.AccModule;
+						
 						if ((this.types[i].modifiers & ClassFileConstants.AccPublic) != 0) {
 							char[] mainTypeName;
 							if ((mainTypeName = this.getMainTypeName()) != null // mainTypeName == null means that implementor of ICompilationUnit decided to return null

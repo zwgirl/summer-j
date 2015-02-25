@@ -242,6 +242,8 @@ public class BinaryTypeBinding extends ReferenceBinding {
 		this.environment = environment;
 		this.fPackage = packageBinding;
 		this.fileName = binaryType.getFileName();
+		
+		this.sourceFileName = binaryType.sourceFileName(); //cym 2015-02-25
 	
 		/* https://bugs.eclipse.org/bugs/show_bug.cgi?id=324850, even in a 1.4 project, we
 		   must internalize type variables and observe any parameterization of super class
@@ -273,8 +275,8 @@ public class BinaryTypeBinding extends ReferenceBinding {
 			this.enclosingType = environment.getTypeFromConstantPoolName(enclosingTypeName, 0, -1, true, null /* could not be missing */); // pretend parameterized to avoid raw
 			this.tagBits |= TagBits.MemberTypeMask;   // must be a member type not a top-level or local type
 			this.tagBits |= TagBits.HasUnresolvedEnclosingType;
-			if (enclosingType().isStrictfp())
-				this.modifiers |= ClassFileConstants.AccStrictfp;
+//			if (enclosingType().isStrictfp())   //cym 2015-02-25
+//				this.modifiers |= ClassFileConstants.AccStrictfp;
 			if (enclosingType().isDeprecated())
 				this.modifiers |= ExtraCompilerModifiers.AccDeprecatedImplicitly;
 		}

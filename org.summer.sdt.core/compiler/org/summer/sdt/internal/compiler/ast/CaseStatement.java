@@ -147,11 +147,17 @@ public class CaseStatement extends Statement {
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
 		if (this.constantExpression == null) {
-			output.append(JsConstant.DEFAULT).append(JsConstant.WHITESPACE).append(JsConstant.COLON);
+			output.append("default :");
 		} else {
-			output.append(JsConstant.CASE).append(JsConstant.WHITESPACE);
-			this.constantExpression.doGenerateExpression(scope, 0, output).append(JsConstant.WHITESPACE).append(JsConstant.COLON);
+			output.append("case ");
+			this.constantExpression.doGenerateExpression(scope, 0, output).append(" :");
 		}
 		return output;
+	}
+	
+	@Override
+	public StringBuffer generateStatement(Scope scope, int indent,
+			StringBuffer output) {
+		return doGenerateExpression(scope, indent, output);
 	}
 }

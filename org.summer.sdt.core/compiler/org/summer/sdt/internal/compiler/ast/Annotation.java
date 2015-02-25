@@ -377,7 +377,7 @@ public abstract class Annotation extends Expression {
 				break;
 			//cym add 2014-11-20
 			// overload annotation
-			case TypeIds.T_JavaLangAnnotationOverload:
+			case TypeIds.T_JavaLangOverload:
 				tagBits |= TagBits.AnnotationOverload; 
 				break;
 			//cym add 2015-02-12
@@ -1201,86 +1201,4 @@ public abstract class Annotation extends Expression {
 		this.type.doGenerateExpression(scope, 0, output);
 		return output;
 	}
-
-//	//cym add 2014-11-20
-//	public static void getOverloadPostfix(MethodBinding binding){
-//		AbstractMethodDeclaration method = binding.sourceMethod();
-//		
-//		if(method == null){
-//			return;
-//		}
-//		
-//		Annotation overload = null;
-//		if(method.annotations == null){
-//			return;
-//		}
-//		for(Annotation annotation : method.annotations){
-//			if(annotation.resolvedType == null){
-//				continue;
-//			}
-//			if(annotation.resolvedType.id == TypeIds.T_JavaLangAnnotationOverload){
-//				overload = annotation;
-//				break;
-//			}
-//		}
-//		
-//		if(overload == null){
-//			return;
-//		}
-//		
-//		MemberValuePair[] pairs = overload.memberValuePairs();
-//		pairLoop: for (int i = 0, length = pairs.length; i < length; i++) {
-//			MemberValuePair pair = pairs[i];
-//			if (CharOperation.equals(pair.name, TypeConstants.VALUE)) {
-//				Expression value = pair.value;
-//	
-//					Constant cst = value.constant;
-//					if (cst != Constant.NotAConstant && cst.typeID() == T_JavaLangString) {
-//						binding.overload = cst.stringValue();
-//					}
-//				break pairLoop;
-//			}
-//		}
-//		
-//		return;
-//	}
-//	
-//	//cym add 2015-01-15
-//	private static final String EMPTY = "";
-//	public static String getOverloadPostfix(AbstractMethodDeclaration method){
-//		
-//		Annotation overload = null;
-//		if(method.annotations == null){
-//			return EMPTY;
-//		}
-//		for(Annotation annotation : method.annotations){
-//			if(annotation.resolvedType == null){
-//				continue;
-//			}
-//			if(annotation.resolvedType.id == TypeIds.T_JavaLangAnnotationOverload){
-//				overload = annotation;
-//				break;
-//			}
-//		}
-//		
-//		if(overload == null){
-//			return EMPTY;
-//		}
-//		
-//		MemberValuePair[] pairs = overload.memberValuePairs();
-//		pairLoop: for (int i = 0, length = pairs.length; i < length; i++) {
-//			MemberValuePair pair = pairs[i];
-//			if (CharOperation.equals(pair.name, TypeConstants.VALUE)) {
-//				Expression value = pair.value;
-//	
-//					Constant cst = value.constant;
-//					if (cst != Constant.NotAConstant && cst.typeID() == T_JavaLangString) {
-//						return cst.stringValue();
-//					}
-//				break pairLoop;
-//			}
-//		}
-//		
-//		return EMPTY;
-//	}
 }

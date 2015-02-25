@@ -49,10 +49,10 @@ public interface ClassFileConstants {
 	int AccMethod        = AccSynchronized;
 	
 	//2015-02-14  cym
-	int AccFunction     = AccSynchronized;
+	int AccFunction     = AccSynthetic; //AccSynchronized;
 	
 	//cym 2014-12-12
-	int AccModule       = AccBridge;
+	int AccModule       = AccSynchronized;
 //	int AccModuleMerge		= AccNative;
 //	int AccCompleteNative = AccTransient;
 	/**

@@ -799,6 +799,13 @@ public class AllocationExpression extends Expression implements Invocation {
 		output.append('(');
 		outputArguments(scope, indent, output, false);
 		
+		if(this.type == null){
+			if(this.arguments != null && this.arguments.length > 0){
+				output.append(", ");
+			}
+			output.append("\"").append(this.enumConstant.name).append("\"").append(", ").append(this.enumConstant.binding.id);
+		}
+		
 		if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
 			if(this.arguments != null && this.arguments.length > 0){
 				output.append(", ");

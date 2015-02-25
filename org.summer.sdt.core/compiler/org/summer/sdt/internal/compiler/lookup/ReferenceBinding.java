@@ -78,6 +78,9 @@ abstract public class ReferenceBinding extends TypeBinding {
 
 	int typeBits; // additional bits characterizing this type
 	protected MethodBinding [] singleAbstractMethod;
+	
+	//cym 2015-02-25
+	public char[] sourceFileName;
 
 	public static final ReferenceBinding LUB_GENERIC = new ReferenceBinding() { /* used for lub computation */
 		{ this.id = TypeIds.T_undefined; }
@@ -681,8 +684,8 @@ abstract public class ReferenceBinding extends TypeBinding {
 								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_OVERRIDE[2])){
 									this.id = TypeIds.T_JavaLangOverride;
 									return;
-								} else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_OVERLOAD[3]))   //cym 2015-01-01
-									this.id = TypeIds.T_JavaLangAnnotationOverload;
+								} else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_OVERLOAD[2]))   //cym 2015-01-01
+									this.id = TypeIds.T_JavaLangOverload;
 								return;
 						}
 						return;
@@ -768,10 +771,6 @@ abstract public class ReferenceBinding extends TypeBinding {
 								case 'I' :
 									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_INHERITED[3]))
 										this.id = TypeIds.T_JavaLangAnnotationInherited;
-									return;
-								case 'O' :   //cym add 1014-11-20
-									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_OVERLOAD[3]))
-										this.id = TypeIds.T_JavaLangAnnotationOverload;
 									return;
 								case 'R' :
 									switch (typeName.length) {
@@ -2206,6 +2205,23 @@ abstract public class ReferenceBinding extends TypeBinding {
 		return Binding.NO_EXCEPTIONS;
 	}
 	
+	private char[] computeFileName(){
+		char[] fileName = this.sourceFileName;
+		if (fileName != null) {
+			// retrieve the actual file name from the full path (sources are generally only containing it already)
+			fileName = CharOperation.replaceOnCopy(fileName, '/', '\\'); // ensure to not do any side effect on file name (see https://bugs.eclipse.org/bugs/show_bug.cgi?id=136016)
+			fileName = CharOperation.lastSegment(fileName, '\\');
+		}
+		fileName = CharOperation.subarray(fileName, 0, CharOperation.lastIndexOf('.', fileName));
+		char[][] compoundName = new char[1][];
+		if(this.fPackage != null){
+			compoundName = CharOperation.arrayConcat(this.fPackage.compoundName, fileName);
+		} else {
+			compoundName[0] = fileName;
+		}
+		return CharOperation.concatWith(compoundName, '.');
+	}
+	
 	public void generate(StringBuffer output){
 		if(this.isMemberType()){
 			Stack<ReferenceBinding> outters = new Stack<ReferenceBinding>();
@@ -2219,7 +2235,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 			}
 			if((outter.modifiers & ClassFileConstants.AccModule) != 0){
 				output.append("__lc(\"").append(CharOperation.concatWith(outter.compoundName, '.'))
-					.append(", \"").append(TypeDeclaration.getFileName(outter)).append("\")");
+					.append("\", \"").append(outter.computeFileName()).append("\")");
 			} else {
 				output.append("__lc(\"").append(CharOperation.concatWith(outter.compoundName, '.')).append("\")");
 			}
@@ -2227,11 +2243,15 @@ abstract public class ReferenceBinding extends TypeBinding {
 				output.append(".").append(outters.pop().sourceName);
 			}
 		} else {
-			if((this.modifiers & ClassFileConstants.AccModule) != 0){
-				output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.'))
-					.append(", \"").append(TypeDeclaration.getFileName(this)).append("\")");
+			if((this.modifiers & ClassFileConstants.AccNative) != 0){
+				output.append(this.sourceName);
 			} else {
-				output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.')).append("\")");
+				if((this.modifiers & ClassFileConstants.AccModule) != 0){
+					output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.'))
+						.append("\", \"").append(this.computeFileName()).append("\")");
+				} else {
+					output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.')).append("\")");
+				}
 			}
 		}
 	}

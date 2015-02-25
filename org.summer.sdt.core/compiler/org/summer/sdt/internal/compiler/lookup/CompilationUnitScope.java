@@ -84,7 +84,7 @@ public class CompilationUnitScope extends Scope {
 			this.topLevelTypes[i].scope.buildFieldsAndMethods();
 	}
 	void buildTypeBindings(AccessRestriction accessRestriction) {
-		this.topLevelTypes = new SourceTypeBinding[0]; // want it initialized if the package cannot be resolved
+ 		this.topLevelTypes = new SourceTypeBinding[0]; // want it initialized if the package cannot be resolved
 		boolean firstIsSynthetic = false;
 		if (this.referenceContext.compilationResult.compilationUnit != null) {
 			char[][] expectedPackageName = this.referenceContext.compilationResult.compilationUnit.getPackageName();
@@ -125,7 +125,18 @@ public class CompilationUnitScope extends Scope {
 			}
 			recordQualifiedReference(this.currentPackageName); // always dependent on your own package
 		}
-	
+		
+		//cym 2015-02-25
+		if(referenceContext.currentPackage != null && referenceContext.currentPackage.annotations != null){
+			for(Annotation anno : referenceContext.currentPackage.annotations){
+				char[][] name = anno.type.getTypeName();
+				if((name.length == 1 && name[0][0] == 'M') && CharOperation.equals(name[0], TypeConstants.MODULE) || 
+					(name.length == 3 && name[2][0] == 'M') && CharOperation.equals(name, TypeConstants.JAVA_LANG_MODULE)){
+					referenceContext.module = true;
+				}
+			}
+		}
+		
 		// Skip typeDeclarations which know of previously reported errors
 		TypeDeclaration[] types = this.referenceContext.types;
 		int typeLength = (types == null) ? 0 : types.length;
@@ -185,8 +196,8 @@ public class CompilationUnitScope extends Scope {
 			SourceTypeBinding type = child.buildType(null, this.fPackage, accessRestriction);
 			if (firstIsSynthetic && i == 0)
 				type.modifiers |= ClassFileConstants.AccSynthetic;
-			//cym 2014-12-13
-			if(this.referenceContext.currentPackage != null && (this.referenceContext.currentPackage.modifiers & ClassFileConstants.AccModule) != 0){
+			
+			if(referenceContext.module){
 				type.modifiers |= ClassFileConstants.AccModule;
 			}
 			

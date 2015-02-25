@@ -829,6 +829,7 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 		this.compoundName = someType.compoundName;
 		this.fPackage = someType.fPackage;
 		this.fileName = someType.fileName;
+		this.sourceFileName = someType.sourceFileName;  //cym 2015-02-25
 		// should not be set yet
 		// this.superclass = null;
 		// this.superInterfaces = null;
@@ -1652,8 +1653,10 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	//cym 2015-02-19 function type
 	public TypeBinding returnType() {
         if(this.returnType == null){
-	        TypeBinding returnType = this.type.returnType();
-		    this.returnType = (ReferenceBinding) Scope.substitute(this, returnType);
+        	this.returnType = this.type.returnType();
+	        if(returnType.isParameterizedType()){
+	        	this.returnType = (ReferenceBinding) Scope.substitute(this, returnType);
+	        }
         }
 		
 		return this.returnType;

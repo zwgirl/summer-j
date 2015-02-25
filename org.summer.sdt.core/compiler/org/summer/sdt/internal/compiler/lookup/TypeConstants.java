@@ -51,6 +51,7 @@ public interface TypeConstants {
 	char[] ANONYM = "Anonym".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] HTML = "html".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] ARRAY = "Array".toCharArray(); //$NON-NLS-1$  //cym 2014-12-03
+	char[] OVERLOAD = "Overload".toCharArray(); //$NON-NLS-1$  //cym 2015-02-24
 	char[] MAIN = "main".toCharArray(); //$NON-NLS-1$
 	char[] SERIALVERSIONUID = "serialVersionUID".toCharArray(); //$NON-NLS-1$
 	char[] SERIALPERSISTENTFIELDS = "serialPersistentFields".toCharArray(); //$NON-NLS-1$
@@ -178,7 +179,7 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_DEPRECATED = {JAVA, LANG, "Deprecated".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ANNOTATION_DOCUMENTED = {JAVA, LANG, ANNOTATION, "Documented".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ANNOTATION_INHERITED = {JAVA, LANG, ANNOTATION, "Inherited".toCharArray()}; //$NON-NLS-1$
-	char[][] JAVA_LANG_ANNOTATION_OVERLOAD = {JAVA, LANG, ANNOTATION, "Overload".toCharArray()}; //$NON-NLS-1$   //cym add 2014-11-20
+	char[][] JAVA_LANG_OVERLOAD = {JAVA, LANG, OVERLOAD}; //$NON-NLS-1$   //cym add 2014-11-20
 	char[][] JAVA_LANG_ANNOTATION_EVENTCALLBACK = {JAVA, LANG, ANNOTATION, "EventCallback".toCharArray()}; //$NON-NLS-1$   //cym add 2015-01-15
 	char[][] JAVA_LANG_MODULE = {JAVA, LANG, MODULE}; //$NON-NLS-1$   //cym add 2015-02-12
 	char[][] JAVA_LANG_ANNOTATION_REPEATABLE = {JAVA, LANG, ANNOTATION, "Repeatable".toCharArray()}; //$NON-NLS-1$

@@ -111,6 +111,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 		this.compoundName = compoundName;
 		this.fPackage = fPackage;
 		this.fileName = scope.referenceCompilationUnit().getFileName();
+		this.sourceFileName = scope.referenceCompilationUnit().getFileName(); //cym 2015-02-25
 		this.modifiers = scope.referenceContext.modifiers;
 		this.sourceName = scope.referenceContext.name;
 		this.scope = scope;
@@ -1050,45 +1051,6 @@ public class SourceTypeBinding extends ReferenceBinding {
 			return genericSignature;
 		}
 	}
-	
-//	public char[] genericSignature1() {
-//		if ((this.modifiers & ExtraCompilerModifiers.AccGenericSignature) == 0) return null;
-//		StringBuffer sig = new StringBuffer(10);
-//		if (this.typeVariables != Binding.NO_TYPE_VARIABLES) {
-//			sig.append('<');
-//			for (int i = 0, length = this.typeVariables.length; i < length; i++) {
-//				sig.append(this.typeVariables[i].genericSignature());
-//			}
-//			sig.append('>');
-//		}
-//		sig.append('(');
-//		for (int i = 0, length = this.parameters.length; i < length; i++) {
-//			sig.append(this.parameters[i].genericTypeSignature());
-//		}
-//		sig.append(')');
-//		if (this.returnType != null)
-//			sig.append(this.returnType.genericTypeSignature());
-//	
-//		// only append thrown exceptions if any is generic/parameterized
-//		boolean needExceptionSignatures = false;
-//		int length = this.thrownExceptions.length;
-//		for (int i = 0; i < length; i++) {
-//			if((this.thrownExceptions[i].modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0) {
-//				needExceptionSignatures = true;
-//				break;
-//			}
-//		}
-//		if (needExceptionSignatures) {
-//			for (int i = 0; i < length; i++) {
-//				sig.append('^');
-//				sig.append(this.thrownExceptions[i].genericTypeSignature());
-//			}
-//		}
-//		int sigLength = sig.length();
-//		char[] genericSignature = new char[sigLength];
-//		sig.getChars(0, sigLength, genericSignature, 0);
-//		return genericSignature;
-//	}
 	
 	/**
 	 * Compute the tagbits for standard annotations. For source types, these could require
@@ -2134,7 +2096,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 						if(annotation.resolvedType == null){
 							continue;
 						}
-						if(annotation.resolvedType.id == TypeIds.T_JavaLangAnnotationOverload){
+						if(annotation.resolvedType.id == TypeIds.T_JavaLangOverload){
 							for (MemberValuePair pair : annotation.memberValuePairs()) {
 								if (CharOperation.equals(pair.name, TypeConstants.VALUE)) {
 									if (pair.value.constant.typeID() == TypeIds.T_JavaLangString) {
