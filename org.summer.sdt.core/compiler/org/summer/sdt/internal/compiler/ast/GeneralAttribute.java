@@ -37,17 +37,32 @@ public class GeneralAttribute extends Attribute{
 		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.token))).append(" = ");
 		
 		if((this.bits & ASTNode.IsEventCallback) != 0){
-			if(this.method.isStatic()){
-				output.append(this.method.declaringClass.sourceName).append('.');
-				if(value instanceof StringLiteral){
-					output.append(((StringLiteral)value).source).append("(event); \"");
+			if(this.method != null){
+				if(this.method.isStatic()){
+					output.append(this.method.declaringClass.sourceName).append('.');
+					if(value instanceof StringLiteral){
+						output.append(((StringLiteral)value).source).append("(event); \"");
+					}
+				} else {
+					output.append("\"__this.");
+					if(value instanceof StringLiteral){
+						output.append(((StringLiteral)value).source).append("(event); \"");
+					}
 				}
-			} else {
-				output.append("\"__this.");
-				if(value instanceof StringLiteral){
-					output.append(((StringLiteral)value).source).append("(event); \"");
+			} else if(this.field != null){
+				if(this.field.isStatic()){
+					output.append(this.field.declaringClass.sourceName).append('.');
+					if(value instanceof StringLiteral){
+						output.append(((StringLiteral)value).source).append("(event); \"");
+					}
+				} else {
+					output.append("\"__this.");
+					if(value instanceof StringLiteral){
+						output.append(((StringLiteral)value).source).append("(event); \"");
+					}
 				}
 			}
+
 		} else {
 			value.doGenerateExpression(scope, indent, output);
 		}

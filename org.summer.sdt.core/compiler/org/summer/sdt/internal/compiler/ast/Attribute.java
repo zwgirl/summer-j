@@ -7,14 +7,13 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
+import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.InvocationSite;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 
 /**
  * 
@@ -27,6 +26,7 @@ public abstract class Attribute extends XAMLNode implements InvocationSite{
 	public Expression value;
 	public MethodBinding method;
 	public ReferenceBinding template;
+	public FieldBinding field;
 	
 	public final static char[] NAME = "name".toCharArray();
 	
@@ -91,7 +91,10 @@ public abstract class Attribute extends XAMLNode implements InvocationSite{
 				StringLiteral stringLiteral = (StringLiteral) this.value;
 				this.method = scope.findMethod(scope.classScope().referenceContext.binding, stringLiteral.source, new TypeBinding[0], this, false);
 				if(this.method == null){
-					scope.problemReporter().errorNoMethodFor(stringLiteral, property.binding.type, new TypeBinding[0]); 
+					this.field = scope.findField(scope.classScope().referenceContext.binding, stringLiteral.source, this, true);
+					if(field == null){
+						scope.problemReporter().errorNoMethodFor(stringLiteral, property.binding.type, new TypeBinding[0]); 
+					}
 				}
 			}
 			

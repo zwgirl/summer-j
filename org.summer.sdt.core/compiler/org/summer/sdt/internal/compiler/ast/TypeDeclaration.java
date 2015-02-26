@@ -1900,48 +1900,48 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				
 				output.append("\n");
 				
-//				if(type.binding.isAnonymousType()){
-//					printIndent(indent, output).append(TypeConstants.ANONYM);
-//				} else {
-//					printIndent(indent, output).append(type.getTypeName());
-//				}
-//				
-//				if(method.isStatic()){
-//					output.append(".");
-//				} else {
-//					output.append(".prototype.");
-//				}
-//				
-//				output.append(getMethodName(method));
-//					
-//				output.append(" = function(");
-//				generateMethod((MethodDeclaration) method, type.scope, indent, output);
-//				output.append(";");
-				
-				printIndent(indent, output);
-				
-				output.append("Object.defineProperty(");
 				if(type.binding.isAnonymousType()){
-					output.append(TypeConstants.ANONYM);
+					printIndent(indent, output).append(TypeConstants.ANONYM);
 				} else {
-					output.append(type.getTypeName());
+					printIndent(indent, output).append(type.getTypeName());
 				}
 				
 				if(method.isStatic()){
-					
+					output.append(".");
 				} else {
-					output.append(".prototype");
+					output.append(".prototype.");
 				}
 				
-				char[] methodName = getMethodName(method);
-				output.append(", \"").append(methodName).append("\"");
-				
-				output.append(", ");
-				output.append("{ get : function() { return this.").append(method.isStatic() ? "" : "__proto__.").append("__").append(methodName)
-					.append(" || (this.").append(method.isStatic() ? "" : "__proto__.").append("__").append(methodName).append(" = (function(");
-				
+				output.append(getMethodName(method));
+					
+				output.append(" = function(");
 				generateMethod((MethodDeclaration) method, type.scope, indent, output);
-				output.append(").bind(this));}});");
+				output.append(";");
+				
+//				printIndent(indent, output);
+//				
+//				output.append("Object.defineProperty(");
+//				if(type.binding.isAnonymousType()){
+//					output.append(TypeConstants.ANONYM);
+//				} else {
+//					output.append(type.getTypeName());
+//				}
+//				
+//				if(method.isStatic()){
+//					
+//				} else {
+//					output.append(".prototype");
+//				}
+//				
+//				char[] methodName = getMethodName(method);
+//				output.append(", \"").append(methodName).append("\"");
+//				
+//				output.append(", ");
+//				output.append("{ get : function() { return this.").append(method.isStatic() ? "" : "__proto__.").append("__").append(methodName)
+//					.append(" || (this.").append(method.isStatic() ? "" : "__proto__.").append("__").append(methodName).append(" = (function(");
+//				
+//				generateMethod((MethodDeclaration) method, type.scope, indent, output);
+//				output.append(").bind(this));}});");
 			}
 		}
 		//generate static fields
