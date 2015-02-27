@@ -11,6 +11,10 @@ import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.InvocationSite;
 import org.summer.sdt.internal.compiler.lookup.MethodBinding;
+import org.summer.sdt.internal.compiler.lookup.MissingTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.ProblemFieldBinding;
+import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
+import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
@@ -96,18 +100,61 @@ public abstract class Attribute extends XAMLNode implements InvocationSite{
 						scope.problemReporter().errorNoMethodFor(stringLiteral, property.binding.type, new TypeBinding[0]); 
 					}
 				}
-			}
-			
-			ReferenceBinding temBinding = scope.getJavaLangTemplate();
-			if(property.binding.type.isSubtypeOf(temBinding)) {
-				this.bits |= ASTNode.IsTemplate;
-				StringLiteral stringLiteral = (StringLiteral) this.value;
-				this.template = (ReferenceBinding) scope.getType(stringLiteral.source);
-				if(this.template == null){
-					scope.problemReporter().errorNoMethodFor(stringLiteral, property.binding.type, new TypeBinding[0]); 
+			} else if(refType.isEnum()){
+				this.field = scope.getField(refType, ((StringLiteral) this.value).source, this);
+				if((field.modifiers & ClassFileConstants.AccEnum) == 0) {
+					scope.problemReporter().invalidProperty(property, property.binding.type);   //TODO  cym 2015-02-27
+				}
+				if(field == null){
+					scope.problemReporter().invalidProperty(property, property.binding.type);    //TODO  cym 2015-02-27
 				}
 				
-				classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;
+				
+				if (!field.isValidBinding()) {
+					this.constant = Constant.NotAConstant;
+					if (refType instanceof ProblemReferenceBinding) {
+						// problem already got signaled on receiver, do not report secondary problem
+						return;
+					}
+					// https://bugs.eclipse.org/bugs/show_bug.cgi?id=245007 avoid secondary errors in case of
+					// missing super type for anonymous classes ... 
+					ReferenceBinding declaringClass = field.declaringClass;
+					boolean avoidSecondary = declaringClass != null &&
+											 declaringClass.isAnonymousType() &&
+											 declaringClass.superclass() instanceof MissingTypeBinding;
+					if (!avoidSecondary) {
+						scope.problemReporter().invalidProperty(property, property.binding.type);  //TODO cym 2015-02-27
+					}
+					if (field instanceof ProblemFieldBinding) {
+						ProblemFieldBinding problemFieldBinding = (ProblemFieldBinding) field;
+						FieldBinding closestMatch = problemFieldBinding.closestMatch;
+						switch(problemFieldBinding.problemId()) {
+							case ProblemReasons.InheritedNameHidesEnclosingName :
+							case ProblemReasons.NotVisible :
+							case ProblemReasons.NonStaticReferenceInConstructorInvocation :
+							case ProblemReasons.NonStaticReferenceInStaticContext :
+								if (closestMatch != null) {
+									field = closestMatch;
+								}
+						}
+					}
+					if (!field.isValidBinding()) {
+						return;
+					}
+				}
+				
+			} else {
+				ReferenceBinding temBinding = scope.getJavaLangTemplate();
+				if(property.binding.type.isSubtypeOf(temBinding)) {
+					this.bits |= ASTNode.IsTemplate;
+					StringLiteral stringLiteral = (StringLiteral) this.value;
+					this.template = (ReferenceBinding) scope.getType(stringLiteral.source);
+					if(this.template == null){
+						scope.problemReporter().errorNoMethodFor(stringLiteral, property.binding.type, new TypeBinding[0]); 
+					}
+					
+					classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;
+				}
 			}
 		}
 	}

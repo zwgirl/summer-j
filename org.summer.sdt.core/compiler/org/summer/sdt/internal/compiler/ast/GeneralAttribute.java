@@ -2,6 +2,7 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.html.Html2JsAttributeMapping;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
 /**
@@ -63,6 +64,9 @@ public class GeneralAttribute extends Attribute{
 				}
 			}
 
+		} else if(this.property.binding.type.isEnum()){
+			((ReferenceBinding)this.property.binding.type).generate(output);
+			output.append('.').append(((StringLiteral)value).source);
 		} else {
 			value.doGenerateExpression(scope, indent, output);
 		}

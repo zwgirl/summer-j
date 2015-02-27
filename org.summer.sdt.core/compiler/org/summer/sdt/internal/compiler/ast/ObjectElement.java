@@ -49,6 +49,7 @@ public class ObjectElement extends XAMLElement {
 	private static final char[] body = "body".toCharArray();
 	private static final char[] head = "head".toCharArray();
 	private static final char[] meta = "meta".toCharArray();
+	private static final char[] TEXT = "Text".toCharArray();
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append('<').append(type.getLastToken());
 		Attribute template = null;
@@ -117,6 +118,8 @@ public class ObjectElement extends XAMLElement {
 			output.append("</script>");
 		} else if(CharOperation.endsWith(type.getLastToken(), meta)){ 
 			return output.append(">");
+		} else if(CharOperation.endsWith(type.getLastToken(), TEXT)){ 
+//			return output.append(">");
 		} else {
 			output.append('>');
 			for(XAMLElement child : this.children){
@@ -162,7 +165,12 @@ public class ObjectElement extends XAMLElement {
 					output.append("var _n"); 
 				}
 				
-				output.append(" = _c(\"").append(child.type.getLastToken()).append("\");");
+				if(CharOperation.equals(oe.type.getLastToken(), "Text".toCharArray())){   //TextNode
+					output.append('\n');
+					printIndent(indent + 1, output).append(" = document.createTextNode('');");
+				} else {
+					output.append(" = _c(\"").append(child.type.getLastToken()).append("\");");
+				}
 				
 				output.append('\n');
 				printIndent(indent + 1, output).append("_p.appendChild(_n);");
@@ -196,13 +204,17 @@ public class ObjectElement extends XAMLElement {
 							if(comma){
 								output.append(',');
 							}
+							
 							output.append("\"").append(mAttr.property.token).append("\" : ");
-							if(mAttr.value instanceof StringLiteral){
-								StringLiteral s = (StringLiteral) mAttr.value;
-								output.append("\"").append(s.source).append("\"");
+							if(mAttr.property.binding.type.isEnum()){
+								((ReferenceBinding)mAttr.property.binding.type).generate(output);
+								output.append('.').append(((StringLiteral) mAttr.value).source);
+							} else {
+								if(mAttr.value instanceof StringLiteral){
+									StringLiteral s = (StringLiteral) mAttr.value;
+									output.append("\"").append(s.source).append("\"");
+								}
 							}
-//							output.append("\n");
-//							printIndent(indent + 2, output);
 							comma = true;
 						}
 						output.append("}");
@@ -236,9 +248,44 @@ public class ObjectElement extends XAMLElement {
 //						
 //						continue;
 //					}
-					output.append("_n.").append(attr.property.token).append(" = ");
+					
+					if(attr.property.binding != null && (((ReferenceBinding)attr.property.binding.type).modifiers & ClassFileConstants.AccFunction) != 0){
+						output.append("\n");
+						printIndent(indent + 1, output);
+						output.append("_n.addEventListener('").append(CharOperation.subarray(attr.property.token, 2, -1)).append("', ");
+						if(attr.method != null){
+							if(attr.method.isStatic()){
+								output.append(attr.method.declaringClass.sourceName).append('.');
+								if(attr.value instanceof StringLiteral){
+									output.append(((StringLiteral)attr.value).source);
+								}
+							} else {
+								output.append("__this.");
+								if(attr.value instanceof StringLiteral){
+									output.append(((StringLiteral)attr.value).source);
+								}
+							}
+						} else if(attr.field != null){
+							if(attr.field.isStatic()){
+								output.append(attr.field.declaringClass.sourceName).append('.');
+								if(attr.value instanceof StringLiteral){
+									output.append(((StringLiteral)attr.value).source);
+								}
+							} else {
+								output.append("__this.");
+								if(attr.value instanceof StringLiteral){
+									output.append(((StringLiteral)attr.value).source);
+								}
+							}
+						}
+						output.append(", false);");
+						
+						continue;
+					}
+					
 					output.append("\n");
 					printIndent(indent + 1, output);
+					output.append("_n.").append(attr.property.token).append(" = ");
 					attr.value.generateExpression(scope, indent, output).append(";");
 				}
 				if(attrHasTem != null){

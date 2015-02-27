@@ -1854,6 +1854,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append(".prototype;");
 		}
 		
+		//register class
 		output.append("\n");
 		printIndent(indent, output);
 		output.append("__cache[\"");
@@ -1877,6 +1878,10 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		if(type.methods != null){
 			
 			for(AbstractMethodDeclaration method : type.methods){
+				if(method.binding == null){   //when values and valueOf of enum
+					continue;
+				}
+				
 				if(method instanceof Clinit){
 					continue;
 				}
@@ -1917,33 +1922,32 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				output.append(" = function(");
 				generateMethod((MethodDeclaration) method, type.scope, indent, output);
 				output.append(";");
-				
-//				printIndent(indent, output);
-//				
-//				output.append("Object.defineProperty(");
-//				if(type.binding.isAnonymousType()){
-//					output.append(TypeConstants.ANONYM);
-//				} else {
-//					output.append(type.getTypeName());
-//				}
-//				
-//				if(method.isStatic()){
-//					
-//				} else {
-//					output.append(".prototype");
-//				}
-//				
-//				char[] methodName = getMethodName(method);
-//				output.append(", \"").append(methodName).append("\"");
-//				
-//				output.append(", ");
-//				output.append("{ get : function() { return this.").append(method.isStatic() ? "" : "__proto__.").append("__").append(methodName)
-//					.append(" || (this.").append(method.isStatic() ? "" : "__proto__.").append("__").append(methodName).append(" = (function(");
-//				
-//				generateMethod((MethodDeclaration) method, type.scope, indent, output);
-//				output.append(").bind(this));}});");
 			}
 		}
+		
+		//add synthetic Enum methods
+		if((type.modifiers & ClassFileConstants.AccEnum) != 0){
+			//valueOf
+			output.append("\n");
+			printIndent(indent, output);
+			output.append(type.name).append(".valueOf = function(name) { return ").append(type.name).append("[name]; };");
+			
+			//values
+			output.append("\n");
+			printIndent(indent, output);
+			output.append(type.name).append(".values = function() { return [");
+			
+			boolean comma = false;
+			for(FieldDeclaration field : type.fields){
+				if(field.getKind() != AbstractVariableDeclaration.ENUM_CONSTANT)
+					continue;
+				if(comma) output.append(", ");
+				output.append(type.name).append('.').append(field.name);
+				comma = true;
+			}
+			output.append("]; };");
+		}
+		
 		//generate static fields
 		generateFields(type.scope, indent, output, false, type);
 		
@@ -1964,19 +1968,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			}
 		}
 		
-		//type information
+		//Class information
 		output.append("\n");
-//		if((type.binding.sourceName != null && type.binding.sourceName.length > 0) && type.binding.sourceName[0] == 'C' && CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_CLASS)){   //if Class Type
-//			printIndent(indent, output).append(type.getTypeName()).append(".prototype.__class = new Class(");
-//		} else {
-//			if(type.binding.isAnonymousType()){
-//				printIndent(indent, output).append(TypeConstants.ANONYM);
-//			} else {
-//				printIndent(indent, output).append(type.getTypeName());
-//			}
-//			
-//			output.append(".prototype.__class = new (__lc('java.lang.Class'))(");
-//		}
 		
 		if((type.binding.sourceName != null && type.binding.sourceName.length > 0) && type.binding.sourceName[0] == 'C' && CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_CLASS)){   //if Class Type
 			printIndent(indent, output).append(type.getTypeName()).append(".prototype.__class = new Class(");
@@ -2058,7 +2051,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append(flags);
 		output.append(");");
 		
-		//register class
 		output.append('\n');
 		printIndent(indent, output);
 		
@@ -2071,21 +2063,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		
 		output.append(";");
-		
-//		output.append("return  __cache[\"");
-//		if(type.binding.isAnonymousType()){
-//			output.append(CharOperation.replaceOnCopy(type.binding.constantPoolName(), '/', '.')).append("\"] = ");
-//		} else {
-//			output.append(CharOperation.concatWith(type.binding.compoundName, '.')).append("\"] = ");
-//		}
-//		
-//		if(type.binding.isAnonymousType()){
-//			output.append(TypeConstants.ANONYM);
-//		} else {
-//			output.append(type.binding.sourceName);
-//		}
-//		
-//		output.append(";");
 	}
 	
 	private void processXAML(Scope scope, TypeDeclaration type, int indent, StringBuffer output){

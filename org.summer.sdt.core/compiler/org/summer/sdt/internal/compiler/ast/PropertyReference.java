@@ -97,8 +97,7 @@ public class PropertyReference extends Expression{
 		
 		//cym 2012-02-12
 		if((fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
-			//TODO complete me
-//			System.err.println("只能是属性！！！！！！！！！！！！！！！！！！！");
+			scope.problemReporter().invalidProperty(this, this.actualReceiverType);   //TODO need more clear  //cym 2015-02-27
 		}
 		if (!fieldBinding.isValidBinding()) {
 			this.constant = Constant.NotAConstant;
