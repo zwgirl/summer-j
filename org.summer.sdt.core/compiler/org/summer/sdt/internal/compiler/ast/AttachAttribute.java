@@ -12,7 +12,7 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
  *         using by XAML
  */
 public class AttachAttribute extends Attribute {
-	public TypeReference type;
+	public PropertyReference prefix;
 	public char[] PROPERTY = "Property".toCharArray();
 
 	public AttachAttribute() {
@@ -21,7 +21,7 @@ public class AttachAttribute extends Attribute {
 
 	@Override
 	protected void printPropertyName(int indent, StringBuffer output) {
-		output.append(type.getLastToken());
+		output.append(prefix.token);
 		output.append(".");
 		output.append(property.token);
 	}
@@ -34,7 +34,7 @@ public class AttachAttribute extends Attribute {
 
 	@Override
 	public void resolve(BlockScope scope) {
-//		this.type.resolve(scope);
+		this.prefix.resolve(scope);
 		this.property.resolve(scope);
 		this.value.resolve(scope);
 	}
@@ -47,7 +47,7 @@ public class AttachAttribute extends Attribute {
 	
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		output.append(type.getLastToken()).append(".");
+		output.append(prefix.token).append(".");
 		output.append("set");
 		if(CharOperation.endsWith(property.token, PROPERTY)){
 			char[] name = CharOperation.subarray(property.token, 0, property.token.length - PROPERTY.length);

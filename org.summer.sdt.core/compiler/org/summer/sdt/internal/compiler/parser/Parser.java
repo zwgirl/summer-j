@@ -9146,7 +9146,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				this.identifierPositionStack[this.identifierPtr--]);
 		this.identifierLengthPtr--;
 		
-		attr.type = new SingleTypeReference(
+		attr.prefix = new PropertyReference(
 				this.identifierStack[this.identifierPtr],
 				this.identifierPositionStack[this.identifierPtr--]);
 		this.identifierLengthPtr--;
