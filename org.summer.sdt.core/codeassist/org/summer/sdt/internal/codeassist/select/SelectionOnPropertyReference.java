@@ -29,7 +29,9 @@ package org.summer.sdt.internal.codeassist.select;
  *
  */
 
+import org.summer.sdt.internal.compiler.ast.Expression;
 import org.summer.sdt.internal.compiler.ast.PropertyReference;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
@@ -37,8 +39,11 @@ import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 public class SelectionOnPropertyReference extends PropertyReference {
 
 	public SelectionOnPropertyReference(char[] source , long pos) {
-
 		super(source, pos);
+	}
+	
+	public SelectionOnPropertyReference(char[] source, long pos, Expression receiver) {
+		super(source, pos, receiver);
 	}
 
 	public StringBuffer printExpression(int indent, StringBuffer output){
@@ -52,14 +57,18 @@ public class SelectionOnPropertyReference extends PropertyReference {
 
 		super.resolveType(scope);
 		// tolerate some error cases
-		if (this.binding == null ||
-				!(this.binding.isValidBinding() ||
-					this.binding.problemId() == ProblemReasons.NotVisible
-					|| this.binding.problemId() == ProblemReasons.InheritedNameHidesEnclosingName
-					|| this.binding.problemId() == ProblemReasons.NonStaticReferenceInConstructorInvocation
-					|| this.binding.problemId() == ProblemReasons.NonStaticReferenceInStaticContext))
+		if (this.fieldBinding == null ||
+				!(this.fieldBinding.isValidBinding() ||
+					this.fieldBinding.problemId() == ProblemReasons.NotVisible
+					|| this.fieldBinding.problemId() == ProblemReasons.InheritedNameHidesEnclosingName
+					|| this.fieldBinding.problemId() == ProblemReasons.NonStaticReferenceInConstructorInvocation
+					|| this.fieldBinding.problemId() == ProblemReasons.NonStaticReferenceInStaticContext))
 			throw new SelectionNodeFound();
 		else
-			throw new SelectionNodeFound(this.binding);
+			throw new SelectionNodeFound(this.fieldBinding);
+	}
+	
+	public TypeBinding resolveType(BlockScope scope){
+		return this.resolveType((ElementScope)scope);
 	}
 }

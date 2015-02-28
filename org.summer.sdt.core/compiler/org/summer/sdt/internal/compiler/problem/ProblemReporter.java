@@ -3899,7 +3899,7 @@ public class ProblemReporter extends ProblemHandler {
 		if(isRecoveredName(fieldRef.token)) return;
 	
 		int id = IProblem.UndefinedField;
-		FieldBinding field = fieldRef.binding;
+		FieldBinding field = fieldRef.fieldBinding;
 		switch (field.problemId()) {
 			case ProblemReasons.NotFound :
 				if ((searchedType.tagBits & TagBits.HasMissingType) != 0) {

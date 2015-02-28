@@ -68,10 +68,6 @@ public class ObjectElement extends XAMLElement {
 			output.append("\n");
 			printIndent(indent, output);
 			output.append("<script type = 'text/javascript' >");
-			
-			output.append("\n");
-			printIndent(indent, output);
-			output.append("document.body.parentNode.dataContext = new (__lc('java.lang.DataContext', 'java.lang.bindings'))(__this, '2');");
 			 
 			output.append("\n");
 			printIndent(indent, output);
@@ -97,7 +93,7 @@ public class ObjectElement extends XAMLElement {
 			output.append("<script type = 'text/javascript' src = 'java/lang/buildins.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = 'org/w3c/html/html5.js'> </script>");
+			output.append("<script type = 'text/javascript' src = 'org/w3c/dom/dom.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
 			output.append("<script type = 'text/javascript' src = 'java/lang/bindings.js'> </script>");
@@ -191,7 +187,15 @@ public class ObjectElement extends XAMLElement {
 					if(attr.value instanceof MarkupExtension){
 						output.append("\n");
 						printIndent(indent + 1, output);
-						output.append("_n.").append(attr.property.token).append(" = ");
+						output.append("_n.");
+						if(attr.property.receiver instanceof PropertyReference){
+							output.append(((PropertyReference)attr.property.receiver).token);
+							output.append('.').append(attr.property.token);
+						} else if(attr.property.receiver == null){
+							output.append(attr.property.token);
+						}
+						output.append(" = ");
+						
 						ReferenceBinding rb = (ReferenceBinding) attr.value.resolvedType;
 						output.append("new (");
 						rb.generate(output);
@@ -206,8 +210,8 @@ public class ObjectElement extends XAMLElement {
 							}
 							
 							output.append("\"").append(mAttr.property.token).append("\" : ");
-							if(mAttr.property.binding.type.isEnum()){
-								((ReferenceBinding)mAttr.property.binding.type).generate(output);
+							if(mAttr.property.fieldBinding.type.isEnum()){
+								((ReferenceBinding)mAttr.property.fieldBinding.type).generate(output);
 								output.append('.').append(((StringLiteral) mAttr.value).source);
 							} else {
 								if(mAttr.value instanceof StringLiteral){
@@ -221,7 +225,14 @@ public class ObjectElement extends XAMLElement {
 						
 						output.append(")");
 						output.append(".provideValue(");
-						output.append("_n, \"").append(attr.property.token).append("\")");
+						output.append("_n, \""); //.append(attr.property.token).append("\")");
+						if(attr.property.receiver instanceof PropertyReference){
+							output.append(((PropertyReference)attr.property.receiver).token).append("\"");
+							output.append(", \"").append(attr.property.token).append("\"").append(")");
+						} else if(attr.property.receiver == null){
+							output.append(attr.property.token).append("\"");
+							output.append(", ").append("null").append(")");
+						}
 						output.append(";");
 						continue;
 					}
@@ -249,7 +260,7 @@ public class ObjectElement extends XAMLElement {
 //						continue;
 //					}
 					
-					if(attr.property.binding != null && (((ReferenceBinding)attr.property.binding.type).modifiers & ClassFileConstants.AccFunction) != 0){
+					if(attr.property.fieldBinding != null && (((ReferenceBinding)attr.property.fieldBinding.type).modifiers & ClassFileConstants.AccFunction) != 0){
 						output.append("\n");
 						printIndent(indent + 1, output);
 						output.append("_n.addEventListener('").append(CharOperation.subarray(attr.property.token, 2, -1)).append("', ");
@@ -283,9 +294,23 @@ public class ObjectElement extends XAMLElement {
 						continue;
 					}
 					
+//					output.append("\n");
+//					printIndent(indent + 1, output);
+//					output.append("_n.").append(attr.property.token).append(" = ");
+					
 					output.append("\n");
 					printIndent(indent + 1, output);
-					output.append("_n.").append(attr.property.token).append(" = ");
+					output.append("_n.");
+					if(attr.property.receiver instanceof PropertyReference){
+						output.append(((PropertyReference)attr.property.receiver).token);
+						output.append('.').append(attr.property.token);
+					} else if(attr.property.receiver == null){
+						output.append(attr.property.token);
+					} else {
+						output.append(attr.property.token);
+					}
+					output.append(" = ");
+					
 					attr.value.generateExpression(scope, indent, output).append(";");
 				}
 				if(attrHasTem != null){

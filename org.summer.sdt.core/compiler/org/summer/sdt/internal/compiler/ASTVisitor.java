@@ -528,10 +528,7 @@ public abstract class ASTVisitor {
 		// do nothing by default
 	}
 	
-	public void endVisit(GeneralAttribute element, ClassScope scope) {
-		// do nothing by default
-	}
-	public void endVisit(AttachAttribute element, ClassScope scope) {
+	public void endVisit(CommonAttribute element, ClassScope scope) {
 		// do nothing by default
 	}
 	
@@ -1054,10 +1051,7 @@ public abstract class ASTVisitor {
 		return true; // do nothing by default, keep traversing
 	}
 	
-	public boolean visit(GeneralAttribute element, ClassScope scope) {
-		return true; // do nothing by default, keep traversing
-	}
-	public boolean visit(AttachAttribute element, ClassScope scope) {
+	public boolean visit(CommonAttribute element, ClassScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
 	

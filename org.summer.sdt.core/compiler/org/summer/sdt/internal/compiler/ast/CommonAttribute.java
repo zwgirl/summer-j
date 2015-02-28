@@ -11,10 +11,10 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
  * 
  * XAML
  */
-public class GeneralAttribute extends Attribute{
+public class CommonAttribute extends Attribute{
 
-	public GeneralAttribute() {
-		super();
+	public CommonAttribute(PropertyReference property) {
+		super(property);
 	}
 
 	@Override
@@ -64,8 +64,8 @@ public class GeneralAttribute extends Attribute{
 				}
 			}
 
-		} else if(this.property.binding.type.isEnum()){
-			((ReferenceBinding)this.property.binding.type).generate(output);
+		} else if(this.property.fieldBinding.type.isEnum()){
+			((ReferenceBinding)this.property.fieldBinding.type).generate(output);
 			output.append('.').append(((StringLiteral)value).source);
 		} else {
 			value.doGenerateExpression(scope, indent, output);

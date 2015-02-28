@@ -9,16 +9,16 @@ interface javadef
       NT_OFFSET         = 128,
       SCOPE_UBOUND      = 296,
       SCOPE_SIZE        = 297,
-      LA_STATE_OFFSET   = 15999,
+      LA_STATE_OFFSET   = 16047,
       MAX_LA            = 1,
-      NUM_RULES         = 852,
+      NUM_RULES         = 850,
       NUM_TERMINALS     = 128,
-      NUM_NON_TERMINALS = 388,
-      NUM_SYMBOLS       = 516,
-      START_STATE       = 911,
+      NUM_NON_TERMINALS = 386,
+      NUM_SYMBOLS       = 514,
+      START_STATE       = 1515,
       EOFT_SYMBOL       = 62,
       EOLT_SYMBOL       = 62,
-      ACCEPT_ACTION     = 15998,
-      ERROR_ACTION      = 15999;
+      ACCEPT_ACTION     = 16046,
+      ERROR_ACTION      = 16047;
 };
 

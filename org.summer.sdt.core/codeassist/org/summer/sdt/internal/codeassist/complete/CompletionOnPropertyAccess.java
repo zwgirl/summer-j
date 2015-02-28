@@ -40,8 +40,12 @@ public class CompletionOnPropertyAccess extends PropertyReference {
 	public boolean isInsideAnnotation;
 
 	public CompletionOnPropertyAccess(char[] source, long pos, boolean isInsideAnnotation) {
-
 		super(source, pos);
+		this.isInsideAnnotation = isInsideAnnotation;
+	}
+	
+	public CompletionOnPropertyAccess(char[] source, long pos, Expression receiver, boolean isInsideAnnotation) {
+		super(source, pos, receiver);
 		this.isInsideAnnotation = isInsideAnnotation;
 	}
 

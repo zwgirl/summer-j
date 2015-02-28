@@ -1100,24 +1100,7 @@ class ASTConverter {
 
 	
 	//cym add 2014-11-11
-	public Assignment convert(org.summer.sdt.internal.compiler.ast.GeneralAttribute expression) {
-		Assignment assignment = new Assignment(this.ast);
-		if (this.resolveBindings) {
-			recordNodes(assignment, expression);
-		}
-		Expression lhs = convert(expression.property);
-		assignment.setLeftHandSide(lhs);
-		assignment.setOperator(Assignment.Operator.ASSIGN);
-		Expression rightHandSide = convert(expression.value);
-		assignment.setRightHandSide(rightHandSide);
-		int start = lhs.getStartPosition();
-		int end = rightHandSide.getStartPosition() + rightHandSide.getLength() - 1;
-		assignment.setSourceRange(start, end - start + 1);
-		return assignment;
-	}
-	
-	//cym add 2014-11-11
-	public Assignment convert(org.summer.sdt.internal.compiler.ast.AttachAttribute expression) {
+	public Assignment convert(org.summer.sdt.internal.compiler.ast.CommonAttribute expression) {
 		Assignment assignment = new Assignment(this.ast);
 		if (this.resolveBindings) {
 			recordNodes(assignment, expression);
@@ -1841,12 +1824,8 @@ class ASTConverter {
 		}
 		
 		//cym add 2014-11-11
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.GeneralAttribute) {
-			return convert((org.summer.sdt.internal.compiler.ast.GeneralAttribute) expression);
-		} 
-		
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.AttachAttribute) {
-			return convert((org.summer.sdt.internal.compiler.ast.AttachAttribute) expression);
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.CommonAttribute) {
+			return convert((org.summer.sdt.internal.compiler.ast.CommonAttribute) expression);
 		} 
 
 		return null;

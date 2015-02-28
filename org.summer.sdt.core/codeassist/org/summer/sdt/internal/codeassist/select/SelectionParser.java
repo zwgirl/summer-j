@@ -29,13 +29,15 @@ import org.summer.sdt.internal.compiler.ast.AllocationExpression;
 import org.summer.sdt.internal.compiler.ast.Annotation;
 import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.ArrayAllocationExpression;
+import org.summer.sdt.internal.compiler.ast.Attribute;
 import org.summer.sdt.internal.compiler.ast.CaseStatement;
 import org.summer.sdt.internal.compiler.ast.CastExpression;
 import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.summer.sdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.summer.sdt.internal.compiler.ast.Expression;
+import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldReference;
-import org.summer.sdt.internal.compiler.ast.GeneralAttribute;
+import org.summer.sdt.internal.compiler.ast.CommonAttribute;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
@@ -45,6 +47,7 @@ import org.summer.sdt.internal.compiler.ast.MessageSend;
 import org.summer.sdt.internal.compiler.ast.NameReference;
 import org.summer.sdt.internal.compiler.ast.NormalAnnotation;
 import org.summer.sdt.internal.compiler.ast.ObjectElement;
+import org.summer.sdt.internal.compiler.ast.PropertyReference;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.Reference;
 import org.summer.sdt.internal.compiler.ast.ReferenceExpression;
@@ -53,6 +56,7 @@ import org.summer.sdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.summer.sdt.internal.compiler.ast.SingleNameReference;
 import org.summer.sdt.internal.compiler.ast.SingleTypeReference;
 import org.summer.sdt.internal.compiler.ast.Statement;
+import org.summer.sdt.internal.compiler.ast.StringLiteral;
 import org.summer.sdt.internal.compiler.ast.SuperReference;
 import org.summer.sdt.internal.compiler.ast.SwitchStatement;
 import org.summer.sdt.internal.compiler.ast.ThisReference;
@@ -280,50 +284,146 @@ public class SelectionParser extends AssistParser {
 		}
 	}
 	
-	protected void consumeGeneralAttribute(SingleTypeReference namespace) {
+	protected void consumeAttributeWithPropertyReference() {
 		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeGeneralAttribute(namespace);
+			super.consumeAttributeWithPropertyReference();
 			return;
 		}
 		
-		ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr];
-		char[] token = this.identifierStack[this.identifierPtr];
-		long positions = this.identifierPositionStack[this.identifierPtr--];
-		
-		GeneralAttribute generalAttr = new GeneralAttribute();
-
-		SelectionOnPropertyReference fr = new SelectionOnPropertyReference(token, positions);
-		this.assistNode = fr;
-		this.lastCheckPoint = fr.sourceEnd + 1;
-		
-		generalAttr.property = fr;
-		
+		PropertyReference propertyReference = null;
+		char[] assistIdentifier = assistIdentifier();
+		if(this.identifierStack[this.identifierPtr] == assistIdentifier){
+			propertyReference = new SelectionOnPropertyReference(
+					this.identifierStack[this.identifierPtr],
+					this.identifierPositionStack[this.identifierPtr--],
+					new PropertyReference(
+							this.identifierStack[this.identifierPtr], 
+							this.identifierPositionStack[this.identifierPtr--]));
+		} else {
+			propertyReference = new PropertyReference(
+					this.identifierStack[this.identifierPtr],
+					this.identifierPositionStack[this.identifierPtr--],
+					new SelectionOnPropertyReference(
+							this.identifierStack[this.identifierPtr], 
+							this.identifierPositionStack[this.identifierPtr--]));
+		}
 		this.identifierLengthPtr--;
-		generalAttr.value =  this.expressionStack[this.expressionPtr--];
+		this.identifierLengthPtr--;
+		
+		Attribute attr = new Attribute(propertyReference);
+		
+		attr.value = this.expressionStack[this.expressionPtr--];
+		expressionLengthPtr--;
+		pushOnAttributeStack(attr);
+		
+		attr.statementEnd = this.scanner.currentPosition - 1;
+		attr.sourceEnd = this.scanner.currentPosition - 1;
+		
+	}
+	
+	protected void consumeAttribute() {
+		if ((indexOfAssistIdentifier(true)) < 0) {
+			super.consumeAttribute();
+			return;
+		}
+		
+		char[] attrName = this.identifierStack[this.identifierPtr];
+		long positions = this.identifierPositionStack[this.identifierPtr--];
+		this.identifierLengthPtr--;
+		
+		Attribute attribute = new Attribute(new SelectionOnPropertyReference(attrName, positions));
+		attribute.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
 		
-		generalAttr.sourceStart = (int) (positions >>> 32);
+		attribute.sourceStart = (int) (positions >>> 32);
+		attribute.sourceEnd = attribute.value.sourceEnd;
 		
-//		//check named attribute
-//		if(CharOperation.equals(generalAttr.property.token, Attribute.NAME)){
-//			generalAttr.bits |= ASTNode.IsNamedAttribute;
-//			if(element.name != null){
-//				problemReporter().duplicateNamedElementInType(element, element.name.property);
-//			}
-//			element.name = generalAttr;
-//			StringLiteral str = (StringLiteral) generalAttr.value;
-//			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
-//			fieldDecl.type = element.type;
-//			fieldDecl.bits |= ClassFileConstants.AccPrivate;
-////			pushOnAstStack(fieldDecl);
-////			if(xamlFlag){
-////				concatNodeLists();
-////			}
-////			xamlFlag = true ;
-//		}
-		
-		pushOnAttributeStack(generalAttr);
+		pushOnAttributeStack(attribute);
 	}
+	
+	protected void consumeAttributeWithTypeReference(){
+		if ((indexOfAssistIdentifier(true)) < 0) {
+			super.consumeAttributeWithTypeReference();
+			return;
+		}
+
+		char[] attrName = this.identifierStack[this.identifierPtr];
+		long positions = this.identifierPositionStack[this.identifierPtr--];
+		this.identifierLengthPtr--;
+		
+		TypeReference receiver = new SelectionOnSingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
+		this.identifierLengthPtr--;
+		
+		Attribute attr = new Attribute(new SelectionOnPropertyReference(attrName, positions, receiver));
+
+		attr.value =  this.expressionStack[this.expressionPtr--];
+		this.expressionLengthPtr--;
+		
+		attr.sourceStart = (int) (positions >>> 32);
+		attr.sourceEnd = attr.value.sourceEnd;
+		
+		//check named attribute
+		if(CharOperation.equals(attr.property.token, Attribute.NAME)){
+			ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr1];
+			attr.bits |= ASTNode.IsNamedAttribute;
+			if(element.name != null){
+				problemReporter().duplicateNamedElementInType(element, element.name.property);
+			}
+			element.name = attr;
+			StringLiteral str = (StringLiteral) attr.value;
+			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
+			fieldDecl.type = element.type;
+			fieldDecl.bits |= ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal;
+			
+			pushOnAstStack(fieldDecl);
+			concatNodeLists();
+		}
+		
+		pushOnAttributeStack(attr);
+	}
+	
+//	protected void consumeAttribute() {
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeAttribute();
+//			return;
+//		}
+//		
+//		char[] token = this.identifierStack[this.identifierPtr];
+//		long positions = this.identifierPositionStack[this.identifierPtr--];
+//		SelectionOnPropertyReference pr = new SelectionOnPropertyReference(token, positions);
+//		
+//		Attribute attribute = new Attribute(pr);
+//
+//		
+//		this.assistNode = pr;
+//		this.lastCheckPoint = pr.sourceEnd + 1;
+//		
+//		this.identifierLengthPtr--;
+//		attribute.value =  this.expressionStack[this.expressionPtr--];
+//		this.expressionLengthPtr--;
+//		
+//		attribute.sourceStart = (int) (positions >>> 32);
+//		
+////		//check named attribute
+////		if(CharOperation.equals(generalAttr.property.token, Attribute.NAME)){
+////			generalAttr.bits |= ASTNode.IsNamedAttribute;
+////			if(element.name != null){
+////				problemReporter().duplicateNamedElementInType(element, element.name.property);
+////			}
+////			element.name = generalAttr;
+////			StringLiteral str = (StringLiteral) generalAttr.value;
+////			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
+////			fieldDecl.type = element.type;
+////			fieldDecl.bits |= ClassFileConstants.AccPrivate;
+//////			pushOnAstStack(fieldDecl);
+//////			if(xamlFlag){
+//////				concatNodeLists();
+//////			}
+//////			xamlFlag = true ;
+////		}
+//		
+//		pushOnAttributeStack(attribute);
+//	}
 	
 	protected void consumeArrayCreationExpressionWithoutInitializer() {
 		// ArrayCreationWithoutArrayInitializer ::= 'new' PrimitiveType DimWithOrWithOutExprs

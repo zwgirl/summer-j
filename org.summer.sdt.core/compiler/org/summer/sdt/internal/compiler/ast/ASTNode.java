@@ -332,6 +332,8 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 	
 	public static final int IsTemplate = Bit16;
 	
+	public static final int IsItemTemplate = Bit18;
+	
 	//cym 2015-01-19 for pure html compiler
 	public static final int HasDynamicContent = Bit17;
 	

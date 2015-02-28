@@ -2103,24 +2103,21 @@ public class CompletionParser extends AssistParser {
 		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
 	}
 	
-	protected void consumeGeneralAttribute(SingleTypeReference namespace) {
+	protected void consumeAttribute() {
 		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeGeneralAttribute(null);
+			super.consumeAttribute();
 			return;
 		}
 		
-		ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr];
 		// SimpleName = expression 
 		char[] token = this.identifierStack[this.identifierPtr];
 		long positions = this.identifierPositionStack[this.identifierPtr--];
-		
-		GeneralAttribute attr = new GeneralAttribute();
 		
 		CompletionOnPropertyAccess fr = new CompletionOnPropertyAccess(token, positions, false);
 		this.assistNode = fr;
 		this.lastCheckPoint = fr.sourceEnd + 1;
 		
-		attr.property = fr;
+		Attribute attr = new Attribute(fr);
 		
 		this.identifierLengthPtr--;
 		attr.value =  this.expressionStack[this.expressionPtr--];
@@ -2128,20 +2125,74 @@ public class CompletionParser extends AssistParser {
 		
 		attr.sourceStart = (int) (positions >>> 32);
 		
-//		//check named attribute
-//		if(CharOperation.equals(attr.property.token, Attribute.NAME)){
-//			attr.bits |= ASTNode.IsNamedAttribute;
-//			if(element.name != null){
-//				problemReporter().duplicateNamedElementInType(element, element.name.property);
-//			}
-//			element.name = attr;
-//			StringLiteral str = (StringLiteral) attr.value;
-//			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
-//			fieldDecl.type = element.type;
-//			fieldDecl.bits |= ClassFileConstants.AccPrivate;
-//		}
-		
 		pushOnAttributeStack(attr);
+	}
+	
+	protected void consumeAttributeWithPropertyReference() {
+		if ((indexOfAssistIdentifier(true)) < 0) {
+			super.consumeAttributeWithPropertyReference();
+			return;
+		}
+		
+		PropertyReference propertyReference = new CompletionOnPropertyAccess(
+				this.identifierStack[this.identifierPtr],
+				this.identifierPositionStack[this.identifierPtr--], 
+				new CompletionOnPropertyAccess(
+						this.identifierStack[this.identifierPtr], 
+						this.identifierPositionStack[this.identifierPtr--], false), 
+						false);
+		this.identifierLengthPtr--;
+		this.identifierLengthPtr--;
+		
+		Attribute attr = new Attribute(propertyReference);
+		
+		attr.value = this.expressionStack[this.expressionPtr--];
+		expressionLengthPtr--;
+		pushOnAttributeStack(attr);
+		
+		attr.statementEnd = this.scanner.currentPosition - 1;
+		attr.sourceEnd = this.scanner.currentPosition - 1;
+	}
+	
+	protected void consumeAttributeWithTypeReference(){
+		if ((indexOfAssistIdentifier(true)) < 0) {
+			super.consumeAttributeWithTypeReference();
+			return;
+		}
+
+		char[] attrName = this.identifierStack[this.identifierPtr];
+		long positions = this.identifierPositionStack[this.identifierPtr--];
+		this.identifierLengthPtr--;
+		
+		TypeReference receiver = new CompletionOnSingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
+		this.identifierLengthPtr--;
+		
+		Attribute attribute = new Attribute(new CompletionOnPropertyAccess(attrName, positions, receiver, false));
+
+		attribute.value =  this.expressionStack[this.expressionPtr--];
+		this.expressionLengthPtr--;
+		
+		attribute.sourceStart = (int) (positions >>> 32);
+		attribute.sourceEnd = attribute.value.sourceEnd;
+		
+		//check named attribute
+		if(CharOperation.equals(attribute.property.token, Attribute.NAME)){
+			ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr1];
+			attribute.bits |= ASTNode.IsNamedAttribute;
+			if(element.name != null){
+				problemReporter().duplicateNamedElementInType(element, element.name.property);
+			}
+			element.name = attribute;
+			StringLiteral str = (StringLiteral) attribute.value;
+			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
+			fieldDecl.type = element.type;
+			fieldDecl.bits |= ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal;
+			
+			pushOnAstStack(fieldDecl);
+			concatNodeLists();
+		}
+		
+		pushOnAttributeStack(attribute);
 	}
 	
 	protected void consumeMarkupExtensionTag(){
