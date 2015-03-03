@@ -680,7 +680,7 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 						return scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION); 
 					}
 					if(this.actualReceiverType.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
-						return ((ReferenceBinding)this.actualReceiverType).returnType();
+						return this.resolvedType = ((ReferenceBinding)this.actualReceiverType).returnType();
 					}
 				}
 //				scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
@@ -690,7 +690,7 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 					if(local.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
 						this.otherBinding = local;
 						this.functionType = (ReferenceBinding) local.type;
-						return this.functionType.returnType();
+						return this.resolvedType = this.functionType.returnType();
 					} else {
 //						scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
 					}
@@ -700,8 +700,8 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 				if(field != null && field.isValidBinding()){
 					if(field.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
 						this.otherBinding = field;
-						this.functionType = (ReferenceBinding) local.type;
-						return this.functionType.returnType();
+						this.functionType = (ReferenceBinding) field.type;
+						return this.resolvedType = this.functionType.returnType();
 					} else {
 //						scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
 					}

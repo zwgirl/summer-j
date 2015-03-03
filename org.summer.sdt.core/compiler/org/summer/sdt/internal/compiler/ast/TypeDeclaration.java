@@ -1749,7 +1749,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	}
 
 	public void generateInternal(Scope scope, int indent, StringBuffer output) {
-		output.append("(function(){ \n");
+		output.append("(function(){ ");
 		
 		generateClassContent(this, indent + 1, output);
 		
@@ -1797,7 +1797,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				if(constructors.size() > 1){
 					output.append("){");
 					output.append("\n");
-					printIndent(indent + 1, output).append("var args = Array.prototype.slice.call(arguments);");
+					printIndent(indent + 1, output);
+					output.append("var args = Array.prototype.slice.call(arguments);");
 					output.append("\n");
 					if(type.binding.isAnonymousType()){
 						printIndent(indent + 1, output).append("return ").append(TypeConstants.ANONYM).append(".__f[args[args.length-1]].apply(this, args.slice(0, args.length-1));");
@@ -2068,25 +2069,37 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	private void processXAML(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
 		if(type.element != null && (type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE)) ||
 				type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_COMPONENT)))){
-//			output.append('\n');
-//			printIndent(indent, output);
-//			output.append(type.binding.sourceName).append(".prototype.").append("doCreate").append(" = function(parent) {");
-//			output.append('\n');
-//			printIndent(indent, output);
-//			((ObjectElement)type.element).buildElement(scope, indent, output, "parent");
-//			output.append('\n');
-//			printIndent(indent, output);
-//			output.append("};");
-			
 			output.append('\n');
 			printIndent(indent, output);
-			output.append("Object.defineProperty(").append(type.binding.sourceName).append(".prototype, ").append("'doCreate', {get: function(){ return this.__proto__.__doCreate || (this.__proto__.__doCreate =  ").append(" (function(parent) {");
+			output.append(type.binding.sourceName).append(".prototype.").append("doCreate").append(" = function(parent, data) {");
 			output.append('\n');
 			printIndent(indent, output);
 			((ObjectElement)type.element).buildElement(scope, indent, output, "parent");
 			output.append('\n');
 			printIndent(indent, output);
-			output.append("}).bind(this));}});");
+			output.append("};");
+		} else if(type.element != null && type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_ITEMTEMPLATE))){
+			output.append('\n');
+			printIndent(indent, output);
+			output.append(type.binding.sourceName).append(".prototype.").append("createRoot").append(" = function(parent) {");
+			((ObjectElement)type.element).buildRootElement(scope, indent, output, "parent");
+			output.append('\n');
+			printIndent(indent + 1, output);
+			output.append("return _n;");
+			
+			output.append('\n');
+			printIndent(indent, output);
+			output.append("};");
+			
+			output.append('\n');
+			printIndent(indent, output);
+			output.append(type.binding.sourceName).append(".prototype.").append("createChild").append(" = function(parent) {");
+			if(type.element.children != null && type.element.children.length > 0){
+				type.element.buildDOMScript(scope, indent + 1, output, "parent");
+			}
+			output.append('\n');
+			printIndent(indent, output);
+			output.append("};");
 		}
 	}
 	
@@ -2201,14 +2214,15 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append(" {");
 			
 			if(constructor.constructorCall != null){
-				output.append("\n");
 				printIndent(indent + 1, output);
 				ExplicitConstructorCall cstrCall = constructor.constructorCall;
 				if(cstrCall.isImplicitSuper() || cstrCall.isSuperAccess()){
 					if(!CharOperation.equals(TypeConstants.JAVA_LANG_OBJECT, cstrCall.binding.declaringClass.compoundName)){
+						output.append("\n");
 						cstrCall.generateStatement(scope, indent, output);
 					}
 				} else {   //this()
+					output.append("\n");
 					output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
 					if(cstrCall.arguments != null){
 						for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){

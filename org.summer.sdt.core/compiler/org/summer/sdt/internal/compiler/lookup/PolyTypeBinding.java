@@ -87,4 +87,9 @@ public class PolyTypeBinding extends TypeBinding {
 		type.vanillaCompatibilty = !this.vanillaCompatibilty;
 		return type;
 	}
+
+	@Override
+	public void generate(StringBuffer output) {
+		
+	}
 }

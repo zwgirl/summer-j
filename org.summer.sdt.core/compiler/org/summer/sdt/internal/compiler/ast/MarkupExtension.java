@@ -1,7 +1,9 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 
 /**
  * 
@@ -36,6 +38,25 @@ public class MarkupExtension extends XAMLElement {
 
 	@Override
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+		
+		ReferenceBinding rb = (ReferenceBinding) this.resolvedType;
+		output.append("new (");
+		rb.generate(output);
+		output.append(")(");
+		
+		output.append("{");
+		boolean comma = false;
+		for(Attribute attribute : this.attributes){
+			if(comma){
+				output.append(", ");
+			}
+			
+			attribute.buildPair(scope, indent, output);
+			comma = true;
+		}
+		output.append("}");
+		output.append(")");
+
 		return output;
 	}
 

@@ -19,6 +19,7 @@ import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 
 /**
  * 
@@ -139,7 +140,10 @@ public class Attribute extends XAMLNode implements InvocationSite{
 						return;
 					}
 				}
-				
+			} else if(refType.isSubtypeOf((ReferenceBinding)scope.environment().getType(TypeConstants.JAVA_LANG_ITEMTEMPLATE))){
+				this.template = (ReferenceBinding) scope.getType(((StringLiteral) this.value).source);
+			} else if(refType.isSubtypeOf((ReferenceBinding)scope.environment().getType(TypeConstants.JAVA_LANG_CLASS))){
+				this.template = (ReferenceBinding) scope.getType(((StringLiteral) this.value).source);
 			} else {
 				ReferenceBinding temBinding = scope.getJavaLangTemplate();
 				if(this.type.isSubtypeOf(temBinding)) {
@@ -300,6 +304,156 @@ public class Attribute extends XAMLNode implements InvocationSite{
 //		this.value.generateExpression(scope, indent, output).append(";");
 		
 		return output;
+	}
+	
+	public StringBuffer buildPair(Scope scope, int indent, StringBuffer output){
+		this.property.doGenerateExpression(scope, indent, output).append(" : ");
+		if(this.property.fieldBinding.type.isEnum()){
+			((ReferenceBinding)this.property.fieldBinding.type).generate(output);
+			output.append('.').append(((StringLiteral) this.value).source);
+			return output;
+		} if(this.property.fieldBinding.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_CLASS))){ 
+			((ReferenceBinding)this.property.fieldBinding.type).generate(output);
+			output.append("prototype.__class");
+			return output;
+		} if((((ReferenceBinding)this.property.fieldBinding.type).modifiers & ClassFileConstants.AccFunction) != 0){ 
+			if(this.method != null){
+				if(this.method.isStatic()){
+					output.append(this.method.declaringClass.sourceName).append('.');
+					if(this.value instanceof StringLiteral){
+						output.append(((StringLiteral)this.value).source);
+					}
+				} else {
+					output.append("__this.");
+					if(this.value instanceof StringLiteral){
+						output.append(((StringLiteral)this.value).source);
+					}
+				}
+			} else if(this.field != null){
+				if(this.field.isStatic()){
+					output.append(this.field.declaringClass.sourceName).append('.');
+					if(this.value instanceof StringLiteral){
+						output.append(((StringLiteral)this.value).source);
+					}
+				} else {
+					output.append("__this.");
+					if(this.value instanceof StringLiteral){
+						output.append(((StringLiteral)this.value).source);
+					}
+				}
+			}
+			return output;
+		}if(this.property.fieldBinding.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_ITEMTEMPLATE))){ 
+			output.append("new (");
+			this.template.generate(output);
+			output.append(")()");
+			return output;
+		} else {
+			if(this.value instanceof MarkupExtension){
+				MarkupExtension me = (MarkupExtension) value;
+				me.doGenerateExpression(scope, indent, output);  //TODO 2015-03-03 cym
+				output.append(".provideValue(");
+				output.append("_n, \""); 
+				this.property.buildInMarkupExtension(scope, indent, output);
+				output.append(");");
+			} else {
+				StringLiteral s = (StringLiteral) this.value;
+				output.append("\"").append(s.source).append("\"");
+			}
+		}
+		return output;
+	}
+	
+	public void buildContent(Scope scope, int indent, StringBuffer output, String node){
+		if(CharOperation.equals(this.property.token, TEMPLATE)){
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append("var _t = new (");
+			this.template.generate(output);
+			output.append(")();");
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append("_t.create(_n);");
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append("_c.template = _t;");
+		} else if(this.value instanceof MarkupExtension){
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append("_n.");
+			if(this.property.receiver instanceof PropertyReference){
+				output.append(((PropertyReference)this.property.receiver).token);
+				output.append('.').append(this.property.token);
+			} else if(this.property.receiver == null){
+				output.append(this.property.token);
+			}
+			output.append(" = ");
+			MarkupExtension me = (MarkupExtension) this.value;
+			me.doGenerateExpression(scope, indent, output);
+			
+			output.append(".provideValue(");
+			output.append("_n, ");
+			this.property.buildInMarkupExtension(scope, indent, output);
+			output.append(");");
+		} else if(this.property.fieldBinding != null && (((ReferenceBinding)this.property.fieldBinding.type).modifiers & ClassFileConstants.AccFunction) != 0){
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append("_n.addEventListener('").append(CharOperation.subarray(this.property.token, 2, -1)).append("', ");
+			if(this.method != null){
+				if(this.method.isStatic()){
+					output.append(this.method.declaringClass.sourceName).append('.');
+					if(this.value instanceof StringLiteral){
+						output.append(((StringLiteral)this.value).source);
+					}
+				} else {
+					output.append("__this.");
+					if(this.value instanceof StringLiteral){
+						output.append(((StringLiteral)this.value).source);
+					}
+				}
+			} else if(this.field != null){
+				if(this.field.isStatic()){
+					output.append(this.field.declaringClass.sourceName).append('.');
+					if(this.value instanceof StringLiteral){
+						output.append(((StringLiteral)this.value).source);
+					}
+				} else {
+					output.append("__this.");
+					if(this.value instanceof StringLiteral){
+						output.append(((StringLiteral)this.value).source);
+					}
+				}
+			}
+			output.append(", false);");
+		} else if(this.property.fieldBinding != null && this.property.fieldBinding.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_CLASS))){
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append("_n.");
+			if(this.property.receiver instanceof PropertyReference){
+				output.append(((PropertyReference)this.property.receiver).token);
+				output.append('.').append(this.property.token);
+			} else if(this.property.receiver == null){
+				output.append(this.property.token);
+			}
+			output.append(" = ");
+			((ReferenceBinding)this.property.fieldBinding.type).generate(output);
+			output.append(".prototype.__class;");
+		} else {
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append("_n.");
+			if(this.property.receiver instanceof PropertyReference){
+				output.append(((PropertyReference)this.property.receiver).token);
+				output.append('.').append(this.property.token);
+			} else if(this.property.receiver == null){
+				output.append(this.property.token);
+			} else {
+				output.append(this.property.token);
+			}
+			output.append(" = ");
+			
+			this.value.generateExpression(scope, indent, output).append(";");
+		}
 	}
 	
 	@Override

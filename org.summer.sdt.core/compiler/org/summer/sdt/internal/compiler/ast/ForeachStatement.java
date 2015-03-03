@@ -20,6 +20,7 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.BranchLabel;
@@ -75,6 +76,12 @@ public class ForeachStatement extends Statement {
 
 	int postCollectionInitStateIndex = -1;
 	int mergedInitStateIndex = -1;
+	
+	//cym 2015-03-03
+	private char[] secretName;
+	public static final char[] SECRET_NAME_FEED = "__i".toCharArray();
+	private char[] collectionName;
+	public static final char[] COLLECTION_NAME_FEED = "__coll".toCharArray();
 
 	public ForeachStatement(
 		LocalDeclaration elementVariable,
@@ -407,6 +414,36 @@ public class ForeachStatement extends Statement {
 	public void resolve(BlockScope upperScope) {
 		// use the scope that will hold the init declarations
 		this.scope = new BlockScope(upperScope);
+		
+		//cym 2015-03-03
+		if(this.secretName == null){
+			this.secretName = SECRET_NAME_FEED;
+			if(upperScope.exists(secretName)){
+				for(int index = 0; index < Integer.MAX_VALUE; index++){
+					this.secretName = CharOperation.concat(secretName, String.valueOf(index).toCharArray());
+					if(scope.exists(secretName)){
+						continue;
+					} 
+					break;
+				}
+			} 
+			upperScope.addSecretVariableName(secretName);
+		}
+		
+		if(this.collectionName == null){
+			this.collectionName = COLLECTION_NAME_FEED;
+			if(upperScope.exists(collectionName)){
+				for(int index = 0; index < Integer.MAX_VALUE; index++){
+					this.collectionName = CharOperation.concat(collectionName, String.valueOf(index).toCharArray());
+					if(scope.exists(collectionName)){
+						continue;
+					}
+					break;
+				}
+			}
+			upperScope.addSecretVariableName(collectionName);
+		}
+		
 		this.elementVariable.resolve(this.scope); // collection expression can see itemVariable
 		TypeBinding elementType = this.elementVariable.type.resolvedType;
 		TypeBinding collectionType = this.collection == null ? null : this.collection.resolveType(upperScope);
@@ -586,25 +623,68 @@ public class ForeachStatement extends Statement {
 	}
 
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-
-		output.append("for ("); //$NON-NLS-1$
-		this.elementVariable.doGenerateExpression(scope, 0, output);
-		output.append(" in ");//$NON-NLS-1$
-		if (this.collection != null) {
-			this.collection.doGenerateExpression(scope, indent, output).append(") "); //$NON-NLS-1$
-		} else {
-			output.append(')');
+		switch(this.kind) {
+		case ARRAY :
+			//var array = collection;
+			//for(var index = 0; index< array.length; index++){
+			//	var elementName = array[index];
+			//  ...
+			//}
+			output.append("var ").append(this.collectionName).append(" = ");
+			collection.doGenerateExpression(scope, indent, output);
+			output.append("\n");
+			printIndent(indent, output);
+			output.append("for(var ").append(this.secretName).append(" = 0; ").append(this.secretName).append(" < ").append(this.collectionName).append(".length; ").
+			append(this.secretName).append("++");
+			output.append(") {");
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append("var ").append(elementVariable.name).append(" = ").append(this.collectionName).append("[").append(this.secretName).append("];");
+			
+			break;
+		case RAW_ITERABLE :
+		case GENERIC_ITERABLE :
+			//var ite = collection.iterator();
+			//while(ite.hasNext()){
+			//	var elementName = ite.next();
+			//  ...
+			//}
+			output.append("var ").append(this.collectionName).append(" = ");
+			collection.doGenerateExpression(scope, indent, output);
+			output.append(", ").append(this.secretName).append(" = ").append(this.collectionName).append(".iterator();");
+			
+			output.append("\n");
+			printIndent(indent, output);
+			output.append("while(").append(this.secretName).append(".hasNext()) {");
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append("var ").append(elementVariable.name).append(" = ").append(this.secretName).append(".next();");
+			break;
+		default :
+//			if (isTargetJsr14) {
+//				this.scope.problemReporter().invalidTypeForCollectionTarget14(this.collection);
+//			} else {
+				this.scope.problemReporter().invalidTypeForCollection(this.collection);
+//			}
 		}
+		
 		//block
 		if (this.action == null) {
+			output.append("\n");
+			printIndent(indent + 1, output);
 			output.append(';');
 		} else if(this.action instanceof Block){
 			output.append('\n');
-			this.action.generateStatement(scope, indent, output);
+			((Block)this.action).generateBody(scope, indent + 1, output);
 		} else {
-			this.action.doGenerateExpression(scope, indent, output);
+			output.append("\n");
+			printIndent(indent + 1, output);
+			this.action.doGenerateExpression(scope, indent + 1, output);
 			output.append(';');
 		}
+		output.append("\n");
+		printIndent(indent, output);
+		output.append("}");
 		return output;
 	}
 	

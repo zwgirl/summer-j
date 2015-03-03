@@ -14,6 +14,10 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.lookup;
 
+import java.util.Stack;
+
+import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 
 public class BaseTypeBinding extends TypeBinding {
@@ -229,5 +233,9 @@ public class BaseTypeBinding extends TypeBinding {
 
 	public String toString() {
 		return this.hasTypeAnnotations() ? annotatedDebugName() : new String(readableName());
+	}
+	
+	public void generate(StringBuffer output){
+		output.append(this.simpleName);
 	}
 }

@@ -440,21 +440,11 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
      */
     public TypeBinding erasure() {
     	//cym 2014-12-18
-		if(this.type.id == TypeIds.T_JavaLangArray){
-			return this.leafComponentType();
-    	}
+//		if(this.type.id == TypeIds.T_JavaLangArray){
+//			return this.leafComponentType();
+//    	}
         return this.type.erasure(); // erasure
     }
-    
-//	/**
-//	 * @see org.summer.sdt.internal.compiler.lookup.TypeBinding#erasure()
-//	 */
-//	public TypeBinding erasure1() {
-//	    TypeBinding erasedType = this.leafComponentType().erasure();
-//	    if (TypeBinding.notEquals(this.leafComponentType(), erasedType))
-//	        return this.environment.createArrayType(erasedType, this.dimensions);
-//	    return this;
-//	}
 	
 	/**
 	 * @see org.summer.sdt.internal.compiler.lookup.ReferenceBinding#fieldCount()
@@ -1656,6 +1646,8 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
         	this.returnType = this.type.returnType();
 	        if(returnType.isParameterizedType()){
 	        	this.returnType = (ReferenceBinding) Scope.substitute(this, returnType);
+	        } else if(returnType instanceof TypeVariableBinding){
+	        	this.returnType = this.substitute((TypeVariableBinding) this.returnType);
 	        }
         }
 		

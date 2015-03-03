@@ -35,9 +35,11 @@ package org.summer.sdt.internal.compiler.lookup;
 
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ast.Wildcard;
+import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 
 /*
@@ -1679,4 +1681,6 @@ abstract public class TypeBinding extends Binding {
 	public boolean isFunctionalType() {
 		return false;
 	}
+	
+	public abstract void generate(StringBuffer output);
 }

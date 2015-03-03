@@ -45,6 +45,8 @@ public interface TypeConstants {
 	char[] GLOBAL = "Global".toCharArray(); //$NON-NLS-1$  //cym 2015-01-11
 	char[] WINDOW = "Window".toCharArray(); //$NON-NLS-1$  //cym 2014-12-13
 	char[] TEMPLATE = "Template".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
+	char[] ITEMTEMPLATE = "ItemTemplate".toCharArray(); //$NON-NLS-1$  //cym 2015-03-02
+	
 	char[] COMPONENT = "Component".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] MODULE = "Module".toCharArray(); //$NON-NLS-1$  //cym 2015-02-12
 	char[] FUNCTION = "Function".toCharArray(); //$NON-NLS-1$  //cym 2015-02-16
@@ -153,6 +155,8 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_GLOBAL = {JAVA, LANG, GLOBAL};  //cym 2015-01-11
 	char[][] JAVA_LANG_WINDOW = {JAVA, LANG, WINDOW};  //cym 2014-12-13
 	char[][] JAVA_LANG_TEMPLATE = {JAVA, LANG, TEMPLATE};  //cym 2015-01-13
+	char[][] JAVA_LANG_ITEMTEMPLATE = {JAVA, LANG, ITEMTEMPLATE};  //cym 2015-03-02
+	
 	char[][] JAVA_LANG_COMPONENT = {JAVA, LANG, COMPONENT};  //cym 2015-01-13
 	char[][] ORG_W3C_HTML_HTML = {ORG, W3C, HTMLPKG, HTML};  //cym 2015-01-13
 	char[][] JAVA_LANG_STRING = {JAVA, LANG, "String".toCharArray()}; //$NON-NLS-1$

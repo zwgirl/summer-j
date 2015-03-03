@@ -10,6 +10,7 @@ import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 
 /**
  * 
@@ -171,186 +172,12 @@ public class ObjectElement extends XAMLElement {
 				output.append('\n');
 				printIndent(indent + 1, output).append("_p.appendChild(_n);");
 				
-				Attribute attrHasTem = null;
-				Attribute itemTemplate = null;
 				for(Attribute attr : child.attributes){
-					if((attr.bits & ASTNode.IsTemplate) != 0 ){
-						if(CharOperation.equals(attr.property.token, TEMPLATE)){
-							attrHasTem = attr;
-						}
-
-						if(CharOperation.equals(attr.property.token, ITEM_TEMPLATE)){
-							itemTemplate = attr;
-						}
-						continue;
-					}
-					if(attr.value instanceof MarkupExtension){
-						output.append("\n");
-						printIndent(indent + 1, output);
-						output.append("_n.");
-						if(attr.property.receiver instanceof PropertyReference){
-							output.append(((PropertyReference)attr.property.receiver).token);
-							output.append('.').append(attr.property.token);
-						} else if(attr.property.receiver == null){
-							output.append(attr.property.token);
-						}
-						output.append(" = ");
-						
-						ReferenceBinding rb = (ReferenceBinding) attr.value.resolvedType;
-						output.append("new (");
-						rb.generate(output);
-						output.append(")(");
-						
-						output.append("{");
-						MarkupExtension markup = (MarkupExtension) attr.value;
-						boolean comma = false;
-						for(Attribute mAttr : markup.attributes){
-							if(comma){
-								output.append(',');
-							}
-							
-							output.append("\"").append(mAttr.property.token).append("\" : ");
-							if(mAttr.property.fieldBinding.type.isEnum()){
-								((ReferenceBinding)mAttr.property.fieldBinding.type).generate(output);
-								output.append('.').append(((StringLiteral) mAttr.value).source);
-							} else {
-								if(mAttr.value instanceof StringLiteral){
-									StringLiteral s = (StringLiteral) mAttr.value;
-									output.append("\"").append(s.source).append("\"");
-								}
-							}
-							comma = true;
-						}
-						output.append("}");
-						
-						output.append(")");
-						output.append(".provideValue(");
-						output.append("_n, \""); //.append(attr.property.token).append("\")");
-						if(attr.property.receiver instanceof PropertyReference){
-							output.append(((PropertyReference)attr.property.receiver).token).append("\"");
-							output.append(", \"").append(attr.property.token).append("\"").append(")");
-						} else if(attr.property.receiver == null){
-							output.append(attr.property.token).append("\"");
-							output.append(", ").append("null").append(")");
-						}
-						output.append(";");
-						continue;
-					}
-					
-//					if((attr.bits & TagBits.AnnotationEventCallback) != 0){
-//						if(attr.method == null){
-//							continue;
-//						}
-//						output.append("\n");
-//						printIndent(indent + 1, output);
-//						output.append("_n.addEventListener('").append(CharOperation.subarray(attr.property.token, 2, -1)).append("', ");
-//						if(attr.method.isStatic()){
-//							output.append(attr.method.declaringClass.sourceName).append('.');
-//							if(attr.value instanceof StringLiteral){
-//								output.append(attr.method.selector).append("); ");
-//							}
-//						} else {
-//							output.append("__this.");
-//							if(attr.value instanceof StringLiteral){
-//								output.append(attr.method.selector); 
-//							}
-//						}
-//						output.append(", false);");
-//						
-//						continue;
-//					}
-					
-					if(attr.property.fieldBinding != null && (((ReferenceBinding)attr.property.fieldBinding.type).modifiers & ClassFileConstants.AccFunction) != 0){
-						output.append("\n");
-						printIndent(indent + 1, output);
-						output.append("_n.addEventListener('").append(CharOperation.subarray(attr.property.token, 2, -1)).append("', ");
-						if(attr.method != null){
-							if(attr.method.isStatic()){
-								output.append(attr.method.declaringClass.sourceName).append('.');
-								if(attr.value instanceof StringLiteral){
-									output.append(((StringLiteral)attr.value).source);
-								}
-							} else {
-								output.append("__this.");
-								if(attr.value instanceof StringLiteral){
-									output.append(((StringLiteral)attr.value).source);
-								}
-							}
-						} else if(attr.field != null){
-							if(attr.field.isStatic()){
-								output.append(attr.field.declaringClass.sourceName).append('.');
-								if(attr.value instanceof StringLiteral){
-									output.append(((StringLiteral)attr.value).source);
-								}
-							} else {
-								output.append("__this.");
-								if(attr.value instanceof StringLiteral){
-									output.append(((StringLiteral)attr.value).source);
-								}
-							}
-						}
-						output.append(", false);");
-						
-						continue;
-					}
-					
-//					output.append("\n");
-//					printIndent(indent + 1, output);
-//					output.append("_n.").append(attr.property.token).append(" = ");
-					
-					output.append("\n");
-					printIndent(indent + 1, output);
-					output.append("_n.");
-					if(attr.property.receiver instanceof PropertyReference){
-						output.append(((PropertyReference)attr.property.receiver).token);
-						output.append('.').append(attr.property.token);
-					} else if(attr.property.receiver == null){
-						output.append(attr.property.token);
-					} else {
-						output.append(attr.property.token);
-					}
-					output.append(" = ");
-					
-					attr.value.generateExpression(scope, indent, output).append(";");
-				}
-				if(attrHasTem != null){
-					output.append("\n");
-					printIndent(indent + 1, output);
-					if(attrHasTem.template != null){
-						output.append("var _t = new (");
-						attrHasTem.template.generate(output);
-						output.append(")();");
-						output.append("\n");
-						printIndent(indent + 1, output);
-						output.append("_t.create(_n);");
-						output.append("\n");
-						printIndent(indent + 1, output);
-						output.append("_c.template = _t;");
-					}
-				}
-				
-				if(itemTemplate != null){
-					for(int i = 0; i<10; i++){
-						output.append("\n");
-						printIndent(indent + 1, output);
-						if(itemTemplate.template != null){
-							output.append("var _t = new (");
-							itemTemplate.template.generate(output);
-							output.append(")();");
-							output.append("\n");
-							printIndent(indent + 1, output);
-							output.append("_t.create(_n);");
-							output.append("\n");
-							printIndent(indent + 1, output);
-							output.append("_c.template = _t;");
-						}
-					}
+					attr.buildContent(scope, indent, output, "_n");
 				}
 				if(child.children != null && child.children.length > 0){
 					child.buildDOMScript(scope, indent + 1, output, "_n");
 				}
-//				output.append('\n');
-//				printIndent(indent + 1, output).append("_p.appendChild(_n);");
 			}
 		}
 			
@@ -376,77 +203,34 @@ public class ObjectElement extends XAMLElement {
 		output.append('\n');
 		printIndent(indent + 1, output).append(parent).append(".appendChild(_n);");
 		
-		Attribute attrHasTem = null;
-		Attribute itemTemplate = null;
 		for(Attribute attr : this.attributes){
-			if((attr.bits & ASTNode.IsTemplate) != 0 ){
-				if(CharOperation.equals(attr.property.token, TEMPLATE)){
-					attrHasTem = attr;
-				}
-
-				if(CharOperation.equals(attr.property.token, ITEM_TEMPLATE)){
-					itemTemplate = attr;
-				}
-				continue;
-			}
-			if(attr.value instanceof MarkupExtension){
-				continue;
-			}
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append("_n.").append(attr.property.token).append(" = ");
-			attr.value.generateExpression(scope, indent, output).append(";");
+			attr.generateExpression(scope, indent, output).append(";");
 		}
-		if(attrHasTem != null){
-			output.append("\n");
-			printIndent(indent + 1, output);
-			if(attrHasTem.template != null){
-				output.append("var _t = new (__lc('");
-				output.append(CharOperation.concatWith(attrHasTem.template.compoundName, '.'));
-				output.append("'");
-				if((attrHasTem.template.modifiers & ClassFileConstants.AccModule) != 0){
-					output.append(", ");
-					attrHasTem.template.generate(output);
-					output.append(",");
-				}
-				output.append("))();");
-				output.append("\n");
-				printIndent(indent + 1, output);
-				output.append("_t.create(_n);");
-				output.append("\n");
-				printIndent(indent + 1, output);
-				output.append("_c.template = _t;");
-			}
-		}
-		
-		if(itemTemplate != null){
-			for(int i = 0; i<10; i++){
-				output.append("\n");
-				printIndent(indent + 1, output);
-				if(itemTemplate.template != null){
-					output.append("var _t = new (__lc('");
-					output.append(CharOperation.concatWith(itemTemplate.template.compoundName, '.'));
-					output.append("'");
-					if((itemTemplate.template.modifiers & ClassFileConstants.AccModule) != 0){
-						output.append(", ");
-						itemTemplate.template.generate(output);
-						output.append(",");
-					}
-					output.append("))();");
-					output.append("\n");
-					printIndent(indent + 1, output);
-					output.append("_t.create(_n);");
-					output.append("\n");
-					printIndent(indent + 1, output);
-					output.append("_c.template = _t;");
-				}
-			}
-		}
+	
 		if(this.children != null && this.children.length > 0){
 			this.buildDOMScript(scope, indent + 1, output, "_n");
 		}
-//		output.append('\n');
-//		printIndent(indent + 1, output).append(parent).append(".appendChild(_n);");
+	}
+	
+	public void buildRootElement(Scope scope, int indent, StringBuffer output, String parent){
+		output.append("\n");
+		printIndent(indent + 1, output);
+//		if(this.name != null){
+//			output.append("var _n = __this[");
+//			oe.name.value.doGenerateExpression(scope, indent, output);
+//			output.append("]"); 
+//		} else {
+			output.append("var _n"); 
+//		}
+		
+		output.append(" = _c(\"").append(this.type.getLastToken()).append("\");");
+		
+		output.append('\n');
+		printIndent(indent + 1, output).append(parent).append(".appendChild(_n);");
+		
+		for(Attribute attr : this.attributes){
+			attr.buildContent(scope, indent, output, "_n");
+		}
 	}
 	
 	public StringBuffer generateHTML(Scope scope, int indent, StringBuffer output) {

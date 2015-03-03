@@ -2077,7 +2077,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 				method.modifiers |= ClassFileConstants.AccDeprecated;
 			//cym 2015-01-15
 			if ((method.getAnnotationTagBits() & TagBits.AnnotationOverload) != 0)
-				method.overload = "1";
+				method.overload = "error";
 			
 		}
 		if (isViewedAsDeprecated() && !method.isDeprecated())

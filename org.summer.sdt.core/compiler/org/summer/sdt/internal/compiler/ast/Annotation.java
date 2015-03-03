@@ -556,11 +556,19 @@ public abstract class Annotation extends Expression {
 		boolean sawValue = false;
 		for (int i = 0, length = annotationMethods.length; i < length; ++i) {
 			MethodBinding method = annotationMethods[i];
-			if (CharOperation.equals(method.selector, TypeConstants.VALUE)) {
-				sawValue = true;
-				//cym 2015-01-01
+			
+//			if (CharOperation.equals(method.selector, TypeConstants.VALUE)) {
+//				sawValue = true;
 //				if (method.returnType.isArrayType() && method.returnType.dimensions() == 1) {
 //					ArrayBinding array = (ArrayBinding) method.returnType;
+//					if (TypeBinding.equalsEquals(array.elementsType(), repeatableAnnotationType)) continue;
+//				}
+//				repeatableAnnotationType.tagAsHavingDefectiveContainerType();
+//				scope.problemReporter().containerAnnotationTypeHasWrongValueType(culpritNode, containerAnnotationType, repeatableAnnotationType, method.returnType);
+//			} else {
+			//cym 2015-01-01
+			if (CharOperation.equals(method.selector, TypeConstants.VALUE)) {
+				sawValue = true;
 				if (method.returnType instanceof ParameterizedTypeBinding && ((ParameterizedTypeBinding)method.returnType).isArrayType2()) {
 					ParameterizedTypeBinding array = (ParameterizedTypeBinding) method.returnType;
 					if (TypeBinding.equalsEquals(array.elementsType(), repeatableAnnotationType)) continue;

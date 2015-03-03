@@ -482,4 +482,9 @@ public final class ArrayBinding extends TypeBinding {
 	public boolean acceptsNonNullDefault() {
 		return true;
 	}
+	
+	@Override
+	public void generate(StringBuffer output) {
+		
+	}
 }

@@ -285,7 +285,25 @@ public class PropertyReference extends Expression{
 
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		// TODO Auto-generated method stub
-		return null;
+		if(this.receiver instanceof PropertyReference){
+			output.append(((PropertyReference)this.receiver).token);
+			output.append('.').append(this.token);
+		} else if(this.receiver == null){
+			output.append(this.token);
+		}
+		return output;
+	}
+	
+	public StringBuffer buildInMarkupExtension(Scope scope, int indent, StringBuffer output){
+		output.append("\"");
+		if(this.receiver instanceof PropertyReference){
+			output.append(((PropertyReference)this.receiver).token).append("\"");
+			output.append(", \"").append(this.token).append("\"");
+		} else if(this.receiver == null){
+			output.append(this.token).append("\"");
+			output.append(", ").append("null");
+		}
+		
+		return output;
 	}
 }

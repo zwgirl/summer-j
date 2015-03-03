@@ -97,6 +97,56 @@ public class AnnotationMethodDeclaration extends MethodDeclaration {
 		return output;
 	}
 
+//	public void resolveStatements() {
+//
+//		super.resolveStatements();
+//		if (this.arguments != null) {
+//			this.scope.problemReporter().annotationMembersCannotHaveParameters(this);
+//		}
+//		if (this.typeParameters != null) {
+//			this.scope.problemReporter().annotationMembersCannotHaveTypeParameters(this);
+//		}
+//		if (this.extendedDimensions != 0) {
+//			this.scope.problemReporter().illegalExtendedDimensions(this);
+//		}
+//		if (this.binding == null) return;
+//		TypeBinding returnTypeBinding = this.binding.returnType;
+//		if (returnTypeBinding != null) {
+//
+//			// annotation methods can only return base types, String, Class, enum type, annotation types and arrays of these
+//			checkAnnotationMethodType: {
+//				TypeBinding leafReturnType = returnTypeBinding.leafComponentType();
+//				if (returnTypeBinding.dimensions() <= 1) { // only 1-dimensional array permitted
+//					switch (leafReturnType.erasure().id) {
+//						case T_byte :
+//						case T_short :
+//						case T_char :
+//						case T_int :
+//						case T_long :
+//						case T_float :
+//						case T_double :
+//						case T_boolean :
+//						case T_JavaLangString :
+//						case T_JavaLangClass :
+//							break checkAnnotationMethodType;
+//					}
+//					if (leafReturnType.isEnum() || leafReturnType.isAnnotationType())
+//						break checkAnnotationMethodType;
+//				}
+//				this.scope.problemReporter().invalidAnnotationMemberType(this);
+//			}
+//			if (this.defaultValue != null) {
+//				MemberValuePair pair = new MemberValuePair(this.selector, this.sourceStart, this.sourceEnd, this.defaultValue);
+//				pair.binding = this.binding;
+//				if (pair.value.resolvedType == null)
+//					pair.resolveTypeExpecting(this.scope, returnTypeBinding);
+//				this.binding.setDefaultValue(org.summer.sdt.internal.compiler.lookup.ElementValuePair.getValue(this.defaultValue));
+//			} else { // let it know it does not have a default value so it won't try to find it
+//				this.binding.setDefaultValue(null);
+//			}
+//		}
+//	}
+	
 	public void resolveStatements() {
 
 		super.resolveStatements();
@@ -116,7 +166,7 @@ public class AnnotationMethodDeclaration extends MethodDeclaration {
 			// annotation methods can only return base types, String, Class, enum type, annotation types and arrays of these
 			checkAnnotationMethodType: {
 				TypeBinding leafReturnType = returnTypeBinding.leafComponentType();
-				if (returnTypeBinding.dimensions() <= 1) { // only 1-dimensional array permitted
+//				if (returnTypeBinding.dimensions() <= 1) { // only 1-dimensional array permitted
 					switch (leafReturnType.erasure().id) {
 						case T_byte :
 						case T_short :
@@ -132,7 +182,7 @@ public class AnnotationMethodDeclaration extends MethodDeclaration {
 					}
 					if (leafReturnType.isEnum() || leafReturnType.isAnnotationType())
 						break checkAnnotationMethodType;
-				}
+//				}
 				this.scope.problemReporter().invalidAnnotationMemberType(this);
 			}
 			if (this.defaultValue != null) {

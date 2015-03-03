@@ -63,6 +63,9 @@ public class BlockScope extends Scope {
 
 	// annotation support
 	public boolean insideTypeAnnotation = false;
+	
+	//cym 2015-03-03 for secret variable used in forEach
+	public Set<char[]> secrets = new HashSet<char[]>();
 
 	public BlockScope(BlockScope parent) {
 		this(parent, true);
@@ -435,6 +438,17 @@ public class BlockScope extends Scope {
 		return null;
 	}
 	
+//	public LocalVariableBinding findVariable(char[] variableName) {
+//		int varLength = variableName.length;
+//		for (int i = this.localIndex-1; i >= 0; i--) { // lookup backward to reach latest additions first
+//			LocalVariableBinding local;
+//			char[] localName;
+//			if ((localName = (local = this.locals[i]).name).length == varLength && CharOperation.equals(localName, variableName))
+//				return local;
+//		}
+//		return null;
+//	}
+	//cym 2015-03-02
 	public LocalVariableBinding findVariable(char[] variableName) {
 		int varLength = variableName.length;
 		for (int i = this.localIndex-1; i >= 0; i--) { // lookup backward to reach latest additions first
@@ -442,6 +456,11 @@ public class BlockScope extends Scope {
 			char[] localName;
 			if ((localName = (local = this.locals[i]).name).length == varLength && CharOperation.equals(localName, variableName))
 				return local;
+		}
+		
+		//continue to find scope //cym 2015-03-02
+		if(parent instanceof BlockScope){
+			return parent.findVariable(variableName);
 		}
 		return null;
 	}
@@ -1237,5 +1256,22 @@ public class BlockScope extends Scope {
 	@Override
 	public boolean hasDefaultNullnessFor(int location) {
 		return this.parent.hasDefaultNullnessFor(location);
+	}
+	
+	//cym 2015-03-03 for secret variable in forEach
+	public boolean exists(char[] secretName){
+		if(secrets.contains(secretName)){
+			return true;
+		}
+		
+		if(this.parent instanceof BlockScope){
+			return this.parent.exists(secretName);
+		}
+		
+		return false;
+	}
+	
+	public void addSecretVariableName(char[] secretName){
+		secrets.add(secretName);
 	}
 }

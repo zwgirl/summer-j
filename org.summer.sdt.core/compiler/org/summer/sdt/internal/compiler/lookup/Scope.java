@@ -106,7 +106,6 @@ public abstract class Scope {
 	public int kind;
 	public Scope parent;
 
-
 	protected Scope(int kind, Scope parent) {
 		this.kind = kind;
 		this.parent = parent;
@@ -5638,5 +5637,14 @@ public abstract class Scope {
 				break;
 			}
 		}
+	}
+	
+	//cym 2015-03-03 for secret variable in forEach
+	public boolean exists(char[] secretName){
+		return false;
+	}
+	
+	public void addSecretVariableName(char[] secretName){
+		
 	}
 }

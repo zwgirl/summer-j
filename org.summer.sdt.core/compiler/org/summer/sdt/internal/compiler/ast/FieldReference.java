@@ -839,7 +839,9 @@ public class FieldReference extends Reference implements InvocationSite {
 			output.append(this.binding.declaringClass.sourceName);
 			output.append('.').append(this.token);
 		} else if(this.receiver.isThis() || this.receiver.isSuper()){
-			output.append("this.").append(this.token);
+//			output.append("this.");
+			this.receiver.doGenerateExpression(scope, indent, output);
+			output.append('.').append(this.token);
 		} else {
 			this.receiver.doGenerateExpression(scope, 0, output).append('.').append(this.token);
 		}
