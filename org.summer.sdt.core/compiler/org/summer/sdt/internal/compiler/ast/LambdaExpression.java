@@ -1395,6 +1395,9 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 	}
 	
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+		if(this.scope == null){
+			return output;
+		}
 		output.append("(function(");
 		if (this.arguments != null) {
 			for (int i = 0; i < this.arguments.length; i++) {

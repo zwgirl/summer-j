@@ -481,7 +481,7 @@ ElementList ::= ElementList Element
 /.$putCase consumeElementList(); $break ./
 /:$readableName ElementList:/
 
-Script -> ScriptMethodHeader NestedMethod BlockStatementsopt '%>'
+Script -> ScriptMethodHeader BlockStatementsopt '%>'
 /.$putCase consumeScript(); $break ./
 /:$readableName Script:/
 

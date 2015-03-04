@@ -6566,7 +6566,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			    consumeElementList();  
 				break;
 	 
-	    case 107 : if (DEBUG) { System.out.println("Script ::= ScriptMethodHeader NestedMethod..."); }  //$NON-NLS-1$
+	    case 107 : if (DEBUG) { System.out.println("Script ::= ScriptMethodHeader BlockStatementsopt..."); }  //$NON-NLS-1$
 			    consumeScript();  
 				break;
 	 
@@ -8488,105 +8488,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	protected void consumeEmptyAccessor(){
 		pushOnAstLengthStack(0);
 	}
-	
-//	protected void consumePropertyHeader() {
-//		// PropertyHeader ::=  '{'
-//		// do nothing by default
-//	
-//		char[] identifierName = this.identifierStack[this.identifierPtr];
-//		long namePosition = this.identifierPositionStack[this.identifierPtr];
-//		PropertyDeclaration declaration = new PropertyDeclaration(identifierName, (int) (namePosition >>> 32), (int) namePosition);
-//	
-//		this.identifierPtr--;
-//		this.identifierLengthPtr--;
-//		TypeReference type = getTypeReference(this.intStack[this.intPtr--]); // type dimension
-////		pushOnAstStack(type);
-//		declaration.declarationSourceStart = this.intStack[this.intPtr--];
-//		declaration.modifiers = this.intStack[this.intPtr--];
-//		
-//		// cym 		 2015-02-12
-//		declaration.modifiers |= ClassFileConstants.AccProperty;
-//		
-//		// consume annotations
-//		int length;
-//		if ((length = this.expressionLengthStack[this.expressionLengthPtr--]) != 0) {
-//			System.arraycopy(
-//				this.expressionStack,
-//				(this.expressionPtr -= length) + 1,
-//				declaration.annotations = new Annotation[length],
-//				0,
-//				length);
-//		}
-//		// Store javadoc only on first declaration as it is the same for all ones
-//		PropertyDeclaration fieldDeclaration = (PropertyDeclaration) declaration;
-//		fieldDeclaration.javadoc = this.javadoc;
-//	
-//		declaration.type = type;
-//		declaration.bits |= (type.bits & ASTNode.HasTypeAnnotations);
-//		
-//		if(this.currentToken == TokenNameLBRACE){
-//			declaration.bodyStart = this.scanner.currentPosition;
-//		}
-//		
-//		pushOnAstStack(declaration);
-//		// recovery
-//		if (this.currentElement != null) {
-//			if (!(this.currentElement instanceof RecoveredType)
-//				&& (this.currentToken == TokenNameDOT
-//					//|| declaration.modifiers != 0
-//					|| (Util.getLineNumber(declaration.type.sourceStart, this.scanner.lineEnds, 0, this.scanner.linePtr)
-//							!= Util.getLineNumber((int) (namePosition >>> 32), this.scanner.lineEnds, 0, this.scanner.linePtr)))){
-//				this.lastCheckPoint = (int) (namePosition >>> 32);
-//				this.restartRecovery = true;
-//				return;
-//			}
-//			PropertyDeclaration propDecl = (PropertyDeclaration) this.astStack[this.astPtr];
-//			this.lastCheckPoint = propDecl.sourceEnd + 1;
-//			this.currentElement = this.currentElement.add(propDecl, 0);
-//			this.lastIgnoredToken = -1;
-//		}
-//	}
-//
-//	protected void consumePropertyDeclaration(){
-//		int length = this.astLengthStack[this.astLengthPtr--];
-//		this.astPtr -= length;
-//		MethodDeclaration[] methods = new MethodDeclaration[length];
-//		System.arraycopy(this.astStack, this.astPtr + 1, methods, 0, length);
-//		
-//		PropertyDeclaration property = (PropertyDeclaration) this.astStack[this.astPtr];
-//		for(MethodDeclaration method : methods){
-//			method.modifiers |= property.modifiers;
-//			if(method.accessorType == MethodDeclaration.GETTER){
-//				property.getter = method;
-//				method.returnType = property.type;
-//			} else {
-//				property.setter = method;
-//				method.returnType = new SingleTypeReference(TypeBinding.VOID.simpleName, 0);
-//				//value parameter
-//				method.arguments = new Argument[]{new Argument(MethodDeclaration.VALUE, 0, property.type, 0)};
-//			}
-//		}
-//		
-//		property.declarationSourceEnd = this.endStatementPosition;
-//		property.declarationEnd = this.endStatementPosition;	
-//		
-//		int endPos = flushCommentsDefinedPriorTo(this.endStatementPosition);
-//		if (endPos != this.endStatementPosition) {
-//			property.declarationSourceEnd = endPos;
-//		}
-//		
-//		// recovery
-//		if (this.currentElement != null) {
-//			this.lastCheckPoint = endPos + 1;
-//			if (this.currentElement.parent != null && this.currentElement instanceof RecoveredField){
-//				if (!(this.currentElement instanceof RecoveredInitializer)) {
-//					this.currentElement = this.currentElement.parent;
-//				}
-//			}
-//			this.restartRecovery = true;
-//		}
-//	}
-	
 	protected void consumePropertyHeader() {
 		// PropertyHeader ::=  '{'
 		// do nothing by default
@@ -8761,103 +8662,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	protected void consumeAccessoropt(){
 		concatNodeLists();
 	}
-
-//	protected void consumeIndexerHeader(){
-//		//IndexerHeader ::= Modifiersopt Type 'this' '['
-//		
-//		int startPosition = this.intStack[this.intPtr--];
-//		IndexerDeclaration declaration = new IndexerDeclaration(ConstantPool.This, startPosition, startPosition + 3);   //this.length
-//	
-//		declaration.type = getTypeReference(this.intStack[this.intPtr--]); // type dimension
-//		declaration.declarationSourceStart = this.intStack[this.intPtr--];
-//		declaration.modifiers = this.intStack[this.intPtr--];
-//		
-//		//cym 2012-02-12
-//		declaration.modifiers |= ClassFileConstants.AccIndexer;
-//		// consume annotations
-//		int length;
-//		if ((length = this.expressionLengthStack[this.expressionLengthPtr--]) != 0) {
-//			System.arraycopy(
-//				this.expressionStack,
-//				(this.expressionPtr -= length) + 1,
-//				declaration.annotations = new Annotation[length],
-//				0,
-//				length);
-//		}
-//		// Store javadoc only on first declaration as it is the same for all ones
-//		declaration.javadoc = this.javadoc;
-//		this.javadoc = null;
-//	
-//		declaration.bits |= (declaration.type.bits & ASTNode.HasTypeAnnotations);
-//		
-//		pushOnAstStack(declaration);
-//		// recovery
-//		if (this.currentElement != null) {
-//			if (!(this.currentElement instanceof RecoveredType)
-//				&& (this.currentToken == TokenNameDOT
-//					//|| declaration.modifiers != 0
-//					|| (Util.getLineNumber(declaration.type.sourceStart, this.scanner.lineEnds, 0, this.scanner.linePtr)
-//							!= Util.getLineNumber(startPosition, this.scanner.lineEnds, 0, this.scanner.linePtr)))){
-//				this.lastCheckPoint = startPosition;
-//				this.restartRecovery = true;
-//				return;
-//			}
-//			FieldDeclaration fieldDecl = (FieldDeclaration) this.astStack[this.astPtr];
-//			this.lastCheckPoint = fieldDecl.sourceEnd + 1;
-//			this.currentElement = this.currentElement.add(fieldDecl, 0);
-//			this.lastIgnoredToken = -1;
-//		}
-//	}
-//	
-//	protected void consumeIndexerDeclaration(){
-////		IndexerDeclaration ::= IndexerHeader FormalParameter  ']'  '{' AccessorDeclaration '}'
-//		
-//		int length = this.astLengthStack[this.astLengthPtr--];
-//		this.astPtr -= length;
-//		MethodDeclaration[] methods = new MethodDeclaration[length];
-//		System.arraycopy(this.astStack, this.astPtr + 1, methods, 0, length);
-//		
-//		int argLength = this.astLengthStack[this.astLengthPtr--];
-//		this.astPtr -= argLength;
-//		Argument[] args = new Argument[argLength];
-//		if(argLength != 0){
-//			System.arraycopy(this.astStack, this.astPtr + 1, args, 0, argLength);
-//		}
-//		
-//		IndexerDeclaration indexer = (IndexerDeclaration) this.astStack[this.astPtr];
-//		indexer.declarationSourceEnd = this.endStatementPosition;
-//		indexer.declarationEnd = this.endStatementPosition;	// semi-colon included
-//		for(MethodDeclaration method : methods){
-//			if(method.accessorType == MethodDeclaration.GETTER){
-//				method.returnType = indexer.type;
-//				indexer.getter = method;
-//				method.arguments = args;
-//			} else {
-//				method.returnType = new SingleTypeReference(TypeBinding.VOID.simpleName, 0);
-//				method.arguments = new Argument[argLength + 1];
-//				System.arraycopy(args, 0, method.arguments, 0, argLength);
-//				method.arguments[argLength] = new Argument(MethodDeclaration.VALUE, 0, indexer.type, 0);
-//				indexer.setter = method;
-//			}
-//		}
-//		indexer.arguments = args;
-//		
-//		int endPos = flushCommentsDefinedPriorTo(this.endStatementPosition);
-//		if (endPos != this.endStatementPosition) {
-//			indexer.declarationSourceEnd = endPos;
-//		}
-//	
-//		// recovery
-//		if (this.currentElement != null) {
-//			this.lastCheckPoint = endPos + 1;
-//			if (this.currentElement.parent != null && this.currentElement instanceof RecoveredIndexer){
-//				if (!(this.currentElement instanceof RecoveredIndexer)) {
-//					this.currentElement = this.currentElement.parent;
-//				}
-//			}
-//			this.restartRecovery = true;
-//		}
-//	}
 	
 	protected void consumeIndexerHeader(){
 		//IndexerHeader ::= Modifiersopt Type 'this' '['
@@ -9001,91 +8805,104 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			this.scanner.PCDATA = true;
 	}
 	
-//	protected void consumeScript(){
-////		Script -> '<%' NestedMethod BlockStatementsopt '%>'
+//	protected void consumeStaticInitializer() {
+//		// StaticInitializer ::=  StaticOnly Block
+//		//push an Initializer
+//		//optimize the push/pop
+//		Block block = (Block) this.astStack[this.astPtr];
+//		if (this.diet) block.bits &= ~ASTNode.UndocumentedEmptyBlock; // clear bit set since was diet
+//		Initializer initializer = new Initializer(block, ClassFileConstants.AccStatic);
+//		this.astStack[this.astPtr] = initializer;
+//		initializer.sourceEnd = this.endStatementPosition;
+//		initializer.declarationSourceEnd = flushCommentsDefinedPriorTo(this.endStatementPosition);
+//		this.nestedMethod[this.nestedType] --;
+//		initializer.declarationSourceStart = this.intStack[this.intPtr--];
+//		initializer.bodyStart = this.intStack[this.intPtr--];
+//		initializer.bodyEnd = this.endPosition;
+//		// doc comment
+//		initializer.javadoc = this.javadoc;
+//		this.javadoc = null;
 //	
-//		int statementsLength = this.astLengthStack[this.astLengthPtr--];
-//		Block block;
-//		if (statementsLength == 0) { // empty block
-//			block = new Block(0);
-//			block.sourceStart = this.intStack[this.intPtr--];
-//			block.sourceEnd = this.endStatementPosition;
-//			// check whether this block at least contains some comment in it
-//			if (!containsComment(block.sourceStart, block.sourceEnd)) {
-//				block.bits |= ASTNode.UndocumentedEmptyBlock;
-//			}
-////			this.realBlockPtr--; // still need to pop the block variable counter
-//		} else {
-////			block = new Block(this.realBlockStack[this.realBlockPtr--]);
-//			block = new Block(0);
-//			this.astPtr -= statementsLength;
-//			System.arraycopy(
-//				this.astStack,
-//				this.astPtr + 1,
-//				block.statements = new Statement[statementsLength],
-//				0,
-//				statementsLength);
-//			block.sourceStart = this.intStack[this.intPtr--];
-//			block.sourceEnd = this.endStatementPosition;
+//		// recovery
+//		if (this.currentElement != null){
+//			this.lastCheckPoint = initializer.declarationSourceEnd;
+//			this.currentElement = this.currentElement.add(initializer, 0);
+//			this.lastIgnoredToken = -1;
 //		}
-//		
-//		Script script = new Script();
-//		script.block = block;
-//		pushOnElementStack(script);
+//	}
+//	protected void consumeStaticOnly() {
+//		// StaticOnly ::= 'static'
+//		int savedModifiersSourceStart = this.modifiersSourceStart;
+//		checkComment(); // might update declaration source start
+//		if (this.modifiersSourceStart >= savedModifiersSourceStart) {
+//			this.modifiersSourceStart = savedModifiersSourceStart;
+//		}
+//		pushOnIntStack(this.scanner.currentPosition);
+//		pushOnIntStack(
+//			this.modifiersSourceStart >= 0 ? this.modifiersSourceStart : this.scanner.startPosition);
+//		jumpOverMethodBody();
+//		this.nestedMethod[this.nestedType]++;
+//		resetModifiers();
+//		this.expressionLengthPtr--; // remove the 0 pushed in consumeToken() for the static modifier
+//	
+//		// recovery
+//		if (this.currentElement != null){
+//			this.recoveredStaticInitializerStart = this.intStack[this.intPtr]; // remember start position only for static initializers
+//		}
 //	}
 	
 	protected void consumeScriptMethodName(){
 //		ScriptMethodHeader ::= '<%'
-				
-		MethodDeclaration method = new MethodDeclaration(this.compilationUnit.compilationResult);
-		
-		method.selector = new char[0];
-//		//modifiers
-//		method.declarationSourceStart = this.intStack[this.intPtr];
-		method.modifiers |= ClassFileConstants.AccFinal | ClassFileConstants.AccStatic;
+//		int savedModifiersSourceStart = this.modifiersSourceStart;
+//		checkComment(); // might update declaration source start
+//		if (this.modifiersSourceStart >= savedModifiersSourceStart) {
+//			this.modifiersSourceStart = savedModifiersSourceStart;
+//		}
+		pushOnIntStack(this.scanner.currentPosition);
+//		jumpOverMethodBody();
+		this.nestedMethod[this.nestedType]++;
 	
-		//highlight starts at selector start
-//		method.sourceStart = (int) (selectorSource >>> 32);
-		method.sourceStart = this.scanner.startPosition;
-		pushOnAstStack(method);
-		concatNodeLists();
-		method.sourceEnd = this.scanner.startPosition;
-//		md.bodyStart = md.sourceEnd + 1;
-		this.listLength = 0; // initialize this.listLength before reading parameters/throws
-		method.declarationSourceStart = method.sourceStart;
-		method.returnType = new SingleTypeReference(TypeBinding.VOID.simpleName, 0);
-		// recovery
-		if (this.currentElement != null){
-			if (this.currentElement instanceof RecoveredType
-				//|| md.modifiers != 0
-				|| (Util.getLineNumber(method.returnType.sourceStart, this.scanner.lineEnds, 0, this.scanner.linePtr)
-						== Util.getLineNumber(method.sourceStart, this.scanner.lineEnds, 0, this.scanner.linePtr))){
-				this.lastCheckPoint = method.bodyStart;
-				this.currentElement = this.currentElement.add(method, 0);
-				this.lastIgnoredToken = -1;
-			} else {
-				this.lastCheckPoint = method.sourceStart;
-				this.restartRecovery = true;
-			}
-		}	
+//		// recovery
+//		if (this.currentElement != null){
+//			this.recoveredStaticInitializerStart = this.intStack[this.intPtr]; // remember start position only for static initializers
+//		}
 	}
 	
 	protected void consumeScript(){
-//		Script -> '<%' NestedMethod BlockStatementsopt '%>'
-	
-		int statementsLength = this.astLengthStack[this.astLengthPtr--];
-		Statement[] statements = new Statement[statementsLength];
-		if (statementsLength != 0) { 
-			this.astPtr -= statementsLength;
-			System.arraycopy(
-				this.astStack,
-				this.astPtr + 1,
-				statements = new Statement[statementsLength],
-				0,
-				statementsLength);
+//		Script -> '<%' BlockStatementsopt '%>'
+		//push an Initializer
+		//optimize the push/pop
+		Statement[] statements = new Statement[0];
+		int length = 0;
+		if((length = this.astLengthStack[this.astLengthPtr--]) >0){
+			this.astPtr -= length;
+			System.arraycopy(this.astStack, this.astPtr, statements = new Statement[length], 0, length);
 		}
-		MethodDeclaration md = (MethodDeclaration) this.astStack[this.astPtr];
-		md.statements = statements;
+//		Block block = (Block) this.astStack[this.astPtr--];
+		this.astLengthPtr--;
+		
+//		if (this.diet) block.bits &= ~ASTNode.UndocumentedEmptyBlock; // clear bit set since was diet
+		Script initializer = new Script(statements, ClassFileConstants.AccStatic);
+//		this.astStack[this.astPtr] = initializer;
+		initializer.sourceEnd = this.endStatementPosition;
+//		initializer.declarationSourceEnd = flushCommentsDefinedPriorTo(this.endStatementPosition);
+		this.nestedMethod[this.nestedType] --;
+		initializer.declarationSourceStart = this.intStack[this.intPtr];
+		initializer.bodyStart = this.intStack[this.intPtr--];
+		initializer.bodyEnd = this.endPosition;
+		// doc comment
+//		initializer.javadoc = this.javadoc;
+		this.javadoc = null;
+	
+//		// recovery
+//		if (this.currentElement != null){
+//			this.lastCheckPoint = initializer.declarationSourceEnd;
+//			this.currentElement = this.currentElement.add(initializer, 0);
+//			this.lastIgnoredToken = -1;
+//		}
+		
+//		Script script = new Script();
+		pushOnElementStack(initializer);
 		
 	}
 	

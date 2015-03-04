@@ -161,7 +161,7 @@ protected void consumeRule(int act) {
 		    consumeElementList();  
 			break;
  
-    case 107 : if (DEBUG) { System.out.println("Script ::= ScriptMethodHeader NestedMethod..."); }  //$NON-NLS-1$
+    case 107 : if (DEBUG) { System.out.println("Script ::= ScriptMethodHeader BlockStatementsopt..."); }  //$NON-NLS-1$
 		    consumeScript();  
 			break;
  

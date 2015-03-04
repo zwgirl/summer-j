@@ -5,9 +5,19 @@ import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class Script extends XAMLElement{
-	public Block block;
-	public Script() {
-		super();
+	public Statement[] statements;
+//	public int lastVisibleFieldID;
+//	public int bodyStart;
+//	public int bodyEnd;
+	
+	public int modifier;
+	public Script(Statement[] statements, int modifiers) {
+		this.statements = statements;
+		this.modifier = modifiers;
+
+		if (statements != null && statements.length>0) {
+			this.declarationSourceStart = this.sourceStart = statements[0].sourceStart;
+		}
 	}
 
 	@Override
