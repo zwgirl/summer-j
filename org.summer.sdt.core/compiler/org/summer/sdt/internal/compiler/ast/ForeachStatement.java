@@ -623,6 +623,9 @@ public class ForeachStatement extends Statement {
 	}
 
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+		if(this.scope == null){
+			return output;
+		}
 		switch(this.kind) {
 		case ARRAY :
 			//var array = collection;
