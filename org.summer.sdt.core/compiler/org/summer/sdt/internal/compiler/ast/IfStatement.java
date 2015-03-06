@@ -300,7 +300,7 @@ public class IfStatement extends Statement {
 	
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append("if ("); //$NON-NLS-1$
-		this.condition.generateExpression(scope, 0, output).append(")\n");	//$NON-NLS-1$
+		this.condition.generateExpression(scope, 0, output).append(")");	//$NON-NLS-1$
 		if(this.thenStatement instanceof Block){
 			this.thenStatement.generateStatement(scope, indent, output);
 		} else{

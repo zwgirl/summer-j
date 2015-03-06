@@ -677,7 +677,6 @@ public class ForeachStatement extends Statement {
 			printIndent(indent + 1, output);
 			output.append(';');
 		} else if(this.action instanceof Block){
-			output.append('\n');
 			((Block)this.action).generateBody(scope, indent + 1, output);
 		} else {
 			output.append("\n");

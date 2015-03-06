@@ -1220,7 +1220,7 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 //				if((this.binding.modifiers & ClassFileConstants.AccNative) != 0 || (this.binding.modifiers & ClassFileConstants.AccVarargs) == 0){
 					for (int i = 0; i < this.arguments.length ; i ++) {
 						if (i > 0) output.append(", "); //$NON-NLS-1$
-						this.arguments[i].doGenerateExpression(scope, 0, output);
+						this.arguments[i].doGenerateExpression(scope, indent, output);
 					}
 //				} else{
 //					if((this.binding.modifiers & ClassFileConstants.AccVarargs) != 0){
@@ -1250,27 +1250,27 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 				if(this.actualReceiverType == null){
 					return output;
 				}
-				this.receiver.doGenerateExpression(scope, 0, output).append('(');
+				this.receiver.doGenerateExpression(scope, indent, output).append('(');
 				if (this.arguments != null) {
 					if(comma) output.append(", "); //$NON-NLS-1$
 					if((((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccNative) != 0 || (((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccVarargs) == 0){
 						for (int i = 0; i < this.arguments.length ; i ++) {
 							if (i > 0) output.append(", "); //$NON-NLS-1$
-							this.arguments[i].doGenerateExpression(scope, 0, output);
+							this.arguments[i].doGenerateExpression(scope, indent, output);
 						}
 					} else{
 						if((((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccVarargs) != 0){
 							int argIndex = this.binding.parameters.length - 1;
 							for (int i = 0; i < argIndex ; i ++) {
 								if (i > 0) output.append(", "); //$NON-NLS-1$
-								this.arguments[i].doGenerateExpression(scope, 0, output);
+								this.arguments[i].doGenerateExpression(scope, indent, output);
 							}
 							
 							if (argIndex > 0) output.append(",");
 							output.append("["); //$NON-NLS-1$
 							for(int i = argIndex; i < this.arguments.length; i++){
 								if (i > argIndex) output.append(", "); //$NON-NLS-1$
-								this.arguments[i].doGenerateExpression(scope, 0, output);
+								this.arguments[i].doGenerateExpression(scope, indent, output);
 							}
 							output.append("]");
 						}
@@ -1304,7 +1304,7 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 			} else if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0){
 				
 			} else {
-				this.receiver.doGenerateExpression(scope, 0, output).append('.');
+				this.receiver.doGenerateExpression(scope,indent, output).append('.');
 			}
 			
 			output.append(this.selector);
@@ -1325,7 +1325,7 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 					output.append("this");
 					comma = true;
 				} else {
-					this.receiver.doGenerateExpression(scope, 0, output);
+					this.receiver.doGenerateExpression(scope, indent, output);
 					comma = true;
 				}
 			}
@@ -1336,21 +1336,21 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 			if((this.binding.modifiers & ClassFileConstants.AccNative) != 0 || (this.binding.modifiers & ClassFileConstants.AccVarargs) == 0){
 				for (int i = 0; i < this.arguments.length ; i ++) {
 					if (i > 0) output.append(", "); //$NON-NLS-1$
-					this.arguments[i].doGenerateExpression(scope, 0, output);
+					this.arguments[i].doGenerateExpression(scope, indent, output);
 				}
 			} else{
 				if((this.binding.modifiers & ClassFileConstants.AccVarargs) != 0){
 					int argIndex = this.binding.parameters.length - 1;
 					for (int i = 0; i < argIndex ; i ++) {
 						if (i > 0) output.append(", "); //$NON-NLS-1$
-						this.arguments[i].doGenerateExpression(scope, 0, output);
+						this.arguments[i].doGenerateExpression(scope, indent, output);
 					}
 					
 					if (argIndex > 0) output.append(",");
 					output.append("["); //$NON-NLS-1$
 					for(int i = argIndex; i < this.arguments.length; i++){
 						if (i > argIndex) output.append(", "); //$NON-NLS-1$
-						this.arguments[i].doGenerateExpression(scope, 0, output);
+						this.arguments[i].doGenerateExpression(scope, indent, output);
 					}
 					output.append("]");
 				}

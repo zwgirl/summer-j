@@ -1414,8 +1414,9 @@ public class LambdaExpression extends FunctionalExpression implements IPolyExpre
 			output.append("{"); //$NON-NLS-1$
 			if (this.body != null){
 				printIndent(indent, output);
-				this.body.doGenerateExpression(scope, indent + 1, output);
+				this.body.doGenerateExpression(scope, indent, output);
 			}
+			output.append("\n");
 			printIndent(indent, output);
 			output.append("}");
 		}

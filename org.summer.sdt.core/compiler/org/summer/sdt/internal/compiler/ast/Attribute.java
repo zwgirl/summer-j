@@ -171,137 +171,10 @@ public class Attribute extends XAMLNode implements InvocationSite{
 
 	}
 	
-//	@Override
-//	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-//		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.token))).append("=");
-//		value.generateExpression(scope, indent, output);
-//		
-//		return output;
-//	}
-	
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-//		if((this.bits & ASTNode.IsTemplate) != 0 ){
-//			if(CharOperation.equals(this.property.token, TEMPLATE)){
-//				attrHasTem = attr;
-//			}
-//
-//			if(CharOperation.equals(this.property.token, ITEM_TEMPLATE)){
-//				itemTemplate = attr;
-//			}
-//			
-//			if(attrHasTem != null){
-//				output.append("\n");
-//				printIndent(indent + 1, output);
-//				if(attrHasTem.template != null){
-//					output.append("var _t = new (");
-//					attrHasTem.template.generate(output);
-//					output.append(")();");
-//					output.append("\n");
-//					printIndent(indent + 1, output);
-//					output.append("_t.create(_n);");
-//					output.append("\n");
-//					printIndent(indent + 1, output);
-//					output.append("_c.template = _t;");
-//				}
-//			}
-//			
-//			if(itemTemplate != null){
-//				for(int i = 0; i<10; i++){
-//					output.append("\n");
-//					printIndent(indent + 1, output);
-//					if(itemTemplate.template != null){
-//						output.append("var _t = new (");
-//						itemTemplate.template.generate(output);
-//						output.append(")();");
-//						output.append("\n");
-//						printIndent(indent + 1, output);
-//						output.append("_t.create(_n);");
-//						output.append("\n");
-//						printIndent(indent + 1, output);
-//						output.append("_c.template = _t;");
-//					}
-//				}
-//			}
-//			
-//			continue;
-//		}
-//		if(this.value instanceof MarkupExtension){
-//			output.append("\n");
-//			printIndent(indent + 1, output);
-//			output.append("_n.").append(this.property.token).append(" = ");
-//			ReferenceBinding rb = (ReferenceBinding) this.value.resolvedType;
-//			output.append("new (");
-//			rb.generate(output);
-//			output.append(")(");
-//			
-//			output.append("{");
-//			MarkupExtension markup = (MarkupExtension) this.value;
-//			boolean comma = false;
-//			for(Attribute mAttr : markup.attributes){
-//				if(comma){
-//					output.append(',');
-//				}
-//				
-//				output.append("\"").append(mAttr.property.token).append("\" : ");
-//				if(mAttr.property.fieldBinding.type.isEnum()){
-//					((ReferenceBinding)mAttr.property.fieldBinding.type).generate(output);
-//					output.append('.').append(((StringLiteral) mAttr.value).source);
-//				} else {
-//					if(mAttr.value instanceof StringLiteral){
-//						StringLiteral s = (StringLiteral) mAttr.value;
-//						output.append("\"").append(s.source).append("\"");
-//					}
-//				}
-//				comma = true;
-//			}
-//			output.append("}");
-//			
-//			output.append(")");
-//			output.append(".provideValue(");
-//			output.append("_n, \"").append(this.property.token).append("\")");
-//			output.append(";");
-//			continue;
-//		}
-//		
-//		if(this.property.fieldBinding != null && (((ReferenceBinding)this.property.fieldBinding.type).modifiers & ClassFileConstants.AccFunction) != 0){
-//			output.append("\n");
-//			printIndent(indent + 1, output);
-//			output.append("_n.addEventListener('").append(CharOperation.subarray(this.property.token, 2, -1)).append("', ");
-//			if(this.method != null){
-//				if(this.method.isStatic()){
-//					output.append(this.method.declaringClass.sourceName).append('.');
-//					if(this.value instanceof StringLiteral){
-//						output.append(((StringLiteral)this.value).source);
-//					}
-//				} else {
-//					output.append("__this.");
-//					if(this.value instanceof StringLiteral){
-//						output.append(((StringLiteral)this.value).source);
-//					}
-//				}
-//			} else if(this.field != null){
-//				if(this.field.isStatic()){
-//					output.append(this.field.declaringClass.sourceName).append('.');
-//					if(this.value instanceof StringLiteral){
-//						output.append(((StringLiteral)this.value).source);
-//					}
-//				} else {
-//					output.append("__this.");
-//					if(this.value instanceof StringLiteral){
-//						output.append(((StringLiteral)this.value).source);
-//					}
-//				}
-//			}
-//			output.append(", false);");
-//			
-//			continue;
-//		}
-//		
-//		output.append("\n");
-//		printIndent(indent + 1, output);
-//		output.append("_n.").append(this.property.token).append(" = ");
-//		this.value.generateExpression(scope, indent, output).append(";");
+		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.token))).append("=");
+		value.generateExpression(scope, indent, output);
 		
 		return output;
 	}
@@ -395,7 +268,8 @@ public class Attribute extends XAMLNode implements InvocationSite{
 			output.append("_n, ");
 			this.property.buildInMarkupExtension(scope, indent, output);
 			output.append(");");
-		} else if(this.property.fieldBinding != null && (((ReferenceBinding)this.property.fieldBinding.type).modifiers & ClassFileConstants.AccFunction) != 0){
+		} else if(this.property.fieldBinding != null && this.property.fieldBinding.type instanceof ReferenceBinding
+				&& (((ReferenceBinding)this.property.fieldBinding.type).modifiers & ClassFileConstants.AccFunction) != 0){
 			output.append("\n");
 			printIndent(indent + 1, output);
 			output.append("_n.addEventListener('").append(CharOperation.subarray(this.property.token, 2, -1)).append("', ");
@@ -425,7 +299,8 @@ public class Attribute extends XAMLNode implements InvocationSite{
 				}
 			}
 			output.append(", false);");
-		} else if(this.property.fieldBinding != null && this.property.fieldBinding.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_CLASS))){
+		} else if(this.property.fieldBinding != null  && this.property.fieldBinding.type instanceof ReferenceBinding
+				&& this.property.fieldBinding.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_CLASS))){
 			output.append("\n");
 			printIndent(indent + 1, output);
 			output.append("_n.");
