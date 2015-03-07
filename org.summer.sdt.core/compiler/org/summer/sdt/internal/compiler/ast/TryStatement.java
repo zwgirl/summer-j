@@ -1264,18 +1264,7 @@ public class TryStatement extends SubRoutineStatement {
 	}
 	
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		int length = this.resources.length;
-		output.append("try" + (length == 0 ? "\n" : " (")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		for (int i = 0; i < length; i++) {
-			this.resources[i].doGenerateExpression(scope, 0, output);
-			if (i != length - 1) {
-				output.append(";\n"); //$NON-NLS-1$
-				printIndent(indent + 2, output);
-			}
-		}
-		if (length > 0) {
-			output.append(")\n"); //$NON-NLS-1$
-		}
+		output.append("try" ); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		this.tryBlock.generateStatement(scope, indent, output);
 	
 		//catches
@@ -1289,7 +1278,7 @@ public class TryStatement extends SubRoutineStatement {
 		//finally
 		if (this.finallyBlock != null) {
 			output.append('\n');
-			printIndent(indent, output).append("finally\n"); //$NON-NLS-1$
+			printIndent(indent, output).append("finally"); //$NON-NLS-1$
 			this.finallyBlock.generateStatement(scope, indent, output);
 		}
 		return output;

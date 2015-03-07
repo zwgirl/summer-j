@@ -581,17 +581,15 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 //				}
 			}
 			
-			output.append('(');
+			output.append(".call(this");
 			outputArguments(scope, indent, output, false);
 			// special name&ordinal argument generation for enum constructors
 			if (targetType.erasure().id == TypeIds.T_JavaLangEnum || targetType.isEnum()) {
-				output.append("arguments[arguments.length-2], arguments[arguments.length-1]");
+				output.append(", arguments[arguments.length-2], arguments[arguments.length-1]");
 			}
 			
 			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
-				if(this.arguments != null && this.arguments.length > 0){
-					output.append(", ");
-				}
+				output.append(", ");
 				if(this.binding.overload != null){
 					output.append("\"").append(this.binding.overload).append("\"");
 				}

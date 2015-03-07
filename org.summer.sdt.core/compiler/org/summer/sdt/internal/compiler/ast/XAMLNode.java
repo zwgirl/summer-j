@@ -1,7 +1,10 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 /**
  * 
@@ -22,6 +25,30 @@ public abstract class XAMLNode extends Expression {
 	public ElementScope scope;
 	
 	protected XAMLNode(){
+	}
+	
+	/**
+	 * Resolve the type of this expression in the context of a blockScope
+	 *
+	 * @param scope
+	 * @return
+	 * 	Return the actual type of this expression after resolution
+	 */
+	public TypeBinding resolveType(BlockScope scope) {
+		// by default... subclasses should implement a better TB if required.
+		return null;
+	}
+	
+	/**
+	 * Resolve the type of this expression in the context of a classScope
+	 *
+	 * @param scope
+	 * @return
+	 * 	Return the actual type of this expression after resolution
+	 */
+	public TypeBinding resolveType(ClassScope scope) {
+		// by default... subclasses should implement a better TB if required.
+		return null;
 	}
 	
 	@Override

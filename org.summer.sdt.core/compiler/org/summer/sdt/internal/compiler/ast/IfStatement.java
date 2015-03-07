@@ -309,11 +309,15 @@ public class IfStatement extends Statement {
 		if (this.elseStatement != null) {
 			output.append('\n');
 			printIndent(indent, output);
-			output.append("else\n"); //$NON-NLS-1$
+			output.append("else"); //$NON-NLS-1$
 			if(elseStatement instanceof Block){
 				this.elseStatement.generateStatement(scope, indent, output);
+			} else if(elseStatement instanceof IfStatement){
+				output.append('\n');
+				printIndent(indent + 1, output);
+				this.elseStatement.generateExpression(scope, indent + 1, output);
 			} else {
-				this.elseStatement.generateStatement(scope, indent + 1, output);
+				this.elseStatement.generateStatement(scope, indent, output);
 			}
 		}
 		return output;

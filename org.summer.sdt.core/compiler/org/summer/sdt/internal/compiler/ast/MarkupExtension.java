@@ -38,7 +38,9 @@ public class MarkupExtension extends XAMLElement {
 
 	@Override
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		
+		if(this.resolvedType == null){
+			return output;
+		}
 		ReferenceBinding rb = (ReferenceBinding) this.resolvedType;
 		output.append("new (");
 		rb.generate(output);
@@ -64,11 +66,6 @@ public class MarkupExtension extends XAMLElement {
 	protected void printTagName(int indent, StringBuffer output) {
 		// TODO Auto-generated method stub
 		
-	}
-	
-	@Override
-	public void resolve(BlockScope scope) {
-		this.type.resolve(scope);
 	}
 
 }

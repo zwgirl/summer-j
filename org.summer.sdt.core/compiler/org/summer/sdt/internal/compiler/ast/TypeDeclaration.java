@@ -2074,7 +2074,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append(type.binding.sourceName).append(".prototype.").append("doCreate").append(" = function(parent, data) {");
 			output.append('\n');
 			printIndent(indent, output);
-			((ObjectElement)type.element).buildElement(scope, indent, output, "parent");
+			((ObjectElement)type.element).buildElement(scope, indent, output, "parent", "this");
 			output.append('\n');
 			printIndent(indent, output);
 			output.append("};");
@@ -2082,7 +2082,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append('\n');
 			printIndent(indent, output);
 			output.append(type.binding.sourceName).append(".prototype.").append("createRoot").append(" = function(parent) {");
-			((ObjectElement)type.element).buildRootElement(scope, indent, output, "parent");
+			((ObjectElement)type.element).buildRootElement(scope, indent, output, "parent", "this");
 			output.append('\n');
 			printIndent(indent + 1, output);
 			output.append("return _n;");
@@ -2095,7 +2095,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			printIndent(indent, output);
 			output.append(type.binding.sourceName).append(".prototype.").append("createChild").append(" = function(parent) {");
 			if(type.element.children != null && type.element.children.length > 0){
-				type.element.buildDOMScript(scope, indent + 1, output, "parent");
+				type.element.buildDOMScript(scope, indent + 1, output, "parent", "this");
 			}
 			output.append('\n');
 			printIndent(indent, output);
@@ -2132,7 +2132,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	}
 
 	private void generateMemberType(Scope scope, int indent, StringBuffer output, TypeDeclaration memberType){
-		output.append("(function(){").append('\n');
+		output.append("(function(){");
 		generateClassContent(memberType, indent+1, output);
 		output.append('\n');
 		printIndent(indent+1, output);

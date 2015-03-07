@@ -1381,6 +1381,9 @@ public abstract class Scope {
 				}
 				keepLooking = false;
 				if (field.canBeSeenBy(receiverType, invocationSite, this)) {
+					if((field.modifiers & ClassFileConstants.AccProperty) != 0){   //cym 2015-03-06
+						return field;
+					}
 					if (visibleField == null)
 						visibleField = field;
 					else

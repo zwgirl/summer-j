@@ -35,28 +35,14 @@ public class ObjectElement extends XAMLElement {
 		// TODO Auto-generated method stub
 	}
 
-	@Override
-	public void resolve(BlockScope scope) {
-
-	}
-	
-	@Override
-	public void resolve(ClassScope scope) {
-		// TODO Auto-generated method stub
-		super.resolve(scope);
-
-	}
-
 	private static final char[] body = "body".toCharArray();
 	private static final char[] head = "head".toCharArray();
 	private static final char[] meta = "meta".toCharArray();
 	private static final char[] TEXT = "Text".toCharArray();
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append('<').append(type.getLastToken());
-		Attribute template = null;
 		for(Attribute attr : this.attributes){
 			if((attr.bits & ASTNode.IsTemplate) != 0){
-				template = attr;
 				continue;
 			}
 			output.append(" ");
@@ -78,7 +64,7 @@ public class ObjectElement extends XAMLElement {
 			printIndent(indent, output);
 			output.append("var _a = Node.prototype.appendChild;");
 			
-			buildDOMScript(scope, indent + 1, output, "document.body");
+			buildDOMScript(scope, indent + 1, output, "document.body", "__this");
 			output.append("</script>");
 		} else if(CharOperation.endsWith(type.getLastToken(), head)) {
 			output.append('>');
@@ -130,9 +116,7 @@ public class ObjectElement extends XAMLElement {
 		return output;
 	}
 	
-	private static final char[] TEMPLATE = "template".toCharArray();
-	private static final char[] ITEM_TEMPLATE = "itemTemplate".toCharArray();
-	protected StringBuffer buildDOMScript(Scope scope, int indent, StringBuffer output, String parent){
+	protected StringBuffer buildDOMScript(Scope scope, int indent, StringBuffer output, String parent, String context){
 		//
 		output.append("\n");
 		printIndent(indent, output);
@@ -155,7 +139,7 @@ public class ObjectElement extends XAMLElement {
 			} else {
 				ObjectElement oe = (ObjectElement) child;
 				if(oe.name != null){
-					output.append("var _n = __this[");
+					output.append("var _n = ").append("this[");
 					oe.name.value.doGenerateExpression(scope, indent, output);
 					output.append("]"); 
 				} else {
@@ -176,27 +160,28 @@ public class ObjectElement extends XAMLElement {
 					attr.buildContent(scope, indent, output, "_n");
 				}
 				if(child.children != null && child.children.length > 0){
-					child.buildDOMScript(scope, indent + 1, output, "_n");
+					child.buildDOMScript(scope, indent + 1, output, "_n", context);
 				}
 			}
 		}
 			
 		output.append("\n");
 		printIndent(indent, output);
-		output.append("})(").append(parent).append(");");
+		output.append("}).call(").append(context).append(", ").append(parent).append(");");
 		return output;
 	}
 	
-	public void buildElement(Scope scope, int indent, StringBuffer output, String parent){
+	//used in create method of template
+	public void buildElement(Scope scope, int indent, StringBuffer output, String parent, String context){
 		output.append("\n");
 		printIndent(indent + 1, output);
-//		if(this.name != null){
-//			output.append("var _n = __this[");
-//			oe.name.value.doGenerateExpression(scope, indent, output);
-//			output.append("]"); 
-//		} else {
+		if(this.name != null){
+			output.append("var _n = ").append("this[");
+			this.name.value.doGenerateExpression(scope, indent, output);
+			output.append("]"); 
+		} else {
 			output.append("var _n"); 
-//		}
+		}
 		
 		output.append(" = _c(\"").append(this.type.getLastToken()).append("\");");
 		
@@ -208,20 +193,21 @@ public class ObjectElement extends XAMLElement {
 		}
 	
 		if(this.children != null && this.children.length > 0){
-			this.buildDOMScript(scope, indent + 1, output, "_n");
+			this.buildDOMScript(scope, indent + 1, output, "_n", context);
 		}
 	}
 	
-	public void buildRootElement(Scope scope, int indent, StringBuffer output, String parent){
+	//used in createRoot method of itemTemplate
+	public void buildRootElement(Scope scope, int indent, StringBuffer output, String parent, String context){
 		output.append("\n");
 		printIndent(indent + 1, output);
-//		if(this.name != null){
-//			output.append("var _n = __this[");
-//			oe.name.value.doGenerateExpression(scope, indent, output);
-//			output.append("]"); 
-//		} else {
+		if(this.name != null){
+			output.append("var _n = ").append(context).append("[");
+			this.name.value.doGenerateExpression(scope, indent, output);
+			output.append("]"); 
+		} else {
 			output.append("var _n"); 
-//		}
+		}
 		
 		output.append(" = _c(\"").append(this.type.getLastToken()).append("\");");
 		
