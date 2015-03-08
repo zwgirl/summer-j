@@ -668,69 +668,6 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 				}
 			}
 			
-			if(this.selector == NO_SELECTOR){
-//				TypeBinding receiverType = this.receiver.resolveType(scope);
-				if(this.actualReceiverType != null){
-					if(this.receiver instanceof LambdaExpression){
-						LambdaExpression lambda = (LambdaExpression) this.receiver;
-						if(this.expectedType != null){
-							lambda.setExpectedType(expectedType);
-							return lambda.resolveType(scope);
-						}
-						return scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION); 
-					}
-					if(this.actualReceiverType.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
-						return this.resolvedType = ((ReferenceBinding)this.actualReceiverType).returnType();
-					}
-				}
-//				scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
-			} else {
-				LocalVariableBinding local = scope.findVariable(this.selector);
-				if(local != null && local.isValidBinding()){
-					if(local.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
-						this.otherBinding = local;
-						this.functionType = (ReferenceBinding) local.type;
-						return this.resolvedType = this.functionType.returnType();
-					} else {
-//						scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
-					}
-				}
-				
-				FieldBinding field = scope.findField(scope.enclosingSourceType(), this.selector, this, true);
-				if(field != null && field.isValidBinding()){
-					if(field.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
-						this.otherBinding = field;
-						this.functionType = (ReferenceBinding) field.type;
-						return this.resolvedType = this.functionType.returnType();
-					} else {
-//						scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
-					}
-				}
-			}
-			
-//			// resolve type arguments (for generic constructor call)
-//			if (this.typeArguments != null) {
-//				int length = this.typeArguments.length;
-//				this.argumentsHaveErrors = sourceLevel < ClassFileConstants.JDK1_5; // typeChecks all arguments
-//				this.genericTypeArguments = new TypeBinding[length];
-//				for (int i = 0; i < length; i++) {
-//					TypeReference typeReference = this.typeArguments[i];
-//					if ((this.genericTypeArguments[i] = typeReference.resolveType(scope, true /* check bounds*/)) == null) {
-//						this.argumentsHaveErrors = true;
-//					}
-//					if (this.argumentsHaveErrors && typeReference instanceof Wildcard) {
-//						scope.problemReporter().illegalUsageOfWildcard(typeReference);
-//					}
-//				}
-//				if (this.argumentsHaveErrors) {
-//					if (this.arguments != null) { // still attempt to resolve arguments
-//						for (int i = 0, max = this.arguments.length; i < max; i++) {
-//							this.arguments[i].resolveType(scope);
-//						}
-//					}
-//					return null;
-//				}
-//			}
 			// will check for null after args are resolved
 			if (this.arguments != null) {
 				this.argumentsHaveErrors = false; // typeChecks all arguments
@@ -780,6 +717,132 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 					return null;
 				}
 			}
+			
+			if(this.selector == NO_SELECTOR){
+//				TypeBinding receiverType = this.receiver.resolveType(scope);
+				if(this.actualReceiverType != null){
+					if(this.receiver instanceof LambdaExpression){
+						LambdaExpression lambda = (LambdaExpression) this.receiver;
+						if(this.expectedType != null){
+							lambda.setExpectedType(expectedType);
+							return lambda.resolveType(scope);
+						}
+						return scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION); 
+					}
+					if(this.actualReceiverType.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
+						return this.resolvedType = ((ReferenceBinding)this.actualReceiverType).returnType();
+					}
+				}
+//				scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
+			} else {
+				LocalVariableBinding local = scope.findVariable(this.selector);
+				if(local != null && local.isValidBinding()){
+					if(local.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
+						this.otherBinding = local;
+						this.functionType = (ReferenceBinding) local.type;
+						return this.resolvedType = this.functionType.returnType();
+					} else {
+//						scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
+					}
+				}
+				
+				if(this.actualReceiverType != null){
+					FieldBinding field = scope.findField(this.actualReceiverType, this.selector, this, true);
+					if(field != null && field.isValidBinding()){
+						if(field.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
+							this.otherBinding = field;
+							this.functionType = (ReferenceBinding) field.type;
+							return this.resolvedType = this.functionType.returnType();
+						} else {
+//							scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
+						}
+					}
+				} else {
+					FieldBinding field = scope.findField(scope.enclosingSourceType(), this.selector, this, true);
+					if(field != null && field.isValidBinding()){
+						if(field.type.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_FUNCTION))){
+							this.otherBinding = field;
+							this.functionType = (ReferenceBinding) field.type;
+							return this.resolvedType = this.functionType.returnType();
+						} else {
+	//						scope.problemReporter().unnecessaryCast((CastExpression)this.receiver);
+						}
+					}
+				}
+			}
+			
+//			// resolve type arguments (for generic constructor call)
+//			if (this.typeArguments != null) {
+//				int length = this.typeArguments.length;
+//				this.argumentsHaveErrors = sourceLevel < ClassFileConstants.JDK1_5; // typeChecks all arguments
+//				this.genericTypeArguments = new TypeBinding[length];
+//				for (int i = 0; i < length; i++) {
+//					TypeReference typeReference = this.typeArguments[i];
+//					if ((this.genericTypeArguments[i] = typeReference.resolveType(scope, true /* check bounds*/)) == null) {
+//						this.argumentsHaveErrors = true;
+//					}
+//					if (this.argumentsHaveErrors && typeReference instanceof Wildcard) {
+//						scope.problemReporter().illegalUsageOfWildcard(typeReference);
+//					}
+//				}
+//				if (this.argumentsHaveErrors) {
+//					if (this.arguments != null) { // still attempt to resolve arguments
+//						for (int i = 0, max = this.arguments.length; i < max; i++) {
+//							this.arguments[i].resolveType(scope);
+//						}
+//					}
+//					return null;
+//				}
+//			}
+//			// will check for null after args are resolved
+//			if (this.arguments != null) {
+//				this.argumentsHaveErrors = false; // typeChecks all arguments
+//				int length = this.arguments.length;
+//				this.argumentTypes = new TypeBinding[length];
+//				for (int i = 0; i < length; i++){
+//					Expression argument = this.arguments[i];
+//					if (this.arguments[i].resolvedType != null) 
+//						scope.problemReporter().genericInferenceError("Argument was unexpectedly found resolved", this); //$NON-NLS-1$
+//					if (argument instanceof CastExpression) {
+//						argument.bits |= ASTNode.DisableUnnecessaryCastCheck; // will check later on
+//						this.argsContainCast = true;
+//					}
+//					argument.setExpressionContext(INVOCATION_CONTEXT);
+//					if ((this.argumentTypes[i] = argument.resolveType(scope)) == null){
+//						this.argumentsHaveErrors = true;
+//					}
+//				}
+//				if (this.argumentsHaveErrors) {
+//					if (this.actualReceiverType instanceof ReferenceBinding) {
+//						//  record a best guess, for clients who need hint about possible method match
+//						TypeBinding[] pseudoArgs = new TypeBinding[length];
+//						for (int i = length; --i >= 0;)
+//							pseudoArgs[i] = this.argumentTypes[i] == null ? TypeBinding.NULL : this.argumentTypes[i]; // replace args with errors with null type
+//	
+//						this.binding = this.receiver.isImplicitThis() ?
+//									scope.getImplicitMethod(this.selector, pseudoArgs, this) :
+//										scope.findMethod((ReferenceBinding) this.actualReceiverType, this.selector, pseudoArgs, this, false);
+//	
+//						if (this.binding != null && !this.binding.isValidBinding()) {
+//							MethodBinding closestMatch = ((ProblemMethodBinding)this.binding).closestMatch;
+//							// record the closest match, for clients who may still need hint about possible method match
+//							if (closestMatch != null) {
+//								if (closestMatch.original().typeVariables != Binding.NO_TYPE_VARIABLES) { // generic method
+//									// shouldn't return generic method outside its context, rather convert it to raw method (175409)
+//									closestMatch = scope.environment().createParameterizedGenericMethod(closestMatch.original(), (RawTypeBinding)null);
+//								}
+//								this.binding = closestMatch;
+//								MethodBinding closestMatchOriginal = closestMatch.original();
+//								if (closestMatchOriginal.isOrEnclosedByPrivateType() && !scope.isDefinedInMethod(closestMatchOriginal)) {
+//									// ignore cases where method is used from within inside itself (e.g. direct recursions)
+//									closestMatchOriginal.modifiers |= ExtraCompilerModifiers.AccLocallyUsed;
+//								}
+//							}
+//						}
+//					}
+//					return null;
+//				}
+//			}
 			if (this.actualReceiverType == null) {
 				return null;
 			}
