@@ -140,7 +140,7 @@ public class PCDATA  extends XAMLElement {
 	}
 	
 	@Override
-	public StringBuffer generateHTML(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateStaticHTML(Scope scope, int indent, StringBuffer output) {
 		return output.append(source);
 	}
 

@@ -53,7 +53,7 @@ public class MarkupExtension extends XAMLElement {
 				output.append(", ");
 			}
 			
-			attribute.buildPair(scope, indent, output);
+			attribute.buildOptionPart(scope, indent, output);
 			comma = true;
 		}
 		output.append("}");

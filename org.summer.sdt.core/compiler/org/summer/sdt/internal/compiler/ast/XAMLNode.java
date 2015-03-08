@@ -63,7 +63,11 @@ public abstract class XAMLNode extends Expression {
 		return this.doGenerateExpression(scope, indent, output);
 	}
 	
-	public StringBuffer generateHTML(Scope initializerScope, int indent, StringBuffer output) {
+	public StringBuffer generateStaticHTML(Scope initializerScope, int indent, StringBuffer output) {
+		return output;
+	}
+	
+	public StringBuffer generateDynamicHTML(Scope initializerScope, int indent, StringBuffer output) {
 		return output;
 	}
 }

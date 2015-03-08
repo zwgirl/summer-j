@@ -1810,7 +1810,7 @@ public class ProblemReporter extends ProblemHandler {
 	 * @param type
 	 * @param fieldDecl
 	 */
-	public void duplicateNamedElementInType(XAMLElement type, PropertyReference fieldDecl) {
+	public void duplicateNamedElementInType(PropertyReference fieldDecl) {
 		this.handle(
 			IProblem.DuplicateField,
 			new String[] {new String("element"), new String(fieldDecl.token)},

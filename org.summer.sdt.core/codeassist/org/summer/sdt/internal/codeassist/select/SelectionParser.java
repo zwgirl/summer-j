@@ -366,10 +366,11 @@ public class SelectionParser extends AssistParser {
 		if(CharOperation.equals(attr.property.token, Attribute.NAME)){
 			ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr1];
 			attr.bits |= ASTNode.IsNamedAttribute;
-			if(element.name != null){
-				problemReporter().duplicateNamedElementInType(element, element.name.property);
+			if((attr.bits & ASTNode.IsNamedAttribute) != 0){
+				problemReporter().duplicateNamedElementInType(attr.property);
+			} else {
+				attr.bits |= ASTNode.IsNamedAttribute;
 			}
-			element.name = attr;
 			StringLiteral str = (StringLiteral) attr.value;
 			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
 			fieldDecl.type = element.type;

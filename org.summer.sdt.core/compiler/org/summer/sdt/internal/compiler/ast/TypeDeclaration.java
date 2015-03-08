@@ -738,7 +738,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	}
 	
 	private void buildHTML(XAMLElement element, Scope scope, int indent, StringBuffer output) {
-		element.generateHTML(initializerScope, indent, output);
+		element.generateStaticHTML(initializerScope, indent, output);
 	}
 
 	public void generateJavascript(CompilationUnitScope unitScope) {

@@ -73,7 +73,7 @@ public class CommonAttribute extends Attribute{
 		return output;
 	}
 	
-	public StringBuffer generateHTML(Scope initializerScope, int indent, StringBuffer output) {
+	public StringBuffer generateStaticHTML(Scope initializerScope, int indent, StringBuffer output) {
 		return output;
 	}
 }

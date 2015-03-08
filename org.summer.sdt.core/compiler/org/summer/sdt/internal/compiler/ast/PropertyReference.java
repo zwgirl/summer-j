@@ -86,85 +86,6 @@ public class PropertyReference extends Expression{
 	public StringBuffer printExpression(int indent, StringBuffer output) {
 		return output.append('.').append(this.token);
 	}
-
-//	public TypeBinding resolveType(ElementScope scope) {
-//		// Answer the signature type of the field.
-//		// constants are propaged when the field is final
-//		// and initialized with a (compile time) constant
-//	
-//		//always ignore receiver cast, since may affect constant pool reference
-//		this.actualReceiverType = scope.context.resolvedType;
-//		if (this.actualReceiverType == null) {
-//			this.constant = Constant.NotAConstant;
-//			return null;
-//		}
-//		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
-//		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.token, null);
-//		
-//		//cym 2012-02-12
-//		if((fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
-//			scope.problemReporter().invalidProperty(this, this.actualReceiverType);   //TODO need more clear  //cym 2015-02-27
-//		}
-//		if (!fieldBinding.isValidBinding()) {
-//			this.constant = Constant.NotAConstant;
-//			if (this.actualReceiverType instanceof ProblemReferenceBinding) {
-//				// problem already got signaled on receiver, do not report secondary problem
-//				return null;
-//			}
-//			// https://bugs.eclipse.org/bugs/show_bug.cgi?id=245007 avoid secondary errors in case of
-//			// missing super type for anonymous classes ... 
-//			ReferenceBinding declaringClass = fieldBinding.declaringClass;
-//			boolean avoidSecondary = declaringClass != null &&
-//									 declaringClass.isAnonymousType() &&
-//									 declaringClass.superclass() instanceof MissingTypeBinding;
-//			if (!avoidSecondary) {
-//				scope.problemReporter().invalidProperty(this, this.actualReceiverType);
-//			}
-//			if (fieldBinding instanceof ProblemFieldBinding) {
-//				ProblemFieldBinding problemFieldBinding = (ProblemFieldBinding) fieldBinding;
-//				FieldBinding closestMatch = problemFieldBinding.closestMatch;
-//				switch(problemFieldBinding.problemId()) {
-//					case ProblemReasons.InheritedNameHidesEnclosingName :
-//					case ProblemReasons.NotVisible :
-//					case ProblemReasons.NonStaticReferenceInConstructorInvocation :
-//					case ProblemReasons.NonStaticReferenceInStaticContext :
-//						if (closestMatch != null) {
-//							fieldBinding = closestMatch;
-//						}
-//				}
-//			}
-//			if (!fieldBinding.isValidBinding()) {
-//				return null;
-//			}
-//		}
-//		// handle indirect inheritance thru variable secondary bound
-//		// receiver may receive generic cast, as part of implicit conversion
-//		TypeBinding oldReceiverType = this.actualReceiverType;
-//		this.actualReceiverType = this.actualReceiverType.getErasureCompatibleType(fieldBinding.declaringClass);
-////		this.receiver.computeConversion(scope, this.actualReceiverType, this.actualReceiverType);
-////		if (TypeBinding.notEquals(this.actualReceiverType, oldReceiverType) && TypeBinding.notEquals(this.receiver.postConversionType(scope), this.actualReceiverType)) { // record need for explicit cast at codegen since receiver could not handle it
-////			this.bits |= NeedReceiverGenericCast;
-////		}
-//		if (isFieldUseDeprecated(fieldBinding, scope, this.bits)) {
-//			scope.problemReporter().deprecatedField(fieldBinding, this);
-//		}
-//		this.constant = Constant.NotAConstant;
-//		if (fieldBinding.isStatic()) {
-//			scope.problemReporter().indirectAccessToStaticField(this, fieldBinding);
-//		}
-//		TypeBinding fieldType = fieldBinding.type;
-//		if (fieldType != null) {
-//			if ((this.bits & ASTNode.IsStrictlyAssigned) == 0) {
-//				fieldType = fieldType.capture(scope, this.sourceStart, this.sourceEnd);	// perform capture conversion if read access
-//			}
-//			this.resolvedType = fieldType;
-//			if ((fieldType.tagBits & TagBits.HasMissingType) != 0) {
-//				scope.problemReporter().invalidType(this, fieldType);
-//				return null;
-//			}
-//		}
-//		return fieldType;
-//	}
 	
 	public TypeBinding resolveType(BlockScope scope){
 		return interalResolveType((ElementScope) scope);
@@ -282,13 +203,14 @@ public class PropertyReference extends Expression{
 		return null;
 	}
 
-
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		if(this.receiver instanceof PropertyReference){
 			output.append(((PropertyReference)this.receiver).token);
 			output.append('.').append(this.token);
-		} else if(this.receiver == null){
+		} else if(this.receiver instanceof TypeReference){
+			output.append(this.token);
+		} else {
 			output.append(this.token);
 		}
 		return output;
