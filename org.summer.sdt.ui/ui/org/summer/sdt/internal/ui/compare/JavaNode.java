@@ -36,6 +36,8 @@ class JavaNode extends DocumentRangeNode implements ITypedElement {
 	public static final int INIT= 9;
 	public static final int CONSTRUCTOR= 10;
 	public static final int METHOD= 11;
+	
+	public static final int FUNCTION= 12;   //cym 2015-03-09
 
 	private int fInitializerCount= 1;
 
@@ -159,7 +161,11 @@ class JavaNode extends DocumentRangeNode implements ITypedElement {
 		case ANNOTATION:
 			id= JavaCompareUtilities.getAnnotationImageDescriptor();
 			break;
+		case FUNCTION:  //cym 2015-03-09
+			id= JavaCompareUtilities.getFunctionImageDescriptor();
+			break;
 		}
+
 		return JavaPlugin.getImageDescriptorRegistry().get(id);
 	}
 

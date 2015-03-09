@@ -120,7 +120,12 @@ public class JavaCompareUtilities {
 	static ImageDescriptor getAnnotationImageDescriptor() {
 		return JavaPluginImages.DESC_OBJS_ANNOTATION;
 	}
-
+	
+	//cym 2015-03-09
+	static ImageDescriptor getFunctionImageDescriptor() {
+		return JavaPluginImages.DESC_OBJS_FUNCTION;
+	}
+	
 	static ImageDescriptor getImageDescriptor(IMember element) {
 		int t= element.getElementType();
 		if (t == IJavaElement.TYPE) {

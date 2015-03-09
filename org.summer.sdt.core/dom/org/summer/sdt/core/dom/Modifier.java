@@ -306,6 +306,9 @@ public final class Modifier extends ASTNode implements IExtendedModifier {
 	 * @since 2.0
 	 */
 	public static final int VOLATILE = 0x0040;
+	
+	//cym 2015-03-09
+	public static final int PROPERTY = 0x2000;
 
 	/**
 	 * "default" modifier constant (bit mask) (added in JLS8 API).

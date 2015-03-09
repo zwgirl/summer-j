@@ -91,6 +91,13 @@ public final class Flags {
 	 * @since 2.0
 	 */
 	public static final int AccInterface = ClassFileConstants.AccInterface;
+	
+	//cym 2015-03-09
+	/**
+	 * Interface property flag. See The Java Virtual Machine Specification for more details.
+	 * @since 2.0
+	 */
+	public static final int AccFunction = ClassFileConstants.AccFunction;
 	/**
 	 * Abstract property flag. See The Java Virtual Machine Specification for more details.
 	 * @since 2.0
@@ -215,6 +222,18 @@ public final class Flags {
 	 */
 	public static boolean isInterface(int flags) {
 		return (flags & AccInterface) != 0;
+	}
+	
+	//cym 2015-03-09
+	/**
+	 * Returns whether the given integer includes the <code>interface</code> modifier.
+	 *
+	 * @param flags the flags
+	 * @return <code>true</code> if the <code>interface</code> modifier is included
+	 * @since 2.0
+	 */
+	public static boolean isFunction(int flags) {
+		return (flags & AccFunction) != 0;
 	}
 	/**
 	 * Returns whether the given integer includes the <code>native</code> modifier.

@@ -80,7 +80,18 @@ public class JavaPluginImages {
 	public static final String IMG_OBJS_INNER_CLASS_DEFAULT= NAME_PREFIX + "innerclass_default_obj.gif"; //$NON-NLS-1$
 	public static final String IMG_OBJS_INNER_CLASS_PROTECTED= NAME_PREFIX + "innerclass_protected_obj.gif"; //$NON-NLS-1$
 	public static final String IMG_OBJS_INNER_CLASS_PRIVATE= NAME_PREFIX + "innerclass_private_obj.gif"; //$NON-NLS-1$
-
+	
+	//cym 2015-03-09
+	public static final String IMG_OBJS_FUNCTION= NAME_PREFIX + "function_obj.gif"; 			//$NON-NLS-1$
+	public static final String IMG_OBJS_FUNCTIONALT= NAME_PREFIX + "functionfo_obj.gif"; 			//$NON-NLS-1$
+	public static final String IMG_OBJS_FUNCTION_DEFAULT= NAME_PREFIX + "function_default_obj.gif"; 			//$NON-NLS-1$
+	
+	public static final String IMG_OBJS_INNER_FUNCTION_PUBLIC= NAME_PREFIX + "innerfunction_public_obj.gif"; //$NON-NLS-1$
+	public static final String IMG_OBJS_INNER_FUNCTION_DEFAULT= NAME_PREFIX + "innerfunction_default_obj.gif"; //$NON-NLS-1$
+	public static final String IMG_OBJS_INNER_FUNCTION_PROTECTED= NAME_PREFIX + "innerfunction_protected_obj.gif"; //$NON-NLS-1$
+	public static final String IMG_OBJS_INNER_FUNCTION_PRIVATE= NAME_PREFIX + "innerfunction_private_obj.gif"; //$NON-NLS-1$
+	//cym 2015-03-09
+	
 	public static final String IMG_OBJS_INTERFACE= NAME_PREFIX + "int_obj.gif"; 			//$NON-NLS-1$
 	public static final String IMG_OBJS_INTERFACEALT= NAME_PREFIX + "intf_obj.gif"; 			//$NON-NLS-1$
 	public static final String IMG_OBJS_INTERFACE_DEFAULT= NAME_PREFIX + "int_default_obj.gif"; 		//$NON-NLS-1$
@@ -227,7 +238,19 @@ public class JavaPluginImages {
 	public static final ImageDescriptor DESC_OBJS_INNER_CLASS_PRIVATE= createManagedFromKey(T_OBJ, IMG_OBJS_INNER_CLASS_PRIVATE);
 
 	public static final ImageDescriptor DESC_OBJS_CLASSALT= createManagedFromKey(T_OBJ, IMG_OBJS_CLASSALT);
+	
+	//cym 2015-03-09
+	public static final ImageDescriptor DESC_OBJS_FUNCTION= createManagedFromKey(T_OBJ, IMG_OBJS_FUNCTION);
+	public static final ImageDescriptor DESC_OBJS_FUNCTION_DEFAULT= createManagedFromKey(T_OBJ, IMG_OBJS_FUNCTION_DEFAULT);
 
+	public static final ImageDescriptor DESC_OBJS_INNER_FUNCTION_PUBLIC= createManagedFromKey(T_OBJ, IMG_OBJS_INNER_FUNCTION_PUBLIC);
+	public static final ImageDescriptor DESC_OBJS_INNER_FUNCTION_DEFAULT= createManagedFromKey(T_OBJ, IMG_OBJS_INNER_FUNCTION_DEFAULT);
+	public static final ImageDescriptor DESC_OBJS_INNER_FUNCTION_PROTECTED= createManagedFromKey(T_OBJ, IMG_OBJS_INNER_FUNCTION_PROTECTED);
+	public static final ImageDescriptor DESC_OBJS_INNER_FUNCTION_PRIVATE= createManagedFromKey(T_OBJ, IMG_OBJS_INNER_FUNCTION_PRIVATE);
+
+	public static final ImageDescriptor DESC_OBJS_FUNCTIONALT= createManagedFromKey(T_OBJ, IMG_OBJS_FUNCTIONALT);
+	//cym 2015-03-09 end
+	
 	public static final ImageDescriptor DESC_OBJS_INTERFACE= createManagedFromKey(T_OBJ, IMG_OBJS_INTERFACE);
 	public static final ImageDescriptor DESC_OBJS_INTERFACE_DEFAULT= createManagedFromKey(T_OBJ, IMG_OBJS_INTERFACE_DEFAULT);
 

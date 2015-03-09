@@ -480,6 +480,14 @@ public class JavaElementImageProvider {
 				return getInnerInterfaceImageDescriptor(isInInterfaceOrAnnotation, flags);
 			}
 			return getInterfaceImageDescriptor(flags);
+		}  else if (Flags.isFunction(flags)) {  //cym 2015-03-09
+			if (useLightIcons) {
+				return JavaPluginImages.DESC_OBJS_FUNCTIONALT;
+			}
+			if (isInner) {
+				return getInnerFunctionImageDescriptor(isInInterfaceOrAnnotation, flags);
+			}
+			return getFunctionImageDescriptor(flags);
 		} else {
 			if (useLightIcons) {
 				return JavaPluginImages.DESC_OBJS_CLASSALT;
@@ -513,6 +521,18 @@ public class JavaElementImageProvider {
 			return JavaPluginImages.DESC_OBJS_INNER_CLASS_PROTECTED;
 		else
 			return JavaPluginImages.DESC_OBJS_INNER_CLASS_DEFAULT;
+	}
+	
+	//cym 2015-03-09
+	private static ImageDescriptor getInnerFunctionImageDescriptor(boolean isInInterfaceOrAnnotation, int flags) {
+		if (Flags.isPublic(flags) || isInInterfaceOrAnnotation)
+			return JavaPluginImages.DESC_OBJS_INNER_FUNCTION_PUBLIC;
+		else if (Flags.isPrivate(flags))
+			return JavaPluginImages.DESC_OBJS_INNER_FUNCTION_PRIVATE;
+		else if (Flags.isProtected(flags))
+			return JavaPluginImages.DESC_OBJS_INNER_FUNCTION_PROTECTED;
+		else
+			return JavaPluginImages.DESC_OBJS_INNER_FUNCTION_DEFAULT;
 	}
 
 	private static ImageDescriptor getEnumImageDescriptor(int flags) {
@@ -556,6 +576,14 @@ public class JavaElementImageProvider {
 			return JavaPluginImages.DESC_OBJS_INTERFACE;
 		else
 			return JavaPluginImages.DESC_OBJS_INTERFACE_DEFAULT;
+	}
+	
+	//cym 2015-03-09
+	private static ImageDescriptor getFunctionImageDescriptor(int flags) {
+		if (Flags.isPublic(flags) || Flags.isProtected(flags) || Flags.isPrivate(flags))
+			return JavaPluginImages.DESC_OBJS_FUNCTION;
+		else
+			return JavaPluginImages.DESC_OBJS_FUNCTION_DEFAULT;
 	}
 
 	private static ImageDescriptor getInnerInterfaceImageDescriptor(boolean isInInterfaceOrAnnotation, int flags) {
