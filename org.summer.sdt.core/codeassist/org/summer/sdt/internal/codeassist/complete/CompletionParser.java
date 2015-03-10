@@ -2179,10 +2179,11 @@ public class CompletionParser extends AssistParser {
 		if(CharOperation.equals(attribute.property.token, Attribute.NAME)){
 			ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr1];
 			attribute.bits |= ASTNode.IsNamedAttribute;
-			if(element.name != null){
-				problemReporter().duplicateNamedElementInType(element, element.name.property);
+			if((attribute.bits & ASTNode.IsNamedAttribute) != 0){
+				problemReporter().duplicateNamedElementInType(attribute.property);
+			} else {
+				attribute.bits |= ASTNode.IsNamedAttribute;
 			}
-			element.name = attribute;
 			StringLiteral str = (StringLiteral) attribute.value;
 			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
 			fieldDecl.type = element.type;

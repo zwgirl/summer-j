@@ -210,7 +210,7 @@ public IClassFile[] getClassFiles() throws JavaModelException {
 }
 /**
  * @see IPackageFragment#getCompilationUnit(String)
- * @exception IllegalArgumentException if the name does not end with ".java"
+ * @exception IllegalArgumentException if the name does not end with ".lark"
  */
 public ICompilationUnit getCompilationUnit(String cuName) {
 	if (!org.summer.sdt.internal.core.util.Util.isJavaLikeFileName(cuName)) {

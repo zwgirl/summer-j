@@ -1801,7 +1801,7 @@
    </extension>
    
 <!-- =========================================================================== -->
-<!-- Java Search Page                                                            -->
+<!-- Lark Search Page                                                            -->
 <!-- =========================================================================== -->
    <extension
          point="org.eclipse.search.searchPages">
@@ -1861,7 +1861,7 @@
    
   
 <!-- =========================================================================== -->
-<!-- Java Compare                                                                -->
+<!-- Lark Compare                                                                -->
 <!-- =========================================================================== -->
    <extension
          point="org.eclipse.ui.themes">
@@ -2049,9 +2049,9 @@
             id="org.summer.sdt.internal.ui.compare.JavaStructureDiffViewerCreator">
       </viewer>
    </extension>
-<!-- End Java Compare -->
+<!-- End Lark Compare -->
 <!-- =========================================================================== -->
-<!-- Java Launching and debugging                                                -->
+<!-- Lark Launching and debugging                                                -->
 <!-- =========================================================================== -->
    <extension
          point="org.eclipse.ui.ide.resourceFilters">

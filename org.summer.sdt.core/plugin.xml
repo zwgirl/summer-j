@@ -59,7 +59,7 @@
 	schema="schema/compilationParticipant.exsd"/>
 
 <!-- =================================================================================== -->
-<!-- Extension Point: Java 6 Annotation Processor Manager                                -->
+<!-- Extension Point: Lark Annotation Processor Manager                                -->
 <!-- =================================================================================== -->
 
 <extension-point name="%annotationProcessorManagerName" 
@@ -67,7 +67,7 @@
 	schema="schema/annotationProcessorManager.exsd"/>
 
 <!-- =================================================================================== -->
-<!-- Extension: Java Nature                                                              -->
+<!-- Extension: JaLarkature                                                              -->
 <!-- =================================================================================== -->
 
 <extension 
@@ -82,7 +82,7 @@
 
 
 <!-- =================================================================================== -->
-<!-- Extension: Java Builder                                                             -->
+<!-- Extension: Lark Builder                                                             -->
 <!-- =================================================================================== -->
 
 <extension 
@@ -96,7 +96,7 @@
 </extension>
 
 <!-- =================================================================================== -->
-<!-- Extension: Java Problem                                                             -->
+<!-- Extension: Lark Problem                                                             -->
 <!-- =================================================================================== -->
 <extension id="problem" point="org.eclipse.core.resources.markers" name="%javaProblemName">
 	<super type="org.eclipse.core.resources.problemmarker"/>
@@ -109,7 +109,7 @@
 </extension>   
 
 <!-- =================================================================================== -->
-<!-- Extension: Java Buildpath Problem                                                   -->
+<!-- Extension: Lark Buildpath Problem                                                   -->
 <!-- =================================================================================== -->
 <extension id="buildpath_problem" point="org.eclipse.core.resources.markers" name="%buildPathProblemName">
 	<super type="org.eclipse.core.resources.problemmarker"/>
@@ -121,7 +121,7 @@
 </extension>   
 
 <!-- =================================================================================== -->
-<!-- Extension: Java Transient Problem                                                   -->
+<!-- Extension: Lark Transient Problem                                                   -->
 <!-- =================================================================================== -->
 <extension id="transient_problem" point="org.eclipse.core.resources.markers" name="%transientJavaProblemName">
 	<super type="org.eclipse.core.resources.textmarker"/>
@@ -132,7 +132,7 @@
 </extension>
 
 <!-- =================================================================================== -->
-<!-- Extension: Java Task                                                                -->
+<!-- Extension: Lark Task                                                                -->
 <!-- =================================================================================== -->
 <extension id="task" name="%javaTaskName" point="org.eclipse.core.resources.markers">
     <super type="org.eclipse.core.resources.taskmarker"/> 
@@ -177,7 +177,7 @@
    </extension>
 
 <!-- =================================================================================== -->
-<!-- Extension: Java File Types                                                          -->
+<!-- Extension: Lark File Types                                                          -->
 <!-- =================================================================================== -->
 <extension point="org.eclipse.team.core.fileTypes">
 	<fileTypes extension="java" type="text"/>
@@ -190,7 +190,7 @@
 </extension>
 
 <!-- =================================================================================== -->
-<!-- Extension: Java Code Formatter                                                      -->
+<!-- Extension: Lark Code Formatter                                                      -->
 <!-- =================================================================================== -->
 <extension
       id="JavaCodeFormatter"
@@ -201,7 +201,7 @@
 </extension>
 
 <!-- =================================================================================== -->
-<!-- Extension: Java Generate Indexer                                                    -->
+<!-- Extension: Lark Generate Indexer                                                    -->
 <!-- =================================================================================== -->
 <extension
       id="JavaIndexer"
@@ -212,10 +212,10 @@
 </extension>
 
 <!-- =================================================================================== -->
-<!-- Extension: Java Content Types                                                       -->
+<!-- Extension: Lark Content Types                                                       -->
 <!-- =================================================================================== -->
 <extension point="org.eclipse.core.contenttype.contentTypes">
-	<!-- declares a content type for Java Properties files -->
+	<!-- declares a content type for Lark Properties files -->
 	<content-type id="javaProperties" name="%javaPropertiesName" 
 		base-type="org.eclipse.core.runtime.text"
 		priority="high"				
@@ -225,12 +225,12 @@
 	<file-association 
 		content-type="org.eclipse.core.runtime.xml" 
 		file-names=".classpath"/>  
-	<!-- declares a content type for Java Source files -->
+	<!-- declares a content type for Lark Source files -->
 	<content-type id="javaSource" name="%javaSourceName" 
 		base-type="org.eclipse.core.runtime.text"
 		priority="high"				
 		file-extensions="lark"/>
-	<!-- declares a content type for Java class files -->
+	<!-- declares a content type for Lark class files -->
     <content-type id="javaClass" name="%javaClassName" 
         priority="high"				
         file-extensions="class">        

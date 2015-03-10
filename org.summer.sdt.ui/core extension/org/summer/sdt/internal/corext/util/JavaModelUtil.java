@@ -82,13 +82,13 @@ public final class JavaModelUtil {
 	 * @see JavaCore#removeJavaLikeExtension(String)
 	 * @see #getRenamedCUName(ICompilationUnit, String)
 	 */
-	public static final String DEFAULT_CU_SUFFIX= ".java"; //$NON-NLS-1$
+	public static final String DEFAULT_CU_SUFFIX= ".lark"; //$NON-NLS-1$   //cym 2015-03-09
 
 	/**
 	 * The name of the package-info.java file.
 	 * @since 3.8
 	 */
-	public static final String PACKAGE_INFO_JAVA= "package-info.java"; //$NON-NLS-1$
+	public static final String PACKAGE_INFO_JAVA= "package-info.lark"; //$NON-NLS-1$   //cym 2015-03-09
 	
 	/**
 	 * The name of the package-info.class file.
@@ -750,9 +750,7 @@ public final class JavaModelUtil {
 		if (JavaCore.VERSION_CLDC_1_1.equals(version2)) {
 			version2= JavaCore.VERSION_1_1 + 'a';
 		}
-//		return version1.compareTo(version2) < 0;
-		
-		return true;
+		return version1.compareTo(version2) < 0;
 	}
 
 
