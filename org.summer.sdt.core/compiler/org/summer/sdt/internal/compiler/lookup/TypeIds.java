@@ -145,6 +145,12 @@ public interface TypeIds {
 	//summer cym 2015-02-12
 	final int T_JavaLangModule = 93;
 	
+	//summer cym 2015-03-10
+	final int T_JavaLangRemotingBean = 94;
+	
+	//summer cym 2015-03-10
+	final int T_JavaLangRemotingService = 95;
+	
 	// If you add new type id, make sure to bump up T_LastWellKnownTypeId if there is a cross over.
 	final int T_LastWellKnownTypeId = 128;
 	

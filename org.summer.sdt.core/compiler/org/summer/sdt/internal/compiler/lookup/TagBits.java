@@ -169,6 +169,12 @@ public interface TagBits {
 	/** summer cym 2014-11-20*/
 	long AnnotationOverload = ASTNode.Bit63L;
 	
+	/** summer cym 2014-11-20*/
+	long AnnotationRemotingBean = ASTNode.Bit62L;
+	
+	/** summer cym 2014-11-20*/
+	long AnnotationRemotingService = ASTNode.Bit63L;
+	
 	/** summer cym 2015-02-12*/
 	long AnnotationModule = ASTNode.Bit63L;   //AnnotationFunctionalInterface
 	
@@ -189,6 +195,8 @@ public interface TagBits {
 				| AnnotationRepeatable
 				| AnnotationModule //cym add 2015-02-12
 				| AnnotationEventCallback  //cym add 2015-01-01
+				| AnnotationRemotingBean //cym add 2015-03-10
+				| AnnotationRemotingService  //cym add 2015-03-10
 				| AnnotationOverload;    //cym add 2014-11-20
 	
 	long AnnotationNullMASK = AnnotationNullable | AnnotationNonNull;

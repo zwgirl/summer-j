@@ -54,6 +54,8 @@ public interface TypeConstants {
 	char[] HTML = "html".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] ARRAY = "Array".toCharArray(); //$NON-NLS-1$  //cym 2014-12-03
 	char[] OVERLOAD = "Overload".toCharArray(); //$NON-NLS-1$  //cym 2015-02-24
+	char[] REMOTINGBEAN = "RemotingBean".toCharArray(); //$NON-NLS-1$  //cym 2015-03-10
+	char[] REMOTINGSERVICE = "RemotingService".toCharArray(); //$NON-NLS-1$  //cym 2015-03-10
 	char[] MAIN = "main".toCharArray(); //$NON-NLS-1$
 	char[] SERIALVERSIONUID = "serialVersionUID".toCharArray(); //$NON-NLS-1$
 	char[] SERIALPERSISTENTFIELDS = "serialPersistentFields".toCharArray(); //$NON-NLS-1$
@@ -189,6 +191,8 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_ANNOTATION_REPEATABLE = {JAVA, LANG, ANNOTATION, "Repeatable".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_OVERRIDE = {JAVA, LANG, "Override".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_EVENTCALLBACK = {JAVA, LANG, "EventCallback".toCharArray()}; //$NON-NLS-1$ //cym add 2015-01-01
+	char[][] JAVA_LANG_REMOTINGBEAN = {JAVA, LANG, REMOTINGBEAN}; //$NON-NLS-1$ //cym add 2015-03-10
+	char[][] JAVA_LANG_REMOTINGSERVICE = {JAVA, LANG, REMOTINGSERVICE}; //$NON-NLS-1$ //cym add 2015-03-10
 	char[][] JAVA_LANG_FUNCTIONAL_INTERFACE = {JAVA, LANG, "FunctionalInterface".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ANNOTATION_RETENTION = {JAVA, LANG, ANNOTATION, "Retention".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_SUPPRESSWARNINGS = {JAVA, LANG, "SuppressWarnings".toCharArray()}; //$NON-NLS-1$
