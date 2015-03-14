@@ -77,7 +77,7 @@ public class SuperReference extends ThisReference {
 	
 	@Override
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		this.resolvedType.generate(output);
+		this.resolvedType.generate(output, scope.classScope().enclosingSourceType());
 		output.append(".prototype");
 		return output;
 	}

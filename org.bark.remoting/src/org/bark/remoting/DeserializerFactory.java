@@ -52,4 +52,9 @@ public final class DeserializerFactory {
 		deseserializers.put(clazz, result);
 		return result;
 	}
+
+	public void register(Class<?> class1, Deserializer deser) {
+		// TODO Auto-generated method stub
+		
+	}
 }

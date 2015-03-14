@@ -35,6 +35,7 @@ import org.summer.sdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.summer.sdt.internal.compiler.html.HtmlFile;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
+import org.summer.sdt.internal.compiler.java.JavaFile;
 import org.summer.sdt.internal.compiler.javascript.JsFile;
 import org.summer.sdt.internal.compiler.javascript.JsTypes;
 import org.summer.sdt.internal.compiler.lookup.Binding;
@@ -1725,6 +1726,236 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				this.scope.referenceCompilationUnit().compilationResult);
 		}
 	}
+	
+	/**
+	 * Generic javascript generation for type
+	 */
+	public void generateJava(Scope scope, JavaFile javaFile) {
+		if (this.ignoreFurtherInvestigation) {
+			if (this.binding == null)
+				return;
+		}
+		try {
+			StringBuffer output = javaFile.content;
+			if (this.javadoc != null) {
+				this.javadoc.print(0, output);
+			}
+			printIndent(0, output);
+			generateJavaHeader(0, output);
+			generateJavaBody(0, output);
+		} catch (AbortType e) {
+			if (this.binding == null)
+				return;
+			JsFile.createProblemType(
+				this,
+				this.scope.referenceCompilationUnit().compilationResult);
+		}
+	}
+	
+	private void generateSerializer(int indent, StringBuffer output) {
+		output.append('\n');
+		printIndent(indent, output);
+		output.append("static {");
+		
+		output.append('\n');
+		printIndent(indent + 1, output);
+		output.append("org.bark.remoting.SerializerFactory.getInstance().register(");
+		output.append(this.binding.sourceName).append(".class, new org.bark.remoting.Serializer(){");
+		
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("@Override");
+		
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("public void writeObject(javax.json.JsonObjectBuilder builder, org.bark.remoting.ReferenceProcessor handler, Object value) {");
+//					builder.add("name", ((Person)value).name);
+//					builder.add("name", ((Person)value).age);
+		
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("}");
+		
+		output.append('\n');
+		printIndent(indent + 1, output);
+		output.append("});");
+		
+		output.append('\n');
+		printIndent(indent + 1, output);
+		output.append("org.bark.remoting.DeserializerFactory.getInstance().register(");
+		output.append(this.binding.sourceName).append(".class, new org.bark.remoting.Deserializer(){");
+		
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("@Override");
+		
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("public Object readObject(javax.json.JsonObject jsonObj, Object[] handlers, Object obj) {");
+					
+//					Person p = (Person) obj;
+//					p.name = jsonObj.getString("name");
+//					p.age = jsonObj.getInt("name");
+//					
+//					JsonValue ref = jsonObj.get("parent");
+//					if(ref == JsonValue.NULL){
+//						p.parent = null;
+//					} else {
+//						p.parent = (Person) handlers[((JsonNumber)ref).intValue()];
+//					}
+//					
+//					return null;
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("}");
+		
+		output.append('\n');
+		printIndent(indent + 1, output);
+		output.append("});");
+		
+		output.append('\n');
+		printIndent(indent, output);
+		output.append("}");
+		
+	}
+
+	public StringBuffer generateJavaHeader(int indent, StringBuffer output) {
+		if (this.annotations != null) {
+			printAnnotations(this.annotations, output);
+		}
+		output.append("\n");
+		printModifiers(this.modifiers, output);
+	
+		switch (kind(this.modifiers)) {
+			case TypeDeclaration.CLASS_DECL :
+				output.append("class "); //$NON-NLS-1$
+				break;
+			case TypeDeclaration.INTERFACE_DECL :
+				output.append("interface "); //$NON-NLS-1$
+				break;
+			case TypeDeclaration.ENUM_DECL :
+				output.append("enum "); //$NON-NLS-1$
+				break;
+			case TypeDeclaration.ANNOTATION_TYPE_DECL :
+				output.append("@interface "); //$NON-NLS-1$
+				break;
+		}
+		output.append(this.name);
+		if (this.typeParameters != null) {
+			output.append("<");//$NON-NLS-1$
+			for (int i = 0; i < this.typeParameters.length; i++) {
+				if (i > 0) output.append( ", "); //$NON-NLS-1$
+				this.typeParameters[i].print(0, output);
+			}
+			output.append(">");//$NON-NLS-1$
+		}
+		if (this.superclass != null) {
+			output.append(" extends ");  //$NON-NLS-1$
+			this.superclass.print(0, output);
+		}
+		if (this.superInterfaces != null && this.superInterfaces.length > 0) {
+			switch (kind(this.modifiers)) {
+				case TypeDeclaration.CLASS_DECL :
+				case TypeDeclaration.ENUM_DECL :
+					output.append(" implements "); //$NON-NLS-1$
+					break;
+				case TypeDeclaration.INTERFACE_DECL :
+				case TypeDeclaration.ANNOTATION_TYPE_DECL :
+					output.append(" extends "); //$NON-NLS-1$
+					break;
+			}
+			for (int i = 0; i < this.superInterfaces.length; i++) {
+				if (i > 0) output.append( ", "); //$NON-NLS-1$
+				this.superInterfaces[i].print(0, output);
+			}
+		}
+		return output;
+	}
+	
+	public StringBuffer generateJavaBody(int indent, StringBuffer output) {
+		output.append(" {"); //$NON-NLS-1$
+		
+//		if (this.memberTypes != null) {
+//			for (int i = 0; i < this.memberTypes.length; i++) {
+//				if (this.memberTypes[i] != null) {
+//					output.append('\n');
+//					this.memberTypes[i].print(indent + 1, output);
+//				}
+//			}
+//		}
+		if (this.fields != null) {
+			for (int fieldI = 0; fieldI < this.fields.length; fieldI++) {
+				if (this.fields[fieldI] != null) {
+					output.append('\n');
+					this.fields[fieldI].print(indent + 1, output);
+				}
+			}
+			
+			for (int fieldI = 0; fieldI < this.fields.length; fieldI++) {
+				FieldDeclaration field = this.fields[fieldI];
+				if (field != null) {
+					output.append('\n');
+					
+					if(field instanceof Initializer || (field.binding.modifiers & ClassFileConstants.AccProperty) != 0
+							|| (field.binding.modifiers & ClassFileConstants.AccIndexer) != 0){
+						continue;
+					}
+					
+					char[] name = new char[field.name.length];
+					System.arraycopy(field.name, 0, name, 0, field.name.length);;
+					boolean underscore = CharOperation.indexOf('_', field.name) >= 0;
+					if(underscore){
+						name  = CharOperation.subarray(name, 1, -1);
+					}
+					
+					name[0] = Character.toUpperCase(name[0]);
+					
+					output.append('\n');
+					printIndent(indent + 1, output);
+					printModifiers(this.modifiers, output);
+					if (field.type != null) {
+						field.type.print(0, output).append(' ');
+					}
+					
+					output.append(" ").append("get");
+					output.append(name).append("() {");	
+					
+					output.append('\n');
+					printIndent(indent + 2, output);
+					output.append("return this.").append(field.name).append(";");
+					
+					output.append('\n');
+					printIndent(indent + 1, output);
+					output.append("}");
+					
+					
+					output.append('\n');
+					printIndent(indent + 1, output);
+					printModifiers(this.modifiers, output);
+					output.append("void");
+					
+					output.append(" ").append("set");
+					output.append(name).append("(");
+					field.type.print(0, output).append(' ');
+					output.append("value").append(") {");	
+					
+					output.append('\n');
+					printIndent(indent + 2, output);
+					output.append("this.").append(field.name).append(" = value;");
+					
+					output.append('\n');
+					printIndent(indent + 1, output);
+					output.append("}");
+				}
+			}
+		}
+		
+		generateSerializer(indent + 1, output);
+		
+		output.append('\n');
+		return printIndent(indent, output).append('}');
+	}
+	
 	/**
 	 * Generic javascript generation for type
 	 */
@@ -1751,7 +1982,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	public void generateInternal(Scope scope, int indent, StringBuffer output) {
 		output.append("(function(){ ");
 		
-		generateClassContent(this, indent + 1, output);
+		if((this.binding.tagBits & TagBits.AnnotationRemotingService) != 0){
+			generateRemotingService(this, indent + 1, output);
+		} else {
+			generateClassContent(this, indent + 1, output);
+		}
 		
 		output.append('\n');
 		printIndent(indent, output);
@@ -1765,6 +2000,193 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		} else{
 			return this.name;
 		}
+	}
+	
+	public void generateRemotingService(TypeDeclaration type, int indent, StringBuffer output){
+		
+		if((type.modifiers & ClassFileConstants.AccNative ) == 0 ){
+			output.append("\n");
+			printIndent(indent, output).append("function ");
+			output.append(type.binding.sourceName());
+			output.append("(");
+		}
+		
+		//set prototype.__proto__
+		if(type.binding.superclass != null){
+			ReferenceBinding superBinding = type.binding.superclass;
+			output.append("\n");
+			printIndent(indent, output);
+			output.append(type.binding.sourceName).append(".prototype.__proto__ = ");
+			superBinding.generate(output, type.scope.enclosingSourceType());
+			output.append(".prototype;");
+		}
+		
+		//register class
+		output.append("\n");
+		printIndent(indent, output);
+		output.append("__cache[\"");
+		output.append(CharOperation.concatWith(type.binding.compoundName, '.')).append("\"] = ");
+		
+		output.append(type.binding.sourceName);
+		output.append(";");
+		
+		
+		generateProperties(type.scope, indent, output, type);
+		
+		if(type.methods != null){
+			
+			for(AbstractMethodDeclaration method : type.methods){
+				if(method.binding == null){   //when values and valueOf of enum
+					continue;
+				}
+				
+				if(method instanceof Clinit){
+					continue;
+				}
+				if(method.isConstructor()){
+					continue;
+				}
+
+				if((method.modifiers & ClassFileConstants.AccNative) != 0 && method.codeData == null){
+					continue;
+				}
+				
+				if((method.modifiers & ClassFileConstants.AccPrivate) != 0){
+					generatePrivateMethod((MethodDeclaration) method, type.scope, indent, output);
+					continue;
+				}
+				
+				output.append("\n");
+				
+				printIndent(indent, output).append(type.getTypeName());
+				
+				if(method.isStatic()){
+					output.append(".");
+				} else {
+					output.append(".prototype.");
+				}
+				
+				output.append(getMethodName(method));
+				output.append(" = function(");
+				
+				if((method.modifiers & ClassFileConstants.AccDefault) == 0){
+					generateServiceMethod((MethodDeclaration)method, type.scope, indent, output);
+				} else {
+					generateMethod((MethodDeclaration) method, type.scope, indent, output);
+				}
+				output.append(";");
+			}
+		}
+		
+		//generate static fields
+		generateFields(type.scope, indent, output, false, type);
+		
+		if(type.memberTypes != null){
+			for(TypeDeclaration member : type.memberTypes){
+				output.append('\n');
+				printIndent(indent, output);
+				if((member.modifiers | ClassFileConstants.AccStatic) != 0){
+					output.append(type.getTypeName()).append(".").append(member.getTypeName()).append(" = ");
+				} else {
+					output.append(type.getTypeName()).append(".prototype.").append(member.getTypeName()).append(" = (");
+				}
+				generateMemberType(type.scope, indent, output, member);
+				output.append(")();");
+			}
+		}
+		
+		//Class information
+		output.append("\n");
+		
+		printIndent(indent, output).append(type.getTypeName());
+		output.append(".prototype.__class = new (__lc('java.lang.Class'))(");
+		
+		output.append("\"").append(CharOperation.concatWith(type.binding.compoundName, '.')).append("\", ");
+		output.append(type.binding.sourceName).append(", ");
+		
+		if(type.binding.superclass != null){
+			ReferenceBinding baseBinding = type.binding.superclass;
+			if((baseBinding.modifiers & ClassFileConstants.AccNative) != 0){
+				output.append(baseBinding.sourceName);
+			} else {
+				baseBinding.generate(output, null);
+			}
+			output.append(".prototype.__class, ");
+		} else{
+			output.append("null").append(", ");
+		}
+
+		output.append("[]");
+		
+		int flags = INTERFACE_DECL;
+		
+		output.append(flags);
+		output.append(");");
+		
+		output.append('\n');
+		printIndent(indent, output);
+		
+		output.append("return  ");
+		
+		output.append(type.binding.sourceName);
+		
+		output.append(";");
+	}
+	
+	//RemotingService
+	private void generateServiceMethod(MethodDeclaration method, Scope scope, int indent, StringBuffer output){
+		if(method.arguments != null){
+			for(int j = 0, length1 = method.arguments.length; j < length1; j++){
+				if(j > 0)
+					output.append(", ");
+				output.append(method.arguments[j].name);
+			}
+		}
+		output.append(")");
+		output.append("{");
+
+		output.append("\n");
+		printIndent(indent+1, output);
+		output.append("try{");
+		
+		output.append("\n");
+		printIndent(indent+2, output);
+		output.append("return __invoke(");
+		output.append("localhost");
+		output.append(", new RemotingModel(");
+		output.append("'[\"");
+		output.append(CharOperation.concatWith(this.binding.compoundName, '.')).append("\"");
+		if((this.modifiers & ClassFileConstants.AccModule) != 0){
+			output.append(", \"").append(this.binding.computeFileName()).append("\"");
+		}
+		output.append("]'");
+		output.append(", \"").append(method.selector).append("\", [");
+		
+		if(method.arguments != null){
+			for(int j = 0, length1 = method.arguments.length; j < length1; j++){
+				if(j > 0)
+					output.append(", ");
+				output.append(method.arguments[j].name);
+			}
+		}
+		
+		output.append("]);");
+			
+		output.append("\n");
+		printIndent(indent+1, output);
+		output.append("}catch(e){");
+		
+		output.append("\n");
+		printIndent(indent+2, output);
+		output.append("throw e;");
+		
+		output.append("\n");
+		printIndent(indent+1, output);
+		output.append("}");
+
+		
+		output.append("\n");
+		printIndent(indent, output).append("}");
 	}
 	
 	public void generateClassContent(TypeDeclaration type, int indent, StringBuffer output){
@@ -1851,7 +2273,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			} else {
 				output.append(type.binding.sourceName).append(".prototype.__proto__ = ");
 			}
-			superBinding.generate(output);
+			superBinding.generate(output, type.scope.enclosingSourceType());
 			output.append(".prototype;");
 		}
 		
@@ -1969,6 +2391,64 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			}
 		}
 		
+		//readObject
+		output.append('\n');
+		printIndent(indent, output);
+		output.append(type.binding.sourceName).append(".prototype.__readObject = function(json, handlers, obj) {");
+		if(this.fields != null){
+			output.append('\n');
+			printIndent(indent + 1, output);
+			output.append("var propVal = null;");
+			for(FieldDeclaration field : this.fields){
+				if(field.isStatic() || (field.modifiers & ClassFileConstants.AccTransient) != 0
+						|| (field.modifiers & ClassFileConstants.AccProperty) != 0
+						|| (field.modifiers & ClassFileConstants.AccIndexer) != 0){
+					continue;
+				}
+				if(field.binding.type == null){
+					continue;
+				}
+				
+				output.append('\n');
+				printIndent(indent + 1, output);
+				TypeBinding fieldType = field.binding.type;
+				if(fieldType.isPrimitiveType()){
+					output.append("obj[\"").append(field.name).append("\"] = json[\"").append(field.name).append("\"];");
+				} else if(fieldType.isEnum()){
+					output.append('\n');
+					printIndent(indent + 1, output);
+					output.append("propVal = json[\"").append(field.name).append("\"];");
+					
+					output.append('\n');
+					printIndent(indent + 1, output);
+					output.append("obj[\"").append(field.name).append("\"] = ");
+					fieldType.generate(output, type.binding);
+					output.append(".valueOf(propVal);");
+				} else if(fieldType.id == scope.environment().getType(TypeConstants.JAVA_LANG_STRING).id){
+					output.append("obj[\"").append(field.name).append("\"] = json[\"").append(field.name).append("\"];");
+				} else if(fieldType.original().id == scope.environment().getType(TypeConstants.JAVA_LANG_CLASS).id){
+					output.append('\n');
+					printIndent(indent + 1, output);
+					output.append("propVal = json[\"").append(field.name).append("\"];");
+					
+					output.append('\n');
+					printIndent(indent + 1, output);
+					output.append("obj[\"").append(field.name).append("\"] = __lc();");
+				} else {
+					output.append('\n');
+					printIndent(indent + 1, output);
+					output.append("propVal = json[\"").append(field.name).append("\"];");
+					output.append('\n');
+					printIndent(indent + 1, output);
+					output.append("obj[\"").append(field.name).append("\"] = ").append("propVal == null ? null : handlers[propVal];");
+				}
+			}
+			
+			output.append('\n');
+			printIndent(indent, output);
+		}
+		output.append("};");
+		
 		//Class information
 		output.append("\n");
 		
@@ -1998,7 +2478,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			if((baseBinding.modifiers & ClassFileConstants.AccNative) != 0){
 				output.append(baseBinding.sourceName);
 			} else {
-				baseBinding.generate(output);
+				baseBinding.generate(output, null);
 			}
 			output.append(".prototype.__class, ");
 		} else{
@@ -2016,7 +2496,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				if((binding.modifiers & ClassFileConstants.AccNative) != 0){
 					output.append(type.binding.sourceName);
 				} else {
-					binding.generate(output);
+					binding.generate(output, null);
 				}
 				output.append(".prototype.__class");
 				
@@ -2041,7 +2521,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				flags |= CLASS_DECL;
 		}
 		
-		if(type.binding.isArrayType()){
+		if(CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_ARRAY)){
 			flags |= JsTypes.ARRAY;
 		}
 		

@@ -46,6 +46,7 @@ import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.env.ICompilationUnit;
 import org.summer.sdt.internal.compiler.html.HtmlFile;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
+import org.summer.sdt.internal.compiler.java.JavaFile;
 import org.summer.sdt.internal.compiler.javascript.JsFile;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
@@ -73,6 +74,7 @@ public class CompilationResult {
 	public Map<char[], ClassFile> compiledTypes = new Hashtable(11);
 	public Map<char[], JsFile> compiledJsFiles = new Hashtable(11);  //cym add 2014-10-18
 	public Map<char[], HtmlFile> compiledHtmlFiles = new Hashtable(11);  //cym add 2014-11-21
+	public Map<char[], JavaFile> compiledJavaFiles = new Hashtable(11);  //cym add 2014-11-21
 	public int unitIndex, totalUnitsKnown;
 	public boolean hasBeenAccepted = false;
 	public char[] fileName;
@@ -206,6 +208,13 @@ public class CompilationResult {
 		HtmlFile[] htmlFiles = new HtmlFile[this.compiledHtmlFiles.size()];
 		this.compiledHtmlFiles.values().toArray(htmlFiles);
 		return htmlFiles;
+	}
+	
+	//cym 2015-03-14
+	public JavaFile[] getJavaFiles() {
+		JavaFile[] javaFiles = new JavaFile[this.compiledJavaFiles.size()];
+		this.compiledJavaFiles.values().toArray(javaFiles);
+		return javaFiles;
 	}
 	/**
 	 * Answer the initial compilation unit corresponding to the present compilation result
@@ -451,6 +460,18 @@ public class CompilationResult {
 //	        this.hasInconsistentToplevelHierarchies = true;
 //	    }
 		this.compiledHtmlFiles.put(typeName, htmlFile);
+	}
+	
+	//cym add 2015-03-14
+	/**
+	 * For now, remember the compiled type using its compound name.
+	 */
+	public void record(char[] typeName, JavaFile javaFile) {
+//	    SourceTypeBinding sourceType = jsFile.referenceBinding;
+//	    if (!sourceType.isLocalType() && sourceType.isHierarchyInconsistent()) {
+//	        this.hasInconsistentToplevelHierarchies = true;
+//	    }
+		this.compiledJavaFiles.put(typeName, javaFile);
 	}
 	
 	/**

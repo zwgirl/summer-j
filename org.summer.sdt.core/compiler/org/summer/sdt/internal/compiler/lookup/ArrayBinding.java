@@ -484,7 +484,7 @@ public final class ArrayBinding extends TypeBinding {
 	}
 	
 	@Override
-	public void generate(StringBuffer output) {
+	public void generate(StringBuffer output, TypeBinding currentBinding) {
 		
 	}
 }

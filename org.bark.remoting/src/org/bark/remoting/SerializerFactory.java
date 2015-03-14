@@ -27,13 +27,13 @@ public final class SerializerFactory {
 		
 		serializers.put(Class.class, new ClassSerializer());
 		
-		serializers.put(java.util.Date.class, new DateSerializer());
-		
-		serializers.put(java.sql.Date.class, new SQLDateSerializer());
-		
-		serializers.put(java.sql.Time.class, new SQLTimeSerializer());
-		
-		serializers.put(java.sql.Timestamp.class, new SQLTimestampSerializer());
+//		serializers.put(java.util.Date.class, new DateSerializer());
+//		
+//		serializers.put(java.sql.Date.class, new SQLDateSerializer());
+//		
+//		serializers.put(java.sql.Time.class, new SQLTimeSerializer());
+//		
+//		serializers.put(java.sql.Timestamp.class, new SQLTimestampSerializer());
 	}
 	private SerializerFactory() {
 	}
@@ -59,5 +59,10 @@ public final class SerializerFactory {
 		result = new BeanSerializer(clazz);
 		serializers.put(clazz, result);
 		return result;
+	}
+
+	public void register(Class<?> class1, Serializer ser) {
+		// TODO Auto-generated method stub
+		
 	}
 }

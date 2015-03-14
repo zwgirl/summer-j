@@ -7,7 +7,7 @@ import javax.json.JsonObject;
 
 public class ArrayDeserializer implements Deserializer {
 
-	public Object readObject(JsonObject jsonObj, Object[] handlers) {
+	public Object readObject(JsonObject jsonObj, Object[] handlers, Object obj) {
 		try {
 			String className = jsonObj.getString(LarkConstants.CLASS);
 			JsonArray array = jsonObj.getJsonArray(LarkConstants.VALUE);
@@ -24,5 +24,4 @@ public class ArrayDeserializer implements Deserializer {
 		}
 		return null;
 	}
-
 }

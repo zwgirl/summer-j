@@ -800,12 +800,12 @@ public class Util {
 			int length = fileExtensions.size();
 			// note that file extensions contains "java" as it is defined in JDT Core's plugin.xml
 			char[][] extensions = new char[length][];
-			extensions[0] = SuffixConstants.EXTENSION_java.toCharArray(); // ensure that "java" is first
+			extensions[0] = SuffixConstants.EXTENSION_lark.toCharArray(); // ensure that "java" is first
 			int index = 1;
 			Iterator iterator = fileExtensions.iterator();
 			while (iterator.hasNext()) {
 				String fileExtension = (String) iterator.next();
-				if (SuffixConstants.EXTENSION_java.equals(fileExtension))
+				if (SuffixConstants.EXTENSION_lark.equals(fileExtension))
 					continue;
 				extensions[index++] = fileExtension.toCharArray();
 			}

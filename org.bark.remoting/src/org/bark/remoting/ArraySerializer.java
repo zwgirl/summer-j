@@ -11,15 +11,19 @@ public class ArraySerializer implements Serializer {
 	}
 
 	@Override
-	public void writeObject(JsonObjectBuilder builder, Handler handler,
+	public void writeObject(JsonObjectBuilder builder, ReferenceProcessor handler,
 			Object value) {
+		if(value.getClass().getComponentType().isPrimitive()){
+			throw new IllegalAccessError("not support primitive array!");
+		}
 		builder.add(LarkConstants.CLASS, value.getClass().getName());
 		final JsonBuilderFactory bf = Json.createBuilderFactory(null);
 		JsonArrayBuilder array = bf.createArrayBuilder();
-		builder.add(LarkConstants.VALUE, array);
+
 		for (Object obj : (Object[]) value) {
-			int refId = handler.sharedHandler(obj);
+			int refId = handler.shared(obj);
 			array.add(refId);
 		}
+		builder.add(LarkConstants.VALUE, array);
 	}
 }

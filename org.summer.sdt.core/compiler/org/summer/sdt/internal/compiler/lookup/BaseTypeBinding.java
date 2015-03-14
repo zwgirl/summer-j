@@ -235,7 +235,7 @@ public class BaseTypeBinding extends TypeBinding {
 		return this.hasTypeAnnotations() ? annotatedDebugName() : new String(readableName());
 	}
 	
-	public void generate(StringBuffer output){
+	public void generate(StringBuffer output, TypeBinding currentBinding){
 		output.append(this.simpleName);
 	}
 }

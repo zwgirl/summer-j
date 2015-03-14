@@ -43,7 +43,7 @@ public class MarkupExtension extends XAMLElement {
 		}
 		ReferenceBinding rb = (ReferenceBinding) this.resolvedType;
 		output.append("new (");
-		rb.generate(output);
+		rb.generate(output, null);
 		output.append(")(");
 		
 		output.append("{");

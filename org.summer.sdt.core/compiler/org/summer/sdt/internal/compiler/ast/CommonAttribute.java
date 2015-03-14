@@ -65,7 +65,7 @@ public class CommonAttribute extends Attribute{
 			}
 
 		} else if(this.property.fieldBinding.type.isEnum()){
-			((ReferenceBinding)this.property.fieldBinding.type).generate(output);
+			((ReferenceBinding)this.property.fieldBinding.type).generate(output, null);
 			output.append('.').append(((StringLiteral)value).source);
 		} else {
 			value.doGenerateExpression(scope, indent, output);

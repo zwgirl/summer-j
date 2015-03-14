@@ -299,12 +299,15 @@ public class IfStatement extends Statement {
 	}
 	
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append("if ("); //$NON-NLS-1$
+		output.append("if("); //$NON-NLS-1$
 		this.condition.generateExpression(scope, 0, output).append(")");	//$NON-NLS-1$
 		if(this.thenStatement instanceof Block){
 			this.thenStatement.generateStatement(scope, indent, output);
-		} else{
+		} else if(this.thenStatement instanceof IfStatement){
 			this.thenStatement.generateStatement(scope, indent + 1, output);
+		} else {
+			output.append(" ");
+			this.thenStatement.generateExpression(scope, indent + 1, output);
 		}
 		if (this.elseStatement != null) {
 			output.append('\n');
@@ -313,11 +316,11 @@ public class IfStatement extends Statement {
 			if(elseStatement instanceof Block){
 				this.elseStatement.generateStatement(scope, indent, output);
 			} else if(elseStatement instanceof IfStatement){
-				output.append('\n');
-				printIndent(indent + 1, output);
-				this.elseStatement.generateExpression(scope, indent + 1, output);
+				output.append(" ");
+				this.elseStatement.generateExpression(scope, indent, output);
 			} else {
-				this.elseStatement.generateStatement(scope, indent, output);
+				output.append(" ");
+				this.elseStatement.generateExpression(scope, indent, output);
 			}
 		}
 		return output;

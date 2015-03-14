@@ -391,9 +391,19 @@ public class ReturnStatement extends Statement {
 	}
 
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append("return "); //$NON-NLS-1$
-		if (this.expression != null )
+		output.append("return"); //$NON-NLS-1$
+		if (this.expression != null ){
+			output.append(" ");
 			this.expression.doGenerateExpression(scope, indent, output) ;
+		}
+		return output.append(";");
+	}
+	
+	@Override
+	public StringBuffer generateStatement(Scope scope, int indent,
+			StringBuffer output) {
+		printIndent(indent, output);
+		generateExpression(scope, indent, output);
 		return output;
 	}
 }

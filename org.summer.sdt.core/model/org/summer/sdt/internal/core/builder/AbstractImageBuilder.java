@@ -20,6 +20,7 @@ import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.ICompilationUnit;
 import org.summer.sdt.internal.compiler.html.HtmlFile;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
+import org.summer.sdt.internal.compiler.java.JavaFile;
 import org.summer.sdt.internal.compiler.javascript.JsFile;
 import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 import org.summer.sdt.internal.compiler.problem.*;
@@ -290,6 +291,52 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 				}
 			}
 			
+			//cym add 2015-03-14
+			JavaFile[] javaFiles = result.getJavaFiles();
+			length = javaFiles.length;
+			for (int i = 0; i < length; i++) {
+				JavaFile javaFile = javaFiles[i];
+	
+				char[][] compoundName = javaFile.getCompoundName();
+				char[] typeName = compoundName[compoundName.length - 1];
+	
+					String qualifiedTypeName = new String(javaFile.fileName()); // the qualified type name "p1/p2/A"
+					if (this.newState.isDuplicateLocator(qualifiedTypeName, typeLocator)) {
+						if (duplicateTypeNames == null)
+							duplicateTypeNames = new ArrayList();
+						duplicateTypeNames.add(compoundName);
+						if (mainType == null) {
+							try {
+								mainTypeName = compilationUnit.initialTypeName; // slash separated qualified name "p1/p1/A"
+								mainType = this.javaBuilder.javaProject.findType(mainTypeName.replace('/', '.'));
+							} catch (JavaModelException e) {
+								// ignore
+							}
+						}
+						IType type;
+						if (qualifiedTypeName.equals(mainTypeName)) {
+							type = mainType;
+						} else {
+							String simpleName = qualifiedTypeName.substring(qualifiedTypeName.lastIndexOf('/')+1);
+							type = mainType == null ? null : mainType.getCompilationUnit().getType(simpleName);
+						}
+						createProblemFor(compilationUnit.resource, type, Messages.bind(Messages.build_duplicateClassFile, new String(typeName)), JavaCore.ERROR);
+						continue;
+					}
+					this.newState.recordLocatorForType(qualifiedTypeName, typeLocator);
+					if (result.checkSecondaryTypes && !qualifiedTypeName.equals(compilationUnit.initialTypeName))
+						acceptSecondaryType(javaFile);
+				try {
+					definedTypeNames.add(writeJavaFile(javaFile, compilationUnit));
+				} catch (CoreException e) {
+					Util.log(e, "JavaBuilder handling CoreException"); //$NON-NLS-1$
+					if (e.getStatus().getCode() == IResourceStatus.CASE_VARIANT_EXISTS)
+						createProblemFor(compilationUnit.resource, null, Messages.bind(Messages.build_classFileCollision, e.getMessage()), JavaCore.ERROR);
+					else
+						createProblemFor(compilationUnit.resource, null, Messages.build_inconsistentClassFile, JavaCore.ERROR);
+				}
+			}
+			
 			if (result.hasAnnotations && this.filesWithAnnotations != null) // only initialized if an annotation processor is attached
 				this.filesWithAnnotations.add(compilationUnit);
 	
@@ -302,6 +349,11 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 	}
 	
 	protected void acceptSecondaryType(HtmlFile htmlFile) {
+		// noop
+	}
+	
+	//2015-03-14
+	protected void acceptSecondaryType(JavaFile javaFile) {
 		// noop
 	}
 	
@@ -325,6 +377,41 @@ public abstract class AbstractImageBuilder implements ICompilerRequestor, ICompi
 	//cym add 2014-10-18
 	protected void writeHtmlFileContents(HtmlFile htmlFile, IFile file, String qualifiedFileName, SourceFile compilationUnit) throws CoreException {
 		InputStream input = new ByteArrayInputStream(htmlFile.getBytes());
+		if (file.exists()) {
+			// Deal with shared output folders... last one wins... no collision cases detected
+			if (JavaBuilder.DEBUG)
+				System.out.println("Writing changed html file " + file.getName());//$NON-NLS-1$
+			if (!file.isDerived())
+				file.setDerived(true, null);
+			file.setContents(input, true, false, null);
+		} else {
+			// Default implementation just writes out the bytes for the new class file...
+			if (JavaBuilder.DEBUG)
+				System.out.println("Writing new html file " + file.getName());//$NON-NLS-1$
+			file.create(input, IResource.FORCE | IResource.DERIVED, null);
+		}
+	}
+	
+	//cym add 2015-03-14
+	protected char[] writeJavaFile(JavaFile javaFile, SourceFile compilationUnit) throws CoreException {
+		String fileName = new String(javaFile.fileName()); // the qualified type name "p1/p2/A"
+		IPath filePath = new Path(fileName);
+		IContainer outputFolder = compilationUnit.sourceLocation.binaryFolder;
+		IContainer container = outputFolder;
+		if (filePath.segmentCount() > 1) {
+			container = createFolder(filePath.removeLastSegments(1), outputFolder);
+			filePath = new Path(filePath.lastSegment());
+		}
+	
+		IFile file = container.getFile(filePath.addFileExtension(SuffixConstants.EXTENSION_java));
+		writeJavaFileContents(javaFile, file, fileName, compilationUnit);
+		// answer the name of the class file as in Y or Y$M
+		return filePath.lastSegment().toCharArray();
+	}
+	
+	//cym add 2015-03-14
+	protected void writeJavaFileContents(JavaFile javaFile, IFile file, String qualifiedFileName, SourceFile compilationUnit) throws CoreException {
+		InputStream input = new ByteArrayInputStream(javaFile.getBytes());
 		if (file.exists()) {
 			// Deal with shared output folders... last one wins... no collision cases detected
 			if (JavaBuilder.DEBUG)

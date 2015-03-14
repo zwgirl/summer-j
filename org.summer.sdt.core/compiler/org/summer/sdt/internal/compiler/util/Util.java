@@ -721,9 +721,9 @@ public class Util implements SuffixConstants {
 			return false; // dot was before the last file separator, it cannot be a zip archive name
 		int length = name.length();
 		int extensionLength = length - lastDot - 1;
-		if (extensionLength == EXTENSION_java.length()) {
+		if (extensionLength == EXTENSION_lark.length()) {
 			for (int i = extensionLength-1; i >=0; i--) {
-				if (Character.toLowerCase(name.charAt(length - extensionLength + i)) != EXTENSION_java.charAt(i)) {
+				if (Character.toLowerCase(name.charAt(length - extensionLength + i)) != EXTENSION_lark.charAt(i)) {
 					break; // not a ".java" file, check ".class" file case below
 				}
 				if (i == 0) {

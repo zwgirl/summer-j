@@ -1270,9 +1270,8 @@ public class TryStatement extends SubRoutineStatement {
 		//catches
 		if (this.catchBlocks != null)
 			for (int i = 0; i < this.catchBlocks.length; i++) {
-				output.append('\n');
-				printIndent(indent, output).append("catch ("); //$NON-NLS-1$
-				this.catchArguments[i].generateExpression(scope, 0, output).append(")\n"); //$NON-NLS-1$
+				output.append("catch("); //$NON-NLS-1$
+				this.catchArguments[i].generateExpression(scope, 0, output).append(")"); //$NON-NLS-1$
 				this.catchBlocks[i].generateStatement(scope, indent, output);
 			}
 		//finally

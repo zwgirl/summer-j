@@ -86,6 +86,7 @@ import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.MissingTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ParameterizedGenericMethodBinding;
 import org.summer.sdt.internal.compiler.lookup.ParameterizedMethodBinding;
+import org.summer.sdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.PolyParameterizedGenericMethodBinding;
 import org.summer.sdt.internal.compiler.lookup.PolyTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.PolymorphicMethodBinding;
@@ -1348,7 +1349,9 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 			MethodBinding codegenBinding = this.binding instanceof PolymorphicMethodBinding ? this.binding : this.binding.original();
 			boolean isStatic = codegenBinding.isStatic();
 			if (isStatic) {
-				output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append('.');
+				this.binding.declaringClass.generate(output, scope.classScope().enclosingSourceType());
+				output.append(".");
+//				output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append('.');
 			} else if ((this.bits & ASTNode.DepthMASK) != 0 && this.receiver.isImplicitThis()) { // outer access ?
 				//process GLobal and Window
 				if((this.binding.declaringClass.sourceName[0] == 'W' || this.binding.declaringClass.sourceName[0] == 'G') &&
@@ -1404,18 +1407,24 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 			} else{
 				if((this.binding.modifiers & ClassFileConstants.AccVarargs) != 0){
 					int argIndex = this.binding.parameters.length - 1;
-					for (int i = 0; i < argIndex ; i ++) {
-						if (i > 0) output.append(", "); //$NON-NLS-1$
-						this.arguments[i].doGenerateExpression(scope, indent, output);
+					TypeBinding lastArgument = this.arguments[argIndex].resolvedType;
+					if(lastArgument instanceof ParameterizedTypeBinding && ((ParameterizedTypeBinding)lastArgument).isArrayType2()){
+						if (argIndex > 0) output.append(",");
+						this.arguments[argIndex].doGenerateExpression(scope, indent, output);
+					} else {
+						for (int i = 0; i < argIndex ; i ++) {
+							if (i > 0) output.append(", "); //$NON-NLS-1$
+							this.arguments[i].doGenerateExpression(scope, indent, output);
+						}
+						
+						if (argIndex > 0) output.append(",");
+						output.append("["); //$NON-NLS-1$
+						for(int i = argIndex; i < this.arguments.length; i++){
+							if (i > argIndex) output.append(", "); //$NON-NLS-1$
+							this.arguments[i].doGenerateExpression(scope, indent, output);
+						}
+						output.append("]");
 					}
-					
-					if (argIndex > 0) output.append(",");
-					output.append("["); //$NON-NLS-1$
-					for(int i = argIndex; i < this.arguments.length; i++){
-						if (i > argIndex) output.append(", "); //$NON-NLS-1$
-						this.arguments[i].doGenerateExpression(scope, indent, output);
-					}
-					output.append("]");
 				}
 			}
 

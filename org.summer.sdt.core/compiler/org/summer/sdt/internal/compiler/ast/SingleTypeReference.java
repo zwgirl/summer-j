@@ -184,7 +184,7 @@ public class SingleTypeReference extends TypeReference {
 			}
 		} else {
 			ReferenceBinding binding = (ReferenceBinding) this.resolvedType;
-			binding.generate(output);
+			binding.generate(output, scope.classScope().enclosingSourceType());
 		}
 		return output;
 	}

@@ -140,7 +140,7 @@ public class ClassLiteralAccess extends Expression {
 		if(this.targetType == null){
 			return output;
 		}
-		this.targetType.generate(output);
+		this.targetType.generate(output, null);
 		output.append(".prototype.__class");
 		return output;
 	}

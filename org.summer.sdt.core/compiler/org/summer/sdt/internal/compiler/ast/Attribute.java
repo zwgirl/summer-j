@@ -242,11 +242,11 @@ public class Attribute extends XAMLNode implements InvocationSite{
 		this.property.generateExpression(scope, indent, output).append(" : ");
 		switch(propertyKind){
 		case CLASS:
-			this.template.generate(output);
+			this.template.generate(output, null);
 			output.append(".prototype.__class");
 			return output;
 		case ENUM:
-			((ReferenceBinding)this.property.fieldBinding.type).generate(output);
+			((ReferenceBinding)this.property.fieldBinding.type).generate(output, null);
 			output.append('.').append(((StringLiteral) this.value).source);
 			return output;
 		case FUNCTION:
@@ -278,7 +278,7 @@ public class Attribute extends XAMLNode implements InvocationSite{
 			return output;
 		case TEMPLATE:
 			output.append("new (");
-			this.template.generate(output);
+			this.template.generate(output, null);
 			output.append(")()");
 			return output;
 		case REFERENCE:
@@ -324,7 +324,7 @@ public class Attribute extends XAMLNode implements InvocationSite{
 			output.append("\n");
 			printIndent(indent + 1, output);
 			output.append("var _t = new (");
-			this.template.generate(output);
+			this.template.generate(output, null);
 			output.append(")();");
 			output.append("\n");
 			printIndent(indent + 1, output);
@@ -371,7 +371,7 @@ public class Attribute extends XAMLNode implements InvocationSite{
 			this.property.doGenerateExpression(scope, indent, output);
 			
 			output.append(" = ");
-			((ReferenceBinding)this.property.fieldBinding.type).generate(output);
+			((ReferenceBinding)this.property.fieldBinding.type).generate(output, null);
 			output.append(".prototype.__class;");
 			break;
 		case ENUM:
@@ -380,7 +380,7 @@ public class Attribute extends XAMLNode implements InvocationSite{
 			output.append("_n.");
 			this.property.doGenerateExpression(scope, indent, output);
 			output.append(" = ");
-			((ReferenceBinding)this.property.fieldBinding.type).generate(output);
+			((ReferenceBinding)this.property.fieldBinding.type).generate(output, null);
 			output.append('.').append(((StringLiteral) this.value).source);
 			break;
 		case REFERENCE:

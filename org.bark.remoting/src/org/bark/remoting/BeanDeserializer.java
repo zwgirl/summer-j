@@ -5,6 +5,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
 import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 public class BeanDeserializer implements Deserializer {
 	private final Class<?> _type;
@@ -16,8 +17,8 @@ public class BeanDeserializer implements Deserializer {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Object readObject(JsonObject jsonObj, Object[] handlers) {
-		Object result = instantiate();
+	public Object readObject(JsonObject jsonObj, Object[] handlers, Object obj) {
+//		Object result = instantiate();
 
 		try {
 			for (int i = 0; i < _fields.length; i++) {
@@ -25,37 +26,42 @@ public class BeanDeserializer implements Deserializer {
 				Class<?> type = field.getType();
 				if (int.class.equals(type) || byte.class.equals(type)
 						|| short.class.equals(type) || int.class.equals(type)) {
-					field.set(result, jsonObj.getInt(field.getName()));
+					field.set(obj, jsonObj.getInt(field.getName()));
 				} else if (long.class.equals(type)) {
-					field.set(result, jsonObj.getInt(field.getName()));
+					field.set(obj, jsonObj.getInt(field.getName()));
 				} else if (double.class.equals(type)
 						|| float.class.equals(type)) {
-					field.set(result, jsonObj.getJsonNumber(field.getName()) .doubleValue());
+					field.set(obj, jsonObj.getJsonNumber(field.getName()) .doubleValue());
 				} else if (boolean.class.equals(type)) {
-					field.set(result, jsonObj.getBoolean(field.getName()));
+					field.set(obj, jsonObj.getBoolean(field.getName()));
 				} else if (String.class.equals(type)) {
-					field.set(result, jsonObj.getString(field.getName()));
+					field.set(obj, jsonObj.getString(field.getName()));
 				} else if (java.util.Date.class.equals(type)) {
-					field.set(result, new java.util.Date(jsonObj.getInt(field.getName())));
+					field.set(obj, new java.util.Date(jsonObj.getInt(field.getName())));
 				} else if (java.sql.Date.class.equals(type)) {
-					field.set(result, new java.sql.Date(jsonObj.getInt(field.getName())));
+					field.set(obj, new java.sql.Date(jsonObj.getInt(field.getName())));
 				} else if (java.sql.Timestamp.class.equals(type)) {
-					field.set(result, new java.sql.Timestamp(jsonObj.getInt(field.getName())));
+					field.set(obj, new java.sql.Timestamp(jsonObj.getInt(field.getName())));
 				} else if (java.sql.Time.class.equals(type)) {
-					field.set(result, new java.sql.Time(jsonObj.getInt(field.getName())));
+					field.set(obj, new java.sql.Time(jsonObj.getInt(field.getName())));
 				} else if (type.isArray()) {
 					int refId = jsonObj.getInt(field.getName());
-					field.set(result, handlers[refId]);
+					field.set(obj, handlers[refId]);
 				} else if (type.isEnum()) {
-					field.set(result, Enum.valueOf((Class) field.getType(), jsonObj.getString(field.getName())));
+					field.set(obj, Enum.valueOf((Class) field.getType(), jsonObj.getString(field.getName())));
 				} else if (type.isAnonymousClass()) {
 
 				} else if (Class.class == type) {
 					String className = jsonObj.getString(field.getName());
-					field.set(result, Class.forName(className));
+					field.set(obj, Class.forName(className));
 				} else {
-					int refId = jsonObj.getInt(field.getName());
-					field.set(result, handlers[refId]);
+					JsonValue propValue = jsonObj.get(field.getName());
+					if(propValue == JsonValue.NULL){
+						field.set(obj, null);
+					} else {
+						int refId = jsonObj.getInt(field.getName());
+						field.set(obj, handlers[refId]);
+					}
 				}
 			}
 		} catch (RuntimeException e) {
@@ -69,7 +75,7 @@ public class BeanDeserializer implements Deserializer {
 					+ _type.getName() + " (object=" + jsonObj + ")", e);
 		}
 
-		return result;
+		return obj;
 	}
 
 	protected Object instantiate() {

@@ -1682,5 +1682,5 @@ abstract public class TypeBinding extends Binding {
 		return false;
 	}
 	
-	public abstract void generate(StringBuffer output);
+	public abstract void generate(StringBuffer output, TypeBinding currentBinding);
 }

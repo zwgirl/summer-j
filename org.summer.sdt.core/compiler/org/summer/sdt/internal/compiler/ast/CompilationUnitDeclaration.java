@@ -26,6 +26,7 @@ import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.impl.IrritantSet;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
+import org.summer.sdt.internal.compiler.java.JavaFile;
 import org.summer.sdt.internal.compiler.javascript.JsFile;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
@@ -361,6 +362,10 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 			generateJavascriptModule();
 		}
 		
+		if(this.types!=null && this.types.length>0 && hasRemotingBean()){
+			generateJava();
+		}
+		
 		if (this.ignoreFurtherInvestigation) {
 			if (this.types != null) {
 				for (int i = 0, count = this.types.length; i < count; i++) {
@@ -383,6 +388,117 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		}
 	}
 	
+	//generate java for RemotingBean
+	public void generateJava() {
+//		JavaFile javaFile = JavaFile.getNewInstance(this.binding.compoundName);
+//		StringBuffer output = javaFile.content;
+//		generateJavaInternal(scope, 0, output);
+//		output.append(";");
+//		this.scope.referenceCompilationUnit().compilationResult.record(this.binding.constantPoolName(), javaFile);
+//		
+//		if (this.currentPackage != null) {
+//			printIndent(indent, output).append("package "); //$NON-NLS-1$
+//			this.currentPackage.print(0, output, false).append(";\n"); //$NON-NLS-1$
+//		}
+//		if (this.imports != null)
+//			for (int i = 0; i < this.imports.length; i++) {
+//				printIndent(indent, output).append("import "); //$NON-NLS-1$
+//				ImportReference currentImport = this.imports[i];
+//				if (currentImport.isStatic()) {
+//					output.append("static "); //$NON-NLS-1$
+//				}
+//				currentImport.print(0, output).append(";\n"); //$NON-NLS-1$
+//			}
+
+//		TypeDeclaration mainType = null, firstPublicType = null;
+//		boolean multiPublicType = false;
+//		
+//		for (int i = 0; i < this.types.length; i++) {
+//			TypeDeclaration type = this.types[i];
+//			if(CharOperation.equals(type.name, getMainTypeName())){
+//				mainType = type;
+//			}
+//			
+//			if((type.modifiers & ClassFileConstants.AccPublic) !=0){
+//				
+//				if(firstPublicType == null){
+//					firstPublicType = type;
+//				} else {
+//					multiPublicType = true;
+//				}
+//			}
+//		}
+//		
+//		JavaFile javaFile = null;
+//		if(firstPublicType == null){
+//			if(mainType == null){
+//				if (this.currentPackage != null) {
+//					javaFile = JavaFile.getNewInstance(CharOperation.arrayConcat(this.currentPackage.tokens, getMainTypeName()));
+//				} else {
+//					javaFile = JavaFile.getNewInstance(new char[][]{getMainTypeName()});
+//				}
+//			} else {
+//				javaFile = JavaFile.getNewInstance(new char[][]{getMainTypeName()});
+//			}
+//			
+//			for (int i = 0; i < this.types.length; i++) {
+//				TypeDeclaration type = this.types[i];
+//			}
+//		} else {
+//			
+//		}
+		
+		if(module){
+			
+		} else {
+			JavaFile javaFile = JavaFile.getNewInstance(getCompoundName());
+			StringBuffer output = javaFile.content;
+//			print(0, output);
+			
+			int indent = 0;
+			if (this.currentPackage != null) {
+				printIndent(indent, output).append("package "); //$NON-NLS-1$
+				this.currentPackage.print(0, output, false).append(";\n"); //$NON-NLS-1$
+			}
+			if (this.imports != null)
+				for (int i = 0; i < this.imports.length; i++) {
+					printIndent(indent, output).append("import "); //$NON-NLS-1$
+					ImportReference currentImport = this.imports[i];
+					if (currentImport.isStatic()) {
+						output.append("static "); //$NON-NLS-1$
+					}
+					currentImport.print(0, output).append(";\n"); //$NON-NLS-1$
+				}
+			
+			
+			for (int i = 0; i < this.types.length; i++) {
+				TypeDeclaration type = this.types[i];
+				type.generateJava(scope, javaFile);
+			}
+			
+			this.compilationResult.record(CharOperation.concatWith(getCompoundName(), '/'), javaFile);
+		}
+	}
+	
+	//check has remotingBean
+	private boolean hasRemotingBean(){
+		for (int i = 0; i < this.types.length; i++) {
+			TypeDeclaration type = this.types[i];
+			if((type.binding.tagBits & TagBits.AnnotationRemotingBean) != 0){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private char[][] getCompoundName() {
+		if (this.currentPackage != null) {
+			return CharOperation.arrayConcat(this.currentPackage.tokens, getMainTypeName());
+		} else {
+			return new char[][] { getMainTypeName() };
+		}
+	}
+	
 	private void generateJavascriptModule() {
 		JsFile jsFile = JsFile.getNewInstance(getCompoundName());
 		if (this.types != null) {
@@ -401,11 +517,6 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 			}
 		}
 		this.compilationResult.record(CharOperation.concatWith(getCompoundName(), '/'), jsFile);
-	}
-	
-	private char[][] getCompoundName(){
-		char[][] compoundName = this.currentPackage == null ? CharOperation.NO_CHAR_CHAR : this.currentPackage.tokens;
-		return CharOperation.arrayConcat(compoundName, getFileName(this.compilationResult.fileName));
 	}
 	
 	public static char[] getFileName(char[] fileName){

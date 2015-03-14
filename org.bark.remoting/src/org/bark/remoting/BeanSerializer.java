@@ -16,8 +16,7 @@ public class BeanSerializer implements Serializer {
 	}
 
 	@Override
-	public void writeObject(JsonObjectBuilder builder, Handler handler,
-			Object value) {
+	public void writeObject(JsonObjectBuilder builder, ReferenceProcessor handler, Object value) {
 		try {
 			for (int i = 0; i < _fields.length; i++) {
 				Field field = _fields[i];
@@ -50,7 +49,7 @@ public class BeanSerializer implements Serializer {
 					builder.add(field.getName(),
 							((java.util.Date) propValue).getTime());
 				} else if (field.getType().isArray()) {
-					int refId = handler.sharedHandler(propValue);
+					int refId = handler.shared(propValue);
 					builder.add(field.getName(), refId);
 				} else if (field.getType().isEnum()) {
 					Enum item = (Enum) propValue;
@@ -58,7 +57,7 @@ public class BeanSerializer implements Serializer {
 				} else if (field.getType().isAnonymousClass()) {
 					
 				} else {
-					builder.add(field.getName(), handler.sharedHandler(propValue));
+					builder.add(field.getName(), handler.shared(propValue));
 				}
 			}
 		} catch (RuntimeException e) {

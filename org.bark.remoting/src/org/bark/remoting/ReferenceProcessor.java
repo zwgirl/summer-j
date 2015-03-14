@@ -1,9 +1,9 @@
 package org.bark.remoting;
 
-public class Handler {
+public class ReferenceProcessor {
 	private Object[] refObjects = {};
 	
-	public int sharedHandler(Object obj){
+	public int shared(Object obj){
 		int length = refObjects.length;
 		for(int i=0; i<length; i++){
 			if(obj == refObjects[i]){
@@ -16,11 +16,11 @@ public class Handler {
 		return length;
 	}
 	
-	public Object[] getShared(){
+	public Object[] getShares(){
 		return refObjects;
 	}
 
-	public Object getObject(int refId) {
+	public Object getSharedId(int refId) {
 		return refObjects[refId];
 	}
 }

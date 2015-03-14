@@ -89,7 +89,7 @@ public class PolyTypeBinding extends TypeBinding {
 	}
 
 	@Override
-	public void generate(StringBuffer output) {
+	public void generate(StringBuffer output, TypeBinding currentType) {
 		
 	}
 }

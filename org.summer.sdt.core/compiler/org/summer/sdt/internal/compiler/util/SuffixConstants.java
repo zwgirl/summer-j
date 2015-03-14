@@ -38,8 +38,11 @@ package org.summer.sdt.internal.compiler.util;
 public interface SuffixConstants {
 	public final static String EXTENSION_class = "class"; //$NON-NLS-1$
 	public final static String EXTENSION_CLASS = "CLASS"; //$NON-NLS-1$
-	public final static String EXTENSION_java = "lark"; //$NON-NLS-1$
-	public final static String EXTENSION_JAVA = "LARK"; //$NON-NLS-1$
+	public final static String EXTENSION_lark = "lark"; //$NON-NLS-1$
+	public final static String EXTENSION_LARK = "LARK"; //$NON-NLS-1$
+	
+	public final static String EXTENSION_java = "java"; //$NON-NLS-1$
+	public final static String EXTENSION_JAVA = "JAVA"; //$NON-NLS-1$
 	
 	//cym 2014-11-21
 	public final static String EXTENSION_js = "js"; //$NON-NLS-1$
@@ -51,8 +54,8 @@ public interface SuffixConstants {
 
 	public final static String SUFFIX_STRING_class = "." + EXTENSION_class; //$NON-NLS-1$
 	public final static String SUFFIX_STRING_CLASS = "." + EXTENSION_CLASS; //$NON-NLS-1$
-	public final static String SUFFIX_STRING_java = "." + EXTENSION_java; //$NON-NLS-1$
-	public final static String SUFFIX_STRING_JAVA = "." + EXTENSION_JAVA; //$NON-NLS-1$
+	public final static String SUFFIX_STRING_java = "." + EXTENSION_lark; //$NON-NLS-1$
+	public final static String SUFFIX_STRING_JAVA = "." + EXTENSION_LARK; //$NON-NLS-1$
 
 	public final static char[] SUFFIX_class = SUFFIX_STRING_class.toCharArray();
 	public final static char[] SUFFIX_CLASS = SUFFIX_STRING_CLASS.toCharArray();

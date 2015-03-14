@@ -5,7 +5,7 @@ import javax.json.JsonObject;
 public class EnumDeserializer implements Deserializer {
 
 	@Override
-	public Object readObject(JsonObject jsonObj, Handler handler) {
+	public Object readObject(JsonObject jsonObj, Object[] handlers, Object obj) {
 		try {
 			String className = jsonObj.getString(LarkConstants.CLASS);
 			Class<?> clazz = Class.forName(className);

@@ -16,39 +16,48 @@ import javax.json.JsonWriter;
 public class LarkOutput {
 	public JsonArray writeObject(Object obj){
 	    final JsonBuilderFactory bf = Json.createBuilderFactory(null);
-	    JsonArrayBuilder root = bf.createArrayBuilder();
-	    JsonObjectBuilder firstElement = bf.createObjectBuilder();
-	    
+	    JsonArrayBuilder array = bf.createArrayBuilder();
 	    if(obj == null){
-	    	firstElement.add(CLASS, Object.class.getName());
-	    	firstElement.addNull(VALUE);
-	    	root.add(firstElement);
+		    JsonObjectBuilder first = bf.createObjectBuilder();
+	    	first.add(CLASS, Object.class.getName());
+	    	first.addNull(VALUE);
+	    	array.add(first);
 	    } else {
-	    	Class<?> clazz = obj.getClass();
-	    	Serializer ser = SerializerFactory.getInstance().getSerializer(clazz);
-	    	Handler handler = new Handler();
-	    	ser.writeObject(firstElement, handler, obj);
-	    	root.add(firstElement);
-	    	int current = 1;
-	    	while(current < handler.getShared().length){
-	    		Object shared = handler.getShared()[current++];
-	    		JsonObjectBuilder otherElement = bf.createObjectBuilder();
-	    		root.add(otherElement);
-		    	ser = SerializerFactory.getInstance().getSerializer(shared.getClass());
-		    	ser.writeObject(otherElement, handler, shared);
+	    	ReferenceProcessor referenceProcess = new ReferenceProcessor();
+	    	referenceProcess.shared(obj);
+	    	
+	    	int current = 0;
+	    	while(current < referenceProcess.getShares().length){
+	    		JsonObjectBuilder element = bf.createObjectBuilder();
+	    		Object shared = referenceProcess.getShares()[current++];
+	    		
+	    		element.add(CLASS, obj.getClass().getName());
+	    		
+	    		Serializer ser = SerializerFactory.getInstance().getSerializer(shared.getClass());
+		    	ser.writeObject(element, referenceProcess, shared);
+	    		array.add(element);
+		    	System.out.println(element);
 	    	}
 	    }
 	   
-		return root.build();
+		return array.build();
 	}
 	
 	public static void main(String[] args) {
+		Person parent = new Person("sasa", 10, null);
+		Person p = new Person("sasa", 10, parent);
+		
 		LarkOutput l = new LarkOutput();
+		JsonArray ja = l.writeObject(p);
 
 		OutputStream out = new ByteArrayOutputStream();
 		
 		 JsonWriter writer = Json.createWriter(out);
+		 writer.writeArray(ja);
 	     System.out.println(out);
 		
 	}
 }
+
+
+

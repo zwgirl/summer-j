@@ -689,10 +689,22 @@ abstract public class ReferenceBinding extends TypeBinding {
 								return;
 						}
 						return;
-					case 'R' :
-						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_RUNTIMEEXCEPTION[2]))
-							this.id = 	TypeIds.T_JavaLangRuntimeException;
-						break;
+					case 'R' :   //cym 2015-03-14 add 
+						switch(typeName.length){
+						case 12: //RemotingBean
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_REMOTINGBEAN[2]))
+								this.id = TypeIds.T_JavaLangRemotingBean;
+							return;
+						case 16: //JAVA_LANG_RUNTIMEEXCEPTION
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_RUNTIMEEXCEPTION[2]))
+								this.id = TypeIds.T_JavaLangRuntimeException;
+							return;
+						case 15: //JAVA_LANG_REMOTINGSERVICE
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_REMOTINGSERVICE[2]))
+								this.id = TypeIds.T_JavaLangRemotingService;
+							return;
+						}
+						return;
 					case 'S' :
 						switch (typeName.length) {
 							case 5 :
@@ -2205,7 +2217,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 		return Binding.NO_EXCEPTIONS;
 	}
 	
-	private char[] computeFileName(){
+	public char[] computeFileName(){
 		char[] fileName = this.sourceFileName;
 		if (fileName != null) {
 			// retrieve the actual file name from the full path (sources are generally only containing it already)
@@ -2222,7 +2234,12 @@ abstract public class ReferenceBinding extends TypeBinding {
 		return CharOperation.concatWith(compoundName, '.');
 	}
 	
-	public void generate(StringBuffer output){
+	public void generate(StringBuffer output, TypeBinding currentType){
+		if(this == currentType || (currentType!= null && this.original() == currentType.original())){
+			output.append(this.sourceName);
+			return;
+		}
+		
 		if(this.isMemberType()){
 			Stack<ReferenceBinding> outters = new Stack<ReferenceBinding>();
 			ReferenceBinding outter = this;
@@ -2234,8 +2251,13 @@ abstract public class ReferenceBinding extends TypeBinding {
 				outter = outter.enclosingType();
 			}
 			if((outter.modifiers & ClassFileConstants.AccModule) != 0){
-				output.append("__lc(\"").append(CharOperation.concatWith(outter.compoundName, '.'))
+				if(outter.compoundName.length == 3 && CharOperation.prefixEquals(TypeConstants.JAVA, outter.compoundName[0]) &&
+						CharOperation.prefixEquals(TypeConstants.LANG, outter.compoundName[1])){
+					output.append("__lc(\"").append(CharOperation.concatWith(outter.compoundName, '.')).append("\")");
+				} else {
+					output.append("__lc(\"").append(CharOperation.concatWith(outter.compoundName, '.'))
 					.append("\", \"").append(outter.computeFileName()).append("\")");
+				}
 			} else {
 				output.append("__lc(\"").append(CharOperation.concatWith(outter.compoundName, '.')).append("\")");
 			}
@@ -2243,15 +2265,22 @@ abstract public class ReferenceBinding extends TypeBinding {
 				output.append(".").append(outters.pop().sourceName);
 			}
 		} else {
-			if((this.modifiers & ClassFileConstants.AccNative) != 0){
+			if((this.modifiers & ClassFileConstants.AccModule) != 0){
+				if((this.modifiers & ClassFileConstants.AccNative) != 0){
+					output.append(this.sourceName);
+				} else {
+					if(this.compoundName.length == 3 && CharOperation.prefixEquals(TypeConstants.JAVA, this.compoundName[0]) &&
+							CharOperation.prefixEquals(TypeConstants.LANG, this.compoundName[1])){
+						output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.')).append("\")");
+					} else {
+						output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.'))
+						.append("\", \"").append(this.computeFileName()).append("\")");
+					}
+				}
+			} else if((this.modifiers & ClassFileConstants.AccNative) != 0){
 				output.append(this.sourceName);
 			} else {
-				if((this.modifiers & ClassFileConstants.AccModule) != 0){
-					output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.'))
-						.append("\", \"").append(this.computeFileName()).append("\")");
-				} else {
-					output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.')).append("\")");
-				}
+				output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.')).append("\")");
 			}
 		}
 	}

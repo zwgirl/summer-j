@@ -1181,7 +1181,7 @@ public class QualifiedNameReference extends NameReference {
 				FieldBinding fieldBinding = (FieldBinding) this.binding;
 				if(fieldBinding.isStatic()){
 					ReferenceBinding enclosing = fieldBinding.declaringClass;
-					enclosing.generate(output);
+					enclosing.generate(output, scope.classScope().enclosingSourceType());
 					output.append('.').append(fieldBinding.name);
 				}
 			}

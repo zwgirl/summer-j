@@ -2,7 +2,6 @@ package org.bark.remoting;
 
 import static org.bark.remoting.LarkConstants.CLASS;
 import static org.bark.remoting.LarkConstants.VALUE;
-import static org.bark.remoting.LarkConstants.ELEMNTTYPE;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -13,75 +12,72 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
+
 public class LarkInput {
 
 	@SuppressWarnings("unchecked")
-	public Object readObject(String data) {
-		try (InputStream is = new ByteArrayInputStream(data.getBytes());
-				JsonReader rdr = Json.createReader(is)) {
-			JsonArray root = rdr.readArray();
+	public Object readObject(JsonArray root) {
+		try{
 			int length = root.size();
 			Object[] handlers = new Object[length];
 			Class<?>[] clazzs = new Class<?>[length];
 			boolean[] flags = new boolean[length];
-			for(int i=0; i<length; i++){
+			for (int i = 0; i < length; i++) {
 				JsonObject element = root.getJsonObject(i);
 				String className = element.getString(CLASS);
+				
+				flags[i] = true;
+				
 				Class<?> clazz = Class.forName(className);
 				clazzs[i] = clazz;
-				if(clazz.isArray()){
-					String elementTypeName = element.getString(ELEMNTTYPE);
-					Class<?> componentType = Class.forName(elementTypeName);
+				if (clazz.isArray()) {
 					JsonArray jsonArray = element.getJsonArray(VALUE);
-					handlers[i] = Array.newInstance(componentType, jsonArray.size());
-					flags[i] = true;
+					handlers[i] = Array.newInstance(
+							Class.forName("[Ljava.lang.Object;"),
+							jsonArray.size());
+					flags[i] = false;
 				}
-				if(clazz.equals(int.class) || clazz.equals(byte.class) || clazz.equals(short.class) ||
-						clazz.equals(long.class) ){
+				if (clazz.equals(int.class) || clazz.equals(byte.class)
+						|| clazz.equals(short.class)
+						|| clazz.equals(long.class)) {
 					handlers[i] = element.getInt(VALUE);
-					flags[i] = true;
-				} else if(clazz.equals(float.class) || clazz.equals(double.class)){
+				} else if (clazz.equals(float.class)
+						|| clazz.equals(double.class)) {
 					handlers[i] = element.getJsonNumber(VALUE).doubleValue();
-					flags[i] = true;
-				} else if(clazz.equals(Class.class)){
+				} else if (clazz.equals(Class.class)) {
 					handlers[i] = Class.forName(element.getString(VALUE));
-					flags[i] = true;
-				} else if(clazz.isEnum()){
+
+				} else if (clazz.isEnum()) {
 					clazz = Class.forName(className);
-					handlers[i] = Enum.valueOf((Class) clazz, element.getString(LarkConstants.VALUE));
-					flags[i] = true;
-				} else if(clazz.equals(String.class)){
+					handlers[i] = Enum.valueOf((Class) clazz,
+							element.getString(LarkConstants.VALUE));
+				} else if (clazz.equals(String.class)) {
 					handlers[i] = element.getJsonNumber(VALUE).doubleValue();
-					flags[i] = true;
-				} else if(clazz.equals(java.util.Date.class)){
+				} else if (clazz.equals(java.util.Date.class)) {
 					handlers[i] = new java.util.Date(element.getInt(VALUE));
-					flags[i] = true;
-				} else if(clazz.equals(java.sql.Date.class)){
+				} else if (clazz.equals(java.sql.Date.class)) {
 					handlers[i] = new java.sql.Date(element.getInt(VALUE));
-					flags[i] = true;
-				} else if(clazz.equals(java.sql.Time.class)){
+				} else if (clazz.equals(java.sql.Time.class)) {
 					handlers[i] = new java.sql.Time(element.getInt(VALUE));
-					flags[i] = true;
-				} else if(clazz.equals(java.sql.Timestamp.class)){
+				} else if (clazz.equals(java.sql.Timestamp.class)) {
 					handlers[i] = new java.sql.Timestamp(element.getInt(VALUE));
-					flags[i] = true;
 				} else {
 					handlers[i] = clazz.newInstance();
+					flags[i] = false;
 				}
 			}
-			
-			for(int i=0; i<length; i++){
-				if(flags[i]){
+
+			for (int i = 0; i < length; i++) {
+				if (flags[i]) {
 					continue;
 				}
-				Deserializer deser = DeserializerFactory.getInstance().getDeserializer(clazzs[i]);
-				deser.readObject(root.getJsonObject(i), handlers);
+				Deserializer deser = DeserializerFactory.getInstance()
+						.getDeserializer(clazzs[i]);
+				deser.readObject(root.getJsonObject(i), handlers, handlers[i]);
 			}
-			
+
 			return handlers[0];
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -94,7 +90,29 @@ public class LarkInput {
 		}
 		return null;
 	}
-	
-	
+
+	public static void main(String[] args) {
+
+		try (InputStream is = getSearchStream();
+				JsonReader rdr = Json.createReader(is)) {
+
+			JsonArray array = rdr.readArray();
+			for (JsonObject result : array.getValuesAs(JsonObject.class)) {
+				System.out.println(result);
+			}
+			
+			System.out.println(rdr.toString());
+			
+			LarkInput li = new LarkInput();
+			Object o = li.readObject(array);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private static InputStream getSearchStream() {
+		return LarkInput.class.getResourceAsStream("test.json");
+	}
 
 }

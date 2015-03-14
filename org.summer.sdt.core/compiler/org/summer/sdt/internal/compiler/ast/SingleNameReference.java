@@ -1069,7 +1069,7 @@ public class SingleNameReference extends NameReference implements OperatorIds {
 		if(this.binding instanceof FieldBinding){
 			FieldBinding field = (FieldBinding) this.binding;
 			if(field.isStatic()){
-				field.declaringClass.generate(output);
+				field.declaringClass.generate(output, scope.classScope().enclosingSourceType());
 				output.append(".").append(this.token);
 			} else {
 				if(field.declaringClass.sourceName != null && field.declaringClass.sourceName.length > 0 && (field.declaringClass.sourceName[0] == 'W' || field.declaringClass.sourceName[0] == 'G') &&
