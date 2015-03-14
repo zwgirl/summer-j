@@ -1728,9 +1728,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	}
 	
 	/**
-	 * Generic javascript generation for type
+	 * generate java for remoting service interface
 	 */
-	public void generateJava(Scope scope, JavaFile javaFile) {
+	public void generateRemotingService(Scope scope, JavaFile javaFile) {
 		if (this.ignoreFurtherInvestigation) {
 			if (this.binding == null)
 				return;
@@ -1741,8 +1741,59 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				this.javadoc.print(0, output);
 			}
 			printIndent(0, output);
-			generateJavaHeader(0, output);
-			generateJavaBody(0, output);
+			generateRemotingBeanHeader(0, output);
+			generateRemotingServiceBody(0, output);
+		} catch (AbortType e) {
+			if (this.binding == null)
+				return;
+			JsFile.createProblemType(
+				this,
+				this.scope.referenceCompilationUnit().compilationResult);
+		}
+	}
+	
+	public StringBuffer generateRemotingServiceBody(int indent, StringBuffer output) {
+		output.append(" {"); //$NON-NLS-1$
+		
+//		if (this.memberTypes != null) {
+//			for (int i = 0; i < this.memberTypes.length; i++) {
+//				if (this.memberTypes[i] != null) {
+//					output.append('\n');
+//					this.memberTypes[i].print(indent + 1, output);
+//				}
+//			}
+//		}
+		if (this.methods != null) {
+			for (int i = 0; i < this.methods.length; i++) {
+				if (this.methods[i] != null) {
+					output.append('\n');
+					this.methods[i].print(indent + 1, output);
+				}
+			}
+		}
+		
+//		generateSerializer(indent + 1, output);
+		
+		output.append('\n');
+		return printIndent(indent, output).append('}');
+	}
+	
+	/**
+	 * Generic javascript generation for type
+	 */
+	public void generateRemotingBean(Scope scope, JavaFile javaFile) {
+		if (this.ignoreFurtherInvestigation) {
+			if (this.binding == null)
+				return;
+		}
+		try {
+			StringBuffer output = javaFile.content;
+			if (this.javadoc != null) {
+				this.javadoc.print(0, output);
+			}
+			printIndent(0, output);
+			generateRemotingBeanHeader(0, output);
+			generateRemotingBeanBody(0, output);
 		} catch (AbortType e) {
 			if (this.binding == null)
 				return;
@@ -1819,7 +1870,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		
 	}
 
-	public StringBuffer generateJavaHeader(int indent, StringBuffer output) {
+	public StringBuffer generateRemotingBeanHeader(int indent, StringBuffer output) {
 		if (this.annotations != null) {
 			printAnnotations(this.annotations, output);
 		}
@@ -1872,7 +1923,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		return output;
 	}
 	
-	public StringBuffer generateJavaBody(int indent, StringBuffer output) {
+	public StringBuffer generateRemotingBeanBody(int indent, StringBuffer output) {
 		output.append(" {"); //$NON-NLS-1$
 		
 //		if (this.memberTypes != null) {
@@ -1894,13 +1945,16 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			for (int fieldI = 0; fieldI < this.fields.length; fieldI++) {
 				FieldDeclaration field = this.fields[fieldI];
 				if (field != null) {
-					output.append('\n');
+					if(field.binding == null){
+						continue;
+					}
 					
 					if(field instanceof Initializer || (field.binding.modifiers & ClassFileConstants.AccProperty) != 0
 							|| (field.binding.modifiers & ClassFileConstants.AccIndexer) != 0){
 						continue;
 					}
 					
+					output.append('\n');
 					char[] name = new char[field.name.length];
 					System.arraycopy(field.name, 0, name, 0, field.name.length);;
 					boolean underscore = CharOperation.indexOf('_', field.name) >= 0;

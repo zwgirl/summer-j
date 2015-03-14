@@ -362,7 +362,7 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 			generateJavascriptModule();
 		}
 		
-		if(this.types!=null && this.types.length>0 && hasRemotingBean()){
+		if(this.types!=null && this.types.length>0 && hasRemotingBeanOrService()){
 			generateJava();
 		}
 		
@@ -473,7 +473,12 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 			
 			for (int i = 0; i < this.types.length; i++) {
 				TypeDeclaration type = this.types[i];
-				type.generateJava(scope, javaFile);
+				if((type.binding.tagBits & TagBits.AnnotationRemotingBean) != 0){
+					type.generateRemotingBean(scope, javaFile);
+				} else if((type.binding.tagBits & TagBits.AnnotationRemotingService) != 0){
+					type.generateRemotingService(scope, javaFile);
+				}
+				
 			}
 			
 			this.compilationResult.record(CharOperation.concatWith(getCompoundName(), '/'), javaFile);
@@ -481,10 +486,11 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	}
 	
 	//check has remotingBean
-	private boolean hasRemotingBean(){
+	private boolean hasRemotingBeanOrService(){
 		for (int i = 0; i < this.types.length; i++) {
 			TypeDeclaration type = this.types[i];
-			if((type.binding.tagBits & TagBits.AnnotationRemotingBean) != 0){
+			if((type.binding.tagBits & TagBits.AnnotationRemotingBean) != 0 ||
+					(type.binding.tagBits & TagBits.AnnotationRemotingService) != 0){
 				return true;
 			}
 		}
