@@ -12,5 +12,6 @@
 	<classpathentry kind="src" path="eval"/>
 	<classpathentry kind="src" path="grammar"/>
 	<classpathentry kind="src" path="test"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.bark.remoting"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

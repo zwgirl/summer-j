@@ -17,9 +17,15 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
+import java.nio.file.attribute.AclEntry.Builder;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.JsonValue;
+
+import org.bark.remoting.LarkConstants;
 import org.summer.sdt.core.compiler.CategorizedProblem;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.compiler.IProblem;
@@ -1802,73 +1808,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				this.scope.referenceCompilationUnit().compilationResult);
 		}
 	}
-	
-	private void generateSerializer(int indent, StringBuffer output) {
-		output.append('\n');
-		printIndent(indent, output);
-		output.append("static {");
-		
-		output.append('\n');
-		printIndent(indent + 1, output);
-		output.append("org.bark.remoting.SerializerFactory.getInstance().register(");
-		output.append(this.binding.sourceName).append(".class, new org.bark.remoting.Serializer(){");
-		
-		output.append('\n');
-		printIndent(indent + 2, output);
-		output.append("@Override");
-		
-		output.append('\n');
-		printIndent(indent + 2, output);
-		output.append("public void writeObject(javax.json.JsonObjectBuilder builder, org.bark.remoting.ReferenceProcessor handler, Object value) {");
-//					builder.add("name", ((Person)value).name);
-//					builder.add("name", ((Person)value).age);
-		
-		output.append('\n');
-		printIndent(indent + 2, output);
-		output.append("}");
-		
-		output.append('\n');
-		printIndent(indent + 1, output);
-		output.append("});");
-		
-		output.append('\n');
-		printIndent(indent + 1, output);
-		output.append("org.bark.remoting.DeserializerFactory.getInstance().register(");
-		output.append(this.binding.sourceName).append(".class, new org.bark.remoting.Deserializer(){");
-		
-		output.append('\n');
-		printIndent(indent + 2, output);
-		output.append("@Override");
-		
-		output.append('\n');
-		printIndent(indent + 2, output);
-		output.append("public Object readObject(javax.json.JsonObject jsonObj, Object[] handlers, Object obj) {");
-					
-//					Person p = (Person) obj;
-//					p.name = jsonObj.getString("name");
-//					p.age = jsonObj.getInt("name");
-//					
-//					JsonValue ref = jsonObj.get("parent");
-//					if(ref == JsonValue.NULL){
-//						p.parent = null;
-//					} else {
-//						p.parent = (Person) handlers[((JsonNumber)ref).intValue()];
-//					}
-//					
-//					return null;
-		output.append('\n');
-		printIndent(indent + 2, output);
-		output.append("}");
-		
-		output.append('\n');
-		printIndent(indent + 1, output);
-		output.append("});");
-		
-		output.append('\n');
-		printIndent(indent, output);
-		output.append("}");
-		
-	}
 
 	public StringBuffer generateRemotingBeanHeader(int indent, StringBuffer output) {
 		if (this.annotations != null) {
@@ -1935,79 +1874,364 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 //			}
 //		}
 		if (this.fields != null) {
-			for (int fieldI = 0; fieldI < this.fields.length; fieldI++) {
-				if (this.fields[fieldI] != null) {
+			for (int i = 0; i < this.fields.length; i++) {
+				if (this.fields[i] != null) {
 					output.append('\n');
-					this.fields[fieldI].print(indent + 1, output);
+					if (this.fields[i].type != null) {
+						if(this.fields[i].binding.type.original().id == TypeIds.T_JavaLangArray){
+							printIndent(indent + 1, output);
+							printModifiers(this.fields[i].modifiers, output);
+							if (this.fields[i].annotations != null) {
+								printAnnotations(this.fields[i].annotations, output);
+								output.append(' ');
+							}
+							output.append("Object[] ");
+							output.append(this.fields[i].name).append(';');
+//							switch(this.fields[i].getKind()) {
+//								case AbstractVariableDeclaration.ENUM_CONSTANT:
+//									if (this.initialization != null) {
+//										this.initialization.printExpression(indent, output);
+//									}
+//									break;
+//								default:
+//									if (this.initialization != null) {
+//										output.append(" = "); //$NON-NLS-1$
+//										this.initialization.printExpression(indent, output);
+//									}
+//							}
+						} else {
+							this.fields[i].print(indent + 1, output);
+						}
+					}
 				}
 			}
 			
-			for (int fieldI = 0; fieldI < this.fields.length; fieldI++) {
-				FieldDeclaration field = this.fields[fieldI];
-				if (field != null) {
-					if(field.binding == null){
-						continue;
+			if((this.modifiers & ClassFileConstants.AccEnum) != 0 || (this.modifiers & ClassFileConstants.AccInterface) != 0){
+				
+			} else {
+				for (int i = 0; i < this.fields.length; i++) {
+					FieldDeclaration field = this.fields[i];
+					if (field != null) {
+						if(field.binding == null){
+							continue;
+						}
+						
+						if(field instanceof Initializer || (field.binding.modifiers & ClassFileConstants.AccProperty) != 0
+								|| (field.binding.modifiers & ClassFileConstants.AccIndexer) != 0){
+							continue;
+						}
+						
+						output.append('\n');
+						char[] name = new char[field.name.length];
+						System.arraycopy(field.name, 0, name, 0, field.name.length);;
+						boolean underscore = CharOperation.indexOf('_', field.name) >= 0;
+						if(underscore){
+							name  = CharOperation.subarray(name, 1, -1);
+						}
+						
+						name[0] = Character.toUpperCase(name[0]);
+						
+						output.append('\n');
+						printIndent(indent + 1, output);
+						printModifiers(this.modifiers, output);
+						if (field.type != null) {
+							if(field.binding.type.original().id == TypeIds.T_JavaLangArray){
+								output.append("Object[] ");
+							} else {
+								field.type.print(0, output).append(' ');
+							}
+						}
+						
+						output.append(" ").append("get");
+						output.append(name).append("() {");	
+						
+						output.append('\n');
+						printIndent(indent + 2, output);
+						output.append("return this.").append(field.name).append(";");
+						
+						output.append('\n');
+						printIndent(indent + 1, output);
+						output.append("}");
+						
+						
+						output.append('\n');
+						printIndent(indent + 1, output);
+						printModifiers(this.modifiers, output);
+						output.append("void");
+						
+						output.append(" ").append("set");
+						output.append(name).append("(");
+						if (field.type != null) {
+							if(field.binding.type.original().id == TypeIds.T_JavaLangArray){
+								output.append("Object[] ");
+							} else {
+								field.type.print(0, output).append(' ');
+							}
+						}
+						output.append("value").append(") {");	
+						
+						output.append('\n');
+						printIndent(indent + 2, output);
+						output.append("this.").append(field.name).append(" = value;");
+						
+						output.append('\n');
+						printIndent(indent + 1, output);
+						output.append("}");
 					}
+				}
+				
+				generateSerializer(indent + 1, output);
+			}
+		}
+		
+		output.append('\n');
+		return printIndent(indent, output).append('}');
+	}
+	
+	private void generateSerializer(int indent, StringBuffer output) {
+		output.append('\n');
+		printIndent(indent, output);
+		output.append("static {");
+		
+		output.append('\n');
+		printIndent(indent + 1, output);
+		output.append("org.bark.remoting.SerializerFactory.getInstance().register(");
+		output.append(this.binding.sourceName).append(".class, new org.bark.remoting.Serializer(){");
+		
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("@Override");
+		
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("public void writeObject(javax.json.JsonObjectBuilder builder, org.bark.remoting.ReferenceProcessor handler, Object value) {");
+		if(this.fields != null){
+			String varName = "__o";
+			output.append('\n');
+			printIndent(indent + 3, output);
+			output.append(this.binding.sourceName).append(' ').append(varName).append(" = (").append(this.binding.sourceName).append(")value;");
+			for(FieldDeclaration field : this.fields){
+				if(field.binding == null){
+					continue;
+				}
+				
+				if((field.binding.modifiers & ClassFileConstants.AccProperty) != 0 
+						|| (field.binding.modifiers & ClassFileConstants.AccIndexer) != 0
+						|| (field.binding.modifiers & ClassFileConstants.AccTransient) != 0
+						|| field.binding.isStatic()){
+					continue;
+				}
+				output.append('\n');
+				printIndent(indent + 3, output);
+
+				switch(field.binding.type.original().id){
+				case TypeIds.T_char:
+				case TypeIds.T_byte:
+				case TypeIds.T_short:
+				case TypeIds.T_int:
+				case TypeIds.T_long:
+				case TypeIds.T_float:
+				case TypeIds.T_double:
+				case TypeIds.T_boolean:
+					output.append("builder.add(\"").append(field.name).append("\", ").append(varName).append('.').append(field.name).append(");");
+					continue;
 					
-					if(field instanceof Initializer || (field.binding.modifiers & ClassFileConstants.AccProperty) != 0
-							|| (field.binding.modifiers & ClassFileConstants.AccIndexer) != 0){
-						continue;
-					}
-					
-					output.append('\n');
-					char[] name = new char[field.name.length];
-					System.arraycopy(field.name, 0, name, 0, field.name.length);;
-					boolean underscore = CharOperation.indexOf('_', field.name) >= 0;
-					if(underscore){
-						name  = CharOperation.subarray(name, 1, -1);
-					}
-					
-					name[0] = Character.toUpperCase(name[0]);
-					
-					output.append('\n');
-					printIndent(indent + 1, output);
-					printModifiers(this.modifiers, output);
-					if (field.type != null) {
-						field.type.print(0, output).append(' ');
-					}
-					
-					output.append(" ").append("get");
-					output.append(name).append("() {");	
-					
-					output.append('\n');
-					printIndent(indent + 2, output);
-					output.append("return this.").append(field.name).append(";");
-					
-					output.append('\n');
-					printIndent(indent + 1, output);
-					output.append("}");
-					
-					
-					output.append('\n');
-					printIndent(indent + 1, output);
-					printModifiers(this.modifiers, output);
-					output.append("void");
-					
-					output.append(" ").append("set");
-					output.append(name).append("(");
-					field.type.print(0, output).append(' ');
-					output.append("value").append(") {");	
-					
-					output.append('\n');
-					printIndent(indent + 2, output);
-					output.append("this.").append(field.name).append(" = value;");
-					
-					output.append('\n');
-					printIndent(indent + 1, output);
-					output.append("}");
+				case TypeIds.T_JavaLangByte:
+					output.append("builder = ").append(varName).append('.').append(field.name).append(" == null ? builder.addNull(").
+					append("\"").append(field.name).append("\") : builder.add(\"").append(field.name).append("\", (byte)").append(varName).append('.').append(field.name).append(");");
+					continue;
+				case TypeIds.T_JavaLangShort:
+					output.append("builder = ").append(varName).append('.').append(field.name).append(" == null ? builder.addNull(").
+					append("\"").append(field.name).append("\") : builder.add(\"").append(field.name).append("\", (short)").append(varName).append('.').append(field.name).append(");");
+					continue;
+				case TypeIds.T_JavaLangLong:
+					output.append("builder = ").append(varName).append('.').append(field.name).append(" == null ? builder.addNull(").
+					append("\"").append(field.name).append("\") : builder.add(\"").append(field.name).append("\", (long)").append(varName).append('.').append(field.name).append(");");
+					continue;
+				case TypeIds.T_JavaLangInteger:
+					output.append("builder = ").append(varName).append('.').append(field.name).append(" == null ? builder.addNull(").
+					append("\"").append(field.name).append("\") : builder.add(\"").append(field.name).append("\", (int)").append(varName).append('.').append(field.name).append(");");
+					continue;
+				case TypeIds.T_JavaLangFloat:
+					output.append("builder = ").append(varName).append('.').append(field.name).append(" == null ? builder.addNull(").
+					append("\"").append(field.name).append("\") : builder.add(\"").append(field.name).append("\", (float)").append(varName).append('.').append(field.name).append(");");
+					continue;
+				case TypeIds.T_JavaLangDouble:
+					output.append("builder = ").append(varName).append('.').append(field.name).append(" == null ? builder.addNull(").
+					append("\"").append(field.name).append("\") : builder.add(\"").append(field.name).append("\", (double)").append(varName).append('.').append(field.name).append(");");
+					continue;
+				case TypeIds.T_JavaLangBoolean:
+					output.append("builder = ").append(varName).append('.').append(field.name).append(" == null ? builder.addNull(").
+					append("\"").append(field.name).append("\") : builder.add(\"").append(field.name).append("\", (boolean)").append(varName).append('.').append(field.name).append(");");
+					continue;
+				case TypeIds.T_JavaLangClass:
+					output.append("builder = ").append(varName).append('.').append(field.name).append(" == null ? builder.addNull(").
+					append("\"").append(field.name).append("\") : builder.add(\"").append(field.name).append("\", ").append(varName).append('.').append(field.name).append(".getName());");
+					continue;
+				case TypeIds.T_JavaLangString:
+					output.append("builder = ").append(varName).append('.').append(field.name).append(" == null ? builder.addNull(").
+					append("\"").append(field.name).append("\") : builder.add(\"").append(field.name).append("\", ").append(varName).append('.').append(field.name).append(");");
+					continue;
+				case TypeIds.T_JavaLangObject:
+				case TypeIds.T_JavaLangArray:
+					output.append("builder = ").append(varName).append('.').append(field.name).append(" == null ? builder.addNull(").
+					append("\"").append(field.name).append("\") : builder.add(\"").append(field.name).append("\", handler.shared(").append(varName).append('.').append(field.name).append("));");
+					continue;
+				}
+
+				if(field.binding.type.isEnum()){
+					output.append("builder = ").append(varName).append('.').append(field.name).append(" == null ? builder.addNull(").
+					append("\"").append(field.name).append("\") : builder.add(\"").append(field.name).append("\", ").append(varName).append('.').append(field.name).append(".name());");
+					continue;
+				} else {
+					output.append("builder = ").append(varName).append('.').append(field.name).append(" == null ? builder.addNull(").
+					append("\"").append(field.name).append("\") : builder.add(\"").append(field.name).append("\", handler.shared(").append(varName).append('.').append(field.name).append("));");
 				}
 			}
 		}
 		
-		generateSerializer(indent + 1, output);
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("}");
 		
 		output.append('\n');
-		return printIndent(indent, output).append('}');
+		printIndent(indent + 1, output);
+		output.append("});");
+		
+		output.append('\n');
+		printIndent(indent + 1, output);
+		output.append("org.bark.remoting.DeserializerFactory.getInstance().register(");
+		output.append(this.binding.sourceName).append(".class, new org.bark.remoting.Deserializer(){");
+		
+		
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("@SuppressWarnings({ \"unchecked\", \"rawtypes\" })");
+			
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("@Override");
+		
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("public Object readObject(javax.json.JsonObject jsonObj, Object[] handlers, Object obj) throws Exception {");
+
+		if(this.fields != null){
+			String varName = "__o";
+			output.append('\n');
+			printIndent(indent + 3, output);
+			output.append(this.binding.sourceName).append(' ').append(varName).append(" = (").append(this.binding.sourceName).append(")obj;");
+			for(FieldDeclaration field : this.fields){
+				if(field.binding == null){
+					continue;
+				}
+				
+				if((field.binding.modifiers & ClassFileConstants.AccProperty) != 0 
+						|| (field.binding.modifiers & ClassFileConstants.AccIndexer) != 0
+						|| (field.binding.modifiers & ClassFileConstants.AccTransient) != 0
+						|| field.binding.isStatic()){
+					continue;
+				}
+				output.append('\n');
+				printIndent(indent + 3, output);
+				output.append(varName).append('.').append(field.name).append(" = ");
+				switch(field.binding.type.original().id){
+				case TypeIds.T_char:
+					output.append("(char)jsonObj.getInt(\"").append(field.name).append("\");");
+					continue;
+				case TypeIds.T_byte:
+					output.append("(byte)jsonObj.getInt(\"").append(field.name).append("\");");
+					continue;
+				case TypeIds.T_short:
+					output.append("(short)jsonObj.getInt(\"").append(field.name).append("\");");
+					continue;
+				case TypeIds.T_int:
+					output.append("jsonObj.getInt(\"").append(field.name).append("\");");
+					continue;
+				case TypeIds.T_long:
+					output.append("(long)jsonObj.getInt(\"").append(field.name).append("\");");
+					continue;
+				case TypeIds.T_float:
+					output.append("(float)jsonObj.getJsonNumber(\"").append(field.name).append("\").doubleValue();");
+					continue;
+				case TypeIds.T_double:
+					output.append("(double)jsonObj.getJsonNumber(\"").append(field.name).append("\").doubleValue();");
+					continue;
+				case TypeIds.T_boolean:
+					output.append("(boolean)jsonObj.getBoolean(\"").append(field.name).append("\");");
+					continue;
+					
+				case TypeIds.T_JavaLangByte:
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : (byte)jsonObj.getJsonNumber(\"")
+					.append(field.name).append("\").intValue();");
+					continue;
+				case TypeIds.T_JavaLangShort:
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : (short)jsonObj.getJsonNumber(\"")
+					.append(field.name).append("\").intValue();");
+					continue;
+				case TypeIds.T_JavaLangLong:
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : (long)jsonObj.getJsonNumber(\"")
+					.append(field.name).append("\").longValue();");
+					continue;
+				case TypeIds.T_JavaLangInteger:
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : jsonObj.getJsonNumber(\"")
+					.append(field.name).append("\").intValue();");
+					continue;
+				case TypeIds.T_JavaLangFloat:
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : (float)jsonObj.getJsonNumber(\"")
+					.append(field.name).append("\").doubleValue();");
+					continue;
+				case TypeIds.T_JavaLangDouble:
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : (double)jsonObj.getJsonNumber(\"")
+					.append(field.name).append("\").doubleValue();");
+					continue;
+				case TypeIds.T_JavaLangBoolean:
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : jsonObj.getBoolean(\"")
+					.append(field.name).append("\");");
+					continue;
+				case TypeIds.T_JavaLangClass:
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : (Class)Class.forName(jsonObj.getString(\"")
+						.append(field.name).append("\"));");
+					continue;
+				case TypeIds.T_JavaLangString:
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : jsonObj.getString(\"")
+					.append(field.name).append("\");");
+					continue;
+				case TypeIds.T_JavaLangObject:
+				case TypeIds.T_JavaLangArray:
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : handlers[jsonObj.getInt(\"")
+						.append(field.name).append("\")];");
+					continue;
+				}
+
+				if(field.binding.type.isEnum()){
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : ");
+					field.type.print(0, output);
+					output.append(".valueOf(jsonObj.getString(\"").append(field.name).append("\"));");
+					continue;
+				} else {
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : handlers[jsonObj.getInt(\"")
+					.append(field.name).append("\")];");
+				}
+			}
+			
+			output.append('\n');
+			printIndent(indent + 3, output);
+			output.append("return obj;");
+		}
+		
+		output.append('\n');
+		printIndent(indent + 2, output);
+		output.append("}");
+		
+		output.append('\n');
+		printIndent(indent + 1, output);
+		output.append("});");
+		
+		output.append('\n');
+		printIndent(indent, output);
+		output.append("}");
+		
 	}
 	
 	/**

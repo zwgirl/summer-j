@@ -363,7 +363,7 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 		}
 		
 		if(this.types!=null && this.types.length>0 && hasRemotingBeanOrService()){
-			generateJava();
+			generateBean();
 		}
 		
 		if (this.ignoreFurtherInvestigation) {
@@ -389,71 +389,13 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	}
 	
 	//generate java for RemotingBean
-	public void generateJava() {
-//		JavaFile javaFile = JavaFile.getNewInstance(this.binding.compoundName);
-//		StringBuffer output = javaFile.content;
-//		generateJavaInternal(scope, 0, output);
-//		output.append(";");
-//		this.scope.referenceCompilationUnit().compilationResult.record(this.binding.constantPoolName(), javaFile);
-//		
-//		if (this.currentPackage != null) {
-//			printIndent(indent, output).append("package "); //$NON-NLS-1$
-//			this.currentPackage.print(0, output, false).append(";\n"); //$NON-NLS-1$
-//		}
-//		if (this.imports != null)
-//			for (int i = 0; i < this.imports.length; i++) {
-//				printIndent(indent, output).append("import "); //$NON-NLS-1$
-//				ImportReference currentImport = this.imports[i];
-//				if (currentImport.isStatic()) {
-//					output.append("static "); //$NON-NLS-1$
-//				}
-//				currentImport.print(0, output).append(";\n"); //$NON-NLS-1$
-//			}
-
-//		TypeDeclaration mainType = null, firstPublicType = null;
-//		boolean multiPublicType = false;
-//		
-//		for (int i = 0; i < this.types.length; i++) {
-//			TypeDeclaration type = this.types[i];
-//			if(CharOperation.equals(type.name, getMainTypeName())){
-//				mainType = type;
-//			}
-//			
-//			if((type.modifiers & ClassFileConstants.AccPublic) !=0){
-//				
-//				if(firstPublicType == null){
-//					firstPublicType = type;
-//				} else {
-//					multiPublicType = true;
-//				}
-//			}
-//		}
-//		
-//		JavaFile javaFile = null;
-//		if(firstPublicType == null){
-//			if(mainType == null){
-//				if (this.currentPackage != null) {
-//					javaFile = JavaFile.getNewInstance(CharOperation.arrayConcat(this.currentPackage.tokens, getMainTypeName()));
-//				} else {
-//					javaFile = JavaFile.getNewInstance(new char[][]{getMainTypeName()});
-//				}
-//			} else {
-//				javaFile = JavaFile.getNewInstance(new char[][]{getMainTypeName()});
-//			}
-//			
-//			for (int i = 0; i < this.types.length; i++) {
-//				TypeDeclaration type = this.types[i];
-//			}
-//		} else {
-//			
-//		}
+	public void generateBean() {
 		
 		if(module){
 			
 		} else {
 			JavaFile javaFile = JavaFile.getNewInstance(getCompoundName());
 			StringBuffer output = javaFile.content;
-//			print(0, output);
 			
 			int indent = 0;
 			if (this.currentPackage != null) {
@@ -467,18 +409,19 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 					if (currentImport.isStatic()) {
 						output.append("static "); //$NON-NLS-1$
 					}
-					currentImport.print(0, output).append(";\n"); //$NON-NLS-1$
+					currentImport.print(0, output).append(";"); //$NON-NLS-1$
 				}
 			
 			
 			for (int i = 0; i < this.types.length; i++) {
+				output.append("\n");
+				printIndent(indent, output);
 				TypeDeclaration type = this.types[i];
 				if((type.binding.tagBits & TagBits.AnnotationRemotingBean) != 0){
 					type.generateRemotingBean(scope, javaFile);
 				} else if((type.binding.tagBits & TagBits.AnnotationRemotingService) != 0){
 					type.generateRemotingService(scope, javaFile);
 				}
-				
 			}
 			
 			this.compilationResult.record(CharOperation.concatWith(getCompoundName(), '/'), javaFile);
