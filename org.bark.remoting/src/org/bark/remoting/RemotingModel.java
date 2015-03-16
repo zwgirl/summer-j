@@ -1,4 +1,11 @@
-package java.lang;
+package org.bark.remoting;
+
+import java.lang.Exception;
+import java.lang.Object;
+import java.lang.Override;
+import java.lang.RemotingBean;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 @RemotingBean
 public class RemotingModel {

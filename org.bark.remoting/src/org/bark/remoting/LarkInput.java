@@ -33,8 +33,9 @@ public class LarkInput {
 				clazzs[i] = clazz;
 				if (clazz.isArray()) {
 					JsonArray jsonArray = element.getJsonArray(VALUE);
-					handlers[i] = Array.newInstance(Class.forName("[Ljava.lang.Object;"), jsonArray.size());
+					handlers[i] = Array.newInstance(Class.forName("java.lang.Object"), jsonArray.size());
 					flags[i] = false;
+					continue;
 				}
 				if (clazz.equals(Byte.class)){
 					handlers[i] = new Byte((byte)element.getJsonNumber(VALUE).intValue());

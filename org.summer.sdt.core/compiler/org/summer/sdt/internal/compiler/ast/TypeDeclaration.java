@@ -17,15 +17,9 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
-import java.nio.file.attribute.AclEntry.Builder;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
-
-import org.bark.remoting.LarkConstants;
 import org.summer.sdt.core.compiler.CategorizedProblem;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.compiler.IProblem;
@@ -1875,6 +1869,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 //		}
 		if (this.fields != null) {
 			for (int i = 0; i < this.fields.length; i++) {
+				if(this.fields[i].binding != null && ((this.fields[i].binding.modifiers & ClassFileConstants.AccProperty) != 0
+						|| (this.fields[i].binding.modifiers & ClassFileConstants.AccIndexer) != 0)){
+					continue;
+				}
+				
 				if (this.fields[i] != null) {
 					output.append('\n');
 					if (this.fields[i].type != null) {

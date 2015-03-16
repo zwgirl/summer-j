@@ -81,6 +81,9 @@ public class ObjectElement extends XAMLElement {
 			output.append("<script type = 'text/javascript' src = 'org/w3c/dom/dom.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
+			output.append("<script type = 'text/javascript' src = 'java/lang/beans.js'> </script>");
+			output.append("\n");
+			printIndent(indent, output);
 			output.append("<script type = 'text/javascript' src = 'java/lang/bindings.js'> </script>");
 			//build class definition
 			ClassScope classScope = scope.enclosingClassScope();
@@ -156,6 +159,9 @@ public class ObjectElement extends XAMLElement {
 			output.append("\n");
 			printIndent(indent, output);
 			output.append("<script type = 'text/javascript' src = 'org/w3c/dom/dom.js'> </script>");
+			output.append("\n");
+			printIndent(indent, output);
+			output.append("<script type = 'text/javascript' src = 'java/lang/beans.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
 			output.append("<script type = 'text/javascript' src = 'java/lang/bindings.js'> </script>");

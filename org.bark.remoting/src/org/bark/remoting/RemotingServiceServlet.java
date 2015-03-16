@@ -12,7 +12,6 @@ import javax.json.JsonReader;
 import javax.json.JsonWriter;
 import javax.json.JsonWriterFactory;
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,13 +30,16 @@ public class RemotingServiceServlet extends HttpServlet{
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		super.doGet(req, resp);
+		this.process(req, resp);
 	}
 	
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse res)
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+		this.process(req, resp);
+	}
+	
+	private void process(HttpServletRequest req, HttpServletResponse res){
 		String rpc = req.getParameter("rpc");
 		
         String q = req.getQueryString();
@@ -78,7 +80,7 @@ public class RemotingServiceServlet extends HttpServlet{
 	        writer.write(array);
 	
 		}catch(Exception ex){
-		
+			ex.printStackTrace();
 		}
 	}
 }
