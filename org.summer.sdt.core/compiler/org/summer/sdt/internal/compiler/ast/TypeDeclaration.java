@@ -1979,9 +1979,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						output.append("}");
 					}
 				}
-				
-				generateSerializer(indent + 1, output);
 			}
+		}
+		
+		if((this.binding.tagBits & TagBits.AnnotationRemotingBean) != 0){
+			generateSerializer(indent + 1, output);
 		}
 		
 		output.append('\n');
@@ -2198,8 +2200,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					.append(field.name).append("\");");
 					continue;
 				case TypeIds.T_JavaLangObject:
-				case TypeIds.T_JavaLangArray:
 					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : handlers[jsonObj.getInt(\"")
+					.append(field.name).append("\")];");
+					continue;
+				case TypeIds.T_JavaLangArray:
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : (Object[])handlers[jsonObj.getInt(\"")
 						.append(field.name).append("\")];");
 					continue;
 				}
@@ -2210,8 +2215,12 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					output.append(".valueOf(jsonObj.getString(\"").append(field.name).append("\"));");
 					continue;
 				} else {
-					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : handlers[jsonObj.getInt(\"")
-					.append(field.name).append("\")];");
+//					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : handlers[jsonObj.getInt(\"")
+//					.append(field.name).append("\")];");
+					
+					output.append("jsonObj.get(\"").append(field.name).append("\") == javax.json.JsonValue.NULL ? null : (");
+					field.type.print(indent, output);
+					output.append(")handlers[jsonObj.getInt(\"").append(field.name).append("\")];");
 				}
 			}
 			
@@ -2669,63 +2678,133 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			}
 		}
 		
-		//readObject
-		output.append('\n');
-		printIndent(indent, output);
-		output.append(type.binding.sourceName).append(".prototype.__readObject = function(json, handlers, obj) {");
-		if(this.fields != null){
+		if((this.binding.tagBits & TagBits.AnnotationRemotingBean) != 0){
+			//readObject
 			output.append('\n');
-			printIndent(indent + 1, output);
-			output.append("var propVal = null;");
-			for(FieldDeclaration field : this.fields){
-				if(field.isStatic() || (field.modifiers & ClassFileConstants.AccTransient) != 0
-						|| (field.modifiers & ClassFileConstants.AccProperty) != 0
-						|| (field.modifiers & ClassFileConstants.AccIndexer) != 0){
-					continue;
+			printIndent(indent, output);
+			output.append(type.binding.sourceName).append(".prototype.__readObject = function(json, handlers, obj) {");
+			if(this.fields != null){
+				output.append('\n');
+				printIndent(indent + 1, output);
+				output.append("var propVal = null;");
+				for(FieldDeclaration field : this.fields){
+					if(field.isStatic() || (field.modifiers & ClassFileConstants.AccTransient) != 0
+							|| (field.modifiers & ClassFileConstants.AccProperty) != 0
+							|| (field.modifiers & ClassFileConstants.AccIndexer) != 0){
+						continue;
+					}
+					if(field.binding.type == null){
+						continue;
+					}
+					
+					output.append('\n');
+					printIndent(indent + 1, output);
+					TypeBinding fieldType = field.binding.type;
+					if(fieldType.isPrimitiveType()){
+						output.append("obj[\"").append(field.name).append("\"] = json[\"").append(field.name).append("\"];");
+					} else if(fieldType.isEnum()){
+						output.append('\n');
+						printIndent(indent + 1, output);
+						output.append("propVal = json[\"").append(field.name).append("\"];");
+						
+						output.append('\n');
+						printIndent(indent + 1, output);
+						output.append("obj[\"").append(field.name).append("\"] = ");
+						fieldType.generate(output, type.binding);
+						output.append(".valueOf(propVal);");
+					} else if(fieldType.id == scope.environment().getType(TypeConstants.JAVA_LANG_STRING).id){
+						output.append("obj[\"").append(field.name).append("\"] = json[\"").append(field.name).append("\"];");
+					} else if(fieldType.original().id == scope.environment().getType(TypeConstants.JAVA_LANG_CLASS).id){
+						output.append('\n');
+						printIndent(indent + 1, output);
+						output.append("propVal = json[\"").append(field.name).append("\"];");
+						
+						output.append('\n');
+						printIndent(indent + 1, output);
+						output.append("obj[\"").append(field.name).append("\"] = __lc();");
+					} else {
+						output.append('\n');
+						printIndent(indent + 1, output);
+						output.append("propVal = json[\"").append(field.name).append("\"];");
+						output.append('\n');
+						printIndent(indent + 1, output);
+						output.append("obj[\"").append(field.name).append("\"] = ").append("propVal == null ? null : handlers[propVal];");
+					}
 				}
-				if(field.binding.type == null){
-					continue;
+				
+				output.append('\n');
+				printIndent(indent, output);
+			}
+			output.append("};");
+			
+			//writeObject
+			output.append('\n');
+			printIndent(indent, output);
+			output.append(type.binding.sourceName).append(".prototype.__writeObject = function(handlers, obj) {");
+			if(this.fields != null){
+				output.append('\n');
+				printIndent(indent + 1, output);
+				output.append("var __r = {\"").append("__clazz").append("\" : \"").append(CharOperation.concatWith(this.binding.compoundName, '.')).append("\"};");
+				output.append('\n');
+				printIndent(indent + 1, output);
+				output.append("var __propVal = null;");
+				for(FieldDeclaration field : this.fields){
+					if(field.isStatic() || (field.modifiers & ClassFileConstants.AccTransient) != 0
+							|| (field.modifiers & ClassFileConstants.AccProperty) != 0
+							|| (field.modifiers & ClassFileConstants.AccIndexer) != 0){
+						continue;
+					}
+					if(field.binding.type == null){
+						continue;
+					}
+					
+					output.append('\n');
+					printIndent(indent + 1, output);
+					TypeBinding fieldType = field.binding.type.original();
+					switch(fieldType.id){
+						case TypeIds.T_byte:
+						case TypeIds.T_short:
+						case TypeIds.T_int:
+						case TypeIds.T_long:
+						case TypeIds.T_float:
+						case TypeIds.T_double:
+						case TypeIds.T_boolean:
+						case TypeIds.T_JavaLangByte:
+						case TypeIds.T_JavaLangShort:
+						case TypeIds.T_JavaLangInteger:
+						case TypeIds.T_JavaLangLong:
+						case TypeIds.T_JavaLangFloat:
+						case TypeIds.T_JavaLangDouble:
+						case TypeIds.T_JavaLangBoolean:
+						case TypeIds.T_JavaLangString:
+							output.append("__r[\"").append(field.name).append("\"] = obj[\"").append(field.name).append("\"];");
+							continue;
+					}
+					output.append("__propVal = obj[\"").append(field.name).append("\"];");
+					if(fieldType.isEnum()){
+						output.append('\n');
+						printIndent(indent + 1, output);
+						output.append("__r[\"").append(field.name).append("\"] = ").append("propVal == null ? null : handlers.shared(propVal);");
+					} else if(fieldType.id == TypeIds.T_JavaLangClass){
+						output.append('\n');
+						printIndent(indent + 1, output);
+						output.append("__r[\"").append(field.name).append("\"] = ").append("propVal == null ? null : handlers.shared(propVal);");
+					} else {
+						output.append('\n');
+						printIndent(indent + 1, output);
+						output.append("__r[\"").append(field.name).append("\"] = ").append("propVal == null ? null : handlers.shared(propVal);");
+					}
 				}
 				
 				output.append('\n');
 				printIndent(indent + 1, output);
-				TypeBinding fieldType = field.binding.type;
-				if(fieldType.isPrimitiveType()){
-					output.append("obj[\"").append(field.name).append("\"] = json[\"").append(field.name).append("\"];");
-				} else if(fieldType.isEnum()){
-					output.append('\n');
-					printIndent(indent + 1, output);
-					output.append("propVal = json[\"").append(field.name).append("\"];");
-					
-					output.append('\n');
-					printIndent(indent + 1, output);
-					output.append("obj[\"").append(field.name).append("\"] = ");
-					fieldType.generate(output, type.binding);
-					output.append(".valueOf(propVal);");
-				} else if(fieldType.id == scope.environment().getType(TypeConstants.JAVA_LANG_STRING).id){
-					output.append("obj[\"").append(field.name).append("\"] = json[\"").append(field.name).append("\"];");
-				} else if(fieldType.original().id == scope.environment().getType(TypeConstants.JAVA_LANG_CLASS).id){
-					output.append('\n');
-					printIndent(indent + 1, output);
-					output.append("propVal = json[\"").append(field.name).append("\"];");
-					
-					output.append('\n');
-					printIndent(indent + 1, output);
-					output.append("obj[\"").append(field.name).append("\"] = __lc();");
-				} else {
-					output.append('\n');
-					printIndent(indent + 1, output);
-					output.append("propVal = json[\"").append(field.name).append("\"];");
-					output.append('\n');
-					printIndent(indent + 1, output);
-					output.append("obj[\"").append(field.name).append("\"] = ").append("propVal == null ? null : handlers[propVal];");
-				}
+				output.append("return __r;");
+				
+				output.append('\n');
+				printIndent(indent, output);
 			}
-			
-			output.append('\n');
-			printIndent(indent, output);
+			output.append("};");
 		}
-		output.append("};");
 		
 		//Class information
 		output.append("\n");

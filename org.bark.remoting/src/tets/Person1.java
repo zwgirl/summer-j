@@ -191,9 +191,9 @@ public class Person1 {
         __o.D1 = jsonObj.get("D1") == javax.json.JsonValue.NULL ? null : (double)jsonObj.getJsonNumber("D1").doubleValue();
         __o.flag = jsonObj.get("flag") == javax.json.JsonValue.NULL ? null : tets.Flag.valueOf(jsonObj.getString("flag"));
         __o.clazz = jsonObj.get("clazz") == javax.json.JsonValue.NULL ? null : (Class)Class.forName(jsonObj.getString("clazz"));
-        __o.iiil = jsonObj.get("iiil") == javax.json.JsonValue.NULL ? null : handlers[jsonObj.getInt("iiil")];
-        __o.iiiq = jsonObj.get("iiiq") == javax.json.JsonValue.NULL ? null : handlers[jsonObj.getInt("iiiq")];
-        __o.fs = jsonObj.get("fs") == javax.json.JsonValue.NULL ? null : handlers[jsonObj.getInt("fs")];
+        __o.iiil = jsonObj.get("iiil") == javax.json.JsonValue.NULL ? null : (Object[])handlers[jsonObj.getInt("iiil")];
+        __o.iiiq = jsonObj.get("iiiq") == javax.json.JsonValue.NULL ? null : (Object[])handlers[jsonObj.getInt("iiiq")];
+        __o.fs = jsonObj.get("fs") == javax.json.JsonValue.NULL ? null : (  FirstService)handlers[jsonObj.getInt("fs")];
         __o._parent = jsonObj.get("_parent") == javax.json.JsonValue.NULL ? null : handlers[jsonObj.getInt("_parent")];
         return obj;
       }
