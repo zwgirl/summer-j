@@ -1,20 +1,10 @@
 package org.bark.remoting;
 
-import java.lang.Exception;
-import java.lang.Object;
-import java.lang.Override;
-import java.lang.RemotingBean;
-import java.lang.String;
-import java.lang.SuppressWarnings;
-
 @RemotingBean
 public class RemotingModel {
   private String _className;
   private String _methodName;
   private Object[] _parameters;
-  public String className;
-  public String methodName;
-  public Object[] parameters;
 
   public String  getClassName() {
     return this._className;

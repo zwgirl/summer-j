@@ -21,6 +21,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 
+
 public class RemotingServiceServlet extends HttpServlet{
 
 	private static final long serialVersionUID = 1L;
@@ -45,9 +46,7 @@ public class RemotingServiceServlet extends HttpServlet{
         String q = req.getQueryString();
 		boolean isStream = q != null && q.equals("stream");
 		try (InputStream is = new ByteArrayInputStream(rpc.getBytes()); 
-	             JsonReader rdr = Json.createReader(is); JsonWriter writer = isStream
-	 	                ? wf.createWriter(res.getOutputStream())
-	 	   	                : wf.createWriter(res.getWriter());) {
+	             JsonReader rdr = Json.createReader(is)) {
 		
 			JsonArray root = rdr.readArray();
 			LarkInput li = new LarkInput();
@@ -69,7 +68,7 @@ public class RemotingServiceServlet extends HttpServlet{
 				}
 			}
 			Method method = serviceClass.getMethod(rm.getMethodName(), parClass);
-			Object result = method.invoke(service, rm.parameters);
+			Object result = method.invoke(service, rm.getParameters());
 			
 	        res.setStatus(HttpServletResponse.SC_OK);
 	        res.setContentType("application/json");
@@ -77,7 +76,11 @@ public class RemotingServiceServlet extends HttpServlet{
 	
 	        LarkOutput lo = new LarkOutput();
 	        JsonArray array = lo.writeObject1(result);
+	        JsonWriter writer = isStream
+ 	                ? wf.createWriter(res.getOutputStream())
+ 	   	                : wf.createWriter(res.getWriter());
 	        writer.write(array);
+	        writer.close();
 	
 		}catch(Exception ex){
 			ex.printStackTrace();

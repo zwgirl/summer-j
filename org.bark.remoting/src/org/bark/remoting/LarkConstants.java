@@ -2,8 +2,8 @@ package org.bark.remoting;
 
 
 public final class LarkConstants {
-	public static final String CLASS = "__c";
-	public static final String VALUE = "v";
+	public static final String CLASS = "__clazz";
+	public static final String VALUE = "value";
 	
 	public static final String JAVA_LANG_BOOLEAN = "java.lang.Boolean";
 	public static final String JAVA_LANG_INTEGER = "java.lang.Integer";

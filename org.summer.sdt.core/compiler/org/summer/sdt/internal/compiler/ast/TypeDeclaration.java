@@ -2294,7 +2294,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append("\n");
 			printIndent(indent, output).append("function ");
 			output.append(type.binding.sourceName());
-			output.append("(");
+			output.append("(){}");
 		}
 		
 		//set prototype.__proto__
@@ -2402,7 +2402,26 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append("null").append(", ");
 		}
 
-		output.append("[]");
+		output.append("[");
+		if(type.binding.superInterfaces != null){
+			boolean comma = false;
+			for(ReferenceBinding binding : type.binding.superInterfaces){
+				if(comma){
+					output.append(", ");
+				}
+				
+				if((binding.modifiers & ClassFileConstants.AccNative) != 0){
+					output.append(type.binding.sourceName);
+				} else {
+					binding.generate(output, null);
+				}
+				output.append(".prototype.__class");
+				
+				comma = true;
+			}
+		}
+		output.append("], ");
+		
 		
 		int flags = INTERFACE_DECL;
 		
@@ -2456,7 +2475,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			}
 		}
 		
-		output.append("]);");
+		output.append("]));");
 			
 		output.append("\n");
 		printIndent(indent+1, output);
@@ -2538,8 +2557,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					printIndent(indent, output).append("};");
 				} else if(constructors.size() == 1){
 					ConstructorDeclaration constructor = constructors.get(0);
-					generateConstructor(constructor, initializerScope, indent, output, type);
-				} else if((type.modifiers & ClassFileConstants.AccInterface) != 0){
+					generateConstructor(constructor, type.scope, indent, output, type);
+				} else { // if((type.modifiers & ClassFileConstants.AccInterface) != 0 && (type.binding.tagBits & TagBits.AnnotationRemotingService ) != 0){
 					output.append("){};");
 				}
 			} 
