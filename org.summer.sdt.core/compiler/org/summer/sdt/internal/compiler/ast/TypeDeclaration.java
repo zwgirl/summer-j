@@ -1876,35 +1876,25 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					continue;
 				}
 				
-				if (this.fields[i] != null) {
-					output.append('\n');
-					if (this.fields[i].type != null) {
-						if(this.fields[i].binding.type.original().id == TypeIds.T_JavaLangArray){
-							printIndent(indent + 1, output);
-							printModifiers(this.fields[i].modifiers, output);
-							if (this.fields[i].annotations != null) {
-								printAnnotations(this.fields[i].annotations, output);
-								output.append(' ');
-							}
-							output.append("Object[] ");
-							output.append(this.fields[i].name).append(';');
-//							switch(this.fields[i].getKind()) {
-//								case AbstractVariableDeclaration.ENUM_CONSTANT:
-//									if (this.initialization != null) {
-//										this.initialization.printExpression(indent, output);
-//									}
-//									break;
-//								default:
-//									if (this.initialization != null) {
-//										output.append(" = "); //$NON-NLS-1$
-//										this.initialization.printExpression(indent, output);
-//									}
-//							}
-						} else {
-							this.fields[i].print(indent + 1, output);
-						}
-					}
+				if(this.fields[i] instanceof Initializer){
+					continue;
 				}
+				
+				output.append('\n');
+				if (this.fields[i].type != null) {
+					if(this.fields[i].binding.type.original().id == TypeIds.T_JavaLangArray){
+						printIndent(indent + 1, output);
+						printModifiers(this.fields[i].modifiers, output);
+						if (this.fields[i].annotations != null) {
+							printAnnotations(this.fields[i].annotations, output);
+							output.append(' ');
+						}
+						output.append("Object[] ");
+						output.append(this.fields[i].name).append(';');
+						continue;
+					}
+				} 
+				this.fields[i].print(indent + 1, output);
 			}
 			
 			if((this.modifiers & ClassFileConstants.AccEnum) != 0 || (this.modifiers & ClassFileConstants.AccInterface) != 0){
@@ -1984,7 +1974,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		
 		if((this.binding.tagBits & TagBits.AnnotationRemotingBean) != 0){
-			generateSerializer(indent + 1, output);
+			if(this.binding.isInterface() || this.binding.isEnum()){
+				
+			} else {
+				generateSerializer(indent + 1, output);
+			}
 		}
 		
 		output.append('\n');
@@ -2008,6 +2002,17 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append('\n');
 		printIndent(indent + 2, output);
 		output.append("public void writeObject(javax.json.JsonObjectBuilder builder, org.bark.remoting.ReferenceProcessor handler, Object value) {");
+		
+		//super class writeObject
+		if(this.superclass != null){
+			if(this.superclass.resolvedType.original().id != TypeIds.T_JavaLangObject){
+				output.append('\n');
+				printIndent(indent + 3, output);
+		    	output.append("org.bark.remoting.SerializerFactory.getInstance().getSerializer(");
+				this.superclass.print(0, output).append(' ');
+		    	output.append(".class).writeObject(builder, handler, value);");
+			}
+		}
 		if(this.fields != null){
 			String varName = "__o";
 			output.append('\n');
@@ -2118,6 +2123,17 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append('\n');
 		printIndent(indent + 2, output);
 		output.append("public Object readObject(javax.json.JsonObject jsonObj, Object[] handlers, Object obj) throws Exception {");
+		
+		//super class writeObject
+		if(this.superclass != null){
+			if(this.superclass.resolvedType.original().id != TypeIds.T_JavaLangObject){
+				output.append('\n');
+				printIndent(indent + 3, output);
+		    	output.append("org.bark.remoting.DeserializerFactory.getInstance().getDeserializer(");
+				this.superclass.print(0, output).append(' ');
+		    	output.append(".class).readObject(jsonObj, handlers, obj);");
+			}
+		}
 
 		if(this.fields != null){
 			String varName = "__o";
@@ -2745,6 +2761,15 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append('\n');
 			printIndent(indent, output);
 			output.append(type.binding.sourceName).append(".prototype.__readObject = function(json, handlers, obj) {");
+			
+			//process superclass readObject
+			if(this.superclass != null){
+				output.append('\n');
+				printIndent(indent + 1, output);
+				this.superclass.resolvedType.generate(output, null);
+				output.append(".prototype.__readObject(json, handlers, obj);");
+			}
+		    
 			if(this.fields != null){
 				output.append('\n');
 				printIndent(indent + 1, output);
@@ -2765,7 +2790,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					if(fieldType.isPrimitiveType()){
 						output.append("obj[\"").append(field.name).append("\"] = json[\"").append(field.name).append("\"];");
 					} else if(fieldType.isEnum()){
-						output.append('\n');
 						printIndent(indent + 1, output);
 						output.append("__propVal = json[\"").append(field.name).append("\"];");
 						
@@ -2777,7 +2801,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					} else if(fieldType.id == scope.environment().getType(TypeConstants.JAVA_LANG_STRING).id){
 						output.append("obj[\"").append(field.name).append("\"] = json[\"").append(field.name).append("\"];");
 					} else if(fieldType.original().id == scope.environment().getType(TypeConstants.JAVA_LANG_CLASS).id){
-						output.append('\n');
 						printIndent(indent + 1, output);
 						output.append("__propVal = json[\"").append(field.name).append("\"];");
 						
@@ -2785,7 +2808,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						printIndent(indent + 1, output);
 						output.append("obj[\"").append(field.name).append("\"] = __lc();");
 					} else {
-						output.append('\n');
 						printIndent(indent + 1, output);
 						output.append("__propVal = json[\"").append(field.name).append("\"];");
 						output.append('\n');
@@ -2803,6 +2825,15 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append('\n');
 			printIndent(indent, output);
 			output.append(type.binding.sourceName).append(".prototype.__writeObject = function(obj, handlers) {");
+			
+			//process superclass readObject
+			if(this.superclass != null){
+				output.append('\n');
+				printIndent(indent + 1, output);
+				this.superclass.resolvedType.generate(output, null);
+				output.append(".prototype.__writeObject(obj, handlers);");
+			}
+			
 			if(this.fields != null){
 				output.append('\n');
 				printIndent(indent + 1, output);

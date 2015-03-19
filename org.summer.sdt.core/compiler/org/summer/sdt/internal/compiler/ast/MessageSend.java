@@ -1319,13 +1319,13 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 				this.receiver.doGenerateExpression(scope, indent, output).append('(');
 				if (this.arguments != null) {
 					if(comma) output.append(", "); //$NON-NLS-1$
-					if((((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccNative) != 0 || (((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccVarargs) == 0){
+					if(this.actualReceiverType instanceof ReferenceBinding && ((((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccNative) != 0 || (((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccVarargs) == 0)){
 						for (int i = 0; i < this.arguments.length ; i ++) {
 							if (i > 0) output.append(", "); //$NON-NLS-1$
 							this.arguments[i].doGenerateExpression(scope, indent, output);
 						}
 					} else{
-						if((((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccVarargs) != 0){
+						if(this.actualReceiverType instanceof ReferenceBinding && (((ReferenceBinding)this.actualReceiverType).modifiers & ClassFileConstants.AccVarargs) != 0){
 							int argIndex = this.binding.parameters.length - 1;
 							for (int i = 0; i < argIndex ; i ++) {
 								if (i > 0) output.append(", "); //$NON-NLS-1$
@@ -1365,8 +1365,9 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 						output.append("__enclosing.");
 					}
 				}
-			} else if(this.actualReceiverType.isInterface() && (this.actualReceiverType.tagBits & TagBits.AnnotationRemotingService) != 0){   //RemotingService MessageSend
-				this.actualReceiverType.generate(output, scope.classScope().enclosingSourceType());
+			} else if(this.actualReceiverType.isInterface() && (this.actualReceiverType.getAnnotationTagBits() & TagBits.AnnotationRemotingService) != 0){   //RemotingService MessageSend
+				this.binding.declaringClass.generate(output, scope.classScope().enclosingSourceType());
+//				this.actualReceiverType.generate(output, scope.classScope().enclosingSourceType());
 				output.append('.').append("prototype.");
 			} else if(this.binding.isDefaultMethod()){
 				output.append(this.binding.declaringClass.sourceName);
@@ -1431,6 +1432,11 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 					}
 				}
 			}
+		}
+		
+		//for remotingService
+		if(this.actualReceiverType.isInterface() && (this.actualReceiverType.getAnnotationTagBits() & TagBits.AnnotationRemotingService) != 0){   //RemotingService MessageSend
+			output.append(", \"").append(CharOperation.concatWith(((ReferenceBinding)this.actualReceiverType).compoundName, '.')).append("\"");
 		}
 		
 		output.append(')');

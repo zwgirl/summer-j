@@ -1173,6 +1173,9 @@ public class QualifiedNameReference extends NameReference {
 			
 			for(int index = 0; index < otherBindings.length; index++){
 				FieldBinding field = otherBindings[index];
+				if(field == null){
+					continue;
+				}
 				output.append('.').append(field.name);
 			}
 			return output;

@@ -298,6 +298,18 @@ public class AnnotationInfo extends ClassFileStruct implements IBinaryAnnotation
 						return currentOffset;
 					}
 					break;
+				case 24:   //cym 2015-03-19
+					if (CharOperation.equals(typeName, ConstantPool.JAVA_LANG_REMOTINGBEAN)) {
+						this.standardAnnotationTagBits |= TagBits.AnnotationRemotingBean;
+						return currentOffset;
+					}
+					break;
+				case 27:   //cym 2015-03-19
+					if (CharOperation.equals(typeName, ConstantPool.JAVA_LANG_REMOTINGSERVICE)) {
+						this.standardAnnotationTagBits |= TagBits.AnnotationRemotingService;
+						return currentOffset;
+					}
+					break;
 				case 29:
 					if (CharOperation.equals(typeName, ConstantPool.JAVA_LANG_ANNOTATION_TARGET)) {
 						currentOffset += 2;
