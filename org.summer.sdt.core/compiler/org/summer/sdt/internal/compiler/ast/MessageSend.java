@@ -941,7 +941,9 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 		}
 		if (!this.binding.isStatic()) {
 			// the "receiver" must not be a type
-			if (this.receiverIsType) {
+//			if (this.receiverIsType) {   //cym 2015-03-18  for @RemotingService messageSend
+//			if (this.receiverIsType && (this.actualReceiverType.isInterface() && (this.actualReceiverType.tagBits & TagBits.AnnotationRemotingService) ==0)) {
+			if (this.receiverIsType && (this.actualReceiverType.isInterface() && (this.actualReceiverType.getAnnotationTagBits() & TagBits.AnnotationRemotingService) ==0)) {
 				scope.problemReporter().mustUseAStaticMethod(this, this.binding);
 				if (this.actualReceiverType.isRawType()
 						&& (this.receiver.bits & ASTNode.IgnoreRawTypeCheck) == 0
@@ -1351,7 +1353,6 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 			if (isStatic) {
 				this.binding.declaringClass.generate(output, scope.classScope().enclosingSourceType());
 				output.append(".");
-//				output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append('.');
 			} else if ((this.bits & ASTNode.DepthMASK) != 0 && this.receiver.isImplicitThis()) { // outer access ?
 				//process GLobal and Window
 				if((this.binding.declaringClass.sourceName[0] == 'W' || this.binding.declaringClass.sourceName[0] == 'G') &&
@@ -1364,6 +1365,9 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 						output.append("__enclosing.");
 					}
 				}
+			} else if(this.actualReceiverType.isInterface() && (this.actualReceiverType.tagBits & TagBits.AnnotationRemotingService) != 0){   //RemotingService MessageSend
+				this.actualReceiverType.generate(output, scope.classScope().enclosingSourceType());
+				output.append('.').append("prototype.");
 			} else if(this.binding.isDefaultMethod()){
 				output.append(this.binding.declaringClass.sourceName);
 				output.append(".prototype.");
@@ -1427,7 +1431,6 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 					}
 				}
 			}
-
 		}
 		
 		output.append(')');

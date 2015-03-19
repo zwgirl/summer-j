@@ -158,22 +158,21 @@ public interface TagBits {
 	long AnnotationNonNullByDefault = ASTNode.Bit58L;
 	/** @since 3.8 canceling null-default annotation for PackageBinding or TypeBinding or MethodBinding: */
 	long AnnotationNullUnspecifiedByDefault = ASTNode.Bit59L;
-	/** From Java 8 */
-	long AnnotationFunctionalInterface = ASTNode.Bit60L;
+	
+	//cym 2015-03-18
+//	/** From Java 8 */
+//	long AnnotationFunctionalInterface = ASTNode.Bit60L;
 	/** From Java 8 */
 	long AnnotationRepeatable = ASTNode.Bit61L; // Only for annotation types and since these cannot have constructors, we can overload HasNonPrivateConstructor.
 
-	/** summer cym 2015-01-01 */
-	long AnnotationEventCallback = ASTNode.Bit62L;
+	/** summer cym 2014-11-20*/
+	long AnnotationOverload = ASTNode.Bit62L;
 	
 	/** summer cym 2014-11-20*/
-	long AnnotationOverload = ASTNode.Bit63L;
+	long AnnotationRemotingBean = ASTNode.Bit63L;
 	
 	/** summer cym 2014-11-20*/
-	long AnnotationRemotingBean = ASTNode.Bit62L;
-	
-	/** summer cym 2014-11-20*/
-	long AnnotationRemotingService = ASTNode.Bit63L;
+	long AnnotationRemotingService = ASTNode.Bit62L;
 	
 	/** summer cym 2015-02-12*/
 	long AnnotationModule = ASTNode.Bit63L;   //AnnotationFunctionalInterface
@@ -194,7 +193,6 @@ public interface TagBits {
 				| AnnotationNullUnspecifiedByDefault
 				| AnnotationRepeatable
 				| AnnotationModule //cym add 2015-02-12
-				| AnnotationEventCallback  //cym add 2015-01-01
 				| AnnotationRemotingBean //cym add 2015-03-10
 				| AnnotationRemotingService  //cym add 2015-03-10
 				| AnnotationOverload;    //cym add 2014-11-20

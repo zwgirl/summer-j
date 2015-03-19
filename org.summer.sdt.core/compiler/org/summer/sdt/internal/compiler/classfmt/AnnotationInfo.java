@@ -341,12 +341,6 @@ public class AnnotationInfo extends ClassFileStruct implements IBinaryAnnotation
 						return currentOffset;
 					}
 					break;
-				case 36:   //cym 2015-01-15
-					if (CharOperation.equals(typeName, ConstantPool.JAVA_LANG_ANNOTATION_EVENTCALLBACK)) {
-						this.standardAnnotationTagBits |= TagBits.AnnotationEventCallback;
-						return currentOffset;
-					}
-					break;
 				case 52:
 					if (CharOperation.equals(typeName, ConstantPool.JAVA_LANG_INVOKE_METHODHANDLE_POLYMORPHICSIGNATURE)) {
 						this.standardAnnotationTagBits |= TagBits.AnnotationPolymorphicSignature;

@@ -139,10 +139,11 @@ public class Initializer extends FieldDeclaration {
 	
 	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		output.append("{\n"); //$NON-NLS-1$
+		output.append("{"); //$NON-NLS-1$
 		if (this.block != null) {
-			this.block.generateBody(scope, indent, output);
+			this.block.generateBody(scope, indent+1, output);
 		}
+		output.append("\n");
 		printIndent(indent, output).append('}');
 		return output;
 	}

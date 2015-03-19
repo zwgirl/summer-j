@@ -141,7 +141,7 @@ public class LookupEnvironment implements ProblemReasons, TypeConstants {
 	
 		if (answer.isBinaryType()) {
 			// the type was found as a .class file
-			System.out.println("Type Name £º" + new String(CharOperation.concatWith(compoundName, '/'))); //cym 2015-02-22
+//			System.out.println("Type Name £º" + new String(CharOperation.concatWith(compoundName, '/'))); //cym 2015-02-22
 			this.typeRequestor.accept(answer.getBinaryType(), computePackageFrom(compoundName, false /* valid pkg */), answer.getAccessRestriction());
 		} else if (answer.isCompilationUnit()) {
 			// the type was found as a .java file, try to build it then search the cache

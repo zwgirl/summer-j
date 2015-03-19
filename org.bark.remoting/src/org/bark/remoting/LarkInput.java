@@ -29,7 +29,45 @@ public class LarkInput {
 				
 				flags[i] = true;
 				
-				Class<?> clazz = Class.forName(className);
+				Class<?> clazz = null;
+				if(className.charAt(0) == '<'){   //pritimive type
+					switch(className.charAt(1)){
+					case 'B':
+						clazz = byte.class;
+						handlers[i] = (byte)element.getJsonNumber(VALUE).intValue();
+						continue;
+					case 'S':
+						clazz = short.class;
+						handlers[i] = (short)element.getJsonNumber(VALUE).intValue();
+						continue;
+					case 'I':
+						clazz = int.class;
+						handlers[i] = element.getJsonNumber(VALUE).intValue();
+						continue;
+					case 'C':
+						clazz = char.class;
+						handlers[i] = (char)element.getJsonNumber(VALUE).intValue();
+						continue;
+					case 'L':
+						clazz = long.class;
+						handlers[i] = (long)element.getJsonNumber(VALUE).longValue();
+						continue;
+					case 'F':
+						clazz = float.class;
+						handlers[i] = (float)element.getJsonNumber(VALUE).doubleValue();
+						continue;
+					case 'D':
+						clazz = double.class;
+						handlers[i] = (double)element.getJsonNumber(VALUE).doubleValue();
+						continue;
+					case 'Z':
+						clazz = boolean.class;
+						handlers[i] = element.getBoolean(VALUE);
+						continue;
+					}
+				} 
+				
+				clazz = Class.forName(className);
 				clazzs[i] = clazz;
 				if (clazz.isArray()) {
 					JsonArray jsonArray = element.getJsonArray(VALUE);
@@ -95,15 +133,6 @@ public class LarkInput {
 			}
 
 			return handlers[0];
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

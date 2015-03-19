@@ -113,7 +113,7 @@ public class PCDATA  extends XAMLElement {
 				}
 			}
 		}
-		System.out.println("transformEntity: " + new String(CharOperation.subarray(result, 0, length)));
+//		System.out.println("transformEntity: " + new String(CharOperation.subarray(result, 0, length)));
 		return CharOperation.subarray(result, 0, length);
 	}
 	

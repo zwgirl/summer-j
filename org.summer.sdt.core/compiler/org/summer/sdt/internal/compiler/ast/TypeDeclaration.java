@@ -1160,11 +1160,13 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					&& this.scope.compilerOptions().sourceLevel >= ClassFileConstants.JDK1_5) {
 				this.scope.problemReporter().missingDeprecatedAnnotationForType(this);
 			}
-			if ((annotationTagBits & TagBits.AnnotationFunctionalInterface) != 0) {
-				if(!this.binding.isFunctionalInterface(this.scope)) {
-					this.scope.problemReporter().notAFunctionalInterface(this);
-				}
-			}
+			
+			//cym 2015-03-18
+//			if ((annotationTagBits & TagBits.AnnotationFunctionalInterface) != 0) {
+//				if(!this.binding.isFunctionalInterface(this.scope)) {
+//					this.scope.problemReporter().notAFunctionalInterface(this);
+//				}
+//			}
 			if (this.scope.compilerOptions().sourceLevel >= ClassFileConstants.JDK1_8) {
 				if ((annotationTagBits & TagBits.AnnotationNullMASK) != 0) {
 					for (int i = 0; i < this.annotations.length; i++) {
@@ -2456,26 +2458,68 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		
 		output.append("\n");
 		printIndent(indent+2, output);
-		output.append("return __invoke(");
-		output.append("localhost");
-		output.append(", new RemotingModel(");
-		output.append("'[\"");
-		output.append(CharOperation.concatWith(this.binding.compoundName, '.')).append("\"");
-		if((this.modifiers & ClassFileConstants.AccModule) != 0){
-			output.append(", \"").append(this.binding.computeFileName()).append("\"");
-		}
-		output.append("]'");
+		output.append("return __invoke(new (__lc(\"org.bark.remoting.RemotingModel\"))(");
+		output.append("\"");
+//		output.append(CharOperation.concatWith(this.binding.compoundName, '.')).append("\"");
+		output.append("arguments[arguments.length-1]");
+		
 		output.append(", \"").append(method.selector).append("\", [");
 		
+		StringBuffer parameters = new StringBuffer(", [");
 		if(method.arguments != null){
 			for(int j = 0, length1 = method.arguments.length; j < length1; j++){
-				if(j > 0)
+				if(j > 0){
+					parameters.append(", ");
 					output.append(", ");
-				output.append(method.arguments[j].name);
+				}
+				Argument argument = method.arguments[j];
+				switch(argument.binding.type.original().id){
+				case TypeIds.T_byte:
+					parameters.append("new Byte(").append(argument.name).append(")");
+					output.append("__lc(\"<B\").prototype.__class");
+					continue;
+				case TypeIds.T_short:
+					parameters.append("new Short(").append(argument.name).append(")");
+					output.append("__lc(\"<S\").prototype.__class");
+					continue;
+				case TypeIds.T_char:
+					parameters.append("new Character(").append(argument.name).append(")");
+					output.append("__lc(\"<C\").prototype.__class");
+					continue;
+				case TypeIds.T_int:
+					parameters.append("new Integer(").append(argument.name).append(")");
+					output.append("__lc(\"<I\").prototype.__class");
+					continue;
+				case TypeIds.T_long:
+					parameters.append("new Long(").append(argument.name).append(")");
+					output.append("__lc(\"<L\").prototype.__class");
+					continue;
+				case TypeIds.T_float:
+					parameters.append("new Float(").append(argument.name).append(")");
+					output.append("__lc(\"<F\").prototype.__class");
+					continue;
+				case TypeIds.T_double:
+					parameters.append("new Double(").append(argument.name).append(")");
+					output.append("__lc(\"<D\").prototype.__class");
+					continue;
+				case TypeIds.T_boolean:
+					parameters.append("new Boolean(").append(argument.name).append(")");
+					output.append("__lc(\"<Z\").prototype.__class");
+					continue;
+				}
+				parameters.append(argument.name);
+				((ReferenceBinding)argument.binding.type).generate(output, scope.classScope().enclosingSourceType());
+				output.append(".prototype.__class");
+//				output.append("__lc(\"").append(CharOperation.concatWith(((ReferenceBinding)argument.binding.type).compoundName, '.')).append("\"");
 			}
 		}
 		
-		output.append("]));");
+		parameters.append(']');
+		output.append(']');
+		
+		output.append(parameters);
+		
+		output.append("));");
 			
 		output.append("\n");
 		printIndent(indent+1, output);
@@ -2704,7 +2748,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			if(this.fields != null){
 				output.append('\n');
 				printIndent(indent + 1, output);
-				output.append("var propVal = null;");
+				output.append("var __propVal = null;");
 				for(FieldDeclaration field : this.fields){
 					if(field.isStatic() || (field.modifiers & ClassFileConstants.AccTransient) != 0
 							|| (field.modifiers & ClassFileConstants.AccProperty) != 0
@@ -2723,19 +2767,19 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					} else if(fieldType.isEnum()){
 						output.append('\n');
 						printIndent(indent + 1, output);
-						output.append("propVal = json[\"").append(field.name).append("\"];");
+						output.append("__propVal = json[\"").append(field.name).append("\"];");
 						
 						output.append('\n');
 						printIndent(indent + 1, output);
 						output.append("obj[\"").append(field.name).append("\"] = ");
 						fieldType.generate(output, type.binding);
-						output.append(".valueOf(propVal);");
+						output.append(".valueOf(__propVal);");
 					} else if(fieldType.id == scope.environment().getType(TypeConstants.JAVA_LANG_STRING).id){
 						output.append("obj[\"").append(field.name).append("\"] = json[\"").append(field.name).append("\"];");
 					} else if(fieldType.original().id == scope.environment().getType(TypeConstants.JAVA_LANG_CLASS).id){
 						output.append('\n');
 						printIndent(indent + 1, output);
-						output.append("propVal = json[\"").append(field.name).append("\"];");
+						output.append("__propVal = json[\"").append(field.name).append("\"];");
 						
 						output.append('\n');
 						printIndent(indent + 1, output);
@@ -2743,10 +2787,10 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					} else {
 						output.append('\n');
 						printIndent(indent + 1, output);
-						output.append("propVal = json[\"").append(field.name).append("\"];");
+						output.append("__propVal = json[\"").append(field.name).append("\"];");
 						output.append('\n');
 						printIndent(indent + 1, output);
-						output.append("obj[\"").append(field.name).append("\"] = ").append("propVal == null ? null : handlers[propVal];");
+						output.append("obj[\"").append(field.name).append("\"] = ").append("__propVal == null ? null : handlers[__propVal];");
 					}
 				}
 				
@@ -2758,7 +2802,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			//writeObject
 			output.append('\n');
 			printIndent(indent, output);
-			output.append(type.binding.sourceName).append(".prototype.__writeObject = function(handlers, obj) {");
+			output.append(type.binding.sourceName).append(".prototype.__writeObject = function(obj, handlers) {");
 			if(this.fields != null){
 				output.append('\n');
 				printIndent(indent + 1, output);
@@ -2802,15 +2846,15 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					if(fieldType.isEnum()){
 						output.append('\n');
 						printIndent(indent + 1, output);
-						output.append("__r[\"").append(field.name).append("\"] = ").append("propVal == null ? null : handlers.shared(propVal);");
+						output.append("__r[\"").append(field.name).append("\"] = ").append("__propVal == null ? null : handlers.shared(__propVal);");
 					} else if(fieldType.id == TypeIds.T_JavaLangClass){
 						output.append('\n');
 						printIndent(indent + 1, output);
-						output.append("__r[\"").append(field.name).append("\"] = ").append("propVal == null ? null : handlers.shared(propVal);");
+						output.append("__r[\"").append(field.name).append("\"] = ").append("__propVal == null ? null : handlers.shared(__propVal);");
 					} else {
 						output.append('\n');
 						printIndent(indent + 1, output);
-						output.append("__r[\"").append(field.name).append("\"] = ").append("propVal == null ? null : handlers.shared(propVal);");
+						output.append("__r[\"").append(field.name).append("\"] = ").append("__propVal == null ? null : handlers.shared(__propVal);");
 					}
 				}
 				

@@ -380,7 +380,7 @@ public class ClassFileReader extends ClassFileStruct implements IBinaryType {
 									if (CharOperation.equals(attributeName, AttributeNamesConstants.SourceName)) {
 										utf8Offset = this.constantPoolOffsets[u2At(readOffset + 6)];
 										this.sourceFileName = utf8At(utf8Offset + 3, u2At(utf8Offset + 1));
-										System.out.println("sourceFileName: " + new String(sourceFileName));
+//										System.out.println("sourceFileName: " + new String(sourceFileName));
 									}
 									break;
 								case 'y' :

@@ -395,10 +395,6 @@ public abstract class Annotation extends Expression {
 			case TypeIds.T_JavaLangRemotingService:
 				tagBits |= TagBits.AnnotationRemotingService; 
 				break;
-			// event hanlder annotation
-			case TypeIds.T_JavaLangAnnotationEventCallback:
-				tagBits |= TagBits.AnnotationEventCallback; 
-				break;	
 			// marker annotations
 			case TypeIds.T_JavaLangDeprecated :
 				tagBits |= TagBits.AnnotationDeprecated;
@@ -412,9 +408,10 @@ public abstract class Annotation extends Expression {
 			case TypeIds.T_JavaLangOverride :
 				tagBits |= TagBits.AnnotationOverride;
 				break;
-			case TypeIds.T_JavaLangFunctionalInterface :
-				tagBits |= TagBits.AnnotationFunctionalInterface;
-				break;
+			//cym 2015-03-18
+//			case TypeIds.T_JavaLangFunctionalInterface :
+//				tagBits |= TagBits.AnnotationFunctionalInterface;
+//				break;
 			case TypeIds.T_JavaLangAnnotationRepeatable:
 				tagBits |= TagBits.AnnotationRepeatable;
 				break;
