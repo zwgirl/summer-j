@@ -123,6 +123,14 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 	 */
 	public static final ChildListPropertyDescriptor TYPE_PARAMETERS_PROPERTY =
 		new ChildListPropertyDescriptor(TypeDeclaration.class, "typeParameters", TypeParameter.class, NO_CYCLE_RISK); //$NON-NLS-1$
+	
+	//cym 2015-03-21
+	/**
+	 * The "name" structural property of this node type (child type: {@link SimpleName}).
+	 * @since 3.0
+	 */
+	public static final ChildPropertyDescriptor ELEMENT_PROPERTY =
+		new ChildPropertyDescriptor(TypeDeclaration.class, "element", XAMLElement.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
 
 	/**
 	 * The "bodyDeclarations" structural property of this node type (element type: {@link BodyDeclaration}) (added in JLS3 API).
@@ -169,6 +177,8 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 		addProperty(SUPERCLASS_TYPE_PROPERTY, propertyList);
 		addProperty(SUPER_INTERFACE_TYPES_PROPERTY, propertyList);
 		addProperty(BODY_DECLARATIONS_PROPERTY, propertyList);
+		
+		addProperty(ELEMENT_PROPERTY, propertyList);   //cym 2015-03-21
 		PROPERTY_DESCRIPTORS_3_0 = reapPropertyList(propertyList);
 	}
 
@@ -235,6 +245,9 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 	 * @since 3.1
 	 */
 	private ASTNode.NodeList superInterfaceTypes = null;
+	
+	//cym 2015-03-21
+	private XAMLElement element = null;
 
 	/**
 	 * Creates a new AST node for a type declaration owned by the given
@@ -337,6 +350,15 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 				return null;
 			}
 		}
+		
+		if (property == ELEMENT_PROPERTY) {
+			if (get) {
+				return getElement();
+			} else {
+				setElement((XAMLElement) child);
+				return null;
+			}
+		}
 		// allow default implementation to flag the error
 		return super.internalGetSetChildProperty(property, get, child);
 	}
@@ -435,6 +457,8 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 		}
 		result.bodyDeclarations().addAll(
 			ASTNode.copySubtrees(target, bodyDeclarations()));
+		
+		result.setElement((XAMLElement) ASTNode.copySubtree(target, getElement()));  //cym 2015-03-21
 		return result;
 	}
 
@@ -459,6 +483,8 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 				acceptChild(visitor, getSuperclass());
 				acceptChildren(visitor, this.superInterfaceNames);
 				acceptChildren(visitor, this.bodyDeclarations);
+				
+				acceptChild(visitor, this.element);   //cym 2015-03-21
 			}
 			if (this.ast.apiLevel >= AST.JLS3_INTERNAL) {
 				acceptChild(visitor, getJavadoc());
@@ -468,6 +494,8 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 				acceptChild(visitor, getSuperclassType());
 				acceptChildren(visitor, this.superInterfaceTypes);
 				acceptChildren(visitor, this.bodyDeclarations);
+				
+				acceptChild(visitor, this.element);   //cym 2015-03-21
 			}
 		}
 		visitor.endVisit(this);
@@ -776,6 +804,20 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 		}
 		return memberTypes;
 	}
+	
+	//cym 2015-03-21
+	public XAMLElement getElement() {
+	    unsupportedIn2();
+		return this.element;
+	}
+	
+	public void setElement(XAMLElement element) {
+	    unsupportedIn2();
+		ASTNode oldChild = this.element;
+		preReplaceChild(oldChild, element, ELEMENT_PROPERTY);
+		this.element = element;
+		postReplaceChild(oldChild, element, ELEMENT_PROPERTY);
+ 	}
 
 	/* (omit javadoc for this method)
 	 * Method declared on AsbtractTypeDeclaration.
@@ -788,7 +830,7 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 	 * Method declared on ASTNode.
 	 */
 	int memSize() {
-		return super.memSize() + 6 * 4;
+		return super.memSize() + 7 * 4;   //cym 2015-03-21 old 6
 	}
 
 	/* (omit javadoc for this method)
@@ -804,6 +846,7 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 			+ (this.optionalSuperclassType == null ? 0 : getSuperclassType().treeSize())
 			+ (this.superInterfaceNames == null ? 0 : this.superInterfaceNames.listSize())
 			+ (this.superInterfaceTypes == null ? 0 : this.superInterfaceTypes.listSize())
+			+ (this.element == null ? 0 : this.element.treeSize())   //cym 2015-03-21
 			+ this.bodyDeclarations.listSize();
 	}
 }

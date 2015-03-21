@@ -2600,5 +2600,25 @@ public class ASTMatcher {
 				&& node.isUpperBound() == o.isUpperBound()
 				&& safeSubtreeMatch(node.getBound(), o.getBound());
 	}
-
+	
+	//cym 2015-03-21
+	public boolean match(XAMLElement node, Object other) {
+		if (!(other instanceof XAMLElement)) {
+			return false;
+		}
+		XAMLElement o = (XAMLElement) other;
+		return safeSubtreeListMatch(node.attributes(), o.attributes())
+				&& safeEquals(node.getType(), o.getType())
+				&& safeSubtreeListMatch(node.children(), o.children());
+	}
+	
+	//cym 2015-03-21
+	public boolean match(Attribute node, Object other) {
+		if (!(other instanceof Attribute)) {
+			return false;
+		}
+		Attribute o = (Attribute) other;
+		return safeEquals(node.getProperty(), o.getProperty())
+				&& safeEquals(node.getValue(), o.getValue());
+	}
 }

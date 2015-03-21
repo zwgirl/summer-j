@@ -48,6 +48,7 @@ public class BasicJavaEditorActionContributor extends BasicTextEditorActionContr
 	private ToggleBreadcrumbAction fToggleBreadcrumbAction;
 
 	private RetargetTextEditorAction fGotoMatchingBracket;
+	private RetargetTextEditorAction fGotoMatchingTag;  //cym 2015-03-21
 	private RetargetTextEditorAction fShowOutline;
 	private RetargetTextEditorAction fOpenStructure;
 	private RetargetTextEditorAction fOpenHierarchy;
@@ -79,6 +80,10 @@ public class BasicJavaEditorActionContributor extends BasicTextEditorActionContr
 
 		fGotoMatchingBracket= new RetargetTextEditorAction(b, "GotoMatchingBracket."); //$NON-NLS-1$
 		fGotoMatchingBracket.setActionDefinitionId(IJavaEditorActionDefinitionIds.GOTO_MATCHING_BRACKET);
+		
+		//cym 2015-03-21
+		fGotoMatchingTag= new RetargetTextEditorAction(b, "GotoMatchingTag."); //$NON-NLS-1$
+		fGotoMatchingTag.setActionDefinitionId(IJavaEditorActionDefinitionIds.GOTO_MATCHING_TAG);
 
 		fShowOutline= new RetargetTextEditorAction(JavaEditorMessages.getBundleForConstructedKeys(), "ShowOutline."); //$NON-NLS-1$
 		fShowOutline.setActionDefinitionId(IJavaEditorActionDefinitionIds.SHOW_OUTLINE);
@@ -161,6 +166,7 @@ public class BasicJavaEditorActionContributor extends BasicTextEditorActionContr
 			gotoMenu.appendToGroup("additions2", fGotoPreviousMemberAction); //$NON-NLS-1$
 			gotoMenu.appendToGroup("additions2", fGotoNextMemberAction); //$NON-NLS-1$
 			gotoMenu.appendToGroup("additions2", fGotoMatchingBracket); //$NON-NLS-1$
+			gotoMenu.appendToGroup("additions2", fGotoMatchingTag); //$NON-NLS-1$   //cym 2015-03-21
 		}
 	}
 
@@ -180,6 +186,7 @@ public class BasicJavaEditorActionContributor extends BasicTextEditorActionContr
 		fToggleMarkOccurrencesAction.setEditor(textEditor);
 
 		fGotoMatchingBracket.setAction(getAction(textEditor, GotoMatchingBracketAction.GOTO_MATCHING_BRACKET));
+		fGotoMatchingTag.setAction(getAction(textEditor, GoToMatchingTagAction.GOTO_MATCHING_TAG));   //cym 2015-03-21
 		fShowOutline.setAction(getAction(textEditor, IJavaEditorActionDefinitionIds.SHOW_OUTLINE));
 		fOpenHierarchy.setAction(getAction(textEditor, IJavaEditorActionDefinitionIds.OPEN_HIERARCHY));
 		fOpenStructure.setAction(getAction(textEditor, IJavaEditorActionDefinitionIds.OPEN_STRUCTURE));

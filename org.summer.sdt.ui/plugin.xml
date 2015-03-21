@@ -4186,14 +4186,26 @@
             categoryId="org.eclipse.search.ui.category.search"
             id="org.summer.sdt.ui.edit.text.java.search.implement.occurrences">
       </command>
+      <!-- cym 2015-03-21 -->
+	  <command
+			name="%ActionDefinition.gotoMatchingTag.name"
+			description="%ActionDefinition.gotoMatchingTag.description"
+			categoryId="org.eclipse.ui.category.navigate"
+			id="org.summer.sdt.ui.edit.text.java.goto.matching.gotoMatchingTag">
+	  </command>
    </extension>
    
    <extension
          point="org.eclipse.ui.bindings">
       <!--  win32:  M1=CTRL,    M2=SHIFT, M3=ALT, M4=-
             carbon: M1=COMMAND, M2=SHIFT, M3=ALT, M4=CTRL -->
-      
-<!-- edit -->
+      	<!-- cym 2015-03-21 -->
+	  <key
+			sequence="M1+M2+&gt;"
+			contextId="org.summer.sdt.ui.javaEditorScope"
+			commandId="org.summer.sdt.ui.edit.text.java.goto.matching.gotoMatchingTag"
+			schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+	<!-- edit -->
       <key
             sequence="M2+M3+ARROW_UP"
             contextId="org.summer.sdt.ui.javaEditorScope"
@@ -4782,7 +4794,8 @@
 			value="org.summer.sdt.ui.JavadocView">
 		</parameter>
 	</key>
-	</extension>
+
+   </extension>
    
    
    <extension

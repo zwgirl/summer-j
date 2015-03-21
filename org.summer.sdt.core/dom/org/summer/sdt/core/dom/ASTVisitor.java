@@ -1713,6 +1713,16 @@ public abstract class ASTVisitor {
 	public boolean visit(WildcardType node) {
 		return true;
 	}
+	
+	//cym 2015-03-21
+	public boolean visit(XAMLElement node) {
+		return true;
+	}
+	
+	//cym 2015-03-21
+	public boolean visit(Attribute node) {
+		return true;
+	}
 
 	/**
 	 * End of visit the given type-specific AST node.
@@ -2855,6 +2865,15 @@ public abstract class ASTVisitor {
 	 * @since 3.1
 	 */
 	public void endVisit(WildcardType node) {
+		// default implementation: do nothing
+	}
+	
+	//cym 2015-03-21
+	public void endVisit(XAMLElement node) {
+		// default implementation: do nothing
+	}
+	//cym 2015-03-21
+	public void endVisit(Attribute node) {
 		// default implementation: do nothing
 	}
 }

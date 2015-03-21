@@ -895,6 +895,13 @@ public abstract class ASTNode {
 	 * @since 3.10
 	 */
 	public static final int TYPE_METHOD_REFERENCE = 92;
+	
+	//cym 2015-03-21
+	public static final int XAML_ELEMENT = 94;
+	
+	public static final int XAML_ATTRIBUTE = 95;
+	
+	public static final int XAML_MARKUP_EXTENSION = 96;
 
 	/**
 	 * Returns the node class for the corresponding node type.
@@ -1092,6 +1099,14 @@ public abstract class ASTNode {
 				return WhileStatement.class;
 			case WILDCARD_TYPE :
 				return WildcardType.class;
+			
+			//cym 2015-03-21
+			case XAML_ELEMENT :
+				return XAMLElement.class;
+			case XAML_ATTRIBUTE :
+				return Attribute.class;
+			case XAML_MARKUP_EXTENSION :
+				return MarkupExtension.class;
 		}
 		throw new IllegalArgumentException();
 	}

@@ -138,6 +138,7 @@ class ASTConverter {
 			org.summer.sdt.internal.compiler.ast.TypeDeclaration typeDeclaration,
 			AbstractTypeDeclaration typeDecl,
 			boolean isInterface) {
+		
 		// add body declaration in the lexical order
 		org.summer.sdt.internal.compiler.ast.TypeDeclaration[] members = typeDeclaration.memberTypes;
 		org.summer.sdt.internal.compiler.ast.FieldDeclaration[] fields = typeDeclaration.fields;
@@ -1098,37 +1099,6 @@ class ASTConverter {
 		return assignment;
 	}
 
-	
-	//cym add 2014-11-11
-	public Assignment convert(org.summer.sdt.internal.compiler.ast.CommonAttribute expression) {
-		Assignment assignment = new Assignment(this.ast);
-		if (this.resolveBindings) {
-			recordNodes(assignment, expression);
-		}
-		Expression lhs = convert(expression.property);
-		assignment.setLeftHandSide(lhs);
-		assignment.setOperator(Assignment.Operator.ASSIGN);
-		Expression rightHandSide = convert(expression.value);
-		assignment.setRightHandSide(rightHandSide);
-		int start = lhs.getStartPosition();
-		int end = rightHandSide.getStartPosition() + rightHandSide.getLength() - 1;
-		assignment.setSourceRange(start, end - start + 1);
-		return assignment;
-	}
-	
-	//cym add 2014-11-11
-	public Expression convert(org.summer.sdt.internal.compiler.ast.PCDATA expression) {
-		int length = expression.sourceEnd - expression.sourceStart + 1;
-		int sourceStart = expression.sourceStart;
-		StringLiteral literal = new StringLiteral(this.ast);
-		if (this.resolveBindings) {
-			this.recordNodes(literal, expression);
-		}
-		literal.internalSetEscapedValue(new String(this.compilationUnitSource, sourceStart, length));
-		literal.setSourceRange(expression.sourceStart, expression.sourceEnd - expression.sourceStart + 1);
-		return literal;
-	}
-	
 	/*
 	 * Internal use only
 	 * Used to convert class body declarations
@@ -1823,9 +1793,13 @@ class ASTConverter {
 			return convert((org.summer.sdt.internal.compiler.ast.ReferenceExpression) expression);
 		}
 		
-		//cym add 2014-11-11
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.CommonAttribute) {
-			return convert((org.summer.sdt.internal.compiler.ast.CommonAttribute) expression);
+		//cym add 2015-03-21
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.PropertyReference) {
+			return convert((org.summer.sdt.internal.compiler.ast.PropertyReference) expression);
+		} 
+		
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.MarkupExtension) {
+			return convert((org.summer.sdt.internal.compiler.ast.MarkupExtension) expression);
 		} 
 
 		return null;
@@ -2998,6 +2972,13 @@ class ASTConverter {
 			recordNodes(typeName, typeDeclaration);
 			typeDecl.resolveBinding();
 		}
+		
+		//cym 2015-03-21
+		if(typeDeclaration.element != null){
+			org.summer.sdt.internal.compiler.ast.XAMLElement element = typeDeclaration.element;
+			typeDecl.setElement(convert(element));
+		}
+		
 		this.referenceContext = oldReferenceContext;
 		return typeDecl;
 	}
@@ -3095,6 +3076,81 @@ class ASTConverter {
 		if (action == null) return null;
 		whileStatement.setBody(action);
 		return whileStatement;
+	}
+	
+	//TODO cym 2015-03-21 
+	public XAMLElement convert(org.summer.sdt.internal.compiler.ast.XAMLElement element) {
+		final XAMLElement xamlElement = new XAMLElement(this.ast);
+		xamlElement.setSourceRange(element.sourceStart, element.sourceEnd - element.sourceStart + 1);
+		xamlElement.setType(convertType(element.type));
+		for(org.summer.sdt.internal.compiler.ast.Attribute attribute : element.attributes){
+			xamlElement.attributes().add(convert(attribute));
+		}
+		
+		for(org.summer.sdt.internal.compiler.ast.XAMLElement child : element.children){
+			if(child instanceof org.summer.sdt.internal.compiler.ast.PCDATA ||
+					child instanceof org.summer.sdt.internal.compiler.ast.Script){
+//				xamlElement.children().add(convert((org.summer.sdt.internal.compiler.ast.PCDATA)child));
+				continue;
+			} else {
+				xamlElement.children().add(convert(child));
+			}
+		}
+		return xamlElement;
+	}
+	
+	//TODO cym 2015-03-21 
+	public MarkupExtension convert(org.summer.sdt.internal.compiler.ast.MarkupExtension markup) {
+		final MarkupExtension xamlElement = new MarkupExtension(this.ast);
+		xamlElement.setSourceRange(markup.sourceStart, markup.sourceEnd - markup.sourceStart + 1);
+		xamlElement.setType(convertType(markup.type));
+		for(org.summer.sdt.internal.compiler.ast.Attribute attribute : markup.attributes){
+			xamlElement.attributes().add(convert(attribute));
+		}
+
+		return xamlElement;
+	}
+	
+	//TODO cym 2015-03-21 
+	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.PropertyReference propertyReference) {
+		final FieldAccess fieldAccess = new FieldAccess(this.ast);
+		fieldAccess.setSourceRange(propertyReference.sourceStart, propertyReference.sourceEnd - propertyReference.sourceStart + 1);
+		fieldAccess.setName(convert1(propertyReference));
+
+		return fieldAccess;
+	}
+	
+	//TODO cym 2015-03-21 
+	public SimpleName convert1(org.summer.sdt.internal.compiler.ast.PropertyReference propertyReference) {
+		final SimpleName name = new SimpleName(this.ast);
+		name.internalSetIdentifier(new String(propertyReference.token));
+		if (this.resolveBindings) {
+			recordNodes(name, propertyReference);
+		}
+		name.setSourceRange(propertyReference.sourceStart, propertyReference.sourceEnd - propertyReference.sourceStart + 1);
+		return name;
+	}
+	
+	//cym add 2014-11-11
+	public Expression convert(org.summer.sdt.internal.compiler.ast.PCDATA expression) {
+		int length = expression.sourceEnd - expression.sourceStart + 1;
+		int sourceStart = expression.sourceStart;
+		StringLiteral literal = new StringLiteral(this.ast);
+		if (this.resolveBindings) {
+			this.recordNodes(literal, expression);
+		}
+		literal.internalSetEscapedValue(new String(this.compilationUnitSource, sourceStart, length));
+		literal.setSourceRange(expression.sourceStart, expression.sourceEnd - expression.sourceStart + 1);
+		return literal;
+	}
+	
+	//TODO cym 2015-03-21 
+	public Attribute convert(org.summer.sdt.internal.compiler.ast.Attribute attribute) {
+		final Attribute xamlAttribute = new Attribute(this.ast);
+		xamlAttribute.setSourceRange(attribute.sourceStart, attribute.sourceEnd - attribute.sourceStart + 1);
+		xamlAttribute.setProperty(convert(attribute.property));
+		xamlAttribute.setValue(convert(attribute.value));
+		return xamlAttribute;
 	}
 
 	public ImportDeclaration convertImport(org.summer.sdt.internal.compiler.ast.ImportReference importReference) {

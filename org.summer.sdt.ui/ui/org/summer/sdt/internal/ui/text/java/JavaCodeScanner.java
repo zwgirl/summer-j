@@ -369,6 +369,7 @@ public final class JavaCodeScanner extends AbstractJavaScanner {
 		"final", "finally", "for", //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
 		"goto", //$NON-NLS-1$
 		"if", "implements", "import", "instanceof", "interface", //$NON-NLS-5$ //$NON-NLS-4$ //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
+		"let", //$NON-NLS-1$   //cym 2015-03-21
 		"native", "new", //$NON-NLS-2$ //$NON-NLS-1$
 		"package", "private", "protected", "public", //$NON-NLS-4$ //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
 		"static", "super", "switch", "synchronized", //$NON-NLS-4$ //$NON-NLS-3$ //$NON-NLS-2$ //$NON-NLS-1$
@@ -376,7 +377,7 @@ public final class JavaCodeScanner extends AbstractJavaScanner {
 		"typeof" , //$NON-NLS-1$
 		"volatile", //$NON-NLS-1$
 		"while", //$NON-NLS-1$
-		"function", "export" //$NON-NLS-2$ //$NON-NLS-1$
+		"function" //$NON-NLS-2$ //$NON-NLS-1$
 	};
 
 	private static final String INTERFACE= "interface";  //$NON-NLS-1$

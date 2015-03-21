@@ -110,7 +110,7 @@ public class LexStream implements TerminalTokens {
 
 						tokenNotFound = false;
 					} else {
-						this.scanner.resetTo(this.intervalEndToSkip[++this.currentInterval] + 1, this.scanner.eofPosition - 1);
+						this.scanner.resetTo(this.intervalEndToSkip[++this.currentInterval] + 1, this.scanner.eofPosition - 1);   
 					}
 				} else {
 					int start = this.scanner.getCurrentTokenStartPosition();

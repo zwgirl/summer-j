@@ -188,7 +188,9 @@ public abstract class XAMLElement extends XAMLNode {
 	
 	public void resolve(BlockScope scope) {
 		this.constant = Constant.NotAConstant;
-		this.resolvedType = type.resolveType(scope);
+		if(this.type != null){
+			this.resolvedType = type.resolveType(scope);
+		}
 		ElementScope eleScope = new ElementScope(this, scope);
 		resolveAttribute(eleScope);
 		resolveChild(eleScope);

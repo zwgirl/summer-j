@@ -15,6 +15,7 @@ import org.summer.sdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.Initializer;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
+import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
 
 public class RangeUtil {
@@ -166,7 +167,7 @@ public class RangeUtil {
 						} else {
 							result.addInterval(initializer.bodyStart, initializer.bodyEnd);
 						}
-					} else {   // cym 2015-02-13
+					} else if((fields[i].modifiers & ClassFileConstants.AccProperty) != 0){   // cym 2015-02-13
 						result.addInterval(fields[i].bodyStart, fields[i].bodyEnd);
 					}
 				}

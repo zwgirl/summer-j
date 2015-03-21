@@ -2697,6 +2697,11 @@ public abstract class JavaEditor extends AbstractDecoratedTextEditor implements 
 		Action action= new GotoMatchingBracketAction(this);
 		action.setActionDefinitionId(IJavaEditorActionDefinitionIds.GOTO_MATCHING_BRACKET);
 		setAction(GotoMatchingBracketAction.GOTO_MATCHING_BRACKET, action);
+		
+		//cym 2015-03-21
+		action= new GoToMatchingTagAction(this);
+		action.setActionDefinitionId(IJavaEditorActionDefinitionIds.GOTO_MATCHING_TAG);
+		setAction(GoToMatchingTagAction.GOTO_MATCHING_TAG, action);
 
 		action= new ShowInBreadcrumbAction(this);
 		action.setActionDefinitionId(IJavaEditorActionDefinitionIds.SHOW_IN_BREADCRUMB);
@@ -3715,6 +3720,99 @@ public abstract class JavaEditor extends AbstractDecoratedTextEditor implements 
 		}
 		sourceViewer.setSelectedRange(targetOffset, direction);
 		sourceViewer.revealRange(targetOffset, direction);
+	}
+	
+	//cym 2015-03-21
+	/**
+	 * Jumps to the matching bracket.
+	 */
+	public void gotoMatchingBracket1() {
+
+		ISourceViewer sourceViewer= getSourceViewer();
+		IDocument document= sourceViewer.getDocument();
+		if (document == null)
+			return;
+
+		IRegion selection= getSignedSelection(sourceViewer);
+		if (fPreviousSelections == null)
+			initializePreviousSelectionList();
+		
+		CompilationUnit astRoot= SharedASTProvider.getAST(this.getInputJavaElement(), SharedASTProvider.WAIT_NO, null);
+		if (astRoot == null)
+			return;
+
+		
+//		ISelection selection = this.getSelectionProvider().getSelection();
+//		if(!selection.isEmpty() && selection instanceof ITextSelection){
+		ASTNode selectedNode= NodeFinder.perform(astRoot, selection.getOffset(), selection.getLength());
+//		}
+		System.out.println(selectedNode);
+//		IRegion region= fBracketMatcher.match(document, selection.getOffset(), selection.getLength());
+//		if (region == null) {
+//			region= fBracketMatcher.findEnclosingPeerCharacters(document, selection.getOffset(), selection.getLength());
+//			initializePreviousSelectionList();
+//			fPreviousSelections.add(selection);
+//		} else {
+//			if (fPreviousSelections.size() == 2) {
+//				if (!selection.equals(fPreviousSelections.get(1))) {
+//					initializePreviousSelectionList();
+//				}
+//			} else if (fPreviousSelections.size() == 3) {
+//				if (selection.equals(fPreviousSelections.get(2)) && !selection.equals(fPreviousSelections.get(0))) {
+//					IRegion originalSelection= fPreviousSelections.get(0);
+//					sourceViewer.setSelectedRange(originalSelection.getOffset(), originalSelection.getLength());
+//					sourceViewer.revealRange(originalSelection.getOffset(), originalSelection.getLength());
+//					initializePreviousSelectionList();
+//					return;
+//				}
+//				initializePreviousSelectionList();
+//			}
+//		}
+//
+//		if (region == null) {
+//			setStatusLineErrorMessage(JavaEditorMessages.GotoMatchingBracket_error_noMatchingBracket);
+//			sourceViewer.getTextWidget().getDisplay().beep();
+//			return;
+//		}
+//
+//		int offset= region.getOffset();
+//		int length= region.getLength();
+//
+//		if (length < 1)
+//			return;
+//
+//		int anchor= fBracketMatcher.getAnchor();
+//		// http://dev.eclipse.org/bugs/show_bug.cgi?id=34195
+//		int targetOffset= (ICharacterPairMatcher.RIGHT == anchor) ? offset + 1 : offset + length - 1;
+//
+//		boolean visible= false;
+//		if (sourceViewer instanceof ITextViewerExtension5) {
+//			ITextViewerExtension5 extension= (ITextViewerExtension5) sourceViewer;
+//			visible= (extension.modelOffset2WidgetOffset(targetOffset) > -1);
+//		} else {
+//			IRegion visibleRegion= sourceViewer.getVisibleRegion();
+//			// http://dev.eclipse.org/bugs/show_bug.cgi?id=34195
+//			visible= (targetOffset >= visibleRegion.getOffset() && targetOffset <= visibleRegion.getOffset() + visibleRegion.getLength());
+//		}
+//
+//		if (!visible) {
+//			setStatusLineErrorMessage(JavaEditorMessages.GotoMatchingBracket_error_bracketOutsideSelectedElement);
+//			sourceViewer.getTextWidget().getDisplay().beep();
+//			return;
+//		}
+//
+//		int adjustment= getOffsetAdjustment(document, selection.getOffset() + selection.getLength(), selection.getLength());
+//		targetOffset+= adjustment;
+//		int direction= (selection.getLength() == 0) ? 0 : ((selection.getLength() > 0) ? 1 : -1);
+//		if (fPreviousSelections.size() == 1 && direction < 0) {
+//			targetOffset++;
+//		}
+//
+//		if (fPreviousSelections.size() > 0) {
+//			fPreviousSelections.add(new Region(targetOffset, direction));
+//		}
+//		sourceViewer.setSelectedRange(targetOffset, direction);
+//		sourceViewer.revealRange(targetOffset, direction);
 	}
 
 	private void initializePreviousSelectionList() {

@@ -943,6 +943,8 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	protected int elementPtr1;
 	protected Expression[] elementStack = new Expression[AstStackIncrement];
 	
+	private int nestedElement = 0;
+	
 	protected int attributeLengthPtr;
 	protected int[] attributeLengthStack = new int[0];
 	protected int attributePtr;
@@ -8851,59 +8853,92 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 //		}
 //	}
 	
-	protected void consumeScriptMethodName(){
-//		ScriptMethodHeader ::= '<%'
-//		int savedModifiersSourceStart = this.modifiersSourceStart;
-//		checkComment(); // might update declaration source start
-//		if (this.modifiersSourceStart >= savedModifiersSourceStart) {
-//			this.modifiersSourceStart = savedModifiersSourceStart;
-//		}
-		pushOnIntStack(this.scanner.currentPosition);
+//	protected void consumeScriptMethodName(){
+////		ScriptMethodHeader ::= '<%'
+////		int savedModifiersSourceStart = this.modifiersSourceStart;
+////		checkComment(); // might update declaration source start
+////		if (this.modifiersSourceStart >= savedModifiersSourceStart) {
+////			this.modifiersSourceStart = savedModifiersSourceStart;
+////		}
+////		pushOnIntStack(this.scanner.currentPosition);
 //		jumpOverMethodBody();
-		this.nestedMethod[this.nestedType]++;
+//		this.nestedMethod[this.nestedType]++;
+//	
+////		// recovery
+////		if (this.currentElement != null){
+////			this.recoveredStaticInitializerStart = this.intStack[this.intPtr]; // remember start position only for static initializers
+////		}
+//	}
 	
-//		// recovery
-//		if (this.currentElement != null){
-//			this.recoveredStaticInitializerStart = this.intStack[this.intPtr]; // remember start position only for static initializers
-//		}
+	protected void consumeScriptMethodName(){
+		//ScriptMethodHeader ::= '<%'
+		this.nestedMethod[this.nestedType]++;
+		
+		MethodDeclaration method = new MethodDeclaration(this.compilationUnit.compilationResult);
+		
+		method.bodyStart = this.intStack[this.intPtr--];
+		method.selector = new char[0];
+		method.modifiers |= ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccPrivate;
+	
+		method.sourceStart = method.bodyStart;
+		method.sourceEnd = method.bodyStart;
+		this.listLength = 0; // initialize this.listLength before reading parameters/throws
+		method.declarationSourceStart = method.bodyStart;
+		
+		pushOnAstStack(method);
+		concatNodeLists();
+		
+		// recovery
+		if (this.currentElement != null){
+			if (this.currentElement instanceof RecoveredType
+				//|| md.modifiers != 0
+				|| (Util.getLineNumber(method.returnType.sourceStart, this.scanner.lineEnds, 0, this.scanner.linePtr)
+						== Util.getLineNumber(method.sourceStart, this.scanner.lineEnds, 0, this.scanner.linePtr))){
+				this.lastCheckPoint = method.bodyStart;
+				this.currentElement = this.currentElement.add(method, 0);
+				this.lastIgnoredToken = -1;
+			} else {
+				this.lastCheckPoint = method.sourceStart;
+				this.restartRecovery = true;
+			}
+		}
+		
+		int stackLength = this.realBlockStack.length;
+		if (++this.realBlockPtr >= stackLength) {
+			System.arraycopy(
+				this.realBlockStack, 0,
+				this.realBlockStack = new int[stackLength + StackIncrement], 0,
+				stackLength);
+		}
+		this.realBlockStack[this.realBlockPtr] = 0;
 	}
 	
 	protected void consumeScript(){
 //		Script -> '<%' BlockStatementsopt '%>'
-		//push an Initializer
 		//optimize the push/pop
 		Statement[] statements = new Statement[0];
 		int length = 0;
-		if((length = this.astLengthStack[this.astLengthPtr--]) >0){
+		if((length = this.astLengthStack[this.astLengthPtr]) > 0){
 			this.astPtr -= length;
-			System.arraycopy(this.astStack, this.astPtr, statements = new Statement[length], 0, length);
+			System.arraycopy(this.astStack, this.astPtr + 1, statements = new Statement[length], 0, length);
 		}
-//		Block block = (Block) this.astStack[this.astPtr--];
 		this.astLengthPtr--;
 		
-//		if (this.diet) block.bits &= ~ASTNode.UndocumentedEmptyBlock; // clear bit set since was diet
-		Script initializer = new Script(statements, ClassFileConstants.AccStatic);
-//		this.astStack[this.astPtr] = initializer;
-		initializer.sourceEnd = this.endStatementPosition;
-//		initializer.declarationSourceEnd = flushCommentsDefinedPriorTo(this.endStatementPosition);
+		MethodDeclaration md  = (MethodDeclaration) astStack[this.astPtr];
+		md.statements = statements;
+		Script script = new Script(statements, ClassFileConstants.AccStatic | ClassFileConstants.AccFinal | ClassFileConstants.AccPrivate);
+		script.sourceEnd = md.sourceEnd;
 		this.nestedMethod[this.nestedType] --;
-		initializer.declarationSourceStart = this.intStack[this.intPtr];
-		initializer.bodyStart = this.intStack[this.intPtr--];
-		initializer.bodyEnd = this.endPosition;
-		// doc comment
-//		initializer.javadoc = this.javadoc;
-		this.javadoc = null;
-	
-//		// recovery
-//		if (this.currentElement != null){
-//			this.lastCheckPoint = initializer.declarationSourceEnd;
-//			this.currentElement = this.currentElement.add(initializer, 0);
-//			this.lastIgnoredToken = -1;
-//		}
+		script.declarationSourceStart = md.declarationSourceStart;
+		script.bodyStart = md.bodyStart;
+		script.bodyEnd = md.bodyEnd = this.endPosition;
 		
-//		Script script = new Script();
-		pushOnElementStack(initializer);
+		md.bodyEnd = this.endPosition;
+		script.declarationSourceEnd = md.declarationSourceEnd = flushCommentsDefinedPriorTo(this.endStatementPosition);
 		
+		this.realBlockPtr--; // still need to pop the block variable counter
+		
+		pushOnElementStack(script);
 	}
 	
 	protected void consumeElementList() {
@@ -9032,7 +9067,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		pushOnAttributeStack(attr);
 	}
 	
-	private int nestedElement = 0;
 	protected void consumeElementTag(){
 //		ElementTag ::= '<' SimpleName
 		this.nestedElement++;
@@ -10353,7 +10387,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				this.endPosition = this.scanner.currentPosition - 1;
 				pushOnIntStack(this.scanner.startPosition);
 				break;
-//			case TokenNameevent:   //cym add
 //			case TokenNameassert :   //cym 2014-12-17
 			case TokenNameimport :
 			case TokenNamepackage :

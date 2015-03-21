@@ -45,6 +45,15 @@ public interface IJavaEditorActionDefinitionIds extends ITextEditorActionDefinit
 	 */
 	public static final String GOTO_MATCHING_BRACKET= "org.summer.sdt.ui.edit.text.java.goto.matching.bracket"; //$NON-NLS-1$
 
+	//cym 2015-03-21
+	/**
+	 * Action definition ID of the edit -> go to matching xaml tag
+	 * (value <code>"org.summer.sdt.ui.edit.text.java.goto.matching.gotoMatchingTag"</code>).
+	 *
+	 * @since 2.1
+	 */
+	public static final String GOTO_MATCHING_TAG= "org.summer.sdt.ui.edit.text.java.goto.matching.gotoMatchingTag"; //$NON-NLS-1$
+
 	/**
 	 * Action definition ID of the edit -> go to next member action
 	 * (value <code>"org.summer.sdt.ui.edit.text.java.goto.next.member"</code>).
