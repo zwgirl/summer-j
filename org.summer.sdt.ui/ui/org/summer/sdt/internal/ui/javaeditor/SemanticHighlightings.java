@@ -20,10 +20,12 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.summer.sdt.core.dom.ASTNode;
 import org.summer.sdt.core.dom.AnnotationTypeMemberDeclaration;
 import org.summer.sdt.core.dom.ArrayAccess;
+import org.summer.sdt.core.dom.Attribute;
 import org.summer.sdt.core.dom.CastExpression;
 import org.summer.sdt.core.dom.ClassInstanceCreation;
 import org.summer.sdt.core.dom.ConditionalExpression;
 import org.summer.sdt.core.dom.Expression;
+import org.summer.sdt.core.dom.FieldAccess;
 import org.summer.sdt.core.dom.FieldDeclaration;
 import org.summer.sdt.core.dom.IBinding;
 import org.summer.sdt.core.dom.IMethodBinding;
@@ -43,6 +45,7 @@ import org.summer.sdt.core.dom.SingleVariableDeclaration;
 import org.summer.sdt.core.dom.StructuralPropertyDescriptor;
 import org.summer.sdt.core.dom.VariableDeclaration;
 import org.summer.sdt.core.dom.VariableDeclarationFragment;
+import org.summer.sdt.core.dom.XAMLElement;
 import org.summer.sdt.internal.corext.dom.ASTNodes;
 import org.summer.sdt.internal.corext.dom.Bindings;
 import org.summer.sdt.ui.PreferenceConstants;
@@ -192,6 +195,11 @@ public class SemanticHighlightings {
 	 * @since 3.8
 	 */
 	public static final String INHERITED_FIELD="inheritedField"; //$NON-NLS-1$
+	
+	//cym 2015-03-22
+	public static final String XAML_ELEMENT="xamlElement"; //$NON-NLS-1$
+	public static final String XAML_ATTRIBUTE="xamlAttribute"; //$NON-NLS-1$
+	
 
 	/**
 	 * Semantic highlightings
@@ -1907,6 +1915,146 @@ public class SemanticHighlightings {
 			return Bindings.isSuperType(declaringType, currentType);
 		}
 	}
+	
+	//cym 2015-03-22
+	/**
+	 * Semantic highlighting for inherited method invocations.
+	 */
+	private static final class XAMLElementHighlighting extends SemanticHighlighting {
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.SemanticHighlighting#getPreferenceKey()
+		 */
+		@Override
+		public String getPreferenceKey() {
+			return XAML_ELEMENT;
+		}
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.ISemanticHighlighting#getDefaultTextColor()
+		 */
+		@Override
+		public RGB getDefaultDefaultTextColor() {
+			return new RGB(0, 0, 0);
+		}
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.ISemanticHighlighting#getDefaultTextStyleBold()
+		 */
+		@Override
+		public boolean isBoldByDefault() {
+			return false;
+		}
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.SemanticHighlighting#isItalicByDefault()
+		 */
+		@Override
+		public boolean isItalicByDefault() {
+			return false;
+		}
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.SemanticHighlighting#isEnabledByDefault()
+		 */
+		@Override
+		public boolean isEnabledByDefault() {
+			return false;
+		}
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.ISemanticHighlighting#getDisplayName()
+		 */
+		@Override
+		public String getDisplayName() {
+			return JavaEditorMessages.SemanticHighlighting_element;
+		}
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.ISemanticHighlighting#isMatched(org.summer.sdt.core.dom.ASTNode)
+		 */
+		@Override
+		public boolean consumes(SemanticToken token) {
+			ASTNode parent = token.getNode().getParent();
+			if(parent instanceof SimpleType){
+				if(parent.getParent() instanceof XAMLElement){
+					IBinding binding= getBinding(token);
+					return binding != null && binding.getKind() == IBinding.TYPE;
+				}
+			} 
+			return false;
+		}
+	}
+	
+	//cym 2015-03-22
+	/**
+	 * Semantic highlighting for inherited method invocations.
+	 */
+	static final class XAMLAttributeHighlighting extends SemanticHighlighting {
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.SemanticHighlighting#getPreferenceKey()
+		 */
+		@Override
+		public String getPreferenceKey() {
+			return XAML_ATTRIBUTE;
+		}
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.ISemanticHighlighting#getDefaultTextColor()
+		 */
+		@Override
+		public RGB getDefaultDefaultTextColor() {
+			return new RGB(0, 0, 0);
+		}
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.ISemanticHighlighting#getDefaultTextStyleBold()
+		 */
+		@Override
+		public boolean isBoldByDefault() {
+			return false;
+		}
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.SemanticHighlighting#isItalicByDefault()
+		 */
+		@Override
+		public boolean isItalicByDefault() {
+			return false;
+		}
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.SemanticHighlighting#isEnabledByDefault()
+		 */
+		@Override
+		public boolean isEnabledByDefault() {
+			return false;
+		}
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.ISemanticHighlighting#getDisplayName()
+		 */
+		@Override
+		public String getDisplayName() {
+			return JavaEditorMessages.SemanticHighlighting_attribute;
+		}
+
+		/*
+		 * @see org.summer.sdt.internal.ui.javaeditor.ISemanticHighlighting#isMatched(org.summer.sdt.core.dom.ASTNode)
+		 */
+		@Override
+		public boolean consumes(SemanticToken token) {
+			ASTNode parent = token.getNode().getParent();
+			if(parent instanceof FieldAccess){
+				if(parent.getParent() instanceof Attribute){
+					IBinding binding= getBinding(token);
+					return binding != null && binding.getKind() == IBinding.VARIABLE && ((IVariableBinding)binding).isField();
+				}
+			} 
+			return false;
+		}
+	}
 
 	/**
 	 * A named preference that controls the given semantic highlighting's color.
@@ -1977,6 +2125,8 @@ public class SemanticHighlightings {
 		if (fgSemanticHighlightings == null)
 			fgSemanticHighlightings= new SemanticHighlighting[] {
 				new DeprecatedMemberHighlighting(),
+				new XAMLElementHighlighting(),
+				new XAMLAttributeHighlighting(),
 				new AutoboxHighlighting(),
 				new StaticFinalFieldHighlighting(),
 				new StaticFieldHighlighting(),

@@ -3083,6 +3083,10 @@ class ASTConverter {
 		final XAMLElement xamlElement = new XAMLElement(this.ast);
 		xamlElement.setSourceRange(element.sourceStart, element.sourceEnd - element.sourceStart + 1);
 		xamlElement.setType(convertType(element.type));
+		if(element.closeType != null){
+			xamlElement.setCloseType(convertType(element.closeType));
+		}
+
 		for(org.summer.sdt.internal.compiler.ast.Attribute attribute : element.attributes){
 			xamlElement.attributes().add(convert(attribute));
 		}

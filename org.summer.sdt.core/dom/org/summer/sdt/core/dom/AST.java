@@ -2655,6 +2655,17 @@ public final class AST {
 		WildcardType result = new WildcardType(this);
 		return result;
 	}
+	
+	//cym 2015-03-22
+	public XAMLElement newXAMLElement() {
+		XAMLElement result = new XAMLElement(this);
+		return result;
+	}
+	
+	public Attribute newAttribute() {
+		Attribute result = new Attribute(this);
+		return result;
+	}
 
 	/**
 	 * Reports that the given node has just gained a child.

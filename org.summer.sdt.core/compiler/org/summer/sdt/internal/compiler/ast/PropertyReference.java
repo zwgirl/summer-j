@@ -29,7 +29,7 @@ public class PropertyReference extends Expression{
 	public Expression receiver;
 	public long nameSourcePosition; //(start<<32)+end
 	
-	public FieldBinding fieldBinding;															// exact binding resulting from lookup
+	public FieldBinding binding;															// exact binding resulting from lookup
 	public TypeBinding actualReceiverType;
 
 	public PropertyReference(char[] source, long pos, Expression receiver) {
@@ -70,14 +70,14 @@ public class PropertyReference extends Expression{
 	}
 	
 	public FieldBinding lastFieldBinding() {
-		return this.fieldBinding;
+		return this.binding;
 	}
 	
 	public Constant optimizedBooleanConstant() {
 		switch (this.resolvedType.id) {
 			case T_boolean :
 			case T_JavaLangBoolean :
-				return this.constant != Constant.NotAConstant ? this.constant : this.fieldBinding.constant();
+				return this.constant != Constant.NotAConstant ? this.constant : this.binding.constant();
 			default :
 				return Constant.NotAConstant;
 		}
@@ -109,7 +109,7 @@ public class PropertyReference extends Expression{
 		}
 		
 		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
-		FieldBinding fieldBinding = this.fieldBinding = scope.getField(this.actualReceiverType, this.token, null);
+		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.token, null);
 		
 		//cym 2012-02-12
 		if((fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
@@ -194,10 +194,10 @@ public class PropertyReference extends Expression{
 	}
 	
 	public VariableBinding nullAnnotatedVariableBinding(boolean supportTypeAnnotations) {
-		if (this.fieldBinding != null) {
+		if (this.binding != null) {
 			if (supportTypeAnnotations
-					|| ((this.fieldBinding.tagBits & TagBits.AnnotationNullMASK) != 0)) {
-				return this.fieldBinding;
+					|| ((this.binding.tagBits & TagBits.AnnotationNullMASK) != 0)) {
+				return this.binding;
 			}
 		}
 		return null;

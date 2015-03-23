@@ -12,6 +12,9 @@ public class XAMLElement extends XAMLNode {
 	 */
 	public static final ChildPropertyDescriptor TYPE_PROPERTY =
 		new ChildPropertyDescriptor(XAMLElement.class, "type", Type.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
+	
+	public static final ChildPropertyDescriptor CLOSE_TYPE_PROPERTY =
+			new ChildPropertyDescriptor(XAMLElement.class, "closeType", Type.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
 
 	/**
 	 * The "attributes" structural property of this node type (element type: {@link XAMLAttribute}).
@@ -38,6 +41,7 @@ public class XAMLElement extends XAMLNode {
 		List propertyList = new ArrayList(3);
 		createPropertyList(XAMLElement.class, propertyList);
 		addProperty(TYPE_PROPERTY, propertyList);
+		addProperty(CLOSE_TYPE_PROPERTY, propertyList);
 		addProperty(ATTRIBUTES_PROPERTY, propertyList);
 		addProperty(CHILDREN_PROPERTY, propertyList);
 		PROPERTY_DESCRIPTORS = reapPropertyList(propertyList);
@@ -57,11 +61,9 @@ public class XAMLElement extends XAMLNode {
 		return PROPERTY_DESCRIPTORS;
 	}
 
-	/**
-	 * The expression; lazily initialized; defaults to a unspecified, but legal,
-	 * expression.
-	 */
 	private Type type = null;
+	
+	private Type closeType = null;
 
 	/**
 	 * The statements and SwitchCase nodes
@@ -98,6 +100,15 @@ public class XAMLElement extends XAMLNode {
 				return null;
 			}
 		}
+		
+		if (property == CLOSE_TYPE_PROPERTY) {
+			if (get) {
+				return getCloseType();
+			} else {
+				setCloseType((Type) child);
+				return null;
+			}
+		}
 		// allow default implementation to flag the error
 		return super.internalGetSetChildProperty(property, get, child);
 	}
@@ -131,6 +142,9 @@ public class XAMLElement extends XAMLNode {
 		result.setSourceRange(getStartPosition(), getLength());
 		result.setType(
 				(Type) ASTNode.copySubtree(target, getType()));
+		result.setCloseType(
+				(Type) ASTNode.copySubtree(target, getCloseType()));
+
 		result.attributes().addAll(
 			ASTNode.copySubtrees(target, attributes()));
 		result.children().addAll(
@@ -154,6 +168,7 @@ public class XAMLElement extends XAMLNode {
 		if (visitChildren) {
 			// visit children in normal left to right reading order
 			acceptChild(visitor, getType());
+			acceptChild(visitor, getCloseType());
 			acceptChildren(visitor, this.attributes);
 			acceptChildren(visitor, this.children);
 		}
@@ -161,18 +176,18 @@ public class XAMLElement extends XAMLNode {
 	}
 
 	/**
-	 * Returns the expression of this switch statement.
+	 * Returns the type of this element.
 	 *
-	 * @return the expression node
+	 * @return the Type node
 	 */
 	public Type getType() {
 		return this.type;
 	}
 
 	/**
-	 * Sets the expression of this switch statement.
+	 * Sets the Type of this element.
 	 *
-	 * @param expression the new expression node
+	 * @param Type the Type node
 	 * @exception IllegalArgumentException if:
 	 * <ul>
 	 * <li>the node belongs to a different AST</li>
@@ -188,6 +203,36 @@ public class XAMLElement extends XAMLNode {
 		preReplaceChild(oldChild, type, TYPE_PROPERTY);
 		this.type = type;
 		postReplaceChild(oldChild, type, TYPE_PROPERTY);
+	}
+	
+	/**
+	 * Sets the close Type of this element.
+	 *
+	 * @param Type the Type node
+	 * @exception IllegalArgumentException if:
+	 * <ul>
+	 * <li>the node belongs to a different AST</li>
+	 * <li>the node already has a parent</li>
+	 * <li>a cycle in would be created</li>
+	 * </ul>
+	 */
+	public void setCloseType(Type closeType) {
+		if (closeType == null) {
+			throw new IllegalArgumentException();
+		}
+		ASTNode oldChild = this.closeType;
+		preReplaceChild(oldChild, closeType, CLOSE_TYPE_PROPERTY);
+		this.closeType = closeType;
+		postReplaceChild(oldChild, closeType, CLOSE_TYPE_PROPERTY);
+	}
+	
+	/**
+	 * Returns the close type of this element.
+	 *
+	 * @return the Type node
+	 */
+	public Type getCloseType() {
+		return this.closeType;
 	}
 
 	/**
@@ -211,7 +256,7 @@ public class XAMLElement extends XAMLNode {
 	 * Method declared on ASTNode.
 	 */
 	int memSize() {
-		return super.memSize() + 3 * 4;
+		return super.memSize() + 4 * 4;
 	}
 
 	/* (omit javadoc for this method)
@@ -222,6 +267,7 @@ public class XAMLElement extends XAMLNode {
 			memSize()
 			+ (this.attributes == null ? 0 : this.attributes.listSize())
 			+ (this.children == null ? 0 : this.children.listSize())
-			+ (this.type == null ? 0 : getType().treeSize());
+			+ (this.type == null ? 0 : getType().treeSize())
+			+ (this.closeType == null ? 0 : getCloseType().treeSize());
 	}
 }

@@ -57,15 +57,15 @@ public class SelectionOnPropertyReference extends PropertyReference {
 
 		super.resolveType(scope);
 		// tolerate some error cases
-		if (this.fieldBinding == null ||
-				!(this.fieldBinding.isValidBinding() ||
-					this.fieldBinding.problemId() == ProblemReasons.NotVisible
-					|| this.fieldBinding.problemId() == ProblemReasons.InheritedNameHidesEnclosingName
-					|| this.fieldBinding.problemId() == ProblemReasons.NonStaticReferenceInConstructorInvocation
-					|| this.fieldBinding.problemId() == ProblemReasons.NonStaticReferenceInStaticContext))
+		if (this.binding == null ||
+				!(this.binding.isValidBinding() ||
+					this.binding.problemId() == ProblemReasons.NotVisible
+					|| this.binding.problemId() == ProblemReasons.InheritedNameHidesEnclosingName
+					|| this.binding.problemId() == ProblemReasons.NonStaticReferenceInConstructorInvocation
+					|| this.binding.problemId() == ProblemReasons.NonStaticReferenceInStaticContext))
 			throw new SelectionNodeFound();
 		else
-			throw new SelectionNodeFound(this.fieldBinding);
+			throw new SelectionNodeFound(this.binding);
 	}
 	
 	public TypeBinding resolveType(BlockScope scope){

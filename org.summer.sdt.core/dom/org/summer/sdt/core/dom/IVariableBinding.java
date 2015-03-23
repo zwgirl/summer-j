@@ -32,7 +32,6 @@ public interface IVariableBinding extends IBinding {
 	 *    and <code>false</code> otherwise
 	 */
 	public boolean isField();
-
 	/**
 	 * Returns whether this binding is for an enum constant.
 	 * Note that this method returns <code>false</code> for local variables

@@ -131,6 +131,8 @@ final class JavaEditorMessages extends NLS {
 	public static String SemanticHighlighting_deprecatedMember;
 	public static String SemanticHighlighting_typeVariables;
 	public static String SemanticHighlighting_method;
+	public static String SemanticHighlighting_element;   //cym 2015-03-22
+	public static String SemanticHighlighting_attribute;   //cym 2015-03-22
 	public static String SemanticHighlighting_autoboxing;
 	public static String SemanticHighlighting_numbers;
 	public static String SemanticHighlighting_classes;

@@ -2094,7 +2094,7 @@ public class ProblemReporter extends ProblemHandler {
 	}
 	
 	//cym 2015-01-01
-	public void errorNoMethodFor(StringLiteral selector, TypeBinding recType, TypeBinding[] params) {
+	public void errorNoMethodFor(Literal selector, TypeBinding recType, TypeBinding[] params) {
 		StringBuffer buffer = new StringBuffer();
 		StringBuffer shortBuffer = new StringBuffer();
 		for (int i = 0, length = params.length; i < length; i++) {
@@ -3899,7 +3899,7 @@ public class ProblemReporter extends ProblemHandler {
 		if(isRecoveredName(fieldRef.token)) return;
 	
 		int id = IProblem.UndefinedField;
-		FieldBinding field = fieldRef.fieldBinding;
+		FieldBinding field = fieldRef.binding;
 		switch (field.problemId()) {
 			case ProblemReasons.NotFound :
 				if ((searchedType.tagBits & TagBits.HasMissingType) != 0) {
@@ -10443,5 +10443,23 @@ public class ProblemReporter extends ProblemHandler {
 				NoArgument, NoArgument,
 				typeReference[0].sourceStart,
 				typeReference[typeReference.length - 1].sourceEnd);
+	}
+	
+	//cym 2015-03-22
+	public void elementMustHaveMatchTag(XAMLElement element) {
+		this.handle(
+				IProblem.HTNLElementMustHaveMatchedTag,
+				new String[] {
+						new String(element.type.getLastToken()),
+						new String(element.type.getLastToken()),
+						new String(element.closeType.getLastToken())
+				},
+				new String[] {
+						new String(element.type.getLastToken()),
+						new String(element.type.getLastToken()),
+						new String(element.closeType.getLastToken())
+				},
+				element.sourceStart,
+				element.sourceEnd);
 	}
 }

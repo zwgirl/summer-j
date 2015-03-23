@@ -1942,6 +1942,324 @@ public abstract class Scope {
 		return searchForDefaultAbstractMethod ? findDefaultAbstractMethod(receiverType, selector, argumentTypes, invocationSite, classHierarchyStart, found, candidates)
 											  : mostSpecificMethodBinding(candidates, visiblesCount, argumentTypes, invocationSite, receiverType);
 	}
+	
+	//cym 2015-03-22
+	public MethodBinding getMethod1(TypeBinding receiverType, char[] selector, TypeBinding[] argumentTypes, InvocationSite invocationSite) {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		LookupEnvironment env = unitScope.environment;
+		try {
+			env.missingClassFileLocation = invocationSite;
+			switch (receiverType.kind()) {
+				case Binding.BASE_TYPE :
+					return new ProblemMethodBinding(selector, argumentTypes, ProblemReasons.NotFound);
+				case Binding.ARRAY_TYPE :
+					unitScope.recordTypeReference(receiverType);
+					return findMethodForArray((ArrayBinding) receiverType, selector, argumentTypes, invocationSite);
+			}
+			unitScope.recordTypeReference(receiverType);
+
+			ReferenceBinding currentType = (ReferenceBinding) receiverType;
+			if (!currentType.canBeSeenBy(this))
+				return new ProblemMethodBinding(selector, argumentTypes, ProblemReasons.ReceiverTypeNotVisible);
+
+			// retrieve an exact visible match (if possible)
+			MethodBinding methodBinding = findExactMethod(currentType, selector, argumentTypes, invocationSite);
+			if (methodBinding != null) return methodBinding;
+
+			methodBinding = findMethod1(currentType, selector, argumentTypes, invocationSite, false);
+			if (methodBinding == null)
+				return new ProblemMethodBinding(selector, argumentTypes, ProblemReasons.NotFound);
+			if (!methodBinding.isValidBinding())
+				return methodBinding;
+
+			// special treatment for Object.getClass() in 1.5 mode (substitute parameterized return type)
+			if (argumentTypes == Binding.NO_PARAMETERS
+			    && CharOperation.equals(selector, TypeConstants.GETCLASS)
+			    && methodBinding.returnType.isParameterizedType()/*1.5*/) {
+					return environment().createGetClassMethod(receiverType, methodBinding, this);
+		    }
+			return methodBinding;
+		} catch (AbortCompilation e) {
+			e.updateContext(invocationSite, referenceCompilationUnit().compilationResult);
+			throw e;
+		} finally {
+			env.missingClassFileLocation = null;
+		}
+	}
+	
+	//cym 2015-03-22
+	// Internal use only - use findMethod()
+	public MethodBinding findMethod1(ReferenceBinding receiverType, char[] selector, TypeBinding[] argumentTypes, InvocationSite invocationSite, boolean inStaticContext) {
+		MethodBinding method = findMethod10(receiverType, selector, argumentTypes, invocationSite, inStaticContext);
+		if (method != null && method.isValidBinding() && method.isVarargs()) {
+			TypeBinding elementType = method.parameters[method.parameters.length - 1].leafComponentType();
+			if (elementType instanceof ReferenceBinding) {
+				if (!((ReferenceBinding) elementType).canBeSeenBy(this)) {
+					return new ProblemMethodBinding(method, method.selector, invocationSite.genericTypeArguments(), ProblemReasons.VarargsElementTypeNotVisible);
+				}
+			}
+		}
+		return method;
+	}	
+	
+	//cym 2015-03-22
+	public MethodBinding findMethod10(ReferenceBinding receiverType, char[] selector, TypeBinding[] argumentTypes, InvocationSite invocationSite, boolean inStaticContext) {
+		ReferenceBinding currentType = receiverType;
+		boolean receiverTypeIsInterface = receiverType.isInterface();
+		ObjectVector found = new ObjectVector(3);
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordTypeReferences(argumentTypes);
+
+		if (receiverTypeIsInterface) {
+			unitScope.recordTypeReference(receiverType);
+			MethodBinding[] receiverMethods = receiverType.getMethods(selector, argumentTypes.length);
+			if (receiverMethods.length > 0)
+				found.addAll(receiverMethods);
+			findMethodInSuperInterfaces(receiverType, selector, found, null, invocationSite);
+			currentType = getJavaLangObject();
+		}
+
+		// superclass lookup
+		long complianceLevel = compilerOptions().complianceLevel;
+		boolean isCompliant14 = complianceLevel >= ClassFileConstants.JDK1_4;
+		boolean isCompliant15 = complianceLevel >= ClassFileConstants.JDK1_5;
+		boolean soureLevel18 = compilerOptions().sourceLevel >= ClassFileConstants.JDK1_8;
+		ReferenceBinding classHierarchyStart = currentType;
+		MethodVerifier verifier = environment().methodVerifier();
+		while (currentType != null) {
+			unitScope.recordTypeReference(currentType);
+			currentType = (ReferenceBinding) currentType.capture(this, invocationSite == null ? 0 : invocationSite.sourceStart(), invocationSite == null ? 0 : invocationSite.sourceEnd());
+			MethodBinding[] currentMethods = currentType.getMethods(selector, argumentTypes.length);
+			int currentLength = currentMethods.length;
+			if (currentLength > 0) {
+				if (isCompliant14 && (receiverTypeIsInterface || found.size > 0)) {
+					nextMethod: for (int i = 0, l = currentLength; i < l; i++) { // currentLength can be modified inside the loop
+						MethodBinding currentMethod = currentMethods[i];
+						if (currentMethod == null) continue nextMethod;
+						if (receiverTypeIsInterface && !currentMethod.isPublic()) { // only public methods from Object are visible to interface receiverTypes
+							currentLength--;
+							currentMethods[i] = null;
+							continue nextMethod;
+						}
+
+						// if 1.4 compliant, must filter out redundant protected methods from superclasses
+						// protected method need to be checked only - default access is already dealt with in #canBeSeen implementation
+						// when checking that p.C -> q.B -> p.A cannot see default access members from A through B.
+						// if ((currentMethod.modifiers & AccProtected) == 0) continue nextMethod;
+						// BUT we can also ignore any overridden method since we already know the better match (fixes 80028)
+						for (int j = 0, max = found.size; j < max; j++) {
+							MethodBinding matchingMethod = (MethodBinding) found.elementAt(j);
+							MethodBinding matchingOriginal = matchingMethod.original();
+							MethodBinding currentOriginal = matchingOriginal.findOriginalInheritedMethod(currentMethod);
+							if (currentOriginal != null && verifier.isParameterSubsignature(matchingOriginal, currentOriginal)) {
+								if (isCompliant15) {
+									if (matchingMethod.isBridge() && !currentMethod.isBridge())
+										continue nextMethod; // keep inherited methods to find concrete method over a bridge method
+								}
+								currentLength--;
+								currentMethods[i] = null;
+								continue nextMethod;
+							}
+						}
+					}
+				}
+
+				if (currentLength > 0) {
+					// append currentMethods, filtering out null entries
+					if (currentMethods.length == currentLength) {
+						found.addAll(currentMethods);
+					} else {
+						for (int i = 0, max = currentMethods.length; i < max; i++) {
+							MethodBinding currentMethod = currentMethods[i];
+							if (currentMethod != null)
+								found.add(currentMethod);
+						}
+					}
+				}
+			}
+			currentType = currentType.superclass();
+		}
+
+		// if found several candidates, then eliminate those not matching argument types
+		int foundSize = found.size;
+		MethodBinding[] candidates = null;
+		int candidatesCount = 0;
+		MethodBinding problemMethod = null;
+		boolean searchForDefaultAbstractMethod = soureLevel18 || (isCompliant14 && ! receiverTypeIsInterface && (receiverType.isAbstract() || receiverType.isTypeVariable()));
+		if (foundSize > 0) {
+			// argument type compatibility check
+			for (int i = 0; i < foundSize; i++) {
+				MethodBinding methodBinding = (MethodBinding) found.elementAt(i);
+				MethodBinding compatibleMethod = computeCompatibleMethod(methodBinding, argumentTypes, invocationSite);
+				if (compatibleMethod != null) {
+					if (compatibleMethod.isValidBinding()) {
+						if (foundSize == 1 && compatibleMethod.canBeSeenBy(receiverType, invocationSite, this)) {
+							// return the single visible match now
+							if (searchForDefaultAbstractMethod)
+								return findDefaultAbstractMethod(receiverType, selector, argumentTypes, invocationSite, classHierarchyStart, found, new MethodBinding [] {compatibleMethod});
+							unitScope.recordTypeReferences(compatibleMethod.thrownExceptions);
+							return compatibleMethod;
+						}
+						if (candidatesCount == 0)
+							candidates = new MethodBinding[foundSize];
+						candidates[candidatesCount++] = compatibleMethod;
+					} else if (problemMethod == null) {
+						problemMethod = compatibleMethod;
+					}
+				}
+			}
+		}
+
+		// no match was found
+		if (candidatesCount == 0) {
+			if (problemMethod != null) {
+				switch (problemMethod.problemId()) {
+					case ProblemReasons.TypeArgumentsForRawGenericMethod :
+					case ProblemReasons.TypeParameterArityMismatch :
+						return problemMethod;
+				}
+			}
+			// abstract classes may get a match in interfaces; for non abstract
+			// classes, reduces secondary errors since missing interface method
+			// error is already reported
+			MethodBinding interfaceMethod =
+				findDefaultAbstractMethod(receiverType, selector, argumentTypes, invocationSite, classHierarchyStart, found, null);
+			if (interfaceMethod != null) {
+				if (soureLevel18 && foundSize > 0 && interfaceMethod.isVarargs() && interfaceMethod instanceof ParameterizedGenericMethodBinding) {
+					MethodBinding original = interfaceMethod.original();
+					for (int i = 0; i < foundSize; i++) {
+						MethodBinding classMethod = (MethodBinding) found.elementAt(i);
+						if (!classMethod.isAbstract()) { // this check shouldn't matter, but to compatible with javac...
+							MethodBinding substitute = verifier.computeSubstituteMethod(original, classMethod);
+							if (substitute != null && verifier.isSubstituteParameterSubsignature(classMethod, substitute)) 
+								return new ProblemMethodBinding(interfaceMethod, selector, argumentTypes, ProblemReasons.ApplicableMethodOverriddenByInapplicable);
+						}
+					}
+				}
+				return interfaceMethod;
+			}
+			if (found.size == 0) return null;
+			if (problemMethod != null) return problemMethod;
+
+			// still no match; try to find a close match when the parameter
+			// order is wrong or missing some parameters
+
+			// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=69471
+			// bad guesses are foo(), when argument types have been supplied
+			// and foo(X, Y), when the argument types are (int, float, Y)
+			// so answer the method with the most argType matches and least parameter type mismatches
+			int bestArgMatches = -1;
+			MethodBinding bestGuess = (MethodBinding) found.elementAt(0); // if no good match so just use the first one found
+			int argLength = argumentTypes.length;
+			foundSize = found.size;
+			nextMethod : for (int i = 0; i < foundSize; i++) {
+				MethodBinding methodBinding = (MethodBinding) found.elementAt(i);
+				TypeBinding[] params = methodBinding.parameters;
+				int paramLength = params.length;
+				int argMatches = 0;
+				next: for (int a = 0; a < argLength; a++) {
+					TypeBinding arg = argumentTypes[a];
+					for (int p = a == 0 ? 0 : a - 1; p < paramLength && p < a + 1; p++) { // look one slot before & after to see if the type matches
+						if (TypeBinding.equalsEquals(params[p], arg)) {
+							argMatches++;
+							continue next;
+						}
+					}
+				}
+				if (argMatches < bestArgMatches)
+					continue nextMethod;
+				if (argMatches == bestArgMatches) {
+					int diff1 = paramLength < argLength ? 2 * (argLength - paramLength) : paramLength - argLength;
+					int bestLength = bestGuess.parameters.length;
+					int diff2 = bestLength < argLength ? 2 * (argLength - bestLength) : bestLength - argLength;
+					if (diff1 >= diff2)
+						continue nextMethod;
+				}
+				if (bestGuess != methodBinding && MethodVerifier.doesMethodOverride(bestGuess, methodBinding, this.environment()))
+					continue;
+				bestArgMatches = argMatches;
+				bestGuess = methodBinding;
+				
+				//cym 2015-03-22
+				return methodBinding;
+			}
+			return new ProblemMethodBinding(bestGuess, bestGuess.selector, argumentTypes, ProblemReasons.NotFound);
+		}
+
+		// tiebreak using visibility check
+		int visiblesCount = 0;
+		for (int i = 0; i < candidatesCount; i++) {
+			MethodBinding methodBinding = candidates[i];
+			if (methodBinding.canBeSeenBy(receiverType, invocationSite, this)) {
+				if (visiblesCount != i) {
+					candidates[i] = null;
+					candidates[visiblesCount] = methodBinding;
+				}
+				visiblesCount++;
+			}
+		}
+		
+		switch (visiblesCount) {
+			case 0 :
+				MethodBinding interfaceMethod =
+				findDefaultAbstractMethod(receiverType, selector, argumentTypes, invocationSite, classHierarchyStart, found, null);
+				if (interfaceMethod != null) return interfaceMethod;
+				MethodBinding candidate = candidates[0];
+				return new ProblemMethodBinding(candidates[0], candidates[0].selector, candidates[0].parameters, 
+						candidate.isStatic() && candidate.declaringClass.isInterface() ? ProblemReasons.NonStaticOrAlienTypeReceiver : ProblemReasons.NotVisible);
+			case 1 :
+				if (searchForDefaultAbstractMethod)
+					return findDefaultAbstractMethod(receiverType, selector, argumentTypes, invocationSite, classHierarchyStart, found, new MethodBinding [] { candidates[0] });
+				candidate = candidates[0];
+				if (candidate != null)
+					unitScope.recordTypeReferences(candidate.thrownExceptions);
+				return candidate;
+			default :
+				break;
+		}
+
+		if (complianceLevel <= ClassFileConstants.JDK1_3) {
+			ReferenceBinding declaringClass = candidates[0].declaringClass;
+			return !declaringClass.isInterface()
+				? mostSpecificClassMethodBinding(candidates, visiblesCount, invocationSite)
+				: mostSpecificInterfaceMethodBinding(candidates, visiblesCount, invocationSite);
+		}
+
+		// check for duplicate parameterized methods
+		if (compilerOptions().sourceLevel >= ClassFileConstants.JDK1_5) {
+			for (int i = 0; i < visiblesCount; i++) {
+				MethodBinding candidate = candidates[i];
+				if (candidate instanceof ParameterizedGenericMethodBinding)
+					candidate = ((ParameterizedGenericMethodBinding) candidate).originalMethod;
+				if (candidate.hasSubstitutedParameters()) {
+					for (int j = i + 1; j < visiblesCount; j++) {
+						MethodBinding otherCandidate = candidates[j];
+						if (otherCandidate.hasSubstitutedParameters()) {
+							if (otherCandidate == candidate
+									|| (TypeBinding.equalsEquals(candidate.declaringClass, otherCandidate.declaringClass) && candidate.areParametersEqual(otherCandidate))) {
+								return new ProblemMethodBinding(candidates[i], candidates[i].selector, candidates[i].parameters, ProblemReasons.Ambiguous);
+							}
+						}
+					}
+				}
+			}
+		}
+		if (inStaticContext) {
+			MethodBinding[] staticCandidates = new MethodBinding[visiblesCount];
+			int staticCount = 0;
+			for (int i = 0; i < visiblesCount; i++)
+				if (candidates[i].isStatic())
+					staticCandidates[staticCount++] = candidates[i];
+			if (staticCount == 1)
+				return staticCandidates[0];
+			if (staticCount > 1)
+				return mostSpecificMethodBinding(staticCandidates, staticCount, argumentTypes, invocationSite, receiverType);
+		}
+		if (visiblesCount != candidates.length)
+			System.arraycopy(candidates, 0, candidates = new MethodBinding[visiblesCount], 0, visiblesCount);
+		return searchForDefaultAbstractMethod ? findDefaultAbstractMethod(receiverType, selector, argumentTypes, invocationSite, classHierarchyStart, found, candidates)
+											  : mostSpecificMethodBinding(candidates, visiblesCount, argumentTypes, invocationSite, receiverType);
+	}
 	// Internal use only
 	public MethodBinding findMethodForArray(
 		ArrayBinding receiverType,
@@ -3407,7 +3725,7 @@ public abstract class Scope {
 			env.missingClassFileLocation = null;
 		}
 	}
-
+	
 	/* Answer the package from the compoundName or null if it begins with a type.
 	* Intended to be used while resolving a qualified type name.
 	*

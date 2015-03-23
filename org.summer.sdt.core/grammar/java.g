@@ -549,6 +549,13 @@ AttributeList ::= AttributeList Attribute
 /:$readableName AttributeList:/
 
 PropertyExpression ::= StringLiteral
+PropertyExpression ::= IntegerLiteral
+PropertyExpression ::= LongLiteral
+PropertyExpression ::= FloatingPointLiteral
+PropertyExpression ::= DoubleLiteral
+PropertyExpression ::= CharacterLiteral
+PropertyExpression ::= BooleanLiteral
+
 PropertyExpression ::= MarkupExtenson
 
 MarkupExtensionTag ::= $empty

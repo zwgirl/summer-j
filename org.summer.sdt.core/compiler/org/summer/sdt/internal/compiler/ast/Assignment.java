@@ -46,6 +46,7 @@ import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.lookup.VariableBinding;
 import org.summer.sdt.internal.compiler.lookup.WildcardBinding;
 
@@ -238,6 +239,8 @@ public class Assignment extends Expression {
 					&& (this.expression.bits & ASTNode.UnnecessaryCast) == 0) {
 				CastExpression.checkNeedForAssignedCast(scope, lhsType, (CastExpression) this.expression);
 			}
+			return this.resolvedType;
+		} else if(lhsType.id == TypeIds.T_JavaLangString){   //cym 2015-03-23
 			return this.resolvedType;
 		}
 		scope.problemReporter().typeMismatchError(rhsType, lhsType, this.expression, this.lhs);

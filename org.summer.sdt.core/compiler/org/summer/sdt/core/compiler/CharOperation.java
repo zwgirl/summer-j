@@ -3785,4 +3785,37 @@ public final class CharOperation {
 			result[i] = new String(array[i]);
 		return result;
 	}
+	
+	//cym 2015-03-23
+	final static public char[] eascape(char[] chars, char[] sequence){
+		if(chars == null  || chars.length == 0){
+			return NO_CHAR;
+		}
+		
+		char[] result = new char[5];
+		if (sequence == null || sequence.length ==0) {
+			for (int i = 0, max = chars.length; i < max; i++) {
+				boolean cascade = false;
+				char current = chars[i];
+				switch(current){
+				case '\'':
+					if(i > 0 && chars[i-1] == '\\'){
+						result[i] = current;
+					} else {
+						System.arraycopy(result, 0, result = new char[result.length + 2], 0, result.length + 2);
+						result[i] = '\\';
+						result[i + 1] = '\'';
+					}
+				case '\\':
+					
+				case '"':
+				case '\n':
+				case '\r':
+				}
+			}
+		}
+		
+		return result;
+		
+	}
 }

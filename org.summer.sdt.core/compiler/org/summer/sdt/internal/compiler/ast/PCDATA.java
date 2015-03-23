@@ -57,16 +57,18 @@ public class PCDATA  extends XAMLElement {
 	
 	public char[] translateEntity(boolean reservedReturn){
 		boolean flag = false;
-		char[] entity = new char[10];
 		int i = 0, length = 0;
 		char[] newSrc = null;
 		if(!reservedReturn){
 			newSrc = CharOperation.replace(source, new char[]{'\r'}, "\\r".toCharArray());
 			newSrc = CharOperation.replace(newSrc, new char[]{'\n'}, "\\n".toCharArray());
+			newSrc = CharOperation.replace(newSrc, new char[]{'\"'}, "\\\"".toCharArray());
+			newSrc = CharOperation.replace(newSrc, new char[]{'\''}, "\\'".toCharArray());
 		} else {
 			newSrc = source;
 		}
-
+		
+		char[] entity = new char[newSrc.length];
 		char[] result = new char[newSrc.length];
 		for(char currentChar : newSrc){
 			switch(currentChar){
@@ -103,6 +105,7 @@ public class PCDATA  extends XAMLElement {
 					result[length++] = currentChar;
 				}
 				
+				i = 0;
 				flag = false;
 				break;
 			default:
@@ -113,7 +116,10 @@ public class PCDATA  extends XAMLElement {
 				}
 			}
 		}
-//		System.out.println("transformEntity: " + new String(CharOperation.subarray(result, 0, length)));
+		if(i>0){
+			System.arraycopy(entity, 0, result, length, i);
+			length += i;
+		}
 		return CharOperation.subarray(result, 0, length);
 	}
 	
@@ -124,17 +130,25 @@ public class PCDATA  extends XAMLElement {
 		entityMap.put("lt", '<');
 		entityMap.put("gt", '>');
 		entityMap.put("amp", '&');
-		
+		entityMap.put("nbsp", ' ');
+		entityMap.put("cent", '￠');
+		entityMap.put("pound", '£');
+		entityMap.put("yen", '¥');
+		entityMap.put("euro", '€');
+		entityMap.put("sect", '§');
+		entityMap.put("trade", '™');
+		entityMap.put("times", '×');
+		entityMap.put("divide", '÷');
 		//TODO to be continue
 	}
 
-	private char trans(char[] array) {
-		if(array[1] == '#'){
-			char[] num = CharOperation.subarray(array, 2, array.length-1);
+	private char trans(char[] name) {
+		if(name[1] == '#'){
+			char[] num = CharOperation.subarray(name, 2, name.length - 1);
 			return (char) CharOperation.parseInt(num, 0, num.length);
 		} else {
-			char[] name = CharOperation.subarray(array, 1, array.length-1);
-			Character c = entityMap.get(new String(name));
+//			char[] name = CharOperation.subarray(array, 1, array.length-1);
+			Character c = entityMap.get(new String(CharOperation.subarray(name, 1, name.length - 1)));
 			return c == null ? 0 : c ;
 		}
 	}

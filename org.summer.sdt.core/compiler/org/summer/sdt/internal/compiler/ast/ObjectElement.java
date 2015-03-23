@@ -214,7 +214,7 @@ public class ObjectElement extends XAMLElement {
 			if(child instanceof PCDATA ){
 				output.append("_p.appendChild(document.createTextNode(");
 				PCDATA pcdata = (PCDATA)child;
-				String data = new String(pcdata.source);
+//				String data = new String(pcdata.source);
 				output.append("\"").append(pcdata.translateEntity(false)).append("\"));");
 				
 			} else {

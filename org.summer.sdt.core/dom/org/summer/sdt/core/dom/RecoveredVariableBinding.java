@@ -73,6 +73,12 @@ class RecoveredVariableBinding implements IVariableBinding {
 	public boolean isField() {
 		return this.variableDeclaration.getParent() instanceof FieldDeclaration;
 	}
+	
+	//cym 2015-03-22
+	public boolean isProperty() {
+		return this.variableDeclaration.getParent() instanceof FieldDeclaration && 
+				(((FieldDeclaration)this.variableDeclaration.getParent()).getModifiers() & Modifier.PROPERTY) != 0;
+	}
 
 	public boolean isParameter() {
 		return this.variableDeclaration instanceof SingleVariableDeclaration;

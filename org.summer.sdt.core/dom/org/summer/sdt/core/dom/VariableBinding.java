@@ -35,7 +35,7 @@ import org.summer.sdt.internal.core.util.Util;
 class VariableBinding implements IVariableBinding {
 
 	private static final int VALID_MODIFIERS = Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE |
-		Modifier.STATIC | Modifier.FINAL | Modifier.TRANSIENT | Modifier.VOLATILE;
+		Modifier.STATIC | Modifier.FINAL | Modifier.TRANSIENT | Modifier.VOLATILE | Modifier.PROPERTY;
 
 	private org.summer.sdt.internal.compiler.lookup.VariableBinding binding;
 	private ITypeBinding declaringClass;
@@ -396,6 +396,11 @@ class VariableBinding implements IVariableBinding {
 	 */
 	public boolean isField() {
 		return this.binding instanceof FieldBinding;
+	}
+	
+	//cym 2015-03-22
+	public boolean isProperty() {
+		return this.binding instanceof FieldBinding && (((FieldBinding)this.binding).modifiers & ClassFileConstants.AccProperty) != 0;
 	}
 
 	/*

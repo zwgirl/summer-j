@@ -22,6 +22,7 @@ public abstract class XAMLElement extends XAMLNode {
 
 
 	public TypeReference type;
+	public TypeReference closeType;
 	public Attribute[] attributes = NO_ATTRIBUTES;
 
 	public XAMLElement[] children = NO_ELEMENTS;
@@ -191,6 +192,11 @@ public abstract class XAMLElement extends XAMLNode {
 		if(this.type != null){
 			this.resolvedType = type.resolveType(scope);
 		}
+		
+		if(this.closeType != null){
+			closeType.resolveType(scope);
+		}
+		
 		ElementScope eleScope = new ElementScope(this, scope);
 		resolveAttribute(eleScope);
 		resolveChild(eleScope);
