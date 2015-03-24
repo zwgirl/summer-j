@@ -3787,35 +3787,49 @@ public final class CharOperation {
 	}
 	
 	//cym 2015-03-23
-	final static public char[] eascape(char[] chars, char[] sequence){
+	private static final int increasement = 10;
+	final static public char[] eascape(char[] chars){
 		if(chars == null  || chars.length == 0){
 			return NO_CHAR;
 		}
 		
-		char[] result = new char[5];
-		if (sequence == null || sequence.length ==0) {
-			for (int i = 0, max = chars.length; i < max; i++) {
-				boolean cascade = false;
-				char current = chars[i];
-				switch(current){
-				case '\'':
-					if(i > 0 && chars[i-1] == '\\'){
-						result[i] = current;
-					} else {
-						System.arraycopy(result, 0, result = new char[result.length + 2], 0, result.length + 2);
-						result[i] = '\\';
-						result[i + 1] = '\'';
-					}
-				case '\\':
-					
-				case '"':
-				case '\n':
-				case '\r':
-				}
+		int length = chars.length;
+		char[] result = new char[length];
+		int index = 0;
+		for (int i = 0; i < length; i++, index++) {
+			if(index >= result.length - 1){
+				int old = result.length;
+				System.arraycopy(result, 0, result = new char[old + increasement], 0, old);
+			}
+			
+			char current = chars[i];
+			switch(current){
+			case '\n':
+				result[index++] = '\\';
+				result[index]  = 'n';
+				break;
+			case '\r':
+				result[index++] = '\\';
+				result[index]  = 'r';
+				break;
+			case '\'':
+			case '\\':
+			case '"':
+				result[index++] = '\\';
+				result[index]  = current;
+				break;
+			default:
+				result[index] = current;
 			}
 		}
 		
-		return result;
+		return subarray(result, 0 , index);
+	}
+	
+	public static void main(String[] args) {
+		char test[] = "3\n\r\"\'".toCharArray();
+		char[] r = eascape(test);
+		System.out.println(new String(r));
 		
 	}
 }

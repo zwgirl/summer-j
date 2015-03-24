@@ -58,15 +58,17 @@ public class PCDATA  extends XAMLElement {
 	public char[] translateEntity(boolean reservedReturn){
 		boolean flag = false;
 		int i = 0, length = 0;
-		char[] newSrc = null;
-		if(!reservedReturn){
-			newSrc = CharOperation.replace(source, new char[]{'\r'}, "\\r".toCharArray());
-			newSrc = CharOperation.replace(newSrc, new char[]{'\n'}, "\\n".toCharArray());
-			newSrc = CharOperation.replace(newSrc, new char[]{'\"'}, "\\\"".toCharArray());
-			newSrc = CharOperation.replace(newSrc, new char[]{'\''}, "\\'".toCharArray());
-		} else {
-			newSrc = source;
-		}
+//		char[] newSrc = null;
+//		if(!reservedReturn){
+//			newSrc = CharOperation.replace(source, new char[]{'\r'}, "\\r".toCharArray());
+//			newSrc = CharOperation.replace(newSrc, new char[]{'\n'}, "\\n".toCharArray());
+//			newSrc = CharOperation.replace(newSrc, new char[]{'\"'}, "\\\"".toCharArray());
+//			newSrc = CharOperation.replace(newSrc, new char[]{'\''}, "\\'".toCharArray());
+//		} else {
+//			newSrc = source;
+//		}
+		
+		char[] newSrc = CharOperation.eascape(source);
 		
 		char[] entity = new char[newSrc.length];
 		char[] result = new char[newSrc.length];
