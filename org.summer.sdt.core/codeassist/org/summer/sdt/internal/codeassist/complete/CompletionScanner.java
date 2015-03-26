@@ -305,6 +305,17 @@ public class CompletionScanner extends Scanner {
 								return TokenNameCLOSE_ELEMENT;
 							}
 							
+							//cym 2015-03-24 comment
+							if(getNextChar('!')) {
+								if(getNextChar('-')){
+									if(getNextChar('-')){
+										if(xmlComment()){
+											return TokenNameXmlComment;
+										}
+									}
+								}
+							}
+							
 							return TokenNameLESS;
 						}
 					case '>' :

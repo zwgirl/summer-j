@@ -204,6 +204,9 @@ public abstract class XAMLElement extends XAMLNode {
 	
 	protected void resolveChild(BlockScope scope){
 		for(XAMLElement child: children){
+			if(child instanceof PCDATA || child instanceof XAMLComment){
+				continue;
+			}
 			child.resolve(scope);
 		}
 	}

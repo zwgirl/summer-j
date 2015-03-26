@@ -1169,7 +1169,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 		IBinaryAnnotation[] annotations = method.getAnnotations();
 		if(annotations != null && annotations.length > 0){
 			for(IBinaryAnnotation annotation : annotations){
-				if(annotation.getTypeName().length == 31 && CharOperation.equals(annotation.getTypeName(), ConstantPool.JAVA_LANG_ANNOTATION_OVERLOAD)){
+				if(annotation.getTypeName().length == 20 && CharOperation.equals(annotation.getTypeName(), ConstantPool.JAVA_LANG_OVERLOAD)){
 					result.overload = ((StringConstant)annotation.getElementValuePairs()[0].getValue()).stringValue();
 				}
 			}

@@ -32,6 +32,7 @@ public class FastJavaPartitionScanner implements IPartitionTokenScanner, IJavaPa
 	private static final int JAVADOC= 3;
 	private static final int CHARACTER= 4;
 	private static final int STRING= 5;
+	private static final int XAML_COMMENT= 6;   //cym 2015-03-24
 
 	// beginning of prefixes and postfixes
 	private static final int NONE= 0;
@@ -41,6 +42,14 @@ public class FastJavaPartitionScanner implements IPartitionTokenScanner, IJavaPa
 	private static final int SLASH_STAR_STAR= 4; // prefix for MULTI_LINE_COMMENT or JAVADOC
 	private static final int STAR= 5; // postfix for MULTI_LINE_COMMENT or JAVADOC
 	private static final int CARRIAGE_RETURN=6; // postfix for STRING, CHARACTER and SINGLE_LINE_COMMENT
+	
+	//cym 2015-03-24
+	private static final int LESS= 7; // prefix for XAML_COMMENT or JAVADOC
+	private static final int GREATER= 8; // postfix for XAML_COMMENT or JAVADOC
+	private static final int MINUS= 9; // postfix for XAML_COMMENT
+	private static final int EXCLAMATION= 10; // postfix for XAML_COMMENT
+	private static final int LESS_EXCLAMATION_MINUS_MINUS= 11; // postfix for XAML_COMMENT
+	private static final int MINUS_MINUS_GREATER= 12; // postfix for STRING, CHARACTER and SINGLE_LINE_COMMENT
 
 	/** The scanner. */
 	private final BufferedDocumentScanner fScanner= new BufferedDocumentScanner(1000);	// faster implementation
@@ -68,7 +77,8 @@ public class FastJavaPartitionScanner implements IPartitionTokenScanner, IJavaPa
 		new Token(JAVA_MULTI_LINE_COMMENT),
 		new Token(JAVA_DOC),
 		new Token(JAVA_CHARACTER),
-		new Token(JAVA_STRING)
+		new Token(JAVA_STRING),
+		new Token(XAML_COMMENT) //cym 20150-03-24
 	};
 
 	public FastJavaPartitionScanner(boolean emulate) {
@@ -181,7 +191,7 @@ public class FastJavaPartitionScanner implements IPartitionTokenScanner, IJavaPa
 							last= SLASH;
 							newState= JAVA;
 							break;
-
+							
 						case '*':
 							last= STAR;
 							newState= JAVA;
@@ -344,6 +354,32 @@ public class FastJavaPartitionScanner implements IPartitionTokenScanner, IJavaPa
 					break;
 				}
 				break;
+	 		case XAML_COMMENT:   //cym 2015-03-24
+				switch (ch) {
+				case '*':
+					if (fLast == SLASH_STAR) {
+						fLast= SLASH_STAR_STAR;
+						fTokenLength++;
+						fState= JAVADOC;
+					} else {
+						fTokenLength++;
+						fLast= STAR;
+					}
+					break;
+
+				case '/':
+					if (fLast == STAR) {
+						return postFix(MULTI_LINE_COMMENT);
+					} else {
+						consume();
+						break;
+					}
+
+				default:
+					consume();
+					break;
+				}
+				break;
 
 	 		case STRING:
 	 			switch (ch) {
@@ -391,6 +427,25 @@ public class FastJavaPartitionScanner implements IPartitionTokenScanner, IJavaPa
 	 		}
 		}
  	}
+	
+//case '<':  //cym 2015-03-24
+//	last= LESS;
+//	newState= JAVA;
+//	break;
+//	
+//case '>':  //cym 2015-03-24
+//	last= GREATER;
+//	newState= JAVA;
+//	break;
+//case '!':  //cym 2015-03-24
+//	last= EXCLAMATION;
+//	newState= JAVA;
+//	break;
+//	
+//case '-':  //cym 2015-03-24
+//	last= MINUS;
+//	newState= JAVA;
+//	break;
 
 	private static final int getLastLength(int last) {
 		switch (last) {
@@ -411,6 +466,24 @@ public class FastJavaPartitionScanner implements IPartitionTokenScanner, IJavaPa
 
 		case SLASH_STAR_STAR:
 			return 3;
+		
+		//cym 2015-03-24
+		case LESS_EXCLAMATION_MINUS_MINUS:
+			return 4;
+			
+		case LESS:
+			return 1;
+			
+		case MINUS:
+			return 1;
+			
+		case GREATER:
+			return 1;
+			
+		case MINUS_MINUS_GREATER:
+			return 3;
+			
+			
 		}
 	}
 
@@ -468,6 +541,9 @@ public class FastJavaPartitionScanner implements IPartitionTokenScanner, IJavaPa
 
 		else if (contentType.equals(JAVA_CHARACTER))
 			return CHARACTER;
+		
+		else if (contentType.equals(JAVA_XAML_COMMENT))   //cym 2015-03-24
+			return XAML_COMMENT;
 
 		else
 			return JAVA;

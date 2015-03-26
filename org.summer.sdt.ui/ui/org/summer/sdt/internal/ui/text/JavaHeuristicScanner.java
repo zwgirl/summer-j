@@ -475,6 +475,8 @@ public final class JavaHeuristicScanner implements Symbols {
 					return TokenTRY;
 				if ("new".equals(s)) //$NON-NLS-1$
 					return TokenNEW;
+				if ("let".equals(s)) //$NON-NLS-1$  //cym 2015-03-24
+					return TokenLET;
 				break;
 			case 4:
 				if ("case".equals(s)) //$NON-NLS-1$
@@ -505,12 +507,18 @@ public final class JavaHeuristicScanner implements Symbols {
 					return TokenSWITCH;
 				if ("throws".equals(s)) //$NON-NLS-1$
 					return TokenTHROWS;
+				if ("typeof".equals(s)) //$NON-NLS-1$
+					return TokenTYPEOF;
 				break;
 			case 7:
 				if ("default".equals(s)) //$NON-NLS-1$
 					return TokenDEFAULT;
 				if ("finally".equals(s)) //$NON-NLS-1$
 					return TokenFINALLY;
+				break;
+			case 8:   //cym 2015-03-24
+				if ("function".equals(s)) //$NON-NLS-1$
+					return TokenFUNCTION;
 				break;
 			case 9:
 				if ("interface".equals(s)) //$NON-NLS-1$

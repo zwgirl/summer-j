@@ -316,8 +316,8 @@ public class AnnotationInfo extends ClassFileStruct implements IBinaryAnnotation
 						return readTargetValue(currentOffset);
 					}
 					break;
-				case 31: //cym 2015-01-15
-					if (CharOperation.equals(typeName, ConstantPool.JAVA_LANG_ANNOTATION_OVERLOAD)) {
+				case 20: //cym 2015-01-15
+					if (CharOperation.equals(typeName, ConstantPool.JAVA_LANG_OVERLOAD)) {
 						this.standardAnnotationTagBits |= TagBits.AnnotationOverload;
 						this.pairs = numberOfPairs == 0 ? ElementValuePairInfo.NoMembers : new ElementValuePairInfo[numberOfPairs];
 						for (int i = 0; i < numberOfPairs; i++) {

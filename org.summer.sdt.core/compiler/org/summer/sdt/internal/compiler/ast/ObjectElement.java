@@ -72,19 +72,19 @@ public class ObjectElement extends XAMLElement {
 				child.generateStatement(scope, indent + 1, output);
 			}
 			//output meta
-			output.append("<script type = 'text/javascript' src = 'js/stub.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/js/stub.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = 'java/lang/buildins.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/java/lang/buildins.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = 'org/w3c/dom/dom.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/org/w3c/dom/dom.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = 'java/lang/beans.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/java/lang/beans.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = 'java/lang/bindings.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/java/lang/bindings.js'> </script>");
 			//build class definition
 			ClassScope classScope = scope.enclosingClassScope();
 			TypeDeclaration typeDecl = classScope.referenceContext;
@@ -216,6 +216,8 @@ public class ObjectElement extends XAMLElement {
 				PCDATA pcdata = (PCDATA)child;
 //				String data = new String(pcdata.source);
 				output.append("\"").append(pcdata.translateEntity(false)).append("\"));");
+				
+			} else if(child instanceof XAMLComment){
 				
 			} else {
 				ObjectElement oe = (ObjectElement) child;

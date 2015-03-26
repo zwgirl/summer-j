@@ -533,7 +533,7 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 			printIndent(indent, output).append("}).call(this");
 			outputArguments(scope, indent, output, true);
 			
-			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
+			if(this.binding != null && (this.binding.getAnnotationTagBits() & TagBits.AnnotationOverload) != 0){
 				if(this.arguments != null && this.arguments.length > 0){
 					output.append(", ");
 				}

@@ -3093,7 +3093,8 @@ class ASTConverter {
 		
 		for(org.summer.sdt.internal.compiler.ast.XAMLElement child : element.children){
 			if(child instanceof org.summer.sdt.internal.compiler.ast.PCDATA ||
-					child instanceof org.summer.sdt.internal.compiler.ast.Script){
+					child instanceof org.summer.sdt.internal.compiler.ast.Script ||
+					child instanceof org.summer.sdt.internal.compiler.ast.XAMLComment){
 //				xamlElement.children().add(convert((org.summer.sdt.internal.compiler.ast.PCDATA)child));
 				continue;
 			} else {

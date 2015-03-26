@@ -1,7 +1,9 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
+import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class Script extends XAMLElement{
@@ -34,6 +36,16 @@ public class Script extends XAMLElement{
 	
 	public void resolve(ElementScope scope) {
 		this.constant = Constant.NotAConstant;
+	}
+	
+	@Override
+	public void resolve(BlockScope scope) {
+		MethodScope classScope = scope.classScope().referenceContext.staticInitializerScope;
+		if(this.statements != null){
+			for(Statement statement : this.statements){
+				statement.resolve(classScope);
+			}
+		}
 	}
 
 }

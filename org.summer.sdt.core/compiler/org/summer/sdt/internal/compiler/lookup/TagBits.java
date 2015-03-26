@@ -166,7 +166,7 @@ public interface TagBits {
 	long AnnotationRepeatable = ASTNode.Bit61L; // Only for annotation types and since these cannot have constructors, we can overload HasNonPrivateConstructor.
 
 	/** summer cym 2014-11-20*/
-	long AnnotationOverload = ASTNode.Bit62L;
+	long AnnotationOverload = ASTNode.Bit60L;
 	
 	/** summer cym 2014-11-20*/
 	long AnnotationRemotingBean = ASTNode.Bit63L;

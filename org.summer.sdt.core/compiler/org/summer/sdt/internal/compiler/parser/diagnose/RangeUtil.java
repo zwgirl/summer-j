@@ -172,6 +172,11 @@ public class RangeUtil {
 					}
 				}
 			}
+			
+//			//cym 2015-03-25
+//			if(types[j].element != null){
+//				result.addInterval(types[j].element.bodyStart, types[j].element.bodyEnd);
+//			}
 		}
 	}
 

@@ -46,4 +46,7 @@ public interface IJavaPartitions {
 	 * The identifier of the Java character partition content type.
 	 */
 	String JAVA_CHARACTER= "__java_character";  //$NON-NLS-1$
+	
+	//cym 2015-03-24
+	String JAVA_XAML_COMMENT= "__java_xaml_comment"; //$NON-NLS-1$
 }

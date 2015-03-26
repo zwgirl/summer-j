@@ -55,5 +55,8 @@ public interface Symbols {
 	int TokenINTERFACE= 1027;
 	int TokenENUM= 1028;
 	int TokenTHROWS= 1029;
+	int TokenFUNCTION = 1101;   //cym 2015-03-24
+	int TokenTYPEOF = 1102;   //cym 2015-03-24
+	int TokenLET = 1103;   //cym 2015-03-24
 	int TokenIDENT= 2000;
 }

@@ -3034,7 +3034,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	}
 	
 	private char[] getMethodName(AbstractMethodDeclaration method){
-		if((method.binding.tagBits & TagBits.AnnotationOverload) != 0){
+		if((method.binding.getAnnotationTagBits() & TagBits.AnnotationOverload) != 0){
 			return CharOperation.concat(method.selector, method.binding.overload.toCharArray());
 		} else {
 			return method.selector;

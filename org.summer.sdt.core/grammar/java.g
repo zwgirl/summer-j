@@ -147,7 +147,7 @@ $Terminals
 	NOT_EQUAL_EQUAL
 	SCRIPT_START  --cym 2015-01-03
 	SCRIPT_END  --cym 2015-01-03
---	XML_COMMENT  --cym 2015-01-04
+	XmlComment  --cym 2015-01-04
 --    BodyMarker
 
 $Alias
@@ -468,7 +468,7 @@ Element -> SimpleElement
 Element -> AttributeElement
 Element -> PCDATANode
 Element -> Script
---Element -> COMMENTNode
+Element -> CommentNode
 /:$readableName ElementDeclaration:/
 
 ElementListopt ::= $empty
@@ -481,32 +481,50 @@ ElementList ::= ElementList Element
 /.$putCase consumeElementList(); $break ./
 /:$readableName ElementList:/
 
-Script -> ScriptMethodHeader BlockStatementsopt '%>'
+--Script -> ScriptMethodHeader BlockStatementsopt '%>'
+--/.$putCase consumeScript(); $break ./
+--/:$readableName Script:/
+--
+--ScriptMethodHeader ::= '<%'
+--/.$putCase consumeScriptMethodName(); $break./
+--/:$readableName consumeScriptMethodName:/
+Script -> ScriptHeader BlockStatementsopt EnterPCDATA '%>'
 /.$putCase consumeScript(); $break ./
 /:$readableName Script:/
 
-ScriptMethodHeader ::= '<%'
-/.$putCase consumeScriptMethodName(); $break./
-/:$readableName consumeScriptMethodName:/
-
+ScriptHeader ::= '<%'
+/.$putCase consumeScriptHeader(); $break./
+/:$readableName ScriptHeader./
 
 PCDATANode ::= PCDATA
 /.$putCase consumePCDATANode(); $break ./
 /:$readableName PCDATANode:/
 
---COMMENTNode ::= XML_COMMENT
---/.$putCase consumeCOMMENTNode(); $break ./
---/:$readableName COMMENTNode:/
+CommentNode ::= XmlComment EnterPCDATA
+/.$putCase consumeCommentNode(); $break ./
+/:$readableName CommentNode:/
 
 EmptyElement ::=  ElementTag  EnterCloseTag EnterPCDATA '/>' 
 /.$putCase consumeEmptyElement(); $break ./
+
 SimpleElement ::=  ElementTag AttributeList  EnterCloseTag EnterPCDATA '/>'
 /.$putCase consumeSimpleElement(); $break ./
-ComplexElement ::= ElementTag AttributeListopt EnterPCDATA '>' 
-    	ElementListopt
-	 '</' EnterCloseTag SimpleName EnterPCDATA '>' 
-/.$putCase consumeComplexElement(); $break ./
-/:$readableName ObjectElement:/
+
+ComplexElement ::= ElementStart --ElementTag AttributeListopt EnterPCDATA '>' 
+    ElementListopt
+	ElementClose 
+	
+/.$putCase consumeInvalidComplexElement(); $break ./
+/:$readableName ComplexElement:/
+/:$recovery_template < identifier:/
+
+ElementStart ::= ElementTag AttributeListopt EnterPCDATA '>' 
+/.$putCase consumeElementStart(); $break ./
+/:$readableName ElementStart:/
+
+ElementClose ::= '</' EnterCloseTag SimpleName EnterPCDATA '>' 
+/.$putCase consumeElementClose(); $break ./
+/:$readableName ElementClose:/
 
 EnterCloseTag ::= $empty
 /.$putCase consumeEnterCloseTag(); $break ./
@@ -568,6 +586,7 @@ MarkupExtenson ::= '{' SimpleName MarkupExtensionTag '}'
 MarkupExtenson ::= '{' SimpleName MarkupExtensionTag AttributeList '}'
 /.$putCase consumeMarkupExtenson(true); $break ./
 /:$readableName MarkupExtenson:/
+/:$recovery_template { identifier:/
 ----------------------------------------------
 -- xaml end
 -----------------------------------------------

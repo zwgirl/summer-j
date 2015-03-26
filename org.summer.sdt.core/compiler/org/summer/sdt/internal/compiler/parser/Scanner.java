@@ -1196,7 +1196,9 @@ public class Scanner implements TerminalTokens {
 			boolean hasContent = false;
 			while (true) {
 				if (this.currentPosition >= this.eofPosition) {
-					throw new InvalidInputException(UNTERMINATED_STRING);
+					this.currentPosition = this.startPosition + 1;
+					return false;
+//					throw new InvalidInputException(UNTERMINATED_STRING);
 				}
 			
 				int temp = this.currentPosition;
@@ -1225,7 +1227,87 @@ public class Scanner implements TerminalTokens {
 		} finally{
 			this.PCDATA = false;
 		}
+	}
+	
+	//cym 2015-03-24 XML comment
+	public boolean xmlComment() throws InvalidInputException{
+		try { //get the next char
+			boolean isUnicode = false;
+			// consume next character
+			this.unicodeAsBackSlash = false;
+			if (((this.currentCharacter = this.source[this.currentPosition++]) == '\\')
+				&& (this.source[this.currentPosition] == 'u')) {
+				getNextUnicodeChar();
+				isUnicode = true;
+			} else {
+				isUnicode = false;
+				if (this.withoutUnicodePtr != 0) {
+					unicodeStore();
+				}
+			}
 
+			if ((this.currentCharacter == '\r') || (this.currentCharacter == '\n')) {
+				if (this.recordLineSeparator) {
+					if (isUnicode) {
+						pushUnicodeLineSeparator();
+					} else {
+						pushLineSeparator();
+					}
+				}
+			}
+			isUnicode = false;
+			if (((this.currentCharacter = this.source[this.currentPosition++]) == '\\')
+				&& (this.source[this.currentPosition] == 'u')) {
+				//-------------unicode traitement ------------
+				getNextUnicodeChar();
+				isUnicode = true;
+			} else {
+				isUnicode = false;
+			}
+			//handle the \\u case manually into comment
+			if (this.currentCharacter == '\\') {
+				if (this.source[this.currentPosition] == '\\')
+					this.currentPosition++; //jump over the \\
+			}
+			
+			//loop until end of comment */
+			while(true){
+				while ((this.currentCharacter != '>')) {
+					if (this.currentPosition >= this.eofPosition) {
+						throw new InvalidInputException(UNTERMINATED_COMMENT);
+					}
+					if ((this.currentCharacter == '\r') || (this.currentCharacter == '\n')) {
+						if (this.recordLineSeparator) {
+							if (isUnicode) {
+								pushUnicodeLineSeparator();
+							} else {
+								pushLineSeparator();
+							}
+						}
+					}
+					//get next char
+					if (((this.currentCharacter = this.source[this.currentPosition++]) == '\\')
+						&& (this.source[this.currentPosition] == 'u')) {
+						//-------------unicode traitement ------------
+						getNextUnicodeChar();
+						isUnicode = true;
+					} else {
+						isUnicode = false;
+					}
+				}
+				
+				if ((this.source[this.currentPosition - 2] == '-') && (this.source[this.currentPosition - 3] == '-')) {
+					this.PCDATA  = true;
+					this.currentPosition--;
+					return true;
+				}
+				
+				this.currentCharacter = this.source[this.currentPosition++];
+			}
+		} catch (IndexOutOfBoundsException e) {
+			this.currentPosition--;
+			throw new InvalidInputException(UNTERMINATED_COMMENT);
+		} 
 	}
 	
 	protected int getNextToken0() throws InvalidInputException {
@@ -1434,6 +1516,17 @@ public class Scanner implements TerminalTokens {
 							//cym add 2015-01-03
 							if(getNextChar('%')){
 								return TokenNameSCRIPT_START;
+							}
+							
+							//cym 2015-03-24 comment
+							if(getNextChar('!')) {
+								if(getNextChar('-')){
+									if(getNextChar('-')){
+										if(xmlComment()){
+											return TokenNameXmlComment;
+										}
+									}
+								}
 							}
 							
 							return TokenNameLESS;
@@ -2014,6 +2107,7 @@ public class Scanner implements TerminalTokens {
 		unicodeStore();
 		this.unicodeAsBackSlash = this.currentCharacter == '\\';
 	}
+	
 	public NLSTag[] getNLSTags() {
 		final int length = this.nlsTagsPtr;
 		if (length != 0) {

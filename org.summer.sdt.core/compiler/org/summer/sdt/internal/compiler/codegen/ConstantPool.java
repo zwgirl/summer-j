@@ -257,7 +257,7 @@ public class ConstantPool implements ClassFileConstants, TypeIds {
 	public static final char[] JAVA_LANG_ANNOTATION_RETENTIONPOLICY = "Ljava/lang/annotation/RetentionPolicy;".toCharArray(); //$NON-NLS-1$
 	public static final char[] JAVA_LANG_ANNOTATION_TARGET = "Ljava/lang/annotation/Target;".toCharArray(); //$NON-NLS-1$
 	public static final char[] JAVA_LANG_DEPRECATED = "Ljava/lang/Deprecated;".toCharArray(); //$NON-NLS-1$
-	public static final char[] JAVA_LANG_ANNOTATION_OVERLOAD = "Ljava/lang/annotation/Overload;".toCharArray(); //$NON-NLS-1$   //cym 2015-01-15
+	public static final char[] JAVA_LANG_OVERLOAD = "Ljava/lang/Overload;".toCharArray(); //$NON-NLS-1$   //cym 2015-01-15
 	public static final char[] JAVA_LANG_REMOTINGSERVICE = "Ljava/lang/RemotingService;".toCharArray(); //$NON-NLS-1$  //cym 2015-03-19
 	public static final char[] JAVA_LANG_REMOTINGBEAN = "Ljava/lang/RemotingBean;".toCharArray(); //$NON-NLS-1$  //cym 2015-03-19
 	public static final char[] JAVA_LANG_ANNOTATION_INHERITED = "Ljava/lang/annotation/Inherited;".toCharArray(); //$NON-NLS-1$
