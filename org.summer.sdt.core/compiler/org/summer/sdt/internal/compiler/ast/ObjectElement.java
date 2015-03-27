@@ -273,9 +273,12 @@ public class ObjectElement extends XAMLElement {
 		output.append("var _n"); 
 		
 		output.append(" = _c(\"").append(this.type.getLastToken()).append("\");");
-		
 		output.append('\n');
 		printIndent(indent + 1, output).append(parent).append(".appendChild(_n);");
+		
+		output.append("\n");
+		printIndent(indent + 1, output);
+		output.append("_n.dataContext = new (__lc('java.lang.DataContext'))(item, '12');");
 		
 		for(Attribute attr : this.attributes){
 			attr.buildScript(scope, indent, output, "_n");
@@ -298,10 +301,10 @@ public class ObjectElement extends XAMLElement {
 				child.generateStaticHTML(scope, indent + 1, output);
 			}
 			//output meta
-			output.append("<script type = 'text/javascript' src = 'js/stub.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/js/stub.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = 'java/lang/buildins.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/java/lang/buildins.js'> </script>");
 			//build class definition
 			ClassScope classScope = scope.enclosingClassScope();
 			TypeDeclaration typeDecl = classScope.referenceContext;

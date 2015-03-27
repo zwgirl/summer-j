@@ -237,7 +237,7 @@ public class Attribute extends XAMLNode implements InvocationSite{
 		
 		if(this.property.binding != null && this.property.binding.type instanceof ReferenceBinding 
 				&& (((ReferenceBinding)this.property.binding.type).modifiers & ClassFileConstants.AccFunction) != 0){
-			output.append("\"this.");
+			output.append("\"__this.");
 			if(this.value instanceof Literal){
 				output.append(((Literal)this.value).source());
 			}

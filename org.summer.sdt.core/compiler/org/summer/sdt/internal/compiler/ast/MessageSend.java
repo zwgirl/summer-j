@@ -1276,7 +1276,11 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 				if (field.isStatic()) {
 					output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')").append('.');
 				} else {
-					output.append("this.");
+					if(this.receiver != null){
+						this.receiver.generateExpression(scope, indent, output).append('.');
+					} else {
+						output.append("this.");
+					}
 				}
 			}
 			output.append(this.selector).append('(');

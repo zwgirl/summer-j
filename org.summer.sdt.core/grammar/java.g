@@ -494,9 +494,9 @@ Script -> ScriptHeader BlockStatementsopt EnterPCDATA '%>'
 
 ScriptHeader ::= '<%'
 /.$putCase consumeScriptHeader(); $break./
-/:$readableName ScriptHeader./
+/:$readableName ScriptHeader:/
 
-PCDATANode ::= PCDATA
+PCDATANode ::= PCDATA 
 /.$putCase consumePCDATANode(); $break ./
 /:$readableName PCDATANode:/
 

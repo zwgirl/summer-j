@@ -2475,7 +2475,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append("\n");
 		printIndent(indent+2, output);
 		output.append("return __invoke(new (__lc(\"org.bark.remoting.RemotingModel\"))(");
-		output.append("\"");
+//		output.append("\"");
 //		output.append(CharOperation.concatWith(this.binding.compoundName, '.')).append("\"");
 		output.append("arguments[arguments.length-1]");
 		
@@ -3011,7 +3011,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		} else if(type.element != null && type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_ITEMTEMPLATE))){
 			output.append('\n');
 			printIndent(indent, output);
-			output.append(type.binding.sourceName).append(".prototype.").append("createRoot").append(" = function(parent) {");
+			output.append(type.binding.sourceName).append(".prototype.").append("createRoot").append(" = function(parent, item) {");
 			((ObjectElement)type.element).buildRootElement(scope, indent, output, "parent", "this");
 			output.append('\n');
 			printIndent(indent + 1, output);

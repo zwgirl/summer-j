@@ -1054,8 +1054,17 @@ public class ReferenceExpression extends FunctionalExpression implements IPolyEx
 
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+		if(this.binding == null){
+			return output;
+		}
 		lhs.generateExpression(scope, indent, output);
-		output.append(".").append(selector);
+		output.append(".").append(selector).append(".bind(");
+		if(this.binding.isStatic()){
+			binding.declaringClass.generate(output, scope.enclosingReceiverType());
+		} else {
+			output.append("this");
+		}
+		output.append(")");
 		return output;
 	}
 }
