@@ -4346,7 +4346,7 @@ public class Scanner implements TerminalTokens {
 			case TokenNameCLOSE_ELEMENT :
 				return "</"; //$NON-NLS-1$
 			case TokenNameCLOSE_TAG :
-				return "/¡·"; //$NON-NLS-1$
+				return "/ï¿½ï¿½"; //$NON-NLS-1$
 				
 			case TokenNameEOF :
 				return "EOF"; //$NON-NLS-1$
