@@ -67,7 +67,6 @@ import org.summer.sdt.internal.compiler.util.Util;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Parser extends CommitRollbackParser implements ConflictedParser, OperatorIds, TypeIds {
-	
 	protected static final int THIS_CALL = ExplicitConstructorCall.This;
 	protected static final int SUPER_CALL = ExplicitConstructorCall.Super;
 	public static final char[] FALL_THROUGH_TAG = "$FALL-THROUGH$".toCharArray(); //$NON-NLS-1$

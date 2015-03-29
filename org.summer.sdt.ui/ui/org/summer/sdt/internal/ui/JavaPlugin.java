@@ -817,12 +817,6 @@ public class JavaPlugin extends AbstractUIPlugin {
 			registerJavaContext(registry, JavaContextType.ID_MEMBERS, all_contextType);
 			registerJavaContext(registry, JavaContextType.ID_STATEMENTS, all_contextType);
 
-			registerJavaContext(registry, SWTContextType.ID_ALL, all_contextType);
-			all_contextType= registry.getContextType(SWTContextType.ID_ALL);
-
-			registerJavaContext(registry, SWTContextType.ID_MEMBERS, all_contextType);
-			registerJavaContext(registry, SWTContextType.ID_STATEMENTS, all_contextType);
-
 			fContextTypeRegistry= registry;
 		}
 

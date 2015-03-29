@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.summer.sdt.core.compiler;
 
-import org.summer.sdt.core.compiler.batch.BatchCompiler;
+//import org.summer.sdt.core.compiler.batch.BatchCompiler;
 
 /**
  * A compilation progress is used by the {@link BatchCompiler} to report progress during compilation.
@@ -25,7 +25,6 @@ import org.summer.sdt.core.compiler.batch.BatchCompiler;
  */
 
 public abstract class CompilationProgress {
-
 	/**
 	 * Notifies that the compilation is beginning. This is called exactly once per batch compilation.
 	 * An estimated amount of remaining work is given. This amount will change as the compilation

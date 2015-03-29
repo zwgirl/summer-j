@@ -58,15 +58,6 @@ public class PCDATA  extends XAMLElement {
 	public char[] translateEntity(boolean reservedReturn){
 		boolean flag = false;
 		int i = 0, length = 0;
-//		char[] newSrc = null;
-//		if(!reservedReturn){
-//			newSrc = CharOperation.replace(source, new char[]{'\r'}, "\\r".toCharArray());
-//			newSrc = CharOperation.replace(newSrc, new char[]{'\n'}, "\\n".toCharArray());
-//			newSrc = CharOperation.replace(newSrc, new char[]{'\"'}, "\\\"".toCharArray());
-//			newSrc = CharOperation.replace(newSrc, new char[]{'\''}, "\\'".toCharArray());
-//		} else {
-//			newSrc = source;
-//		}
 		
 		char[] newSrc = CharOperation.eascape(source);
 		
@@ -127,20 +118,20 @@ public class PCDATA  extends XAMLElement {
 	
 	private static final Map<String, Character> entityMap = new HashMap<String, Character>();
 	static{
-		entityMap.put("quot", '\"');
-		entityMap.put("apos", '\'');
-		entityMap.put("lt", '<');
-		entityMap.put("gt", '>');
-		entityMap.put("amp", '&');
-		entityMap.put("nbsp", ' ');
-		entityMap.put("cent", '￠');
-		entityMap.put("pound", '£');
-		entityMap.put("yen", '¥');
-		entityMap.put("euro", '€');
-		entityMap.put("sect", '§');
-		entityMap.put("trade", '™');
-		entityMap.put("times", '×');
-		entityMap.put("divide", '÷');
+		entityMap.put("quot", '\"'); //$NON-NLS-1$ 
+		entityMap.put("apos", '\''); //$NON-NLS-1$ 
+		entityMap.put("lt", '<'); //$NON-NLS-1$ 
+		entityMap.put("gt", '>'); //$NON-NLS-1$ 
+		entityMap.put("amp", '&'); //$NON-NLS-1$ 
+		entityMap.put("nbsp", ' '); //$NON-NLS-1$ 
+		entityMap.put("cent", '\uFFE0'); //$NON-NLS-1$ 
+		entityMap.put("pound", '£'); //$NON-NLS-1$ 
+		entityMap.put("yen", '¥'); //$NON-NLS-1$ 
+		entityMap.put("euro", '\u20AC'); //$NON-NLS-1$ 
+		entityMap.put("sect", '§'); //$NON-NLS-1$ 
+		entityMap.put("trade", '\u2122'); //$NON-NLS-1$ 
+		entityMap.put("times", '×'); //$NON-NLS-1$ 
+		entityMap.put("divide", '÷'); //$NON-NLS-1$ 
 		//TODO to be continue
 	}
 

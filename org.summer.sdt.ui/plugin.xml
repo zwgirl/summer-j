@@ -5285,21 +5285,21 @@
             id="org.summer.sdt.ui.CompilationUnitEditor">
       </contextTypeRegistry>
       <contextType
-            name="%templates.java.contextType.name"
+            name="%templates.lark.contextType.name"
             class="org.summer.sdt.internal.corext.template.java.JavaContextType"
-            id="java"
+            id="lark"
             registryId="org.summer.sdt.ui.CompilationUnitEditor">
       </contextType>
       <contextType
-            name="%templates.java.statements.contextType.name"
+            name="%templates.lark.statements.contextType.name"
             class="org.summer.sdt.internal.corext.template.java.JavaContextType"
-            id="java-statements"
+            id="lark-statements"
             registryId="org.summer.sdt.ui.CompilationUnitEditor">
       </contextType>
       <contextType
-            name="%templates.java.members.contextType.name"
+            name="%templates.lark.members.contextType.name"
             class="org.summer.sdt.internal.corext.template.java.JavaContextType"
-            id="java-members"
+            id="lark-members"
             registryId="org.summer.sdt.ui.CompilationUnitEditor">
       </contextType>
       <contextType
@@ -5308,24 +5308,6 @@
             id="javadoc"
             registryId="org.summer.sdt.ui.CompilationUnitEditor">
       </contextType>
-      <contextType
-            name="%templates.swt.contextType.name"
-            class="org.summer.sdt.internal.corext.template.java.SWTContextType"
-            id="swt"
-            registryId="org.summer.sdt.ui.CompilationUnitEditor">
-      </contextType>
-      <contextType
-            name="%templates.swt.statements.contextType.name"
-            class="org.summer.sdt.internal.corext.template.java.SWTContextType"
-            id="swt-statements"
-            registryId="org.summer.sdt.ui.CompilationUnitEditor">
-      </contextType>
-      <contextType
-            name="%templates.swt.members.contextType.name"
-            class="org.summer.sdt.internal.corext.template.java.SWTContextType"
-            id="swt-members"
-            registryId="org.summer.sdt.ui.CompilationUnitEditor">
-      </contextType>      
       <include
       		file="templates/default-templates.xml"
       		translations="$nl$/templates/default-templates.properties">
@@ -5334,75 +5316,71 @@
       		file="templates/default-codetemplates.xml"
       		translations="$nl$/templates/default-templates.properties">
       </include>
-      <include
-            file="templates/default-swttemplates.xml"
-            translations="$nl$/templates/default-templates.properties">
-      </include>
       <resolver
             class="org.summer.sdt.internal.corext.template.java.FieldResolver"
             contextTypeId="java"
-            description="%templates.java.resolvers.Field.description"
-            name="%templates.java.resolvers.Field.name"
+            description="%templates.lark.resolvers.Field.description"
+            name="%templates.lark.resolvers.Field.name"
             type="field"/>
       <resolver
             class="org.summer.sdt.internal.corext.template.java.LocalVarResolver"
             contextTypeId="java"
-            description="%templates.java.resolvers.LocalVar.description"
-            name="%templates.java.resolvers.LocalVar.name"
+            description="%templates.lark.resolvers.LocalVar.description"
+            name="%templates.lark.resolvers.LocalVar.name"
             type="localVar"/>
       <resolver
             class="org.summer.sdt.internal.corext.template.java.VarResolver"
-            contextTypeId="java"
-            description="%templates.java.resolvers.Var.description"
-            name="%templates.java.resolvers.Var.name"
+            contextTypeId="lark"
+            description="%templates.lark.resolvers.Var.description"
+            name="%templates.lark.resolvers.Var.name"
             type="var"/>
       <resolver
             class="org.summer.sdt.internal.corext.template.java.NameResolver"
-            contextTypeId="java"
-            description="%templates.java.resolvers.Name.description"
-            name="%templates.java.resolvers.Name.name"
+            contextTypeId="lark"
+            description="%templates.lark.resolvers.Name.description"
+            name="%templates.lark.resolvers.Name.name"
             type="newName"/>
       <resolver
             class="org.summer.sdt.internal.corext.template.java.TypeResolver"
-            contextTypeId="java"
-            description="%templates.java.resolvers.Type.description"
-            name="%templates.java.resolvers.Type.name"
+            contextTypeId="lark"
+            description="%templates.lark.resolvers.Type.description"
+            name="%templates.lark.resolvers.Type.name"
             type="newType"/>
       <resolver
             class="org.summer.sdt.internal.corext.template.java.ElementTypeResolver"
-            contextTypeId="java"
-            description="%templates.java.resolvers.ElementType.description"
-            name="%templates.java.resolvers.ElementType.name"
+            contextTypeId="lark"
+            description="%templates.lark.resolvers.ElementType.description"
+            name="%templates.lark.resolvers.ElementType.name"
             type="elemType"/>
       <resolver
             class="org.summer.sdt.internal.corext.template.java.TypeVariableResolver"
-            contextTypeId="java"
-            description="%templates.java.resolvers.ArgumentType.description"
-            name="%templates.java.resolvers.ArgumentType.name"
+            contextTypeId="lark"
+            description="%templates.lark.resolvers.ArgumentType.description"
+            name="%templates.lark.resolvers.ArgumentType.name"
             type="argType"/>
 	  <resolver
             class="org.summer.sdt.internal.corext.template.java.LinkResolver"
-            contextTypeId="java"
-            description="%templates.java.resolvers.Link.description"
-            name="%templates.java.resolvers.Link.name"
+            contextTypeId="lark"
+            description="%templates.lark.resolvers.Link.description"
+            name="%templates.lark.resolvers.Link.name"
             type="link"/>
       <resolver
             class="org.summer.sdt.internal.corext.template.java.ImportsResolver"
-            contextTypeId="java"
-            description="%templates.java.resolvers.Imports.description"
-            name="%templates.java.resolvers.Imports.name"
+            contextTypeId="lark"
+            description="%templates.lark.resolvers.Imports.description"
+            name="%templates.lark.resolvers.Imports.name"
             type="import"/>
       <resolver
             class="org.summer.sdt.internal.corext.template.java.StaticImportResolver"
-            contextTypeId="java"
-            description="%templates.java.resolvers.ImportStatic.description"
-            name="%templates.java.resolvers.ImportStatic.name"
+            contextTypeId="lark"
+            description="%templates.lark.resolvers.ImportStatic.description"
+            name="%templates.lark.resolvers.ImportStatic.name"
             type="importStatic"/>
       <resolver
             class="org.summer.sdt.internal.corext.template.java.ExceptionVariableNameResolver"
-            contextTypeId="java"
-            description="%templates.java.resolvers.ExceptionVariableName.description"
-            name="%templates.java.resolvers.ExceptionVariableName.name"
+            contextTypeId="lark"
+            description="%templates.lark.resolvers.ExceptionVariableName.description"
+            name="%templates.lark.resolvers.ExceptionVariableName.name"
             type="exception_variable_name">
       </resolver>
    </extension>

@@ -11,6 +11,5 @@
 	<classpathentry kind="src" path="codeassist"/>
 	<classpathentry kind="src" path="eval"/>
 	<classpathentry kind="src" path="grammar"/>
-	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

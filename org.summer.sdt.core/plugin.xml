@@ -180,7 +180,7 @@
 <!-- Extension: Lark File Types                                                          -->
 <!-- =================================================================================== -->
 <extension point="org.eclipse.team.core.fileTypes">
-	<fileTypes extension="java" type="text"/>
+	<fileTypes extension="lark" type="text"/>
 	<fileTypes extension="classpath" type="text"/>
 	<fileTypes extension="properties" type="text"/>
 	<fileTypes extension="class" type="binary"/>

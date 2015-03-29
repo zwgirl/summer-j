@@ -118,25 +118,27 @@ public void generateCode(BlockScope currentScope, CodeStream codeStream, boolean
 		}
 		// generate arguments
 		if (this.arguments != null) {
-			int argsLength = this.arguments.length;
-			codeStream.generateInlinedValue(argsLength);
-			codeStream.newArray(currentScope.createArrayType(currentScope.getType(TypeConstants.JAVA_LANG_OBJECT, 3), 1));
-			codeStream.dup();
-			for (int i = 0; i < argsLength; i++) {
-				codeStream.generateInlinedValue(i);
-				this.arguments[i].generateCode(currentScope, codeStream, true);
-				TypeBinding parameterBinding = codegenBinding.parameters[i];
-				if (parameterBinding.isBaseType() && parameterBinding != TypeBinding.NULL) {
-					codeStream.generateBoxingConversion(codegenBinding.parameters[i].id);
-				}
-				codeStream.aastore();
-				if (i < argsLength - 1) {
-					codeStream.dup();
-				}
-			}
+			//cym 2015-03-29
+//			int argsLength = this.arguments.length;
+//			codeStream.generateInlinedValue(argsLength);
+//			codeStream.newArray(currentScope.createArrayType(currentScope.getType(TypeConstants.JAVA_LANG_OBJECT, 3), 1));
+//			codeStream.dup();
+//			for (int i = 0; i < argsLength; i++) {
+//				codeStream.generateInlinedValue(i);
+//				this.arguments[i].generateCode(currentScope, codeStream, true);
+//				TypeBinding parameterBinding = codegenBinding.parameters[i];
+//				if (parameterBinding.isBaseType() && parameterBinding != TypeBinding.NULL) {
+//					codeStream.generateBoxingConversion(codegenBinding.parameters[i].id);
+//				}
+//				codeStream.aastore();
+//				if (i < argsLength - 1) {
+//					codeStream.dup();
+//				}
+//			}
 		} else {
-			codeStream.generateInlinedValue(0);
-			codeStream.newArray(currentScope.createArrayType(currentScope.getType(TypeConstants.JAVA_LANG_OBJECT, 3), 1));
+			//cym 2015-03-29
+//			codeStream.generateInlinedValue(0);
+//			codeStream.newArray(currentScope.createArrayType(currentScope.getType(TypeConstants.JAVA_LANG_OBJECT, 3), 1));
 		}
 		codeStream.invokeJavaLangReflectMethodInvoke();
 

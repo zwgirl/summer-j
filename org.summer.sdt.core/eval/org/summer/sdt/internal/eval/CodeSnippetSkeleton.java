@@ -190,4 +190,19 @@ public boolean isMember() {
 public char[] sourceFileName() {
 	return null;
 }
+@Override
+public char[] getReturnTypeName() {
+	// TODO Auto-generated method stub
+	return null;
+}
+@Override
+public char[][] getParameterNames() {
+	// TODO Auto-generated method stub
+	return null;
+}
+@Override
+public char[][] getThrownExceptionNames() {
+	// TODO Auto-generated method stub
+	return null;
+}
 }
