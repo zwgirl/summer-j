@@ -147,7 +147,7 @@ $Terminals
 	NOT_EQUAL_EQUAL
 	SCRIPT_START  --cym 2015-01-03
 	SCRIPT_END  --cym 2015-01-03
---	XML_COMMENT  --cym 2015-01-04
+	XmlComment  --cym 2015-01-04
 --    BodyMarker
 
 $Alias
@@ -468,7 +468,7 @@ Element -> SimpleElement
 Element -> AttributeElement
 Element -> PCDATANode
 Element -> Script
---Element -> COMMENTNode
+Element -> CommentNode
 /:$readableName ElementDeclaration:/
 
 ElementListopt ::= $empty
@@ -481,32 +481,50 @@ ElementList ::= ElementList Element
 /.$putCase consumeElementList(); $break ./
 /:$readableName ElementList:/
 
-Script -> ScriptMethodHeader NestedMethod BlockStatementsopt '%>'
+--Script -> ScriptMethodHeader BlockStatementsopt '%>'
+--/.$putCase consumeScript(); $break ./
+--/:$readableName Script:/
+--
+--ScriptMethodHeader ::= '<%'
+--/.$putCase consumeScriptMethodName(); $break./
+--/:$readableName consumeScriptMethodName:/
+Script -> ScriptHeader BlockStatementsopt EnterPCDATA '%>'
 /.$putCase consumeScript(); $break ./
 /:$readableName Script:/
 
-ScriptMethodHeader ::= '<%'
-/.$putCase consumeScriptMethodName(); $break./
-/:$readableName consumeScriptMethodName:/
+ScriptHeader ::= '<%'
+/.$putCase consumeScriptHeader(); $break./
+/:$readableName ScriptHeader:/
 
-
-PCDATANode ::= PCDATA
+PCDATANode ::= PCDATA 
 /.$putCase consumePCDATANode(); $break ./
 /:$readableName PCDATANode:/
 
---COMMENTNode ::= XML_COMMENT
---/.$putCase consumeCOMMENTNode(); $break ./
---/:$readableName COMMENTNode:/
+CommentNode ::= XmlComment EnterPCDATA
+/.$putCase consumeCommentNode(); $break ./
+/:$readableName CommentNode:/
 
 EmptyElement ::=  ElementTag  EnterCloseTag EnterPCDATA '/>' 
 /.$putCase consumeEmptyElement(); $break ./
+
 SimpleElement ::=  ElementTag AttributeList  EnterCloseTag EnterPCDATA '/>'
 /.$putCase consumeSimpleElement(); $break ./
-ComplexElement ::= ElementTag AttributeListopt EnterPCDATA '>' 
-    	ElementListopt
-	 '</' EnterCloseTag SimpleName EnterPCDATA '>' 
-/.$putCase consumeComplexElement(); $break ./
-/:$readableName ObjectElement:/
+
+ComplexElement ::= ElementStart --ElementTag AttributeListopt EnterPCDATA '>' 
+    ElementListopt
+	ElementClose 
+	
+/.$putCase consumeInvalidComplexElement(); $break ./
+/:$readableName ComplexElement:/
+/:$recovery_template < identifier:/
+
+ElementStart ::= ElementTag AttributeListopt EnterPCDATA '>' 
+/.$putCase consumeElementStart(); $break ./
+/:$readableName ElementStart:/
+
+ElementClose ::= '</' EnterCloseTag SimpleName EnterPCDATA '>' 
+/.$putCase consumeElementClose(); $break ./
+/:$readableName ElementClose:/
 
 EnterCloseTag ::= $empty
 /.$putCase consumeEnterCloseTag(); $break ./
@@ -535,26 +553,27 @@ AttributeElement ::= '<' SimpleName '.' SimpleName AttributeElementTag EnterPCDA
 /.$putCase consumeAttributeElement(); $break ./
 /:$readableName AttributeElement:/
 
-AttributeList ::= Attribute
-AttributeList ::= AttributeList Attribute
-/.$putCase consumeAttributeAttributeList(); $break ./
-/:$readableName AttributeList:/
-
-Attribute ::= GeneralAttribute
-Attribute ::= AttachAttribute
+Attribute ::= SimpleName ':' SimpleName '=' PropertyExpression
+/.$putCase consumeAttributeWithTypeReference(); $break ./
+Attribute ::= SimpleName '=' PropertyExpression
+/.$putCase consumeAttribute(); $break ./
+Attribute ::= SimpleName '.' SimpleName '=' PropertyExpression
+/.$putCase consumeAttributeWithPropertyReference(); $break ./
 /:$readableName Attribute:/
 
-AttachAttribute ::= SimpleName '.' SimpleName '=' PropertyExpression
-/.$putCase consumeAttachAttribute(); $break ./
-/:$readableName AttachAttribute:/
-
-GeneralAttribute ::= SimpleName ':' SimpleName '=' PropertyExpression
-/.$putCase consumeGeneralAttributeWithNS(); $break ./
-GeneralAttribute ::= SimpleName '=' PropertyExpression
-/.$putCase consumeGeneralAttribute(null); $break ./
-/:$readableName GeneralAttribute:/
+AttributeList ::= Attribute
+AttributeList ::= AttributeList Attribute
+/.$putCase consumeAttributeList(); $break ./
+/:$readableName AttributeList:/
 
 PropertyExpression ::= StringLiteral
+PropertyExpression ::= IntegerLiteral
+PropertyExpression ::= LongLiteral
+PropertyExpression ::= FloatingPointLiteral
+PropertyExpression ::= DoubleLiteral
+PropertyExpression ::= CharacterLiteral
+PropertyExpression ::= BooleanLiteral
+
 PropertyExpression ::= MarkupExtenson
 
 MarkupExtensionTag ::= $empty
@@ -567,6 +586,7 @@ MarkupExtenson ::= '{' SimpleName MarkupExtensionTag '}'
 MarkupExtenson ::= '{' SimpleName MarkupExtensionTag AttributeList '}'
 /.$putCase consumeMarkupExtenson(true); $break ./
 /:$readableName MarkupExtenson:/
+/:$recovery_template { identifier:/
 ----------------------------------------------
 -- xaml end
 -----------------------------------------------
@@ -661,6 +681,7 @@ TypeImportOnDemandDeclarationName ::= 'import' Name '.' RejectTypeAnnotations '*
 /.$putCase consumeTypeImportOnDemandDeclarationName(); $break ./
 /:$readableName TypeImportOnDemandDeclarationName:/
 
+TypeDeclaration -> FunctionTypeDeclaration  --cym 2015-02-13
 TypeDeclaration -> ClassDeclaration
 TypeDeclaration -> InterfaceDeclaration
 -- this declaration in part of a list od declaration and we will
@@ -696,6 +717,33 @@ Modifier -> 'strictfp'
 Modifier ::= Annotation
 /.$putCase consumeAnnotationAsModifier(); $break ./
 /:$readableName Modifier:/
+
+--cym 2015-02-03
+FunctionTypeDeclaration ::= FunctionTypeHeaderName FormalParameterListopt FunctionTypeHeaderRightParen FunctionHeaderThrowsClauseopt ';'
+/.$putCase consumeFunctionTypeDeclaration(); $break ./
+/:$readableName FunctionTypeDeclaration:/
+
+FunctionTypeHeaderName ::= Modifiersopt function Type 'Identifier' TypeParameters '('   --cym 2014-09-29
+/.$putCase consumeFunctionTypeHeaderNameWithTypeParameters(); $break ./
+
+FunctionTypeHeaderName ::= Modifiersopt function Type 'Identifier' '('
+/.$putCase consumeFunctionTypeHeaderName(); $break ./
+/:$readableName FunctionTypeHeaderName:/
+
+FunctionTypeHeaderRightParen ::= ')' 
+/.$putCase consumeFunctionTypeHeaderRightParen(); $break ./
+/:$readableName ):/
+/:$recovery_template ):/
+/:$readableName FunctionTypeHeaderRightParen:/
+
+FunctionHeaderThrowsClauseopt ::= $empty
+FunctionHeaderThrowsClauseopt -> FunctionHeaderThrowsClause
+/:$readableName FunctionHeaderThrowsClause:/
+
+FunctionHeaderThrowsClause ::= 'throws' ClassTypeList
+/.$putCase consumeFunctionHeaderThrowsClause(); $break ./
+/:$readableName FunctionHeaderThrowsClause:/
+--cym 2015-02-03
 
 --18.8 Productions from 8: Class Declarations
 --ClassModifier ::=
@@ -1954,12 +2002,14 @@ MethodInvocation ::= Name '(' ArgumentListopt ')'
 MethodInvocation ::= Name '.' OnlyTypeArguments 'Identifier' '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationNameWithTypeArguments(); $break ./
 
-MethodInvocation ::= MethodInvocation '(' ArgumentListopt ')' --cym add 2014-10-27
-/.$putCase consumeMethodInvocationName(); $break ./   --cym add 2014-10-27
+MethodInvocation ::= MethodInvocation '(' ArgumentListopt ')' --cym add 2015-02-13
+/.$putCase consumeMethodInvocationInvocation(); $break ./  
 
-MethodInvocation ::= ArrayAccess '(' ArgumentListopt ')'  --cym add 2014-10-27
---MethodInvocation ::= FunctionExpression  '(' ArgumentListopt ')'   --cym add 2014-10-27
-MethodInvocation ::= LambdaExpression  '(' ArgumentListopt ')'   --cym add 2014-10-27
+MethodInvocation ::= ArrayAccess '(' ArgumentListopt ')'  --cym add 2015-02-13
+/.$putCase consumeMethodInvocationArraySccess(); $break ./
+
+MethodInvocation ::= LambdaExpression  '(' ArgumentListopt ')'   --cym add 2015-02-13
+/.$putCase consumeMethodInvocationLambdaExpression(); $break ./
 
 MethodInvocation ::= Primary '.' OnlyTypeArguments 'Identifier' '(' ArgumentListopt ')'
 /.$putCase consumeMethodInvocationPrimaryWithTypeArguments(); $break ./
