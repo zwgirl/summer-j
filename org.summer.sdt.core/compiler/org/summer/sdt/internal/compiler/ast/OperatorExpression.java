@@ -20,7 +20,7 @@ public abstract class OperatorExpression extends Expression implements OperatorI
 	public static int[][] OperatorSignatures = new int[NumberOfTables][];
 
 	static {classInitialize();}
-
+	
 	/**
 	 * OperatorExpression constructor comment.
 	 */
