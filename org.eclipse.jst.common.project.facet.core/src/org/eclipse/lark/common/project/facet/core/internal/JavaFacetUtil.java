@@ -55,11 +55,11 @@ public final class JavaFacetUtil
     
     static
     {
-        FACET_VER_TO_EXEC_ENV.put( JavaFacet.VERSION_1_3, "J2SE-1.3" ); //$NON-NLS-1$
-        FACET_VER_TO_EXEC_ENV.put( JavaFacet.VERSION_1_4, "J2SE-1.4" ); //$NON-NLS-1$
-        FACET_VER_TO_EXEC_ENV.put( JavaFacet.VERSION_1_5, "J2SE-1.5" ); //$NON-NLS-1$
-        FACET_VER_TO_EXEC_ENV.put( JavaFacet.VERSION_1_6, "JavaSE-1.6" ); //$NON-NLS-1$
-        FACET_VER_TO_EXEC_ENV.put( JavaFacet.VERSION_1_7, "JavaSE-1.7" ); //$NON-NLS-1$
+//        FACET_VER_TO_EXEC_ENV.put( JavaFacet.VERSION_1_3, "J2SE-1.3" ); //$NON-NLS-1$
+//        FACET_VER_TO_EXEC_ENV.put( JavaFacet.VERSION_1_4, "J2SE-1.4" ); //$NON-NLS-1$
+//        FACET_VER_TO_EXEC_ENV.put( JavaFacet.VERSION_1_5, "J2SE-1.5" ); //$NON-NLS-1$
+//        FACET_VER_TO_EXEC_ENV.put( JavaFacet.VERSION_1_6, "JavaSE-1.6" ); //$NON-NLS-1$
+//        FACET_VER_TO_EXEC_ENV.put( JavaFacet.VERSION_1_7, "JavaSE-1.7" ); //$NON-NLS-1$
         FACET_VER_TO_EXEC_ENV.put( JavaFacet.VERSION_1_8, "JavaSE-1.8" ); //$NON-NLS-1$
     }
     

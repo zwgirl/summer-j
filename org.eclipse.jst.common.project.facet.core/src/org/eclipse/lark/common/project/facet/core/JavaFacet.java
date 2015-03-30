@@ -28,24 +28,24 @@ public final class JavaFacet
 {
     public static final String ID = "lark"; //$NON-NLS-1$
     public static final IProjectFacet FACET = ProjectFacetsManager.getProjectFacet( ID );
-    public static final IProjectFacetVersion VERSION_1_3 = FACET.getVersion( "1.3" ); //$NON-NLS-1$
-    public static final IProjectFacetVersion VERSION_1_4 = FACET.getVersion( "1.4" ); //$NON-NLS-1$
-    public static final IProjectFacetVersion VERSION_1_5 = FACET.getVersion( "1.5" ); //$NON-NLS-1$
-    public static final IProjectFacetVersion VERSION_1_6 = FACET.getVersion( "1.6" ); //$NON-NLS-1$
-    public static final IProjectFacetVersion VERSION_1_7 = FACET.getVersion( "1.7" ); //$NON-NLS-1$
+//    public static final IProjectFacetVersion VERSION_1_3 = FACET.getVersion( "1.3" ); //$NON-NLS-1$
+//    public static final IProjectFacetVersion VERSION_1_4 = FACET.getVersion( "1.4" ); //$NON-NLS-1$
+//    public static final IProjectFacetVersion VERSION_1_5 = FACET.getVersion( "1.5" ); //$NON-NLS-1$
+//    public static final IProjectFacetVersion VERSION_1_6 = FACET.getVersion( "1.6" ); //$NON-NLS-1$
+//    public static final IProjectFacetVersion VERSION_1_7 = FACET.getVersion( "1.7" ); //$NON-NLS-1$
     public static final IProjectFacetVersion VERSION_1_8 = FACET.getVersion( "1.8" ); //$NON-NLS-1$
 
-    @Deprecated
-    public static final IProjectFacetVersion JAVA_13 = VERSION_1_3;
-    
-    @Deprecated
-    public static final IProjectFacetVersion JAVA_14 = VERSION_1_4;
-    
-    @Deprecated
-    public static final IProjectFacetVersion JAVA_50 = VERSION_1_5;
-    
-    @Deprecated
-    public static final IProjectFacetVersion JAVA_60 = VERSION_1_6;
+//    @Deprecated
+//    public static final IProjectFacetVersion JAVA_13 = VERSION_1_3;
+//    
+//    @Deprecated
+//    public static final IProjectFacetVersion JAVA_14 = VERSION_1_4;
+//    
+//    @Deprecated
+//    public static final IProjectFacetVersion JAVA_50 = VERSION_1_5;
+//    
+//    @Deprecated
+//    public static final IProjectFacetVersion JAVA_60 = VERSION_1_6;
 
     public static boolean isInstalled( final IProject project )
     {
