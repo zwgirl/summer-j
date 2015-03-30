@@ -1801,6 +1801,10 @@ class ASTConverter {
 		if (expression instanceof org.summer.sdt.internal.compiler.ast.MarkupExtension) {
 			return convert((org.summer.sdt.internal.compiler.ast.MarkupExtension) expression);
 		} 
+		
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.FunctionExpression) {
+			return convert((org.summer.sdt.internal.compiler.ast.FunctionExpression) expression);
+		}
 
 		return null;
 	}
@@ -3114,6 +3118,18 @@ class ASTConverter {
 		}
 
 		return xamlElement;
+	}
+	
+	//TODO cym 2015-03-30 
+	public FunctionExpression convert(org.summer.sdt.internal.compiler.ast.FunctionExpression functionExpression) {
+		final FunctionExpression function = new FunctionExpression(this.ast);
+		function.setSourceRange(functionExpression.sourceStart, functionExpression.sourceEnd - functionExpression.sourceStart + 1);
+//		xamlElement.setType(convertType(function.type));
+//		for(org.summer.sdt.internal.compiler.ast.Attribute attribute : function.attributes){
+//			xamlElement.attributes().add(convert(attribute));
+//		}
+
+		return function;
 	}
 	
 	//TODO cym 2015-03-21 

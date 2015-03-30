@@ -103,6 +103,13 @@ public class Attribute extends XAMLNode implements InvocationSite{
 			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;
 		}
 		
+		if(this.value instanceof FunctionExpression){
+			FunctionExpression function = (FunctionExpression) this.value;
+			function.resolve(scope);
+			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;
+			return;
+		}
+		
 		if(this.type == null){
 			return;
 		}

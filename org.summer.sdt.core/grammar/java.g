@@ -514,7 +514,7 @@ ComplexElement ::= ElementStart --ElementTag AttributeListopt EnterPCDATA '>'
     ElementListopt
 	ElementClose 
 	
-/.$putCase consumeInvalidComplexElement(); $break ./
+/.$putCase consumeComplexElement(); $break ./
 /:$readableName ComplexElement:/
 /:$recovery_template < identifier:/
 
@@ -575,6 +575,22 @@ PropertyExpression ::= CharacterLiteral
 PropertyExpression ::= BooleanLiteral
 
 PropertyExpression ::= MarkupExtenson
+
+PropertyExpression ::= FunctionExpression
+
+FunctionExpression ::= FunctionExpressionHeader FormalParameterListopt FunctionExpressionHeaderRightParen MethodBody
+/.$putCase consumeFunctionExpression(); $break ./
+/:$readableName FunctionExpression:/
+
+FunctionExpressionHeader ::= function ( 
+/.$putCase consumeFunctionExpressionHeader(); $break ./
+/:$readableName FunctionExpressionHeader:/
+
+FunctionExpressionHeaderRightParen ::= ')'
+/.$putCase consumeFunctionExpressionHeaderRightParen(); $break ./
+/:$readableName ):/
+/:$recovery_template ):/
+/:$readableName FunctionExpressionHeaderRightParen:/
 
 MarkupExtensionTag ::= $empty
 /.$putCase consumeMarkupExtensionTag(); $break ./
