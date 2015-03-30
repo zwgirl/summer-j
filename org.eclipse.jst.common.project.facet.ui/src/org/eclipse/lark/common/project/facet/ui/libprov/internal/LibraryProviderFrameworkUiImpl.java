@@ -11,7 +11,7 @@
 
 package org.eclipse.lark.common.project.facet.ui.libprov.internal;
 
-import static org.eclipse.jst.common.project.facet.core.libprov.internal.LibraryProviderFrameworkImpl.reportProviderNotDefined;
+import static org.eclipse.lark.common.project.facet.core.libprov.internal.LibraryProviderFrameworkImpl.reportProviderNotDefined;
 import static org.eclipse.lark.common.project.facet.ui.internal.FacetedProjectFrameworkJavaExtUiPlugin.PLUGIN_ID;
 import static org.eclipse.wst.common.project.facet.core.util.internal.PluginUtil.findRequiredAttribute;
 import static org.eclipse.wst.common.project.facet.core.util.internal.PluginUtil.instantiate;
@@ -28,10 +28,10 @@ import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jst.common.project.facet.core.libprov.ILibraryProvider;
-import org.eclipse.jst.common.project.facet.core.libprov.LibraryInstallDelegate;
-import org.eclipse.jst.common.project.facet.core.libprov.LibraryProviderActionType;
-import org.eclipse.jst.common.project.facet.core.libprov.LibraryProviderFramework;
+import org.eclipse.lark.common.project.facet.core.libprov.ILibraryProvider;
+import org.eclipse.lark.common.project.facet.core.libprov.LibraryInstallDelegate;
+import org.eclipse.lark.common.project.facet.core.libprov.LibraryProviderActionType;
+import org.eclipse.lark.common.project.facet.core.libprov.LibraryProviderFramework;
 import org.eclipse.lark.common.project.facet.ui.libprov.LibraryProviderOperationPanel;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;

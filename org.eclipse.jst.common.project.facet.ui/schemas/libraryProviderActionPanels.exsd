@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.eclipse.jst.common.project.facet.ui" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.eclipse.lark.common.project.facet.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="org.eclipse.jst.common.project.facet.ui" id="libraryProviderActionPanels" name="Library Provider Action Panels Extension Point"/>
+         <meta.schema plugin="org.eclipse.lark.common.project.facet.ui" id="libraryProviderActionPanels" name="Library Provider Action Panels Extension Point"/>
       </appinfo>
       <documentation>
          Provides a way to associate UI with library provider actions.
@@ -63,7 +63,7 @@
                   Library provider id.
                </documentation>
                <appinfo>
-                  <meta.attribute kind="identifier" basedOn="org.eclipse.jst.common.project.facet.core.libraryProviders/provider/@id"/>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.lark.common.project.facet.core.libraryProviders/provider/@id"/>
                </appinfo>
             </annotation>
          </attribute>
@@ -73,7 +73,7 @@
                   Implementation of the library provider action panel.
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.jst.common.project.facet.ui.libprov.LibraryProviderOperationPanel:"/>
+                  <meta.attribute kind="java" basedOn="org.eclipse.lark.common.project.facet.ui.libprov.LibraryProviderOperationPanel:"/>
                </appinfo>
             </annotation>
          </attribute>
@@ -97,7 +97,7 @@
          &lt;p&gt;The following example registers an install action panel for a previously-declared library provider:&lt;/p&gt;
 
 &lt;pre&gt;
-&lt;extension point=&quot;org.eclipse.jst.common.project.facet.ui.libraryProviderActionPanels&quot;&gt;
+&lt;extension point=&quot;org.eclipse.lark.common.project.facet.ui.libraryProviderActionPanels&quot;&gt;
   &lt;panel 
     provider=&quot;some-library-provider&quot;
     class=&quot;com.mycompany.SomeLibraryProviderInstallPanel&quot;/&gt;

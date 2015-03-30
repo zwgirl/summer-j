@@ -108,7 +108,7 @@ public final class JavaFacetDetector
         {
             final String extension = resource.getFileExtension();
             
-            if( extension != null && extension.equals( "java" ) ) //$NON-NLS-1$
+            if( extension != null && extension.equals( "lark" ) ) //$NON-NLS-1$
             {
                 final InputStream in = ( (IFile) resource ).getContents( true );
                 

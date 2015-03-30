@@ -3,7 +3,7 @@
 <schema targetNamespace="org.eclipse.jst.common.project.facet.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="org.eclipse.jst.common.project.facet.core" id="downloadableLibraries" name="Downloadable Libraries Extension Point"/>
+         <meta.schema plugin="org.eclipse.lark.common.project.facet.core" id="downloadableLibraries" name="Downloadable Libraries Extension Point"/>
       </appinfo>
       <documentation>
          Provides a way to register libraries that can be downloaded from remote servers. This is a feature of the user library provider.
@@ -59,9 +59,11 @@
          </documentation>
       </annotation>
       <complexType>
+      <!--
          <sequence>
             <element ref="enablement" minOccurs="0" maxOccurs="1"/>
          </sequence>
+         -->
          <attribute name="path" type="string">
             <annotation>
                <documentation>
@@ -96,7 +98,7 @@
          &lt;p&gt;The following example adds downloadable libraries catalog entries from a file that is located within the plugin:&lt;/p&gt;
 
 &lt;pre&gt;
-&lt;extension point=&quot;org.eclipse.jst.common.project.facet.core.downloadableLibraries&quot;&gt;
+&lt;extension point=&quot;org.eclipse.lark.common.project.facet.core.downloadableLibraries&quot;&gt;
   &lt;import-definitions path=&quot;libs/catalog.xml&quot;/&gt;
 &lt;/extension&gt;
 &lt;/pre&gt;
@@ -104,7 +106,7 @@
 &lt;p&gt;The following example adds catalog entries from a file that is located on a server:&lt;/p&gt;
 
 &lt;pre&gt;
-&lt;extension point=&quot;org.eclipse.jst.common.project.facet.core.downloadableLibraries&quot;&gt;
+&lt;extension point=&quot;org.eclipse.lark.common.project.facet.core.downloadableLibraries&quot;&gt;
   &lt;import-definitions url=&quot;http://www.mycorp.com/libs/catalog.xml&quot;/&gt;
 &lt;/extension&gt;
 &lt;/pre&gt;

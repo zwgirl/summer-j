@@ -81,7 +81,7 @@ public final class JavaFacetInstallDelegate
                 defOutputFolder = createFolder( project, config.getDefaultOutputFolder(), true );
             }
 
-            // Add the java nature. This will automatically add the builder.
+            // Add the lark nature. This will automatically add the builder.
 
             final IProjectDescription desc = project.getDescription();
             final String[] current = desc.getNatureIds();

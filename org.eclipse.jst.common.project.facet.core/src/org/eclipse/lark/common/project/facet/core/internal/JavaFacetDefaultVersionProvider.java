@@ -17,7 +17,7 @@ import org.eclipse.wst.common.project.facet.core.IDefaultVersionProvider;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
 
 /**
- * Defaults the java facet version to align with workspace java compiler
+ * Defaults the lark facet version to align with workspace lark compiler
  * level settings.
  * 
  * @author <a href="mailto:konstantin.komissarchik@oracle.com">Konstantin Komissarchik</a>

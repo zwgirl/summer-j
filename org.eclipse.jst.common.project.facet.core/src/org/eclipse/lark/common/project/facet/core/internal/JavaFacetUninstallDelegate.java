@@ -70,7 +70,7 @@ public final class JavaFacetUninstallDelegate
             // because the project is corrupted.
         }
         
-        // Remove java nature. This will automatically remove the builder.
+        // Remove lark nature. This will automatically remove the builder.
 
         final IProjectDescription desc = project.getDescription();
         final List<String> natures = new ArrayList<String>();

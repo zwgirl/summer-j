@@ -23,9 +23,9 @@ import static org.eclipse.wst.common.project.facet.ui.internal.util.GridLayoutUt
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jdt.internal.core.JavaModelManager;
-import org.eclipse.jdt.internal.core.UserLibraryManager;
-import org.eclipse.jdt.internal.ui.preferences.UserLibraryPreferencePage;
+import org.summer.sdt.internal.core.JavaModelManager;
+import org.summer.sdt.internal.core.UserLibraryManager;
+import org.summer.sdt.internal.ui.preferences.UserLibraryPreferencePage;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -35,8 +35,8 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.window.Window;
-import org.eclipse.jst.common.project.facet.core.libprov.IPropertyChangeListener;
-import org.eclipse.jst.common.project.facet.core.libprov.user.UserLibraryProviderInstallOperationConfig;
+import org.eclipse.lark.common.project.facet.core.libprov.IPropertyChangeListener;
+import org.eclipse.lark.common.project.facet.core.libprov.user.UserLibraryProviderInstallOperationConfig;
 import org.eclipse.lark.common.project.facet.ui.libprov.LibraryProviderOperationPanel;
 import org.eclipse.lark.common.project.facet.ui.libprov.user.internal.DownloadLibraryWizard;
 import org.eclipse.osgi.util.NLS;

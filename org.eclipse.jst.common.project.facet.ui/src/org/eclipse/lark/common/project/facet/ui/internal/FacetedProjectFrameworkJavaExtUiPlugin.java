@@ -24,7 +24,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public final class FacetedProjectFrameworkJavaExtUiPlugin 
 {
-    public static final String PLUGIN_ID = "org.eclipse.jst.common.project.facet.ui"; //$NON-NLS-1$
+    public static final String PLUGIN_ID = "org.eclipse.lark.common.project.facet.ui"; //$NON-NLS-1$
     
     public static final String IMG_PATH_JAVA_WIZBAN = "images/java-wizban.png"; //$NON-NLS-1$
     public static final String IMG_PATH_SOURCE_FOLDER = "images/source-folder.gif"; //$NON-NLS-1$

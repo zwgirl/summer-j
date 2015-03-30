@@ -5,15 +5,15 @@
 
   <extension point="org.eclipse.core.runtime.adapters">
     <factory 
-      class="org.eclipse.jst.common.project.facet.core.internal.RuntimeClasspathProvider$Factory" 
+      class="org.eclipse.lark.common.project.facet.core.internal.RuntimeClasspathProvider$Factory" 
       adaptableType="org.eclipse.wst.common.project.facet.core.runtime.IRuntime">
-      <adapter type="org.eclipse.jst.common.project.facet.core.IClasspathProvider"/>
+      <adapter type="org.eclipse.lark.common.project.facet.core.IClasspathProvider"/>
     </factory>
   </extension>
 
   <extension point="org.eclipse.wst.common.project.facet.core.runtimeBridges">
     <bridge
-      id="org.eclipse.jst.common.project.facet.core.JavaRuntimeBridge"
+      id="org.eclipse.lark.common.project.facet.core.JavaRuntimeBridge"
       class="org.eclipse.lark.common.project.facet.core.internal.JavaRuntimeBridge"/>
   </extension>
   
@@ -119,7 +119,7 @@
   </extension>
 
   <extension point="org.eclipse.wst.common.project.facet.core.aliases">
-    <facet-alias facet="lark" alias="jst.lark"/>
+    <facet-alias facet="lark" alias="sdt.lark"/>
     <facet-version-alias facet="lark" version="1.5" alias="5.0"/>
     <facet-version-alias facet="lark" version="1.6" alias="6.0"/>
   </extension>
@@ -155,7 +155,7 @@
     name="%downloadableLibrariesExtensionPointName" 
     schema="schemas/downloadableLibraries.exsd"/>
    	
-  <extension point="org.eclipse.jst.common.project.facet.core.libraryProviders">
+  <extension point="org.eclipse.lark.common.project.facet.core.libraryProviders">
     <provider id="user-library-provider" abstract="true">
       <label>%userLibraryProviderLabel</label>
       <priority>500</priority>
@@ -169,16 +169,18 @@
     </provider>
   </extension>
   
-  <extension point="org.eclipse.jst.common.project.facet.core.libraryProviders">
+  <extension point="org.eclipse.lark.common.project.facet.core.libraryProviders">
     <provider id="runtime-library-provider">
       <label>%runtimeLibraryProviderLabel</label>
       <priority>600</priority>
       <param name="message" value="%runtimeLibraryProviderMessage"/>
+      <!--
       <enablement>
         <with variable="context">
           <test property="org.eclipse.lark.common.project.facet.core.canTargetRuntimeProvideLibrary" forcePluginActivation="true"/>
         </with>
       </enablement>
+      -->
       <action type="INSTALL">
         <operation class="org.eclipse.lark.common.project.facet.core.libprov.internal.RuntimeLibraryProviderInstallOperation"/>
       </action>
@@ -257,17 +259,19 @@
       <action type="UNINSTALL">
         <operation class="org.eclipse.lark.common.project.facet.core.libprov.osgi.OsgiBundlesLibraryProviderUninstallOperation"/>
       </action>
+      <!--
       <enablement>
         <with variable="provider">
           <test property="eclipse.fproj.jdt.libprov.osgi.bundleReferencesResolvable" value="true" forcePluginActivation="true"/>
         </with>
       </enablement>
+      -->
     </provider>
   </extension>
   
   <extension point="org.summer.sdt.core.classpathContainerInitializer">
     <classpathContainerInitializer
-      class="org.eclipse.jst.common.project.facet.core.libprov.osgi.internal.OsgiBundlesContainerImpl$Initializer"
+      class="org.eclipse.lark.common.project.facet.core.libprov.osgi.internal.OsgiBundlesContainerImpl$Initializer"
       id="eclipse.fproj.jdt.libprov.osgi"/>
   </extension>
   

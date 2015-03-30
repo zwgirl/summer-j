@@ -30,12 +30,12 @@
          
   <extension point="org.eclipse.wst.common.project.facet.ui.images">
     <image 
-      facet="java" 
+      facet="lark" 
       path="images/java-facet.gif"/>
   </extension>
 
   <extension point="org.eclipse.wst.common.project.facet.ui.wizardPages">
-    <wizard-pages action="java.install">
+    <wizard-pages action="lark.install">
       <page class="org.eclipse.lark.common.project.facet.ui.internal.JavaFacetInstallPage"/>
     </wizard-pages>
   </extension>
@@ -43,8 +43,8 @@
   <extension
     point="org.eclipse.ui.ide.markerResolution">
 	<markerResolutionGenerator
-      markerType="org.eclipse.jst.common.project.facet.core.javaVersionMismatch"
-      class="org.eclipse.jst.common.project.facet.ui.internal.JavaVersionMismatchMarkerResolutions">
+      markerType="org.eclipse.lark.common.project.facet.core.javaVersionMismatch"
+      class="org.eclipse.lark.common.project.facet.ui.internal.JavaVersionMismatchMarkerResolutions">
     </markerResolutionGenerator>
   </extension>
 

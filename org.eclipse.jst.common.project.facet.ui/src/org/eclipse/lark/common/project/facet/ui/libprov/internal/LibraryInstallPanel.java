@@ -20,11 +20,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jst.common.project.facet.core.libprov.ILibraryProvider;
-import org.eclipse.jst.common.project.facet.core.libprov.IPropertyChangeListener;
-import org.eclipse.jst.common.project.facet.core.libprov.LibraryInstallDelegate;
-import org.eclipse.jst.common.project.facet.core.libprov.LibraryProviderActionType;
-import org.eclipse.jst.common.project.facet.core.libprov.LibraryProviderOperationConfig;
+import org.eclipse.lark.common.project.facet.core.libprov.ILibraryProvider;
+import org.eclipse.lark.common.project.facet.core.libprov.IPropertyChangeListener;
+import org.eclipse.lark.common.project.facet.core.libprov.LibraryInstallDelegate;
+import org.eclipse.lark.common.project.facet.core.libprov.LibraryProviderActionType;
+import org.eclipse.lark.common.project.facet.core.libprov.LibraryProviderOperationConfig;
 import org.eclipse.lark.common.project.facet.ui.libprov.LibraryProviderOperationPanel;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;

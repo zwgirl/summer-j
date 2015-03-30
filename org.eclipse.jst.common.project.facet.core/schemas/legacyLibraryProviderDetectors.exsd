@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.eclipse.jst.common.project.facet.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.eclipse.lark.common.project.facet.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="org.eclipse.jst.common.project.facet.core" id="legacyLibraryProviderDetectors" name="Legacy Library Provider Detectors Extension Point"/>
+         <meta.schema plugin="org.eclipse.lark.common.project.facet.core" id="legacyLibraryProviderDetectors" name="Legacy Library Provider Detectors Extension Point"/>
       </appinfo>
       <documentation>
          Provides a migration path for existing code to Library Provider Framework by allowing registration of detectors that can identify legacy metadata in a project and return a library provider. The registered detectors are called when a call to LibraryProviderFramework.getCurrentProvider() is made and the project metadata maintained by the framework does not show a provider for the facet in question. The detectors should not alter project state, but only return a library provider representing the legacy configuration. The legacy library providers are typically configured as hidden (not available for installation) and only implement the uninstall action.
@@ -63,7 +63,7 @@
                   Specifies the class name of the detector.
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.jst.common.project.facet.core.libprov.LegacyLibraryProviderDetector:"/>
+                  <meta.attribute kind="lark" basedOn="org.eclipse.lark.common.project.facet.core.libprov.LegacyLibraryProviderDetector:"/>
                </appinfo>
             </annotation>
          </attribute>
@@ -88,7 +88,7 @@
          &lt;p&gt;The following example registers two detectors:&lt;/p&gt;
 
 &lt;pre&gt;
-&lt;extension point=&quot;org.eclipse.jst.common.project.facet.core.legacyLibraryProviderDetectors&quot;&gt;
+&lt;extension point=&quot;org.eclipse.lark.common.project.facet.core.legacyLibraryProviderDetectors&quot;&gt;
   &lt;detector class=&quot;com.mycompany.Detector1&quot;/&gt;
   &lt;detector class=&quot;com.mycompany.Detector2&quot;/&gt;
 &lt;/extension&gt;

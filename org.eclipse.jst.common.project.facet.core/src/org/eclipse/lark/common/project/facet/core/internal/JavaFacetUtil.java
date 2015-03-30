@@ -169,7 +169,7 @@ public final class JavaFacetUtil
             ClasspathHelper.removeClasspathEntries( project, oldver );
         }
         
-        // If this was a java project before it became a faceted project or
+        // If this was a lark project before it became a faceted project or
         // the JRE container has been added manually, the above method will not
         // delete the old JRE container. Do it manually.
         

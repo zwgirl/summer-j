@@ -29,7 +29,7 @@ public final class JavaFacetValidator
     
 {
     public static final String MARKER_ID
-        = "org.eclipse.jst.common.project.facet.core.javaVersionMismatch"; //$NON-NLS-1$
+        = "org.eclipse.lark.common.project.facet.core.javaVersionMismatch"; //$NON-NLS-1$
     
     public static final String ATTR_FACET_VERSION = "facetVersion"; //$NON-NLS-1$
     public static final String ATTR_COMPILER_LEVEL = "compilerLevel"; //$NON-NLS-1$

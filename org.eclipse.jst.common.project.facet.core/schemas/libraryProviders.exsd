@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.eclipse.jst.common.project.facet.core.libprov" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.eclipse.lark.common.project.facet.core.libprov" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="org.eclipse.jst.common.project.facet.core.libprov" id="libraryProviders" name="Library Providers Extension Point"/>
+         <meta.schema plugin="org.eclipse.lark.common.project.facet.core.libprov" id="libraryProviders" name="Library Providers Extension Point"/>
       </appinfo>
       <documentation>
          [Enter description of this extension point.]
@@ -62,7 +62,9 @@
          <sequence>
             <element ref="label" minOccurs="0" maxOccurs="1"/>
             <element ref="priority" minOccurs="0" maxOccurs="1"/>
+            <!--
             <element ref="enablement" minOccurs="0" maxOccurs="1"/>
+            -->
             <element ref="param" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="action" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
@@ -79,7 +81,7 @@
                   (no description available)
                </documentation>
                <appinfo>
-                  <meta.attribute kind="identifier" basedOn="org.eclipse.jst.common.project.facet.core.libraryProviders/provider/@id"/>
+                  <meta.attribute kind="identifier" basedOn="org.eclipse.lark.common.project.facet.core.libraryProviders/provider/@id"/>
                </appinfo>
             </annotation>
          </attribute>
@@ -166,7 +168,7 @@
                   (no description available)
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.jst.common.project.facet.core.libprov.LibraryProviderOperationConfig:"/>
+                  <meta.attribute kind="lark" basedOn="org.eclipse.lark.common.project.facet.core.libprov.LibraryProviderOperationConfig:"/>
                </appinfo>
             </annotation>
          </attribute>
@@ -186,7 +188,7 @@
                   (no description available)
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.jst.common.project.facet.core.libprov.LibraryProviderOperation:"/>
+                  <meta.attribute kind="lark" basedOn="org.eclipse.lark.common.project.facet.core.libprov.LibraryProviderOperation:"/>
                </appinfo>
             </annotation>
          </attribute>

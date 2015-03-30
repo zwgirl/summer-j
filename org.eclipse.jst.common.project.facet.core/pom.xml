@@ -21,7 +21,7 @@
   </parent>
 
   <groupId>org.eclipse.webtools.common</groupId>
-  <artifactId>org.eclipse.jst.common.project.facet.core</artifactId>
+  <artifactId>org.eclipse.lark.common.project.facet.core</artifactId>
   <version>1.4.400-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>
