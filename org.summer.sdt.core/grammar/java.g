@@ -1,4 +1,3 @@
---main options
 %options ACTION, AN=JavaAction.java, GP=java, 
 %options FILE-PREFIX=java, ESCAPE=$, PREFIX=TokenName, OUTPUT-SIZE=126 ,
 %options NOGOTO-DEFAULT, SINGLE-PRODUCTIONS, LALR=1 , TABLE, 
