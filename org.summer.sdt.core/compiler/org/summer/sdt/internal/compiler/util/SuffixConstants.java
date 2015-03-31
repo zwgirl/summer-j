@@ -36,8 +36,12 @@ package org.summer.sdt.internal.compiler.util;
 //}
 
 public interface SuffixConstants {
-	public final static String EXTENSION_class = "class"; //$NON-NLS-1$
-	public final static String EXTENSION_CLASS = "CLASS"; //$NON-NLS-1$
+	//cym 2015-03-31
+//	public final static String EXTENSION_class = "class"; //$NON-NLS-1$
+//	public final static String EXTENSION_CLASS = "CLASS"; //$NON-NLS-1$
+	public final static String EXTENSION_class = "lspec"; //$NON-NLS-1$
+	public final static String EXTENSION_CLASS = "LSPEC"; //$NON-NLS-1$
+	
 	public final static String EXTENSION_lark = "lark"; //$NON-NLS-1$
 	public final static String EXTENSION_LARK = "LARK"; //$NON-NLS-1$
 	

@@ -24,15 +24,12 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.IPreferencesService;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.osgi.util.NLS;
 import org.summer.sdt.core.IClasspathEntry;
 import org.summer.sdt.core.IJavaProject;
 import org.summer.sdt.core.JavaCore;
 import org.summer.sdt.core.compiler.CompilationParticipant;
 import org.summer.sdt.launching.IVMInstall;
 import org.summer.sdt.launching.JavaRuntime;
-import org.summer.sdt.launching.environments.IExecutionEnvironment;
-import org.summer.sdt.launching.environments.IExecutionEnvironmentsManager;
 
 /**
  * Creates build path errors related to execution environment bindings.
@@ -85,13 +82,14 @@ public class EECompilationParticipant extends CompilationParticipant {
 						}
 					}
 				}
-			} catch (CoreException e) {
+			}
+			catch (CoreException e) {
 				LaunchingPlugin.log(e);
 			}
 			if (container != null && eeId != null) {
 				IVMInstall vm = JREContainerInitializer.resolveVM(container);
 				validateEnvironment(eeId, project, vm);
-				
+
 			}
 		}
 	}
@@ -104,40 +102,39 @@ public class EECompilationParticipant extends CompilationParticipant {
 	 * @param vm VM binding resolved for the project
 	 */
 	private void validateEnvironment(String id, final IJavaProject project, IVMInstall vm) {
-		IExecutionEnvironmentsManager manager = JavaRuntime.getExecutionEnvironmentsManager();
-		final IExecutionEnvironment environment = manager.getEnvironment(id);
-		if (environment != null) {
-			if (vm == null) {
-				String message = NLS.bind(
-						LaunchingMessages.LaunchingPlugin_38,
-						new String[]{environment.getId()});
-				createJREContainerProblem(project, message, IMarker.SEVERITY_ERROR);
-			} else if (!environment.isStrictlyCompatible(vm)) {
-				// warn that VM does not match EE
-				// first determine if there is a strictly compatible JRE available
-				IVMInstall[] compatibleVMs = environment.getCompatibleVMs();
-				int exact = 0;
-				for (int i = 0; i < compatibleVMs.length; i++) {
-					if (environment.isStrictlyCompatible(compatibleVMs[i])) {
-						exact++;
-					}
-				}
-				String message = null;
-				if (exact == 0) {
-					message = NLS.bind(
-						LaunchingMessages.LaunchingPlugin_35,
-						new String[]{environment.getId()});
-				} else {
-					message = NLS.bind(
-							LaunchingMessages.LaunchingPlugin_36,
-							new String[]{environment.getId()});
-				}
-				int sev = getSeverityLevel(JavaRuntime.PREF_STRICTLY_COMPATIBLE_JRE_NOT_AVAILABLE, project.getProject());
-				if (sev != -1) {
-					createJREContainerProblem(project, message, sev);
-				}
-			}
-		}
+		// cym 2015-03-31
+		// IExecutionEnvironmentsManager manager = JavaRuntime.getExecutionEnvironmentsManager();
+		// final IExecutionEnvironment environment = manager.getEnvironment(id);
+		// if (environment != null) {
+		// if (vm == null) {
+		// String message = NLS.bind(LaunchingMessages.LaunchingPlugin_38, new String[] { environment.getId() });
+		// createJREContainerProblem(project, message, IMarker.SEVERITY_ERROR);
+		// } else if (!environment.isStrictlyCompatible(vm)) {
+		// // warn that VM does not match EE
+		// // first determine if there is a strictly compatible JRE available
+		// IVMInstall[] compatibleVMs = environment.getCompatibleVMs();
+		// int exact = 0;
+		// for (int i = 0; i < compatibleVMs.length; i++) {
+		// if (environment.isStrictlyCompatible(compatibleVMs[i])) {
+		// exact++;
+		// }
+		// }
+		// String message = null;
+		// if (exact == 0) {
+		// message = NLS.bind(
+		// LaunchingMessages.LaunchingPlugin_35,
+		// new String[]{environment.getId()});
+		// } else {
+		// message = NLS.bind(
+		// LaunchingMessages.LaunchingPlugin_36,
+		// new String[]{environment.getId()});
+		// }
+		// int sev = getSeverityLevel(JavaRuntime.PREF_STRICTLY_COMPATIBLE_JRE_NOT_AVAILABLE, project.getProject());
+		// if (sev != -1) {
+		// createJREContainerProblem(project, message, sev);
+		// }
+		// }
+		// }
 	}
 	
 	/**

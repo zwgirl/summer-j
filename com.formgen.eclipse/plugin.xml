@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<plugin>
+
+  <extension point="org.eclipse.wst.common.project.facet.core.facets">
+
+    <category id="formgen.category">
+      <label>FormGen</label>
+      <description>Enables generation of HTML forms based on XML definition files.</description>
+    </category>
+
+    <project-facet id="formgen.core">
+      <label>FormGen Core</label>
+      <description>
+        Enables generation of HTML forms based on XML definition files.
+      </description>
+      <category>formgen.category</category>
+    </project-facet>
+
+    <project-facet-version facet="formgen.core" version="1.0">
+      <constraint>
+        <requires facet="jst.web" version="2.2,2.3,2.4,3.0"/>
+      </constraint>
+      <action type="INSTALL" id="formgen.core.install">
+        <config-factory class="com.formgen.eclipse.FormGenCoreFacetInstallConfig$Factory"/>
+        <delegate class="com.formgen.eclipse.FormGenCoreFacetInstallDelegate"/>
+      </action>
+    </project-facet-version>
+
+    <project-facet id="formgen.ext">
+      <label>FormGen Extensions</label>
+      <description>
+        Enables additional FormGen widgets.
+      </description>
+      <category>formgen.category</category>
+    </project-facet>
+
+    <project-facet-version facet="formgen.ext" version="1.0">
+      <constraint>
+        <requires facet="formgen.core" version="1.0"/>
+      </constraint>
+      <action type="INSTALL">
+        <delegate class="com.formgen.eclipse.FormGenExtFacetInstallDelegate"/>
+      </action>
+    </project-facet-version>
+
+    <preset id="formgen.preset">
+      <label>FormGen Web Project</label>
+      <description>Creates a web project with FormGen functionality.</description>
+      <facet id="jst.java" version="5.0"/>
+      <facet id="jst.web" version="2.2"/>
+      <facet id="formgen.core" version="1.0"/>
+      <facet id="formgen.ext" version="1.0"/>
+    </preset>
+  
+  </extension>
+  
+  <extension point="org.eclipse.wst.common.project.facet.core.runtimes">
+    <supported>
+      <runtime-component any="true"/>
+      <facet id="formgen.core"/>
+      <facet id="formgen.ext"/>
+    </supported>
+  </extension>
+
+  <extension point="org.eclipse.wst.common.project.facet.ui.images">
+    <image facet="formgen.core" path="icons/formgen-core.gif"/>
+    <image facet="formgen.ext" path="icons/formgen-ext.gif"/>
+    <image category="formgen.category" path="icons/formgen-cat.gif"/>
+  </extension>
+
+  <extension point="org.eclipse.wst.common.project.facet.ui.wizardPages">
+    <wizard-pages action="formgen.core.install">
+      <page class="com.formgen.eclipse.FormGenCoreFacetInstallPage"/>
+    </wizard-pages>
+  </extension>  
+
+</plugin>

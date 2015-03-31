@@ -21,40 +21,40 @@ public class CompilationUnit implements ICompilationUnit {
 	protected char[] fContents;
 	protected char[] fFileName;
 	protected char[] fMainTypeName;
-public CompilationUnit(char[] contents, char[] filename) {
-	this.fContents = contents;
-	this.fFileName = filename;
-
-	String file = new String(filename);
-	int start = file.lastIndexOf("/") + 1; //$NON-NLS-1$
-	if (start == 0 || start < file.lastIndexOf("\\")) //$NON-NLS-1$
-		start = file.lastIndexOf("\\") + 1; //$NON-NLS-1$
-
-	int end = file.lastIndexOf("."); //$NON-NLS-1$
-	if (end == -1)
-		end = file.length();
-
-	this.fMainTypeName = file.substring(start, end).toCharArray();
-}
-public char[] getContents() {
-	return this.fContents;
-}
-/**
- * @see org.summer.sdt.internal.compiler.env.IDependent#getFileName()
- */
-public char[] getFileName() {
-	return this.fFileName;
-}
-public char[] getMainTypeName() {
-	return this.fMainTypeName;
-}
-public char[][] getPackageName() {
-	return null;
-}
-public boolean ignoreOptionalProblems() {
-	return false;
-}
-public String toString() {
-	return "CompilationUnit[" + new String(this.fFileName) + "]";  //$NON-NLS-2$ //$NON-NLS-1$
-}
+	public CompilationUnit(char[] contents, char[] filename) {
+		this.fContents = contents;
+		this.fFileName = filename;
+	
+		String file = new String(filename);
+		int start = file.lastIndexOf("/") + 1; //$NON-NLS-1$
+		if (start == 0 || start < file.lastIndexOf("\\")) //$NON-NLS-1$
+			start = file.lastIndexOf("\\") + 1; //$NON-NLS-1$
+	
+		int end = file.lastIndexOf("."); //$NON-NLS-1$
+		if (end == -1)
+			end = file.length();
+	
+		this.fMainTypeName = file.substring(start, end).toCharArray();
+	}
+	public char[] getContents() {
+		return this.fContents;
+	}
+	/**
+	 * @see org.summer.sdt.internal.compiler.env.IDependent#getFileName()
+	 */
+	public char[] getFileName() {
+		return this.fFileName;
+	}
+	public char[] getMainTypeName() {
+		return this.fMainTypeName;
+	}
+	public char[][] getPackageName() {
+		return null;
+	}
+	public boolean ignoreOptionalProblems() {
+		return false;
+	}
+	public String toString() {
+		return "CompilationUnit[" + new String(this.fFileName) + "]";  //$NON-NLS-2$ //$NON-NLS-1$
+	}
 }

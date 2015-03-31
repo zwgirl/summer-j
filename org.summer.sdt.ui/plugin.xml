@@ -988,7 +988,7 @@
             class="org.summer.sdt.internal.ui.javaeditor.ClassFileEditor"
             symbolicFontName="org.summer.sdt.ui.editors.textfont"
             id="org.summer.sdt.ui.ClassFileEditorNoSource"
-            filenames="*.class without source">
+            filenames="*.lspec without source">
       </editor>
       <editor
             name="%PropertiesFileEditorName"
@@ -1003,7 +1003,7 @@
       </editor>
       <editor
             default="true"
-            extensions="jardesc"
+            extensions="lardesc"
             icon="$nl$/icons/full/obj16/jar_desc_obj.gif"
             id="org.summer.sdt.ui.JARDescEditor"
             launcher="org.summer.sdt.internal.ui.jarpackager.OpenJarExportWizardEditorLauncher"
@@ -1972,12 +1972,12 @@
    <extension
          point="org.eclipse.compare.structureCreators">
       <structureCreator
-            extensions="jar"
+            extensions="lar"
             class="org.summer.sdt.internal.ui.compare.JarStructureCreator"
             id="org.summer.sdt.internal.ui.compare.JarStructureCreator">
       </structureCreator>
       <structureCreator
-            extensions="java"
+            extensions="lark"
             class="org.summer.sdt.internal.ui.compare.JavaStructureCreator"
             id="org.summer.sdt.internal.ui.compare.JavaStructureCreator">
       </structureCreator>

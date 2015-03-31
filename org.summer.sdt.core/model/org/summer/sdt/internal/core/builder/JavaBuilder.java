@@ -36,7 +36,8 @@ public class JavaBuilder extends IncrementalProjectBuilder {
 	BuildNotifier notifier;
 	char[][] extraResourceFileFilters;
 	String[] extraResourceFolderFilters;
-	public static final String SOURCE_ID = "JDT"; //$NON-NLS-1$
+	//cym 2015-03-31
+	public static final String SOURCE_ID = "SDT"; //$NON-NLS-1$   
 	
 	public static boolean DEBUG = false;
 	public static boolean SHOW_STATS = false;

@@ -72,7 +72,7 @@ public final class JavaFacetInstallPage
     extends AbstractFacetWizardPage
     
 {
-    private static final String WIZARD_PAGE_NAME = "java.facet.install.page"; //$NON-NLS-1$
+    private static final String WIZARD_PAGE_NAME = "lark.facet.install.page"; //$NON-NLS-1$
     
     private static final String IMG_KEY_SOURCE_FOLDER = "source.folder"; //$NON-NLS-1$
     

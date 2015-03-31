@@ -78,7 +78,8 @@ public interface IJavaProject extends IParent, IJavaElement, IOpenable {
 	 * @see #setRawClasspath(IClasspathEntry[], IPath, boolean, IProgressMonitor)
 	 * @since 3.7
 	 */
-	String CLASSPATH_FILE_NAME = ".classpath"; //$NON-NLS-1$
+//	String CLASSPATH_FILE_NAME = ".classpath"; //$NON-NLS-1$
+	String CLASSPATH_FILE_NAME = ".lspecpath"; //$NON-NLS-1$
 
 	/**
 	 * Decodes the classpath entry that has been encoded in the given string

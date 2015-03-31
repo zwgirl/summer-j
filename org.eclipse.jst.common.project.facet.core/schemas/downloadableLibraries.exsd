@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.eclipse.jst.common.project.facet.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.eclipse.lark.common.project.facet.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
          <meta.schema plugin="org.eclipse.lark.common.project.facet.core" id="downloadableLibraries" name="Downloadable Libraries Extension Point"/>

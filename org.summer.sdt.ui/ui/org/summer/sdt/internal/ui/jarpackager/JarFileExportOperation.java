@@ -813,7 +813,8 @@ public class JarFileExportOperation extends WorkspaceModifyOperation implements 
 		return file != null
 			&& file.getType() == IResource.FILE
 			&& file.getFileExtension() != null
-			&& file.getFileExtension().equalsIgnoreCase("class"); //$NON-NLS-1$
+//			&& file.getFileExtension().equalsIgnoreCase("class"); //$NON-NLS-1$    //cym 2015-03-30
+			&& file.getFileExtension().equalsIgnoreCase("lspec"); //$NON-NLS-1$
 	}
 
 	/*
