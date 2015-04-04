@@ -78,7 +78,7 @@ public class Attribute extends XAMLNode implements InvocationSite{
 	}
 	
 	protected void printPropertyName(int indent, StringBuffer output) {
-		output.append(property.token);
+		output.append(property.getCamelName());
 	}
 
 	public void resolve(BlockScope scope) {
@@ -240,7 +240,7 @@ public class Attribute extends XAMLNode implements InvocationSite{
 	
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.token))).append("=");
+		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.getCamelName()))).append("=");
 		
 		if(this.property.binding != null && this.property.binding.type instanceof ReferenceBinding 
 				&& (((ReferenceBinding)this.property.binding.type).modifiers & ClassFileConstants.AccFunction) != 0){
@@ -257,7 +257,7 @@ public class Attribute extends XAMLNode implements InvocationSite{
 	}
 	
 	public StringBuffer buildProperty(Scope scope, int indent, StringBuffer output, String context) {
-		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.token))).append("=");
+		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.getCamelName()))).append("=");
 		
 		if(this.property.binding != null && this.property.binding.type instanceof ReferenceBinding 
 				&& (((ReferenceBinding)this.property.binding.type).modifiers & ClassFileConstants.AccFunction) != 0){
@@ -392,7 +392,7 @@ public class Attribute extends XAMLNode implements InvocationSite{
 		case FUNCTION:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append("_n.addEventListener('").append(CharOperation.subarray(this.property.token, 2, -1)).append("', ");
+			output.append("_n.addEventListener('").append(CharOperation.subarray(this.property.getCamelName(), 2, -1)).append("', ");
 			if(this.method != null){
 				if(this.method.isStatic()){
 					output.append(this.method.declaringClass.sourceName).append('.');

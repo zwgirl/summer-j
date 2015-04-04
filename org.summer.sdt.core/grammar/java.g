@@ -552,13 +552,26 @@ AttributeElement ::= '<' SimpleName '.' SimpleName AttributeElementTag EnterPCDA
 /.$putCase consumeAttributeElement(); $break ./
 /:$readableName AttributeElement:/
 
-Attribute ::= SimpleName ':' SimpleName '=' PropertyExpression
+AttributeName ::= SimpleName
+AttributeName ::= AttributeName - SimpleName
+/.$putCase consumeAttributeName(); $break ./
+/:$readableName AttributeName:/
+
+Attribute ::= AttributeName ':' AttributeName '=' PropertyExpression
 /.$putCase consumeAttributeWithTypeReference(); $break ./
-Attribute ::= SimpleName '=' PropertyExpression
+Attribute ::= AttributeName '=' PropertyExpression
 /.$putCase consumeAttribute(); $break ./
-Attribute ::= SimpleName '.' SimpleName '=' PropertyExpression
+Attribute ::= AttributeName '.' AttributeName '=' PropertyExpression
 /.$putCase consumeAttributeWithPropertyReference(); $break ./
 /:$readableName Attribute:/
+
+--Attribute ::= SimpleName ':' SimpleName '=' PropertyExpression
+--/.$putCase consumeAttributeWithTypeReference(); $break ./
+--Attribute ::= SimpleName '=' PropertyExpression
+--/.$putCase consumeAttribute(); $break ./
+--Attribute ::= SimpleName '.' SimpleName '=' PropertyExpression
+--/.$putCase consumeAttributeWithPropertyReference(); $break ./
+--/:$readableName Attribute:/
 
 AttributeList ::= Attribute
 AttributeList ::= AttributeList Attribute

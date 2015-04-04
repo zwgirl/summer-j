@@ -1,5 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
@@ -25,20 +26,21 @@ import org.summer.sdt.internal.compiler.lookup.VariableBinding;
  *
  */
 public class PropertyReference extends Expression{
-	public char[] token;
+	public char[][] tokens;
+	public char[] camelToken;
 	public Expression receiver;
 	public long nameSourcePosition; //(start<<32)+end
 	
 	public FieldBinding binding;															// exact binding resulting from lookup
 	public TypeBinding actualReceiverType;
 
-	public PropertyReference(char[] source, long pos, Expression receiver) {
-		this(source, pos);
+	public PropertyReference(char[][] tokens, long pos, Expression receiver) {
+		this(tokens, pos);
 		this.receiver = receiver;
 	}
 	
-	public PropertyReference(char[] source, long pos) {
-		this.token = source;
+	public PropertyReference(char[][] tokens, long pos) {
+		this.tokens = tokens;
 		this.nameSourcePosition = pos;
 		//by default the position are the one of the field (not true for super access)
 		this.sourceStart = (int) (pos >>> 32);
@@ -84,7 +86,20 @@ public class PropertyReference extends Expression{
 	}
 	
 	public StringBuffer printExpression(int indent, StringBuffer output) {
-		return output.append('.').append(this.token);
+		return output.append('.').append(CharOperation.concatWith(tokens, '-'));
+	}
+	
+	public char[] getCamelName(){
+		if(camelToken == null){
+			camelToken = tokens[0];
+			for(int i = 1, length = tokens.length; i<length; i++){
+				char[] t = null;
+				System.arraycopy(tokens[i], 0, t = new char[tokens[i].length], 0, tokens[i].length);
+				t[0] = Character.toUpperCase(tokens[i][0]);
+				camelToken = CharOperation.concat(camelToken, t);
+			}
+		}
+		return camelToken;
 	}
 	
 	public TypeBinding resolveType(BlockScope scope){
@@ -97,6 +112,7 @@ public class PropertyReference extends Expression{
 	}
 	
 	private TypeBinding interalResolveType(ElementScope scope) {
+		char[] name = getCamelName();
 		//always ignore receiver cast, since may affect constant pool reference
 		if(this.receiver == null){
 			this.actualReceiverType = scope.context.resolvedType;
@@ -109,7 +125,8 @@ public class PropertyReference extends Expression{
 		}
 		
 		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
-		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.token, null);
+//		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.token, null);
+		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.camelToken, null);
 		
 		//cym 2012-02-12
 		if(fieldBinding.isValidBinding() && (fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
@@ -211,26 +228,52 @@ public class PropertyReference extends Expression{
 		return null;
 	}
 
+//	@Override
+//	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+//		if(this.receiver instanceof PropertyReference){
+//			output.append(((PropertyReference)this.receiver).token);
+//			output.append('.').append(this.token);
+//		} else if(this.receiver instanceof TypeReference){
+//			output.append(this.token);
+//		} else {
+//			output.append(this.token);
+//		}
+//		return output;
+//	}
+	
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		if(this.receiver instanceof PropertyReference){
-			output.append(((PropertyReference)this.receiver).token);
-			output.append('.').append(this.token);
+			output.append(((PropertyReference)this.receiver).camelToken);
+			output.append('.').append(this.camelToken);
 		} else if(this.receiver instanceof TypeReference){
-			output.append(this.token);
+			output.append(this.camelToken);
 		} else {
-			output.append(this.token);
+			output.append(this.camelToken);
 		}
 		return output;
 	}
 	
+//	public StringBuffer buildInMarkupExtension(Scope scope, int indent, StringBuffer output){
+//		output.append("\"");
+//		if(this.receiver instanceof PropertyReference){
+//			output.append(((PropertyReference)this.receiver).token).append("\"");
+//			output.append(", \"").append(this.token).append("\"");
+//		} else if(this.receiver == null){
+//			output.append(this.token).append("\"");
+//			output.append(", ").append("null");
+//		}
+//		
+//		return output;
+//	}
+	
 	public StringBuffer buildInMarkupExtension(Scope scope, int indent, StringBuffer output){
 		output.append("\"");
 		if(this.receiver instanceof PropertyReference){
-			output.append(((PropertyReference)this.receiver).token).append("\"");
-			output.append(", \"").append(this.token).append("\"");
+			output.append(((PropertyReference)this.receiver).camelToken).append("\"");
+			output.append(", \"").append(this.camelToken).append("\"");
 		} else if(this.receiver == null){
-			output.append(this.token).append("\"");
+			output.append(this.camelToken).append("\"");
 			output.append(", ").append("null");
 		}
 		

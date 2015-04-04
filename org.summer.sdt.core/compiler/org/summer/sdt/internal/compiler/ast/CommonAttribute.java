@@ -19,7 +19,7 @@ public class CommonAttribute extends Attribute{
 
 	@Override
 	protected void printPropertyName(int indent, StringBuffer output) {
-		output.append(property.token);
+		output.append(property.getCamelName());
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public class CommonAttribute extends Attribute{
 
 	@Override
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.token))).append(" = ");
+		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.getCamelName()))).append(" = ");
 		
 		if((this.bits & ASTNode.IsEventCallback) != 0){
 			if(this.method != null){

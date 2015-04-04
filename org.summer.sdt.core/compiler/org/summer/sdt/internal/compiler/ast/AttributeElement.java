@@ -36,7 +36,7 @@ public class AttributeElement extends XAMLElement{
 	@Override
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
-		output.append("this.").append(property.token).append(" = ");
+		output.append("this.").append(property.getCamelName()).append(" = ");
 		
 //		if(type.){
 //			
