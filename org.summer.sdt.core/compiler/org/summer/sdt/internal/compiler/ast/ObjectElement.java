@@ -72,19 +72,19 @@ public class ObjectElement extends XAMLElement {
 				child.generateStatement(scope, indent + 1, output);
 			}
 			//output meta
-			output.append("<script type = 'text/javascript' src = '/js/stub.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/lark/js/stub.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = '/java/lang/buildins.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/lark/java/lang/buildins.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = '/org/w3c/dom/dom.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/lark/org/w3c/dom/dom.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = '/java/lang/beans.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/lark/java/lang/beans.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = '/java/lang/bindings.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/lark/java/lang/bindings.js'> </script>");
 			//build class definition
 			ClassScope classScope = scope.enclosingClassScope();
 			TypeDeclaration typeDecl = classScope.referenceContext;
@@ -152,19 +152,19 @@ public class ObjectElement extends XAMLElement {
 				child.generateStatement(scope, indent + 1, output);
 			}
 			//output meta
-			output.append("<script type = 'text/javascript' src = '/js/stub.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/lark/js/stub.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = '/java/lang/buildins.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/lark/java/lang/buildins.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = '/org/w3c/dom/dom.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/lark/org/w3c/dom/dom.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = '/java/lang/beans.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/lark/java/lang/beans.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = '/java/lang/bindings.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/lark/java/lang/bindings.js'> </script>");
 			//build class definition
 			ClassScope classScope = scope.enclosingClassScope();
 			TypeDeclaration typeDecl = classScope.referenceContext;
@@ -301,10 +301,10 @@ public class ObjectElement extends XAMLElement {
 				child.generateStaticHTML(scope, indent + 1, output);
 			}
 			//output meta
-			output.append("<script type = 'text/javascript' src = '/js/stub.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/lark/js/stub.js'> </script>");
 			output.append("\n");
 			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = '/java/lang/buildins.js'> </script>");
+			output.append("<script type = 'text/javascript' src = '/lark/java/lang/buildins.js'> </script>");
 			//build class definition
 			ClassScope classScope = scope.enclosingClassScope();
 			TypeDeclaration typeDecl = classScope.referenceContext;

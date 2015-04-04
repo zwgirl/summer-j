@@ -3893,6 +3893,23 @@ public class ProblemReporter extends ProblemHandler {
 			nodeSourceStart(indexer, arrayRef),
 			nodeSourceEnd(indexer, arrayRef));
 	}
+	//cym 2015-04-02
+	public void noPropertyDefineInElement(PropertyReference fieldRef) {
+//		this.handle(
+//			IProblem.NoPropertyDefinedInElement,
+//			NoArgument,
+//			new String[]{new String(fieldRef.token)},
+//			fieldRef.sourceStart,
+//			fieldRef.sourceEnd);
+		
+		this.handle(
+				IProblem.NoPropertyDefinedInElement,
+				NoArgument,
+				new String[]{new String(fieldRef.token)},
+				ProblemSeverities.Warning,
+				fieldRef.sourceStart,
+				fieldRef.sourceEnd);
+	}
 	
 	//cym 2014-12-26
 	public void invalidProperty(PropertyReference fieldRef, TypeBinding searchedType) {

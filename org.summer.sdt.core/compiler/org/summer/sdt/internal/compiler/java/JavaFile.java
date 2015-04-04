@@ -1,5 +1,7 @@
 package org.summer.sdt.internal.compiler.java;
 
+import java.nio.charset.Charset;
+
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.CompilationResult;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
@@ -131,6 +133,6 @@ public class JavaFile {
 	}
 
 	public byte[] getBytes() {
-		return content.toString().getBytes();
+		return content.toString().getBytes(Charset.forName("UTF-8"));
 	}
 }

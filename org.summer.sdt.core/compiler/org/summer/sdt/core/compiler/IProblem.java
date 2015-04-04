@@ -1843,4 +1843,8 @@ void setSourceStart(int sourceStart);
 	
 	//cym 2015-03-22
 	int HTNLElementMustHaveMatchedTag = Internal + Syntax + 1200;
+	
+	//cym 2015-04-02
+	int NoPropertyDefinedInElement = Internal + FieldRelated + 1210;
+	
 }

@@ -112,7 +112,7 @@ public class PropertyReference extends Expression{
 		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.token, null);
 		
 		//cym 2012-02-12
-		if((fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
+		if(fieldBinding.isValidBinding() && (fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
 			scope.problemReporter().invalidProperty(this, this.actualReceiverType);   //TODO need more clear  //cym 2015-02-27
 		}
 		if (!fieldBinding.isValidBinding()) {
@@ -127,6 +127,14 @@ public class PropertyReference extends Expression{
 			boolean avoidSecondary = declaringClass != null &&
 									 declaringClass.isAnonymousType() &&
 									 declaringClass.superclass() instanceof MissingTypeBinding;
+			
+			//cym add 2015-04-02
+			if (fieldBinding instanceof ProblemFieldBinding && fieldBinding.problemId() == ProblemReasons.NotFound) {
+				scope.problemReporter().noPropertyDefineInElement(this);
+				return scope.getJavaLangString();
+			}
+			//cym add 2015-04-02
+		
 			if (!avoidSecondary) {
 				scope.problemReporter().invalidProperty(this, this.actualReceiverType);
 			}

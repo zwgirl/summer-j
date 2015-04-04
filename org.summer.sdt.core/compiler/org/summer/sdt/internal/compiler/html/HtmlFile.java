@@ -1,5 +1,7 @@
 package org.summer.sdt.internal.compiler.html;
 
+import java.nio.charset.Charset;
+
 import javax.naming.CompoundName;
 
 import org.summer.sdt.core.compiler.CategorizedProblem;
@@ -145,6 +147,6 @@ public class HtmlFile {
 	}
 
 	public byte[] getBytes() {
-		return content.toString().getBytes();
+		return content.toString().getBytes(Charset.forName("UTF-8"));
 	}
 }

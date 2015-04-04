@@ -2629,7 +2629,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		
 		//set prototype.__proto__
-		if(type.binding.superclass != null){
+		if(type.binding.superclass != null && !type.binding.isInterface()){ // && type.binding.superclass.id != TypeIds.T_JavaLangObject){
 			ReferenceBinding superBinding = type.binding.superclass;
 			output.append("\n");
 			printIndent(indent, output);

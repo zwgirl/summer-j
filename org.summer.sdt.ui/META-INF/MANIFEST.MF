@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Ui
+Bundle-Name: %pluginName
 Bundle-SymbolicName: org.summer.sdt.ui;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 3.8.100.qualifier
 Bundle-Localization: plugin
 Export-Package: org.summer.sdt.internal.corext,
  org.summer.sdt.internal.corext.buildpath,
@@ -142,3 +142,4 @@ Require-Bundle: org.summer.sdt.core;bundle-version="1.0.0",
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Activator: org.summer.sdt.internal.ui.JavaPlugin
 Bundle-ActivationPolicy: lazy
+Bundle-Vendor: %providerName
