@@ -249,15 +249,15 @@ protected void consumeRule(int act) {
 		    consumeFunctionExpressionHeaderRightParen();  
 			break;
  
-    case 141 : if (DEBUG) { System.out.println("MarkupExtensionTag ::="); }  //$NON-NLS-1$
+    case 141 : if (DEBUG) { System.out.println("consumeMarkupExtensionTag ::= LBRACE SimpleName"); }  //$NON-NLS-1$
 		    consumeMarkupExtensionTag();  
 			break;
  
-    case 142 : if (DEBUG) { System.out.println("MarkupExtenson ::= LBRACE SimpleName MarkupExtensionTag"); }  //$NON-NLS-1$
+    case 142 : if (DEBUG) { System.out.println("MarkupExtenson ::= consumeMarkupExtensionTag RBRACE"); }  //$NON-NLS-1$
 		    consumeMarkupExtenson(false);  
 			break;
  
-    case 143 : if (DEBUG) { System.out.println("MarkupExtenson ::= LBRACE SimpleName MarkupExtensionTag"); }  //$NON-NLS-1$
+    case 143 : if (DEBUG) { System.out.println("MarkupExtenson ::= consumeMarkupExtensionTag..."); }  //$NON-NLS-1$
 		    consumeMarkupExtenson(true);  
 			break;
  

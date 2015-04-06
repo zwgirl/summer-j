@@ -72,7 +72,7 @@
 1#140# )
 3#140# )
 1#140# FunctionExpressionHeaderRightParen
-1#141# MarkupExtensionTag
+1#141# consumeMarkupExtensionTag
 1#143# MarkupExtenson
 3#143# { identifier
 1#144# ReduceImports

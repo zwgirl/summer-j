@@ -1,4 +1,3 @@
---main options
 %options ACTION, AN=JavaAction.java, GP=java, 
 %options FILE-PREFIX=java, ESCAPE=$, PREFIX=TokenName, OUTPUT-SIZE=126 ,
 %options NOGOTO-DEFAULT, SINGLE-PRODUCTIONS, LALR=1 , TABLE, 
@@ -592,17 +591,29 @@ FunctionExpressionHeaderRightParen ::= ')'
 /:$recovery_template ):/
 /:$readableName FunctionExpressionHeaderRightParen:/
 
-MarkupExtensionTag ::= $empty
-/.$putCase consumeMarkupExtensionTag(); $break ./
-/:$readableName MarkupExtensionTag:/
+--MarkupExtensionTag ::= $empty
+--/.$putCase consumeMarkupExtensionTag(); $break ./
+--/:$readableName MarkupExtensionTag:/
 
-MarkupExtenson ::= '{' SimpleName MarkupExtensionTag '}'
+consumeMarkupExtensionTag ::= '{' SimpleName
+/.$putCase consumeMarkupExtensionTag(); $break ./
+/:$readableName consumeMarkupExtensionTag:/
+
+MarkupExtenson ::= consumeMarkupExtensionTag  '}'
 /.$putCase consumeMarkupExtenson(false); $break ./
 
-MarkupExtenson ::= '{' SimpleName MarkupExtensionTag AttributeList '}'
+MarkupExtenson ::= consumeMarkupExtensionTag  AttributeList '}'
 /.$putCase consumeMarkupExtenson(true); $break ./
 /:$readableName MarkupExtenson:/
 /:$recovery_template { identifier:/
+
+--MarkupExtenson ::= '{' SimpleName MarkupExtensionTag '}'
+--/.$putCase consumeMarkupExtenson(false); $break ./
+--
+--MarkupExtenson ::= '{' SimpleName MarkupExtensionTag AttributeList '}'
+--/.$putCase consumeMarkupExtenson(true); $break ./
+--/:$readableName MarkupExtenson:/
+--/:$recovery_template { identifier:/
 ----------------------------------------------
 -- xaml end
 -----------------------------------------------
