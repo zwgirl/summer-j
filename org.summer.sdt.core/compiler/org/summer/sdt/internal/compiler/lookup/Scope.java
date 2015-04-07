@@ -5618,6 +5618,26 @@ public abstract class Scope {
 			//cym 2014-12-23 
 //			TypeBinding arg = (tiebreakingVarargsMethods && (i == (argLength - 1))) ? ((ArrayBinding)arguments[i]).elementsType() : arguments[i];
 			TypeBinding arg = (tiebreakingVarargsMethods && (i == (argLength - 1))) ? ((ParameterizedTypeBinding)arguments[i]).elementsType() : arguments[i];
+			
+			//cym 2015-04-07   procerss functionType
+			if(arg instanceof ReferenceBinding && param instanceof ReferenceBinding){
+				ReferenceBinding rArg = (ReferenceBinding) arg, rParam = (ReferenceBinding) param;
+				if((rArg.modifiers & ClassFileConstants.AccFunction)!= 0 && (rParam.modifiers & ClassFileConstants.AccFunction)!= 0){
+					if((rArg.returnType() != rParam.returnType()) && !rArg.returnType().isSubtypeOf(rParam.returnType())){
+						return NOT_COMPATIBLE;
+					}
+					
+					TypeBinding[] args1 = rArg.parameters(), param1 = rParam.parameters();
+					if(args1.length != param1.length) return NOT_COMPATIBLE;
+					for(int k = 0,length = rArg.parameters().length; k<length; k++){
+						if(parameterCompatibilityLevel(param1[k], param1[k], env, tiebreakingVarargsMethods) == NOT_COMPATIBLE){
+							return NOT_COMPATIBLE;
+						}
+					}
+					return COMPATIBLE;
+				}
+			}
+			
 			if (TypeBinding.notEquals(arg,param)) {
 				int newLevel = parameterCompatibilityLevel(arg, param, env, tiebreakingVarargsMethods);
 				if (newLevel == NOT_COMPATIBLE)

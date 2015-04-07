@@ -480,18 +480,19 @@ ElementList ::= ElementList Element
 /.$putCase consumeElementList(); $break ./
 /:$readableName ElementList:/
 
---Script -> ScriptMethodHeader BlockStatementsopt '%>'
+--Script -> ScriptHeader Initializer EnterPCDATA '%>'
 --/.$putCase consumeScript(); $break ./
 --/:$readableName Script:/
 --
---ScriptMethodHeader ::= '<%'
---/.$putCase consumeScriptMethodName(); $break./
---/:$readableName consumeScriptMethodName:/
-Script -> ScriptHeader BlockStatementsopt EnterPCDATA '%>'
+--ScriptHeader ::= '<%'
+--/.$putCase consumeScriptHeader(); $break./
+--/:$readableName ScriptHeader:/
+
+Script -> ScriptHeader MethodBody EnterPCDATA %>
 /.$putCase consumeScript(); $break ./
 /:$readableName Script:/
 
-ScriptHeader ::= '<%'
+ScriptHeader ::= <%
 /.$putCase consumeScriptHeader(); $break./
 /:$readableName ScriptHeader:/
 
@@ -577,19 +578,14 @@ PropertyExpression ::= MarkupExtenson
 
 PropertyExpression ::= FunctionExpression
 
-FunctionExpression ::= FunctionExpressionHeader FormalParameterListopt FunctionExpressionHeaderRightParen MethodBody
+FunctionExpression ::= FunctionExpressionHeader MethodBody
 /.$putCase consumeFunctionExpression(); $break ./
 /:$readableName FunctionExpression:/
 
-FunctionExpressionHeader ::= function ( 
+FunctionExpressionHeader ::= function
 /.$putCase consumeFunctionExpressionHeader(); $break ./
 /:$readableName FunctionExpressionHeader:/
 
-FunctionExpressionHeaderRightParen ::= ')'
-/.$putCase consumeFunctionExpressionHeaderRightParen(); $break ./
-/:$readableName ):/
-/:$recovery_template ):/
-/:$readableName FunctionExpressionHeaderRightParen:/
 
 --MarkupExtensionTag ::= $empty
 --/.$putCase consumeMarkupExtensionTag(); $break ./

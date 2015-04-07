@@ -1367,8 +1367,6 @@ public class ClassScope extends Scope {
 				environment().typesBeingConnected.add(sourceType);
 				boolean noProblems = connectSuperclass();
 				
-				connectFunctionType();   //cym 2015-02-16
-				
 				noProblems &= connectSuperInterfaces();
 				environment().typesBeingConnected.remove(sourceType);
 				sourceType.tagBits |= TagBits.EndHierarchyCheck;
@@ -1377,6 +1375,8 @@ public class ClassScope extends Scope {
 				if (noProblems && sourceType.isHierarchyInconsistent())
 					problemReporter().hierarchyHasProblems(sourceType);
 			}
+			connectFunctionType();   //cym 2015-02-16
+			
 			connectMemberTypes();
 		} finally {
 			compilationUnitScope.connectingHierarchy = wasAlreadyConnecting;

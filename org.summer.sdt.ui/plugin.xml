@@ -367,6 +367,7 @@
 			<partition type="__java_javadoc"/>
 		</javaCompletionProposalComputer>
 	</extension>
+	<!--
 	<extension
          point="org.summer.sdt.ui.javaCompletionProposalComputer"
          id="swtBuilderCompletionProposalComputer">
@@ -376,6 +377,7 @@
 			<partition type="__dftl_partition_content_type"/>
       </javaCompletionProposalComputer>
     </extension>
+    -->
 	<!-- hippie word completions -->   
 	<extension
 		point="org.summer.sdt.ui.javaCompletionProposalComputer"

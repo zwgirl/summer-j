@@ -52,6 +52,7 @@ public interface TypeConstants {
 	char[] FUNCTION = "Function".toCharArray(); //$NON-NLS-1$  //cym 2015-02-16
 	char[] ANONYM = "Anonym".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] HTML = "html".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
+	char[] EVENT = "Event".toCharArray(); //$NON-NLS-1$  //cym 2015-04-07
 	char[] ARRAY = "Array".toCharArray(); //$NON-NLS-1$  //cym 2014-12-03
 	char[] OVERLOAD = "Overload".toCharArray(); //$NON-NLS-1$  //cym 2015-02-24
 	char[] REMOTINGBEAN = "RemotingBean".toCharArray(); //$NON-NLS-1$  //cym 2015-03-10
@@ -135,6 +136,7 @@ public interface TypeConstants {
     char[] ITYPEBINDING = "ITypeBinding".toCharArray(); //$NON-NLS-1$
     char[] W3C = "w3c".toCharArray();  //$NON-NLS-1$  //cym 2015-01-13
     char[] HTMLPKG = "html".toCharArray();  //$NON-NLS-1$  //cym 2015-01-13
+    char[] EVENTPKG = "event".toCharArray();  //$NON-NLS-1$  //cym 2015-04-07
     
 	// Constant compound names
 	char[][] JAVA_LANG = {JAVA, LANG};
@@ -161,6 +163,7 @@ public interface TypeConstants {
 	
 	char[][] JAVA_LANG_COMPONENT = {JAVA, LANG, COMPONENT};  //cym 2015-01-13
 	char[][] ORG_W3C_HTML_HTML = {ORG, W3C, HTMLPKG, HTML};  //cym 2015-01-13
+	char[][] ORG_W3C_EVENT_EVENT = {ORG, W3C, EVENTPKG, EVENT};  //cym 2015-04-07
 	char[][] JAVA_LANG_STRING = {JAVA, LANG, "String".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_STRINGBUFFER = {JAVA, LANG, "StringBuffer".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_STRINGBUILDER = {JAVA, LANG, "StringBuilder".toCharArray()}; //$NON-NLS-1$

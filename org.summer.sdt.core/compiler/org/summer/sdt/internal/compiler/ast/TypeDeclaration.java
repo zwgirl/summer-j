@@ -1373,6 +1373,22 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					this.methods[i].resolve(this.scope);
 				}
 			}
+			
+			/**
+			 * cym 2015-04-07 function resolve: returntype and parameter types
+			 */
+			if(this.returnType != null){
+			}
+			
+			if(this.arguments != null){
+				
+			}
+			
+			if(this.thrownExceptions != null){
+				
+			}
+			//cym end
+			
 			// Resolve javadoc
 			if (this.javadoc != null) {
 				if (this.scope != null && (this.name != TypeConstants.PACKAGE_INFO_NAME)) {

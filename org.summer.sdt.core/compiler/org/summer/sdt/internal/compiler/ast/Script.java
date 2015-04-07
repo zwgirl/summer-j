@@ -3,23 +3,17 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class Script extends XAMLElement{
-	public Statement[] statements;
-//	public int lastVisibleFieldID;
-//	public int bodyStart;
-//	public int bodyEnd;
+	public MethodDeclaration method;
 	
-	public int modifier;
-	public Script(Statement[] statements, int modifiers) {
-		this.statements = statements;
-		this.modifier = modifiers;
+	public Script(MethodDeclaration method) {
+		this.method = method;
 
-		if (statements != null && statements.length>0) {
-			this.declarationSourceStart = this.sourceStart = statements[0].sourceStart;
-		}
+		this.declarationSourceStart = this.sourceStart = method.sourceStart;
+		this.bodyStart = method.bodyStart;
+		this.bodyEnd = method.bodyEnd;
 	}
 
 	@Override
@@ -40,12 +34,7 @@ public class Script extends XAMLElement{
 	
 	@Override
 	public void resolve(BlockScope scope) {
-		MethodScope classScope = scope.classScope().referenceContext.staticInitializerScope;
-		if(this.statements != null){
-			for(Statement statement : this.statements){
-				statement.resolve(classScope);
-			}
-		}
+		
 	}
 
 }

@@ -2857,7 +2857,7 @@ public abstract class ASTNode {
 	 */
 	public final void setSourceRange(int startPosition, int length) {
 		if (startPosition >= 0 && length < 0) {
-			throw new IllegalArgumentException();
+ 			throw new IllegalArgumentException();
 		}
 		if (startPosition < 0 && length != 0) {
 			throw new IllegalArgumentException();
