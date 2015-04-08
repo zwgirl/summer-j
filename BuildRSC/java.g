@@ -464,7 +464,7 @@ InternalCompilationUnit ::= $empty
 Element -> ComplexElement
 Element -> EmptyElement
 Element -> SimpleElement
-Element -> AttributeElement
+--Element -> AttributeElement
 Element -> PCDATANode
 Element -> Script
 Element -> CommentNode
@@ -480,19 +480,19 @@ ElementList ::= ElementList Element
 /.$putCase consumeElementList(); $break ./
 /:$readableName ElementList:/
 
---Script -> ScriptHeader Initializer EnterPCDATA '%>'
+--Script -> ScriptHeader MethodBody EnterPCDATA %>
 --/.$putCase consumeScript(); $break ./
 --/:$readableName Script:/
 --
---ScriptHeader ::= '<%'
+--ScriptHeader ::= <%
 --/.$putCase consumeScriptHeader(); $break./
 --/:$readableName ScriptHeader:/
 
-Script -> ScriptHeader MethodBody EnterPCDATA %>
+Script -> ScriptHeader MethodBody EnterPCDATA >
 /.$putCase consumeScript(); $break ./
 /:$readableName Script:/
 
-ScriptHeader ::= <%
+ScriptHeader ::= <
 /.$putCase consumeScriptHeader(); $break./
 /:$readableName ScriptHeader:/
 
@@ -510,7 +510,7 @@ EmptyElement ::=  ElementTag  EnterCloseTag EnterPCDATA '/>'
 SimpleElement ::=  ElementTag AttributeList  EnterCloseTag EnterPCDATA '/>'
 /.$putCase consumeSimpleElement(); $break ./
 
-ComplexElement ::= ElementStart --ElementTag AttributeListopt EnterPCDATA '>' 
+ComplexElement ::= ElementStart
     ElementListopt
 	ElementClose 
 	
@@ -539,19 +539,18 @@ AttributeListopt ::= $empty
 AttributeListopt -> AttributeList
 /:$readableName AttributeListopt:/
 
-AttributeElementTag ::= $empty
-/.$putCase consumeAttributeElementTag(); $break ./
-/:$readableName AttributeElementTag:/
-
 ElementTag ::= '<' SimpleName
 /.$putCase consumeElementTag(); $break ./
 /:$readableName ElementTag:/
 
-AttributeElement ::= '<' SimpleName '.' SimpleName AttributeElementTag EnterPCDATA '>'
-       ElementListopt
-    '</' SimpleName '.' SimpleName EnterPCDATA '>'
-/.$putCase consumeAttributeElement(); $break ./
-/:$readableName AttributeElement:/
+--AttributeElementTag ::= $empty
+--/.$putCase consumeAttributeElementTag(); $break ./
+--/:$readableName AttributeElementTag:/
+--AttributeElement ::= '<' SimpleName '.' SimpleName AttributeElementTag EnterPCDATA '>'
+--       ElementListopt
+--    '</' SimpleName '.' SimpleName EnterPCDATA '>'
+--/.$putCase consumeAttributeElement(); $break ./
+--/:$readableName AttributeElement:/
 
 Attribute ::= SimpleName ':' SimpleName '=' PropertyExpression
 /.$putCase consumeAttributeWithTypeReference(); $break ./
