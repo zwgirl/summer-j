@@ -2711,7 +2711,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				}
 				
 				//exclude non default method of interface 
-				if((this.modifiers & ClassFileConstants.AccInterface) != 0 && (method.modifiers & ClassFileConstants.AccDefault) == 0){
+				if((this.modifiers & ClassFileConstants.AccInterface) != 0 && !method.isDefaultMethod()){
 					continue;
 				}
 				

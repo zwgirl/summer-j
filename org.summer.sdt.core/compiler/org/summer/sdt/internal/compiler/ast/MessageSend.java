@@ -1394,8 +1394,22 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 				output.append(".call");
 			}
 			
+			if(this.binding.isDefaultMethod()){
+				output.append(".call");
+			}
+			
 			output.append('(') ;
 			if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0 || this.receiver instanceof SuperReference){
+				if (this.receiver.isImplicitThis() || this.receiver.isThis() || this.receiver.isSuper()){ 
+					output.append("this");
+					comma = true;
+				} else {
+					this.receiver.doGenerateExpression(scope, indent, output);
+					comma = true;
+				}
+			}
+			
+			if(this.binding.isDefaultMethod()){
 				if (this.receiver.isImplicitThis() || this.receiver.isThis() || this.receiver.isSuper()){ 
 					output.append("this");
 					comma = true;
