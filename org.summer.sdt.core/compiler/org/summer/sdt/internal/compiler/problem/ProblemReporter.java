@@ -104,7 +104,7 @@ import org.summer.sdt.internal.compiler.ast.ConditionalExpression;
 import org.summer.sdt.internal.compiler.ast.ConstructorDeclaration;
 import org.summer.sdt.internal.compiler.ast.PropertyReference;
 import org.summer.sdt.internal.compiler.ast.StringLiteral;
-import org.summer.sdt.internal.compiler.ast.XAMLElement;
+import org.summer.sdt.internal.compiler.ast.HtmlElement;
 import org.summer.sdt.internal.compiler.ast.EqualExpression;
 import org.summer.sdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.summer.sdt.internal.compiler.ast.Expression;
@@ -10463,7 +10463,7 @@ public class ProblemReporter extends ProblemHandler {
 	}
 	
 	//cym 2015-03-22
-	public void elementMustHaveMatchTag(XAMLElement element) {
+	public void elementMustHaveMatchTag(HtmlElement element) {
 		this.handle(
 				IProblem.HTNLElementMustHaveMatchedTag,
 				new String[] {

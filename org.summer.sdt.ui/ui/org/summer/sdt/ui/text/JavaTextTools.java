@@ -51,7 +51,8 @@ public class JavaTextTools {
 		IJavaPartitions.JAVA_SINGLE_LINE_COMMENT,
 		IJavaPartitions.JAVA_STRING,
 		IJavaPartitions.JAVA_CHARACTER,
-		IJavaPartitions.JAVA_XAML_COMMENT   //cym 2015-03-24
+		IJavaPartitions.JAVA_HTML_COMMENT,   //cym 2015-03-24
+		IJavaPartitions.JAVA_HTML_CONTENT   //cym 2015-04-08
 	};
 
 	/**

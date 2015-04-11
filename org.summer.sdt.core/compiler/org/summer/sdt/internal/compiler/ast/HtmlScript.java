@@ -5,10 +5,10 @@ import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
-public class Script extends XAMLElement{
+public class HtmlScript extends HtmlElement{
 	public MethodDeclaration method;
 	
-	public Script(MethodDeclaration method) {
+	public HtmlScript(MethodDeclaration method) {
 		this.method = method;
 
 		this.declarationSourceStart = this.sourceStart = method.sourceStart;

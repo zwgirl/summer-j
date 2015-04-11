@@ -109,7 +109,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	public TypeParameter[] typeParameters;
 	
 	//XAML root element
-	public XAMLElement element;
+//	public XAMLElement element;
+	public HtmlElement[] htmlElements;
 	
 	//cym 2015-02-13 for function type
 	public Argument[] arguments = ASTNode.NO_ARGUMENTS;
@@ -588,7 +589,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				generateJavascript(scope);
 			}
 
-			if(this.element != null && CharOperation.equals(((ReferenceBinding)this.element.type.resolvedType).compoundName, TypeConstants.ORG_W3C_HTML_HTML)){
+			if(this.htmlElements != null && this.htmlElements.length == 1 &&
+					CharOperation.equals(((ReferenceBinding)this.htmlElements[0].type.resolvedType).compoundName, TypeConstants.ORG_W3C_HTML_HTML)){
 				generateHtml(this.scope);
 			}
 		}
@@ -714,11 +716,13 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			StringBuffer output = htmlFile.content;
 			
 			output.append("<!DOCTYPE HTML>").append('\n');
-			if(this.element != null ){
-				if((this.element.bits & ASTNode.HasDynamicContent) != 0){
-					buildDOM(element, this.scope, 0, output);
-				} else {
-					buildHTML(element, this.scope, 0, output);
+			if(this.htmlElements != null ){
+				for(HtmlElement element : this.htmlElements){
+					if((element.bits & ASTNode.HasDynamicContent) != 0){
+						buildDOM(element, this.scope, 0, output);
+					} else {
+						buildHTML(element, this.scope, 0, output);
+					}
 				}
 			}
 			
@@ -734,11 +738,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 	}
 	
-	private void buildDOM(XAMLElement element, Scope scope, int indent, StringBuffer output) {
+	private void buildDOM(HtmlElement element, Scope scope, int indent, StringBuffer output) {
 		element.generateExpression(initializerScope, indent, output);
 	}
 	
-	private void buildHTML(XAMLElement element, Scope scope, int indent, StringBuffer output) {
+	private void buildHTML(HtmlElement element, Scope scope, int indent, StringBuffer output) {
 		element.generateStaticHTML(initializerScope, indent, output);
 	}
 
@@ -1049,9 +1053,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append(" {"); //$NON-NLS-1$
 		
 		//for XAML
-		if(this.element != null){
+		if(this.htmlElements != null){
 			output.append('\n');
-			this.element.print(indent + 1, output).append("\n");
+			for(HtmlElement element : this.htmlElements){
+				element.print(indent + 1, output).append("\n");
+			}
 		}
 		
 		if (this.memberTypes != null) {
@@ -1359,8 +1365,10 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			}
 			
 			//check element cym 2014-12-09
-			if(this.element != null){
-				this.element.resolve(new ElementScope(this.element, this.scope));
+			if(this.htmlElements != null){
+				for(HtmlElement element : this.htmlElements){
+					element.resolve(new ElementScope(element, this.scope));
+				}
 			}
 	
 			int missingAbstractMethodslength = this.missingAbstractMethods == null ? 0 : this.missingAbstractMethods.length;
@@ -3013,39 +3021,44 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	}
 	
 	private void processXAML(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
-		if(type.element != null && (type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE)) ||
-				type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_COMPONENT)))){
-			output.append('\n');
-			printIndent(indent, output);
-			output.append(type.binding.sourceName).append(".prototype.").append("doCreate").append(" = function(parent, data) {");
-			output.append('\n');
-			printIndent(indent, output);
-			((ObjectElement)type.element).buildElement(scope, indent, output, "parent", "this");
-			output.append('\n');
-			printIndent(indent, output);
-			output.append("};");
-		} else if(type.element != null && type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_ITEMTEMPLATE))){
-			output.append('\n');
-			printIndent(indent, output);
-			output.append(type.binding.sourceName).append(".prototype.").append("createRoot").append(" = function(parent, item) {");
-			((ObjectElement)type.element).buildRootElement(scope, indent, output, "parent", "this");
-			output.append('\n');
-			printIndent(indent + 1, output);
-			output.append("return _n;");
-			
-			output.append('\n');
-			printIndent(indent, output);
-			output.append("};");
-			
-			output.append('\n');
-			printIndent(indent, output);
-			output.append(type.binding.sourceName).append(".prototype.").append("createChild").append(" = function(parent) {");
-			if(type.element.children != null && type.element.children.length > 0){
-				type.element.buildDOMScript(scope, indent + 1, output, "parent", "this");
+		if(type.htmlElements == null) {
+			return;
+		}
+		for(HtmlElement element : type.htmlElements){
+			if(element != null && (type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE)) ||
+					type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_COMPONENT)))){
+				output.append('\n');
+				printIndent(indent, output);
+				output.append(type.binding.sourceName).append(".prototype.").append("doCreate").append(" = function(parent, data) {");
+				output.append('\n');
+				printIndent(indent, output);
+				((HtmlObjectElement)element).buildElement(scope, indent, output, "parent", "this");
+				output.append('\n');
+				printIndent(indent, output);
+				output.append("};");
+			} else if(element != null && type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_ITEMTEMPLATE))){
+				output.append('\n');
+				printIndent(indent, output);
+				output.append(type.binding.sourceName).append(".prototype.").append("createRoot").append(" = function(parent, item) {");
+				((HtmlObjectElement)element).buildRootElement(scope, indent, output, "parent", "this");
+				output.append('\n');
+				printIndent(indent + 1, output);
+				output.append("return _n;");
+				
+				output.append('\n');
+				printIndent(indent, output);
+				output.append("};");
+				
+				output.append('\n');
+				printIndent(indent, output);
+				output.append(type.binding.sourceName).append(".prototype.").append("createChild").append(" = function(parent) {");
+				if(element.children != null && element.children.length > 0){
+					element.buildDOMScript(scope, indent + 1, output, "parent", "this");
+				}
+				output.append('\n');
+				printIndent(indent, output);
+				output.append("};");
 			}
-			output.append('\n');
-			printIndent(indent, output);
-			output.append("};");
 		}
 	}
 	

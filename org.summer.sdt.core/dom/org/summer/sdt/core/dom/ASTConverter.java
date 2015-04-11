@@ -1798,12 +1798,12 @@ class ASTConverter {
 			return convert((org.summer.sdt.internal.compiler.ast.PropertyReference) expression);
 		} 
 		
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.MarkupExtension) {
-			return convert((org.summer.sdt.internal.compiler.ast.MarkupExtension) expression);
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlMarkupExtension) {
+			return convert((org.summer.sdt.internal.compiler.ast.HtmlMarkupExtension) expression);
 		} 
 		
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.FunctionExpression) {
-			return convert((org.summer.sdt.internal.compiler.ast.FunctionExpression) expression);
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlFunctionExpression) {
+			return convert((org.summer.sdt.internal.compiler.ast.HtmlFunctionExpression) expression);
 		}
 
 		return null;
@@ -2978,9 +2978,11 @@ class ASTConverter {
 		}
 		
 		//cym 2015-03-21
-		if(typeDeclaration.element != null){
-			org.summer.sdt.internal.compiler.ast.XAMLElement element = typeDeclaration.element;
-			typeDecl.setElement(convert(element));
+		if(typeDeclaration.htmlElements != null){
+//			org.summer.sdt.internal.compiler.ast.XAMLElement element = typeDeclaration.elements;
+			for(org.summer.sdt.internal.compiler.ast.HtmlElement element : typeDeclaration.htmlElements){
+				typeDecl.htmlElements().add(convert(element));
+			}
 		}
 		
 		this.referenceContext = oldReferenceContext;
@@ -3083,37 +3085,37 @@ class ASTConverter {
 	}
 	
 	//TODO cym 2015-03-21 
-	public XAMLElement convert(org.summer.sdt.internal.compiler.ast.XAMLElement element) {
-		final XAMLElement xamlElement = new XAMLElement(this.ast);
-		xamlElement.setSourceRange(element.sourceStart, element.sourceEnd - element.sourceStart + 1);
-		xamlElement.setType(convertType(element.type));
+	public HtmlElement convert(org.summer.sdt.internal.compiler.ast.HtmlElement element) {
+		final HtmlElement htmlElement = new HtmlElement(this.ast);
+		htmlElement.setSourceRange(element.sourceStart, element.sourceEnd - element.sourceStart + 1);
+		htmlElement.setType(convertType(element.type));
 		if(element.closeType != null){
-			xamlElement.setCloseType(convertType(element.closeType));
+			htmlElement.setCloseType(convertType(element.closeType));
 		}
 
-		for(org.summer.sdt.internal.compiler.ast.Attribute attribute : element.attributes){
-			xamlElement.attributes().add(convert(attribute));
+		for(org.summer.sdt.internal.compiler.ast.HtmlAttribute attribute : element.attributes){
+			htmlElement.attributes().add(convert(attribute));
 		}
 		
-		for(org.summer.sdt.internal.compiler.ast.XAMLElement child : element.children){
-			if(child instanceof org.summer.sdt.internal.compiler.ast.PCDATA ||
-					child instanceof org.summer.sdt.internal.compiler.ast.Script ||
-					child instanceof org.summer.sdt.internal.compiler.ast.XAMLComment){
+		for(org.summer.sdt.internal.compiler.ast.HtmlElement child : element.children){
+			if(child instanceof org.summer.sdt.internal.compiler.ast.HtmlPCDATA ||
+					child instanceof org.summer.sdt.internal.compiler.ast.HtmlScript ||
+					child instanceof org.summer.sdt.internal.compiler.ast.HtmlComment){
 //				xamlElement.children().add(convert((org.summer.sdt.internal.compiler.ast.PCDATA)child));
 				continue;
 			} else {
-				xamlElement.children().add(convert(child));
+				htmlElement.children().add(convert(child));
 			}
 		}
-		return xamlElement;
+		return htmlElement;
 	}
 	
 	//TODO cym 2015-03-21 
-	public MarkupExtension convert(org.summer.sdt.internal.compiler.ast.MarkupExtension markup) {
-		final MarkupExtension xamlElement = new MarkupExtension(this.ast);
+	public HtmlMarkupExtension convert(org.summer.sdt.internal.compiler.ast.HtmlMarkupExtension markup) {
+		final HtmlMarkupExtension xamlElement = new HtmlMarkupExtension(this.ast);
 		xamlElement.setSourceRange(markup.sourceStart, markup.sourceEnd - markup.sourceStart + 1);
 		xamlElement.setType(convertType(markup.type));
-		for(org.summer.sdt.internal.compiler.ast.Attribute attribute : markup.attributes){
+		for(org.summer.sdt.internal.compiler.ast.HtmlAttribute attribute : markup.attributes){
 			xamlElement.attributes().add(convert(attribute));
 		}
 
@@ -3121,7 +3123,7 @@ class ASTConverter {
 	}
 	
 	//TODO cym 2015-03-30 
-	public FunctionExpression convert(org.summer.sdt.internal.compiler.ast.FunctionExpression functionExpression) {
+	public FunctionExpression convert(org.summer.sdt.internal.compiler.ast.HtmlFunctionExpression functionExpression) {
 		final FunctionExpression function = new FunctionExpression(this.ast);
 		function.setSourceRange(functionExpression.sourceStart, functionExpression.sourceEnd - functionExpression.sourceStart + 1);
 //		xamlElement.setType(convertType(function.type));
@@ -3153,7 +3155,7 @@ class ASTConverter {
 	}
 	
 	//cym add 2014-11-11
-	public Expression convert(org.summer.sdt.internal.compiler.ast.PCDATA expression) {
+	public Expression convert(org.summer.sdt.internal.compiler.ast.HtmlPCDATA expression) {
 		int length = expression.sourceEnd - expression.sourceStart + 1;
 		int sourceStart = expression.sourceStart;
 		StringLiteral literal = new StringLiteral(this.ast);
@@ -3166,8 +3168,8 @@ class ASTConverter {
 	}
 	
 	//TODO cym 2015-03-21 
-	public Attribute convert(org.summer.sdt.internal.compiler.ast.Attribute attribute) {
-		final Attribute xamlAttribute = new Attribute(this.ast);
+	public HtmlAttribute convert(org.summer.sdt.internal.compiler.ast.HtmlAttribute attribute) {
+		final HtmlAttribute xamlAttribute = new HtmlAttribute(this.ast);
 		xamlAttribute.setSourceRange(attribute.sourceStart, attribute.sourceEnd - attribute.sourceStart + 1);
 		xamlAttribute.setProperty(convert(attribute.property));
 		xamlAttribute.setValue(convert(attribute.value));

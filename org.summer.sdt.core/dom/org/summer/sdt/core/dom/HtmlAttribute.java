@@ -3,20 +3,20 @@ package org.summer.sdt.core.dom;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Attribute extends XAMLNode{
+public class HtmlAttribute extends HtmlNode{
 	/**
 	 * The "type" structural property of this node type (child type: {@link Type}).
 	 * @since 3.0
 	 */
 	public static final ChildPropertyDescriptor VALUE_PROPERTY =
-		new ChildPropertyDescriptor(XAMLElement.class, "value", Expression.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
+		new ChildPropertyDescriptor(HtmlElement.class, "value", Expression.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
 
 	/**
 	 * The "attributes" structural property of this node type (element type: {@link XAMLAttribute}).
 	 * @since 3.0
 	 */
 	public static final ChildPropertyDescriptor PROPERTY_PROPERTY =
-		new ChildPropertyDescriptor(XAMLElement.class, "property", FieldAccess.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
+		new ChildPropertyDescriptor(HtmlElement.class, "property", FieldAccess.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
 
 	/**
 	 * A list of property descriptors (element type:
@@ -27,7 +27,7 @@ public class Attribute extends XAMLNode{
 
 	static {
 		List propertyList = new ArrayList(3);
-		createPropertyList(XAMLElement.class, propertyList);
+		createPropertyList(HtmlElement.class, propertyList);
 		addProperty(VALUE_PROPERTY, propertyList);
 		addProperty(PROPERTY_PROPERTY, propertyList);
 		PROPERTY_DESCRIPTORS = reapPropertyList(propertyList);
@@ -55,7 +55,7 @@ public class Attribute extends XAMLNode{
 	
 	private FieldAccess property = null;
 	
-	Attribute(AST ast) {
+	HtmlAttribute(AST ast) {
 		super(ast);
 		// TODO Auto-generated constructor stub
 	}
@@ -102,7 +102,7 @@ public class Attribute extends XAMLNode{
 	 * Method declared on ASTNode.
 	 */
 	ASTNode clone0(AST target) {
-		Attribute result = new Attribute(target);
+		HtmlAttribute result = new HtmlAttribute(target);
 		result.setSourceRange(getStartPosition(), getLength());
 		result.setValue((Expression) getValue().clone(target));
 		result.setProperty((FieldAccess) getProperty().clone(target));

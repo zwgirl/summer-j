@@ -1,8 +1,8 @@
 package org.summer.sdt.core.dom;
 
-public class MarkupExtension extends XAMLElement{
+public class HtmlMarkupExtension extends HtmlElement{
 
-	MarkupExtension(AST ast) {
+	HtmlMarkupExtension(AST ast) {
 		super(ast);
 	}
 

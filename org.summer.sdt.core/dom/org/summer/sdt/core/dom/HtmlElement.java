@@ -4,31 +4,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class XAMLElement extends XAMLNode {
+public class HtmlElement extends HtmlNode {
 	
 	/**
 	 * The "type" structural property of this node type (child type: {@link Type}).
 	 * @since 3.0
 	 */
 	public static final ChildPropertyDescriptor TYPE_PROPERTY =
-		new ChildPropertyDescriptor(XAMLElement.class, "type", Type.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
+		new ChildPropertyDescriptor(HtmlElement.class, "type", Type.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
 	
 	public static final ChildPropertyDescriptor CLOSE_TYPE_PROPERTY =
-			new ChildPropertyDescriptor(XAMLElement.class, "closeType", Type.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
+			new ChildPropertyDescriptor(HtmlElement.class, "closeType", Type.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
 
 	/**
 	 * The "attributes" structural property of this node type (element type: {@link XAMLAttribute}).
 	 * @since 3.0
 	 */
 	public static final ChildListPropertyDescriptor ATTRIBUTES_PROPERTY =
-		new ChildListPropertyDescriptor(XAMLElement.class, "attributes", Attribute.class, CYCLE_RISK); //$NON-NLS-1$
+		new ChildListPropertyDescriptor(HtmlElement.class, "attributes", HtmlAttribute.class, CYCLE_RISK); //$NON-NLS-1$
 	
 	/**
 	 * The "children" structural property of this node type (element type: {@link XAMLAttribute}).
 	 * @since 3.0
 	 */
 	public static final ChildListPropertyDescriptor CHILDREN_PROPERTY =
-		new ChildListPropertyDescriptor(XAMLElement.class, "children", XAMLElement.class, CYCLE_RISK); //$NON-NLS-1$
+		new ChildListPropertyDescriptor(HtmlElement.class, "children", HtmlElement.class, CYCLE_RISK); //$NON-NLS-1$
 
 	/**
 	 * A list of property descriptors (element type:
@@ -39,7 +39,7 @@ public class XAMLElement extends XAMLNode {
 
 	static {
 		List propertyList = new ArrayList(3);
-		createPropertyList(XAMLElement.class, propertyList);
+		createPropertyList(HtmlElement.class, propertyList);
 		addProperty(TYPE_PROPERTY, propertyList);
 		addProperty(CLOSE_TYPE_PROPERTY, propertyList);
 		addProperty(ATTRIBUTES_PROPERTY, propertyList);
@@ -76,7 +76,7 @@ public class XAMLElement extends XAMLNode {
 	private ASTNode.NodeList children =
 			new ASTNode.NodeList(CHILDREN_PROPERTY);
 	
-	XAMLElement(AST ast) {
+	HtmlElement(AST ast) {
 		super(ast);
 		// TODO Auto-generated constructor stub
 	}
@@ -138,7 +138,7 @@ public class XAMLElement extends XAMLNode {
 	 * Method declared on ASTNode.
 	 */
 	ASTNode clone0(AST target) {
-		XAMLElement result = new XAMLElement(target);
+		HtmlElement result = new HtmlElement(target);
 		result.setSourceRange(getStartPosition(), getLength());
 		result.setType(
 				(Type) ASTNode.copySubtree(target, getType()));

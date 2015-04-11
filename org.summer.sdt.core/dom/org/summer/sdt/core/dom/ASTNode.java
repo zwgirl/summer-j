@@ -1102,11 +1102,11 @@ public abstract class ASTNode {
 			
 			//cym 2015-03-21
 			case XAML_ELEMENT :
-				return XAMLElement.class;
+				return HtmlElement.class;
 			case XAML_ATTRIBUTE :
-				return Attribute.class;
+				return HtmlAttribute.class;
 			case XAML_MARKUP_EXTENSION :
-				return MarkupExtension.class;
+				return HtmlMarkupExtension.class;
 		}
 		throw new IllegalArgumentException();
 	}

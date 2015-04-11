@@ -432,6 +432,10 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 	private boolean hasRemotingBeanOrService(){
 		for (int i = 0; i < this.types.length; i++) {
 			TypeDeclaration type = this.types[i];
+			if(type.binding == null){
+				continue;
+			}
+			
 			if((type.binding.tagBits & TagBits.AnnotationRemotingBean) != 0 ||
 					(type.binding.tagBits & TagBits.AnnotationRemotingService) != 0){
 				return true;
@@ -703,12 +707,10 @@ public class CompilationUnitDeclaration extends ASTNode implements ProblemSeveri
 			if (this.types != null) {
 				for (int i = startingTypeIndex, count = this.types.length; i < count; i++) {
 					//cym 2015-02-25
-					if(this.module){
-//						this.types[i].binding.modifiers |= ClassFileConstants.AccModule;
-//						this.types[i].modifiers |= ClassFileConstants.AccModule;
-					} else {
-						//cym 2015-02-25
-						this.types[i].binding.modifiers &= ~ClassFileConstants.AccModule;
+					if(!this.module){
+						if(this.types[i].binding != null){
+							this.types[i].binding.modifiers &= ~ClassFileConstants.AccModule;
+						}
 						
 						if ((this.types[i].modifiers & ClassFileConstants.AccPublic) != 0) {
 							char[] mainTypeName;

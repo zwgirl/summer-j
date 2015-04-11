@@ -2,10 +2,10 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
-public class XAMLComment extends XAMLElement{
+public class HtmlComment extends HtmlElement{
 	public char[] source;
 
-	public XAMLComment(char[] source, long pos) {
+	public HtmlComment(char[] source, long pos) {
 		super();
 		this.source = source;
 		//by default the position are the one of the field (not true for super access)

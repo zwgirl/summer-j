@@ -98,7 +98,9 @@ public class JavaPartitionScanner extends RuleBasedPartitionScanner implements I
 		IToken multiLineComment= new Token(JAVA_MULTI_LINE_COMMENT);
 		IToken singleLineComment= new Token(JAVA_SINGLE_LINE_COMMENT);
 		
-		IToken xamlComment= new Token(JAVA_XAML_COMMENT);   //cym 2015-03-24
+		IToken htmlComment= new Token(JAVA_HTML_COMMENT);   //cym 2015-03-24
+		
+		IToken html= new Token(JAVA_HTML_CONTENT);   //cym 2015-04-08
 
 		List<IPredicateRule> rules= new ArrayList<IPredicateRule>();
 
@@ -120,7 +122,10 @@ public class JavaPartitionScanner extends RuleBasedPartitionScanner implements I
 		rules.add(new MultiLineRule("/*", "*/", multiLineComment)); //$NON-NLS-1$ //$NON-NLS-2$
 		
 		//cym 2015-03-24
-		rules.add(new MultiLineRule("<!--", "-->", xamlComment)); //$NON-NLS-1$ //$NON-NLS-2$
+		rules.add(new MultiLineRule("<!--", "-->", htmlComment)); //$NON-NLS-1$ //$NON-NLS-2$
+		
+		//cym 2015-04-08
+		rules.add(new MultiLineRule("<%", "%>", html)); //$NON-NLS-1$ //$NON-NLS-2$
 
 		IPredicateRule[] result= new IPredicateRule[rules.size()];
 		rules.toArray(result);

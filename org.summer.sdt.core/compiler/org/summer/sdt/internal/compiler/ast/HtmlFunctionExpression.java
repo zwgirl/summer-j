@@ -2,9 +2,9 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
-public class FunctionExpression extends XAMLNode{
+public class HtmlFunctionExpression extends HtmlNode{
 
-	public FunctionExpression(MethodDeclaration md) {
+	public HtmlFunctionExpression(MethodDeclaration md) {
 		this.sourceEnd = md.sourceEnd;
 		this.sourceStart = md.sourceStart;
 	}

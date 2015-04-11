@@ -1,7 +1,7 @@
 eclipse.preferences.version=1
 encoding//compiler/org/summer/sdt/internal/compiler/ast/CompilationUnitDeclaration.java=UTF-8
+encoding//compiler/org/summer/sdt/internal/compiler/ast/HtmlPCDATA.java=UTF-8
 encoding//compiler/org/summer/sdt/internal/compiler/ast/LambdaExpression.java=UTF-8
-encoding//compiler/org/summer/sdt/internal/compiler/ast/PCDATA.java=UTF-8
 encoding//compiler/org/summer/sdt/internal/compiler/ast/ReferenceExpression.java=UTF-8
 encoding//compiler/org/summer/sdt/internal/compiler/lookup/BoundSet.java=UTF-8
 encoding//compiler/org/summer/sdt/internal/compiler/lookup/ConstraintExpressionFormula.java=UTF-8

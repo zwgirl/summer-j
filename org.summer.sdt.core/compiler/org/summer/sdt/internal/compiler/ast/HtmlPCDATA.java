@@ -10,10 +10,10 @@ import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
-public class PCDATA  extends XAMLElement {
+public class HtmlPCDATA  extends HtmlElement {
 	public char[] source;
 
-	public PCDATA(char[] source, long pos) {
+	public HtmlPCDATA(char[] source, long pos) {
 		super();
 		this.source = source;
 		//by default the position are the one of the field (not true for super access)

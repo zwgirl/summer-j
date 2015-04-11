@@ -126,11 +126,10 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 	
 	//cym 2015-03-21
 	/**
-	 * The "name" structural property of this node type (child type: {@link SimpleName}).
-	 * @since 3.0
+	 * The "htmlElements" structural property of this node type (child type: {@link SimpleName}).
 	 */
-	public static final ChildPropertyDescriptor ELEMENT_PROPERTY =
-		new ChildPropertyDescriptor(TypeDeclaration.class, "element", XAMLElement.class, MANDATORY, NO_CYCLE_RISK); //$NON-NLS-1$
+	public static final ChildListPropertyDescriptor HTML_ELEMENTS_PROPERTY =
+		new ChildListPropertyDescriptor(TypeDeclaration.class, "htmlElements", HtmlElement.class, NO_CYCLE_RISK); //$NON-NLS-1$
 
 	/**
 	 * The "bodyDeclarations" structural property of this node type (element type: {@link BodyDeclaration}) (added in JLS3 API).
@@ -167,7 +166,7 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 		addProperty(BODY_DECLARATIONS_PROPERTY, propertyList);
 		PROPERTY_DESCRIPTORS_2_0 = reapPropertyList(propertyList);
 
-		propertyList = new ArrayList(9);
+		propertyList = new ArrayList(10);
 		createPropertyList(TypeDeclaration.class, propertyList);
 		addProperty(JAVADOC_PROPERTY, propertyList);
 		addProperty(MODIFIERS2_PROPERTY, propertyList);
@@ -178,7 +177,7 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 		addProperty(SUPER_INTERFACE_TYPES_PROPERTY, propertyList);
 		addProperty(BODY_DECLARATIONS_PROPERTY, propertyList);
 		
-		addProperty(ELEMENT_PROPERTY, propertyList);   //cym 2015-03-21
+		addProperty(HTML_ELEMENTS_PROPERTY, propertyList);   //cym 2015-03-21
 		PROPERTY_DESCRIPTORS_3_0 = reapPropertyList(propertyList);
 	}
 
@@ -247,7 +246,8 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 	private ASTNode.NodeList superInterfaceTypes = null;
 	
 	//cym 2015-03-21
-	private XAMLElement element = null;
+//	private XAMLElement element = null;
+	private ASTNode.NodeList htmlElements = null;
 
 	/**
 	 * Creates a new AST node for a type declaration owned by the given
@@ -271,6 +271,7 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 		if (ast.apiLevel >= AST.JLS3_INTERNAL) {
 			this.typeParameters = new ASTNode.NodeList(TYPE_PARAMETERS_PROPERTY);
 			this.superInterfaceTypes = new ASTNode.NodeList(SUPER_INTERFACE_TYPES_PROPERTY);
+			this.htmlElements = new ASTNode.NodeList(HTML_ELEMENTS_PROPERTY);
 		}
 	}
 
@@ -350,15 +351,7 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 				return null;
 			}
 		}
-		
-		if (property == ELEMENT_PROPERTY) {
-			if (get) {
-				return getElement();
-			} else {
-				setElement((XAMLElement) child);
-				return null;
-			}
-		}
+
 		// allow default implementation to flag the error
 		return super.internalGetSetChildProperty(property, get, child);
 	}
@@ -382,6 +375,12 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 		if (property == BODY_DECLARATIONS_PROPERTY) {
 			return bodyDeclarations();
 		}
+		
+		//cym 2015-04-09
+		if (property == HTML_ELEMENTS_PROPERTY) {
+			return htmlElements();
+		}
+		
 		// allow default implementation to flag the error
 		return super.internalGetChildListProperty(property);
 	}
@@ -458,7 +457,7 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 		result.bodyDeclarations().addAll(
 			ASTNode.copySubtrees(target, bodyDeclarations()));
 		
-		result.setElement((XAMLElement) ASTNode.copySubtree(target, getElement()));  //cym 2015-03-21
+		result.htmlElements().addAll(ASTNode.copySubtrees(target, htmlElements()));  //cym 2015-03-21
 		return result;
 	}
 
@@ -484,7 +483,7 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 				acceptChildren(visitor, this.superInterfaceNames);
 				acceptChildren(visitor, this.bodyDeclarations);
 				
-				acceptChild(visitor, this.element);   //cym 2015-03-21
+				acceptChildren(visitor, this.htmlElements);   //cym 2015-03-21
 			}
 			if (this.ast.apiLevel >= AST.JLS3_INTERNAL) {
 				acceptChild(visitor, getJavadoc());
@@ -495,7 +494,7 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 				acceptChildren(visitor, this.superInterfaceTypes);
 				acceptChildren(visitor, this.bodyDeclarations);
 				
-				acceptChild(visitor, this.element);   //cym 2015-03-21
+				acceptChildren(visitor, this.htmlElements);   //cym 2015-03-21
 			}
 		}
 		visitor.endVisit(this);
@@ -806,18 +805,22 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 	}
 	
 	//cym 2015-03-21
-	public XAMLElement getElement() {
-	    unsupportedIn2();
-		return this.element;
+	public HtmlElement[] getElements() {
+		HtmlElement[] result = new HtmlElement[htmlElements.size()];
+		int next = 0;
+		for (Iterator it = htmlElements.listIterator(); it.hasNext(); ) {
+			result[next++] = (HtmlElement) it.next();
+		}
+		return result;
 	}
 	
-	public void setElement(XAMLElement element) {
-	    unsupportedIn2();
-		ASTNode oldChild = this.element;
-		preReplaceChild(oldChild, element, ELEMENT_PROPERTY);
-		this.element = element;
-		postReplaceChild(oldChild, element, ELEMENT_PROPERTY);
- 	}
+	public List htmlElements() {
+		// more efficient than just calling unsupportedIn2() to check
+		if (this.htmlElements == null) {
+			unsupportedIn2();
+		}
+		return this.htmlElements;
+	}
 
 	/* (omit javadoc for this method)
 	 * Method declared on AsbtractTypeDeclaration.
@@ -846,7 +849,7 @@ public class TypeDeclaration extends AbstractTypeDeclaration {
 			+ (this.optionalSuperclassType == null ? 0 : getSuperclassType().treeSize())
 			+ (this.superInterfaceNames == null ? 0 : this.superInterfaceNames.listSize())
 			+ (this.superInterfaceTypes == null ? 0 : this.superInterfaceTypes.listSize())
-			+ (this.element == null ? 0 : this.element.treeSize())   //cym 2015-03-21
+			+ (this.htmlElements == null ? 0 : this.htmlElements.listSize())   //cym 2015-03-21
 			+ this.bodyDeclarations.listSize();
 	}
 }

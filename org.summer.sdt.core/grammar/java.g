@@ -54,10 +54,8 @@ $Terminals
 	boolean break byte case catch char class 
 	continue 
 	const 
---	debugger 
+	debugger 
 	default do double else enum 
-	--event 
---	export 
 	extends false final finally float
 	for function goto if implements import 
 	in 
@@ -70,6 +68,7 @@ $Terminals
 	protected public return short static strictfp super switch
 	synchronized this throw throws transient true try 
 	typeof 
+	var
 	void
 	volatile while
 
@@ -461,8 +460,10 @@ InternalCompilationUnit ::= $empty
 -----------------------------------------------
 -- xaml declaration
 -----------------------------------------------
+HtmlSection ::= <% ElementList  %>
+
 Element -> ComplexElement
-Element -> EmptyElement
+--Element -> EmptyElement
 Element -> SimpleElement
 --Element -> AttributeElement
 Element -> PCDATANode
@@ -504,21 +505,17 @@ CommentNode ::= XmlComment EnterPCDATA
 /.$putCase consumeCommentNode(); $break ./
 /:$readableName CommentNode:/
 
-EmptyElement ::=  ElementTag  EnterCloseTag EnterPCDATA '/>' 
-/.$putCase consumeEmptyElement(); $break ./
-
-SimpleElement ::=  ElementTag AttributeList  EnterCloseTag EnterPCDATA '/>'
+SimpleElement ::=  ElementStart EnterCloseTag EnterPCDATA '/>'
 /.$putCase consumeSimpleElement(); $break ./
 
-ComplexElement ::= ElementStart
+ComplexElement ::= ElementStart EnterPCDATA '>' 
     ElementListopt
 	ElementClose 
-	
 /.$putCase consumeComplexElement(); $break ./
 /:$readableName ComplexElement:/
-/:$recovery_template < identifier:/
+/:$recovery_template <:/
 
-ElementStart ::= ElementTag AttributeListopt EnterPCDATA '>' 
+ElementStart ::= ElementTag AttributeListopt
 /.$putCase consumeElementStart(); $break ./
 /:$readableName ElementStart:/
 
@@ -534,23 +531,9 @@ EnterPCDATA ::= $empty
 /.$putCase consumeEnterPCADATA(); $break ./
 /:$readableName EnterPCADATA:/
 
-AttributeListopt ::= $empty
-/.$putCase consumeAttributeListopt(); $break ./
-AttributeListopt -> AttributeList
-/:$readableName AttributeListopt:/
-
 ElementTag ::= '<' SimpleName
 /.$putCase consumeElementTag(); $break ./
 /:$readableName ElementTag:/
-
---AttributeElementTag ::= $empty
---/.$putCase consumeAttributeElementTag(); $break ./
---/:$readableName AttributeElementTag:/
---AttributeElement ::= '<' SimpleName '.' SimpleName AttributeElementTag EnterPCDATA '>'
---       ElementListopt
---    '</' SimpleName '.' SimpleName EnterPCDATA '>'
---/.$putCase consumeAttributeElement(); $break ./
---/:$readableName AttributeElement:/
 
 Attribute ::= SimpleName ':' SimpleName '=' PropertyExpression
 /.$putCase consumeAttributeWithTypeReference(); $break ./
@@ -559,6 +542,11 @@ Attribute ::= SimpleName '=' PropertyExpression
 Attribute ::= SimpleName '.' SimpleName '=' PropertyExpression
 /.$putCase consumeAttributeWithPropertyReference(); $break ./
 /:$readableName Attribute:/
+
+AttributeListopt ::= $empty
+/.$putCase consumeAttributeListopt(); $break ./
+AttributeListopt -> AttributeList
+/:$readableName AttributeListopt:/
 
 AttributeList ::= Attribute
 AttributeList ::= AttributeList Attribute
@@ -572,9 +560,7 @@ PropertyExpression ::= FloatingPointLiteral
 PropertyExpression ::= DoubleLiteral
 PropertyExpression ::= CharacterLiteral
 PropertyExpression ::= BooleanLiteral
-
 PropertyExpression ::= MarkupExtenson
-
 PropertyExpression ::= FunctionExpression
 
 FunctionExpression ::= FunctionExpressionHeader MethodBody
@@ -585,30 +571,10 @@ FunctionExpressionHeader ::= function
 /.$putCase consumeFunctionExpressionHeader(); $break ./
 /:$readableName FunctionExpressionHeader:/
 
-
---MarkupExtensionTag ::= $empty
---/.$putCase consumeMarkupExtensionTag(); $break ./
---/:$readableName MarkupExtensionTag:/
-
-consumeMarkupExtensionTag ::= '{' SimpleName
-/.$putCase consumeMarkupExtensionTag(); $break ./
-/:$readableName consumeMarkupExtensionTag:/
-
-MarkupExtenson ::= consumeMarkupExtensionTag  '}'
-/.$putCase consumeMarkupExtenson(false); $break ./
-
-MarkupExtenson ::= consumeMarkupExtensionTag  AttributeList '}'
-/.$putCase consumeMarkupExtenson(true); $break ./
+MarkupExtenson ::= { SimpleName AttributeListopt }
+/.$putCase consumeMarkupExtenson(); $break ./
 /:$readableName MarkupExtenson:/
-/:$recovery_template { identifier:/
-
---MarkupExtenson ::= '{' SimpleName MarkupExtensionTag '}'
---/.$putCase consumeMarkupExtenson(false); $break ./
---
---MarkupExtenson ::= '{' SimpleName MarkupExtensionTag AttributeList '}'
---/.$putCase consumeMarkupExtenson(true); $break ./
---/:$readableName MarkupExtenson:/
---/:$recovery_template { identifier:/
+/:$recovery_template }:/
 ----------------------------------------------
 -- xaml end
 -----------------------------------------------
@@ -2324,11 +2290,13 @@ ConstantExpression -> Expression
 
 ClassBodyDeclarationsopt ::= $empty
 /.$putCase consumeEmptyClassBodyDeclarationsopt(); $break ./
-ClassBodyDeclarationsopt -> NestedType ComplexElement
+--ClassBodyDeclarationsopt -> NestedType ComplexElement
+ClassBodyDeclarationsopt -> NestedType HtmlSection
 /.$putCase consumeObjectElementClassBodyDeclarationsopt(); $break ./
 ClassBodyDeclarationsopt ::= NestedType ClassBodyDeclarations
 /.$putCase consumeClassBodyDeclarationsopt(); $break ./
-ClassBodyDeclarationsopt ::= NestedType ComplexElement ClassBodyDeclarations
+--ClassBodyDeclarationsopt ::= NestedType ComplexElement ClassBodyDeclarations
+ClassBodyDeclarationsopt ::= NestedType HtmlSection ClassBodyDeclarations
 /.$putCase consumeClassBodyDeclarationsoptWithObjectElement(); $break ./
 /:$readableName ClassBodyDeclarations:/
 

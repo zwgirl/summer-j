@@ -1715,12 +1715,12 @@ public abstract class ASTVisitor {
 	}
 	
 	//cym 2015-03-21
-	public boolean visit(XAMLElement node) {
+	public boolean visit(HtmlElement node) {
 		return true;
 	}
 	
 	//cym 2015-03-21
-	public boolean visit(Attribute node) {
+	public boolean visit(HtmlAttribute node) {
 		return true;
 	}
 
@@ -2869,11 +2869,11 @@ public abstract class ASTVisitor {
 	}
 	
 	//cym 2015-03-21
-	public void endVisit(XAMLElement node) {
+	public void endVisit(HtmlElement node) {
 		// default implementation: do nothing
 	}
 	//cym 2015-03-21
-	public void endVisit(Attribute node) {
+	public void endVisit(HtmlAttribute node) {
 		// default implementation: do nothing
 	}
 }

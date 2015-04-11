@@ -11,7 +11,7 @@ import org.summer.sdt.internal.compiler.lookup.TypeBinding;
  * @author cym
  *
  */
-public abstract class XAMLNode extends Expression {
+public abstract class HtmlNode extends Expression {
 	public static final int EMPTY_ELEMENT = 1;   
 	public static final int SIMPLE_ELEMENT = 2;	
 	public static final int COMPLEX_ELEMENT = 3;
@@ -24,7 +24,7 @@ public abstract class XAMLNode extends Expression {
 	public int kind;
 	public ElementScope scope;
 	
-	protected XAMLNode(){
+	protected HtmlNode(){
 	}
 	
 	/**

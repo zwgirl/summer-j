@@ -18,8 +18,8 @@ import org.summer.sdt.internal.compiler.lookup.TypeConstants;
  * 
  *         using by XAML
  */
-public class ObjectElement extends XAMLElement {
-	public ObjectElement() {
+public class HtmlObjectElement extends HtmlElement {
+	public HtmlObjectElement() {
 		super();
 	}
 
@@ -39,7 +39,7 @@ public class ObjectElement extends XAMLElement {
 	private static final char[] TEXT = "Text".toCharArray();
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append('<').append(type.getLastToken());
-		for(Attribute attr : this.attributes){
+		for(HtmlAttribute attr : this.attributes){
 			if((attr.bits & ASTNode.IsTemplate) != 0){
 				continue;
 			}
@@ -67,7 +67,7 @@ public class ObjectElement extends XAMLElement {
 		} else if(CharOperation.endsWith(type.getLastToken(), head)) {
 			output.append('>');
 			
-			for(XAMLElement child : this.children){
+			for(HtmlElement child : this.children){
 				output.append("\n");
 				child.generateStatement(scope, indent + 1, output);
 			}
@@ -106,7 +106,7 @@ public class ObjectElement extends XAMLElement {
 //			return output.append(">");
 		} else {
 			output.append('>');
-			for(XAMLElement child : this.children){
+			for(HtmlElement child : this.children){
 				output.append("\n");
 				child.generateStatement(scope, indent + 1, output);
 			}
@@ -119,7 +119,7 @@ public class ObjectElement extends XAMLElement {
 	
 	public StringBuffer generateDynamicHTML(Scope initializerScope, int indent, StringBuffer output) {
 		output.append('<').append(type.getLastToken());
-		for(Attribute attr : this.attributes){
+		for(HtmlAttribute attr : this.attributes){
 			if((attr.bits & ASTNode.IsTemplate) != 0){
 				continue;
 			}
@@ -147,7 +147,7 @@ public class ObjectElement extends XAMLElement {
 		} else if(CharOperation.endsWith(type.getLastToken(), head)) {
 			output.append('>');
 			
-			for(XAMLElement child : this.children){
+			for(HtmlElement child : this.children){
 				output.append("\n");
 				child.generateStatement(scope, indent + 1, output);
 			}
@@ -186,7 +186,7 @@ public class ObjectElement extends XAMLElement {
 //			return output.append(">");
 		} else {
 			output.append('>');
-			for(XAMLElement child : this.children){
+			for(HtmlElement child : this.children){
 				output.append("\n");
 				child.generateStatement(scope, indent + 1, output);
 			}
@@ -203,24 +203,24 @@ public class ObjectElement extends XAMLElement {
 		printIndent(indent, output);
 		output.append("(function(_p){");
 		
-		for(XAMLElement child : this.children){
-			if(child instanceof Script){
+		for(HtmlElement child : this.children){
+			if(child instanceof HtmlScript){
 				continue;
 			}
 			
 			output.append("\n");
 			printIndent(indent + 1, output);
 			
-			if(child instanceof PCDATA ){
+			if(child instanceof HtmlPCDATA ){
 				output.append("_p.appendChild(document.createTextNode(");
-				PCDATA pcdata = (PCDATA)child;
+				HtmlPCDATA pcdata = (HtmlPCDATA)child;
 //				String data = new String(pcdata.source);
 				output.append("\"").append(pcdata.translateEntity(false)).append("\"));");
 				
-			} else if(child instanceof XAMLComment){
+			} else if(child instanceof HtmlComment){
 				
 			} else {
-				ObjectElement oe = (ObjectElement) child;
+				HtmlObjectElement oe = (HtmlObjectElement) child;
 				output.append("var _n"); 
 				
 				if(CharOperation.equals(oe.type.getLastToken(), "Text".toCharArray())){   //TextNode
@@ -232,7 +232,7 @@ public class ObjectElement extends XAMLElement {
 				output.append('\n');
 				printIndent(indent + 1, output).append("_p.appendChild(_n);");
 				
-				for(Attribute attr : child.attributes){
+				for(HtmlAttribute attr : child.attributes){
 					attr.buildScript(scope, indent, output, "_n");
 				}
 				if(child.children != null && child.children.length > 0){
@@ -257,7 +257,7 @@ public class ObjectElement extends XAMLElement {
 		
 		output.append(parent).append(".appendChild(_n);");
 		
-		for(Attribute attr : this.attributes){
+		for(HtmlAttribute attr : this.attributes){
 			attr.generateExpression(scope, indent, output).append(";");
 		}
 	
@@ -280,7 +280,7 @@ public class ObjectElement extends XAMLElement {
 		printIndent(indent + 1, output);
 		output.append("_n.dataContext = new (__lc('java.lang.DataContext'))(item, '12');");
 		
-		for(Attribute attr : this.attributes){
+		for(HtmlAttribute attr : this.attributes){
 			attr.buildScript(scope, indent, output, "_n");
 		}
 	}
@@ -289,7 +289,7 @@ public class ObjectElement extends XAMLElement {
 		output.append("\n");
 		printIndent(indent, output);
 		output.append('<').append(type.getLastToken());
-		for(Attribute attr : this.attributes){
+		for(HtmlAttribute attr : this.attributes){
 			output.append(" ");
 			attr.generateExpression(scope, indent, output);
 		}
@@ -297,7 +297,7 @@ public class ObjectElement extends XAMLElement {
 		if(CharOperation.endsWith(type.getLastToken(), head)) {
 			output.append('>');
 			
-			for(XAMLElement child : this.children){
+			for(HtmlElement child : this.children){
 				child.generateStaticHTML(scope, indent + 1, output);
 			}
 			//output meta
@@ -324,7 +324,7 @@ public class ObjectElement extends XAMLElement {
 			return output.append(">");
 		} else {
 			output.append('>');
-			for(XAMLElement child : this.children){
+			for(HtmlElement child : this.children){
 				child.generateStaticHTML(scope, indent + 1, output);
 			}
 		}

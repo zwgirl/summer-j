@@ -29,7 +29,7 @@ import org.summer.sdt.internal.compiler.ast.AllocationExpression;
 import org.summer.sdt.internal.compiler.ast.Annotation;
 import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.ArrayAllocationExpression;
-import org.summer.sdt.internal.compiler.ast.Attribute;
+import org.summer.sdt.internal.compiler.ast.HtmlAttribute;
 import org.summer.sdt.internal.compiler.ast.CaseStatement;
 import org.summer.sdt.internal.compiler.ast.CastExpression;
 import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -46,7 +46,7 @@ import org.summer.sdt.internal.compiler.ast.MemberValuePair;
 import org.summer.sdt.internal.compiler.ast.MessageSend;
 import org.summer.sdt.internal.compiler.ast.NameReference;
 import org.summer.sdt.internal.compiler.ast.NormalAnnotation;
-import org.summer.sdt.internal.compiler.ast.ObjectElement;
+import org.summer.sdt.internal.compiler.ast.HtmlObjectElement;
 import org.summer.sdt.internal.compiler.ast.PropertyReference;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.Reference;
@@ -310,7 +310,7 @@ public class SelectionParser extends AssistParser {
 		this.identifierLengthPtr--;
 		this.identifierLengthPtr--;
 		
-		Attribute attr = new Attribute(propertyReference);
+		HtmlAttribute attr = new HtmlAttribute(propertyReference);
 		
 		attr.value = this.expressionStack[this.expressionPtr--];
 		expressionLengthPtr--;
@@ -331,7 +331,7 @@ public class SelectionParser extends AssistParser {
 		long positions = this.identifierPositionStack[this.identifierPtr--];
 		this.identifierLengthPtr--;
 		
-		Attribute attribute = new Attribute(new SelectionOnPropertyReference(attrName, positions));
+		HtmlAttribute attribute = new HtmlAttribute(new SelectionOnPropertyReference(attrName, positions));
 		attribute.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
 		
@@ -354,7 +354,7 @@ public class SelectionParser extends AssistParser {
 		TypeReference receiver = new SelectionOnSingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
 		this.identifierLengthPtr--;
 		
-		Attribute attr = new Attribute(new SelectionOnPropertyReference(attrName, positions, receiver));
+		HtmlAttribute attr = new HtmlAttribute(new SelectionOnPropertyReference(attrName, positions, receiver));
 
 		attr.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
@@ -363,8 +363,8 @@ public class SelectionParser extends AssistParser {
 		attr.sourceEnd = attr.value.sourceEnd;
 		
 		//check named attribute
-		if(CharOperation.equals(attr.property.token, Attribute.NAME)){
-			ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr1];
+		if(CharOperation.equals(attr.property.token, HtmlAttribute.NAME)){
+			HtmlObjectElement element = (HtmlObjectElement) this.elementStack[this.elementPtr1];
 			attr.bits |= ASTNode.IsNamedAttribute;
 			if((attr.bits & ASTNode.IsNamedAttribute) != 0){
 				problemReporter().duplicateNamedElementInType(attr.property);

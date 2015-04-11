@@ -11,9 +11,9 @@ import org.summer.sdt.internal.compiler.lookup.TypeConstants;
  * 
  *         using by XAML
  */
-public class MarkupExtension extends XAMLElement {
+public class HtmlMarkupExtension extends HtmlElement {
 	
-	public MarkupExtension() {
+	public HtmlMarkupExtension() {
 		super();
 	}
 
@@ -23,7 +23,7 @@ public class MarkupExtension extends XAMLElement {
 	}
 	
 	protected void printProperties(int indent, StringBuffer output){
-		for(Attribute attribute : this.attributes){
+		for(HtmlAttribute attribute : this.attributes){
 			output.append(" ");
 			attribute.print(indent, output);
 		}
@@ -48,7 +48,7 @@ public class MarkupExtension extends XAMLElement {
 		
 		output.append("{");
 		boolean comma = false;
-		for(Attribute attribute : this.attributes){
+		for(HtmlAttribute attribute : this.attributes){
 			if(comma){
 				output.append(", ");
 			}

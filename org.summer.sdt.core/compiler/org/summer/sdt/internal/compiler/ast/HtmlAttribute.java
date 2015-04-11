@@ -29,7 +29,7 @@ import org.summer.sdt.internal.compiler.lookup.TypeIds;
  * 
  *         using by XAML
  */
-public class Attribute extends XAMLNode implements InvocationSite{
+public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	public PropertyReference property;
 	public Expression value;
 	
@@ -59,7 +59,7 @@ public class Attribute extends XAMLNode implements InvocationSite{
 	
 	public static final int NamedFlag = 1;
 	
-	public Attribute(PropertyReference property) {
+	public HtmlAttribute(PropertyReference property) {
 		super();
 		this.property = property;
 	}
@@ -95,18 +95,18 @@ public class Attribute extends XAMLNode implements InvocationSite{
 		ClassScope classScope = scope.enclosingClassScope();
 
 		if((this.bits & ASTNode.IsNamedAttribute) != 0){
-			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;
+//			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;   //cym 2015-08-09
 		}
-		if(this.value instanceof MarkupExtension){
-			MarkupExtension markExt = (MarkupExtension) this.value;
+		if(this.value instanceof HtmlMarkupExtension){
+			HtmlMarkupExtension markExt = (HtmlMarkupExtension) this.value;
 			markExt.resolve(scope);
-			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;
+//			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent; //cym 2015-08-09
 		}
 		
-		if(this.value instanceof FunctionExpression){
-			FunctionExpression function = (FunctionExpression) this.value;
+		if(this.value instanceof HtmlFunctionExpression){
+			HtmlFunctionExpression function = (HtmlFunctionExpression) this.value;
 			function.resolve(scope);
-			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;
+//			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent; //cym 2015-08-09
 			return;
 		}
 		
@@ -219,7 +219,7 @@ public class Attribute extends XAMLNode implements InvocationSite{
 			this.template = (ReferenceBinding) scope.getType(((Literal) this.value).source());
 		}  else {
 			propertyKind = REFERENCE;
-			if(this.value instanceof MarkupExtension){
+			if(this.value instanceof HtmlMarkupExtension){
 				
 			} else {
 				this.template = (ReferenceBinding) scope.getType(((Literal) this.value).source());
@@ -326,8 +326,8 @@ public class Attribute extends XAMLNode implements InvocationSite{
 		case DOUBLE:
 		case BOOLEAN:
 		case STRING:
-			if(this.value instanceof MarkupExtension){
-				MarkupExtension me = (MarkupExtension) value;
+			if(this.value instanceof HtmlMarkupExtension){
+				HtmlMarkupExtension me = (HtmlMarkupExtension) value;
 				me.doGenerateExpression(scope, indent, output);  //TODO 2015-03-03 cym
 				output.append(".provideValue(");
 				output.append("_n, \""); 
@@ -453,8 +453,8 @@ public class Attribute extends XAMLNode implements InvocationSite{
 			output.append("_n.");
 			this.property.doGenerateExpression(scope, indent, output);
 			output.append(" = ");
-			if(this.value instanceof MarkupExtension){
-				MarkupExtension me = (MarkupExtension) this.value;
+			if(this.value instanceof HtmlMarkupExtension){
+				HtmlMarkupExtension me = (HtmlMarkupExtension) this.value;
 				me.doGenerateExpression(scope, indent, output);
 				
 				output.append(".provideValue(");

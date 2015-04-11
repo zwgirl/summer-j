@@ -2657,13 +2657,13 @@ public final class AST {
 	}
 	
 	//cym 2015-03-22
-	public XAMLElement newXAMLElement() {
-		XAMLElement result = new XAMLElement(this);
+	public HtmlElement newXAMLElement() {
+		HtmlElement result = new HtmlElement(this);
 		return result;
 	}
 	
-	public Attribute newAttribute() {
-		Attribute result = new Attribute(this);
+	public HtmlAttribute newAttribute() {
+		HtmlAttribute result = new HtmlAttribute(this);
 		return result;
 	}
 

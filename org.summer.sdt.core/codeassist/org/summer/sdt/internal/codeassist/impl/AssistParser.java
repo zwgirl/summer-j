@@ -36,7 +36,7 @@ import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
 import org.summer.sdt.internal.compiler.ast.MessageSend;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
 import org.summer.sdt.internal.compiler.ast.NameReference;
-import org.summer.sdt.internal.compiler.ast.ObjectElement;
+import org.summer.sdt.internal.compiler.ast.HtmlObjectElement;
 import org.summer.sdt.internal.compiler.ast.Statement;
 import org.summer.sdt.internal.compiler.ast.SuperReference;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
@@ -1643,7 +1643,7 @@ public abstract class AssistParser extends Parser {
 	 * cursor location.
 	 */
 	public void parseBlockStatements(
-		ObjectElement element,
+		HtmlObjectElement element,
 		TypeDeclaration type,
 		CompilationUnitDeclaration unit) {
 	

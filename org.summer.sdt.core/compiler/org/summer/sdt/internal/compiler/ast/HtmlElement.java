@@ -15,17 +15,17 @@ import org.summer.sdt.internal.compiler.lookup.TypeBinding;
  * 
  *         using by XAML
  */
-public abstract class XAMLElement extends XAMLNode {
-	public static final Attribute[] NO_ATTRIBUTES = new Attribute[0];
-	public static final XAMLElement[] NO_ELEMENTS= new XAMLElement[0];
+public abstract class HtmlElement extends HtmlNode {
+	public static final HtmlAttribute[] NO_ATTRIBUTES = new HtmlAttribute[0];
+	public static final HtmlElement[] NO_ELEMENTS= new HtmlElement[0];
 	public static final char[][] noName = new char[0][0];
 
 
 	public TypeReference type;
 	public TypeReference closeType;
-	public Attribute[] attributes = NO_ATTRIBUTES;
+	public HtmlAttribute[] attributes = NO_ATTRIBUTES;
 
-	public XAMLElement[] children = NO_ELEMENTS;
+	public HtmlElement[] children = NO_ELEMENTS;
 	public int declarationSourceStart;
 	public int declarationSourceEnd;
 	public int bodyStart;
@@ -33,7 +33,7 @@ public abstract class XAMLElement extends XAMLNode {
 	public ElementScope scope;
 	
 	
-	protected XAMLElement(){
+	protected HtmlElement(){
 		super();
 	}
 	
@@ -203,8 +203,8 @@ public abstract class XAMLElement extends XAMLNode {
 	}
 	
 	protected void resolveChild(BlockScope scope){
-		for(XAMLElement child: children){
-			if(child instanceof PCDATA || child instanceof XAMLComment){
+		for(HtmlElement child: children){
+			if(child instanceof HtmlPCDATA || child instanceof HtmlComment){
 				continue;
 			}
 			child.resolve(scope);
@@ -212,7 +212,7 @@ public abstract class XAMLElement extends XAMLNode {
 	}
 	
 	protected void resolveAttribute(BlockScope scope){
-		for(Attribute attr : attributes){
+		for(HtmlAttribute attr : attributes){
 			attr.resolve(scope);
 		}
 	}

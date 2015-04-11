@@ -11,7 +11,7 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
  * 
  * XAML
  */
-public class CommonAttribute extends Attribute{
+public class CommonAttribute extends HtmlAttribute{
 
 	public CommonAttribute(PropertyReference property) {
 		super(property);

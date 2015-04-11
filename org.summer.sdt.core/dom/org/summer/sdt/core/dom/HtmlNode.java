@@ -1,8 +1,8 @@
 package org.summer.sdt.core.dom;
 
-public abstract class XAMLNode extends Expression{
+public abstract class HtmlNode extends Expression{
 
-	XAMLNode(AST ast) {
+	HtmlNode(AST ast) {
 		super(ast);
 		// TODO Auto-generated constructor stub
 	}

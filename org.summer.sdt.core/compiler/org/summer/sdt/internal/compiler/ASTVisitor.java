@@ -516,15 +516,11 @@ public abstract class ASTVisitor {
 	}
 	
 	//XAML
-	public void endVisit(XAMLElement element, ClassScope scope) {
+	public void endVisit(HtmlElement element, ClassScope scope) {
 		// do nothing by default
 	}
 	
-	public void endVisit(ObjectElement element, ClassScope scope) {
-		// do nothing by default
-	}
-	
-	public void endVisit(AttributeElement element, ClassScope scope) {
+	public void endVisit(HtmlObjectElement element, ClassScope scope) {
 		// do nothing by default
 	}
 	
@@ -532,7 +528,7 @@ public abstract class ASTVisitor {
 		// do nothing by default
 	}
 	
-	public void endVisit(MarkupExtension element, ClassScope scope) {
+	public void endVisit(HtmlMarkupExtension element, ClassScope scope) {
 		// do nothing by default
 	}
 	//END XAML
@@ -1038,16 +1034,12 @@ public abstract class ASTVisitor {
 		return true; // do nothing by default, keep traversing
 	}
 	
-	//XAML
-	public boolean visit(XAMLElement element, ClassScope scope) {
+	//HTML
+	public boolean visit(HtmlElement element, ClassScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
 	
-	public boolean visit(ObjectElement element, ClassScope scope) {
-		return true; // do nothing by default, keep traversing
-	}
-	
-	public boolean visit(AttributeElement element, ClassScope scope) {
+	public boolean visit(HtmlObjectElement element, ClassScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
 	
@@ -1055,8 +1047,8 @@ public abstract class ASTVisitor {
 		return true; // do nothing by default, keep traversing
 	}
 	
-	public boolean visit(MarkupExtension element, ClassScope scope) {
+	public boolean visit(HtmlMarkupExtension element, ClassScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
-	//END XAML
+	//END HTML
 }
