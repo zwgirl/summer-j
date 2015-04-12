@@ -6,8 +6,6 @@ import java.util.Map;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class HtmlPCDATA  extends HtmlElement {
@@ -25,20 +23,11 @@ public class HtmlPCDATA  extends HtmlElement {
 	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
 		
 	}
-	
-	public void resolve(ClassScope scope) {
-
-	}
 
 	@Override
 	public void resolve(BlockScope scope) {
 		
 	}
-	
-	public void resolve(ElementScope scope) {
-
-	}
-
 	@Override
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		output.append(source);
@@ -147,7 +136,7 @@ public class HtmlPCDATA  extends HtmlElement {
 	}
 	
 	@Override
-	public StringBuffer generateStaticHTML(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateStaticHTML(BlockScope scope, int indent, StringBuffer output) {
 		return output.append(source);
 	}
 

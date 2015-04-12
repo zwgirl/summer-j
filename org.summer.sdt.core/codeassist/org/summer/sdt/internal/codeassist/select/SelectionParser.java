@@ -37,7 +37,6 @@ import org.summer.sdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.summer.sdt.internal.compiler.ast.Expression;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldReference;
-import org.summer.sdt.internal.compiler.ast.CommonAttribute;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
@@ -47,7 +46,7 @@ import org.summer.sdt.internal.compiler.ast.MessageSend;
 import org.summer.sdt.internal.compiler.ast.NameReference;
 import org.summer.sdt.internal.compiler.ast.NormalAnnotation;
 import org.summer.sdt.internal.compiler.ast.HtmlObjectElement;
-import org.summer.sdt.internal.compiler.ast.PropertyReference;
+import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.Reference;
 import org.summer.sdt.internal.compiler.ast.ReferenceExpression;
@@ -290,17 +289,17 @@ public class SelectionParser extends AssistParser {
 			return;
 		}
 		
-		PropertyReference propertyReference = null;
+		HtmlPropertyReference propertyReference = null;
 		char[] assistIdentifier = assistIdentifier();
 		if(this.identifierStack[this.identifierPtr] == assistIdentifier){
 			propertyReference = new SelectionOnPropertyReference(
 					this.identifierStack[this.identifierPtr],
 					this.identifierPositionStack[this.identifierPtr--],
-					new PropertyReference(
+					new HtmlPropertyReference(
 							this.identifierStack[this.identifierPtr], 
 							this.identifierPositionStack[this.identifierPtr--]));
 		} else {
-			propertyReference = new PropertyReference(
+			propertyReference = new HtmlPropertyReference(
 					this.identifierStack[this.identifierPtr],
 					this.identifierPositionStack[this.identifierPtr--],
 					new SelectionOnPropertyReference(

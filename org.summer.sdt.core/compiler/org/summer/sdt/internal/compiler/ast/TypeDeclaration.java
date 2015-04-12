@@ -42,7 +42,6 @@ import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
-import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
@@ -1190,53 +1189,53 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			if ((this.bits & ASTNode.UndocumentedEmptyBlock) != 0) {
 				this.scope.problemReporter().undocumentedEmptyBlock(this.bodyStart-1, this.bodyEnd);
 			}
-			boolean needSerialVersion =
-							this.scope.compilerOptions().getSeverity(CompilerOptions.MissingSerialVersion) != ProblemSeverities.Ignore
-							&& sourceType.isClass()
-							&& sourceType.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoExternalizable, false /*Externalizable is not a class*/) == null
-							&& sourceType.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null;
-	
-			if (needSerialVersion) {
-				// if Object writeReplace() throws java.io.ObjectStreamException is present, then no serialVersionUID is needed
-				// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=101476
-				CompilationUnitScope compilationUnitScope = this.scope.compilationUnitScope();
-				MethodBinding methodBinding = sourceType.getExactMethod(TypeConstants.WRITEREPLACE, Binding.NO_TYPES, compilationUnitScope);
-				ReferenceBinding[] throwsExceptions;
-				needSerialVersion =
-					methodBinding == null
-						|| !methodBinding.isValidBinding()
-						|| methodBinding.returnType.id != TypeIds.T_JavaLangObject
-						|| (throwsExceptions = methodBinding.thrownExceptions).length != 1
-						|| throwsExceptions[0].id != TypeIds.T_JavaIoObjectStreamException;
-				if (needSerialVersion) {
-					// check the presence of an implementation of the methods
-					// private void writeObject(java.io.ObjectOutputStream out) throws IOException
-					// private void readObject(java.io.ObjectInputStream out) throws IOException
-					boolean hasWriteObjectMethod = false;
-					boolean hasReadObjectMethod = false;
-					TypeBinding argumentTypeBinding = this.scope.getType(TypeConstants.JAVA_IO_OBJECTOUTPUTSTREAM, 3);
-					if (argumentTypeBinding.isValidBinding()) {
-						methodBinding = sourceType.getExactMethod(TypeConstants.WRITEOBJECT, new TypeBinding[] { argumentTypeBinding }, compilationUnitScope);
-						hasWriteObjectMethod = methodBinding != null
-								&& methodBinding.isValidBinding()
-								&& methodBinding.modifiers == ClassFileConstants.AccPrivate
-								&& methodBinding.returnType == TypeBinding.VOID
-								&& (throwsExceptions = methodBinding.thrownExceptions).length == 1
-								&& throwsExceptions[0].id == TypeIds.T_JavaIoException;
-					}
-					argumentTypeBinding = this.scope.getType(TypeConstants.JAVA_IO_OBJECTINPUTSTREAM, 3);
-					if (argumentTypeBinding.isValidBinding()) {
-						methodBinding = sourceType.getExactMethod(TypeConstants.READOBJECT, new TypeBinding[] { argumentTypeBinding }, compilationUnitScope);
-						hasReadObjectMethod = methodBinding != null
-								&& methodBinding.isValidBinding()
-								&& methodBinding.modifiers == ClassFileConstants.AccPrivate
-								&& methodBinding.returnType == TypeBinding.VOID
-								&& (throwsExceptions = methodBinding.thrownExceptions).length == 1
-								&& throwsExceptions[0].id == TypeIds.T_JavaIoException;
-					}
-					needSerialVersion = !hasWriteObjectMethod || !hasReadObjectMethod;
-				}
-			}
+//			boolean needSerialVersion =
+//							this.scope.compilerOptions().getSeverity(CompilerOptions.MissingSerialVersion) != ProblemSeverities.Ignore
+//							&& sourceType.isClass()
+//							&& sourceType.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoExternalizable, false /*Externalizable is not a class*/) == null
+//							&& sourceType.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null;
+//	
+//			if (needSerialVersion) {
+//				// if Object writeReplace() throws java.io.ObjectStreamException is present, then no serialVersionUID is needed
+//				// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=101476
+//				CompilationUnitScope compilationUnitScope = this.scope.compilationUnitScope();
+//				MethodBinding methodBinding = sourceType.getExactMethod(TypeConstants.WRITEREPLACE, Binding.NO_TYPES, compilationUnitScope);
+//				ReferenceBinding[] throwsExceptions;
+//				needSerialVersion =
+//					methodBinding == null
+//						|| !methodBinding.isValidBinding()
+//						|| methodBinding.returnType.id != TypeIds.T_JavaLangObject
+//						|| (throwsExceptions = methodBinding.thrownExceptions).length != 1
+//						|| throwsExceptions[0].id != TypeIds.T_JavaIoObjectStreamException;
+//				if (needSerialVersion) {
+//					// check the presence of an implementation of the methods
+//					// private void writeObject(java.io.ObjectOutputStream out) throws IOException
+//					// private void readObject(java.io.ObjectInputStream out) throws IOException
+//					boolean hasWriteObjectMethod = false;
+//					boolean hasReadObjectMethod = false;
+//					TypeBinding argumentTypeBinding = this.scope.getType(TypeConstants.JAVA_IO_OBJECTOUTPUTSTREAM, 3);
+//					if (argumentTypeBinding.isValidBinding()) {
+//						methodBinding = sourceType.getExactMethod(TypeConstants.WRITEOBJECT, new TypeBinding[] { argumentTypeBinding }, compilationUnitScope);
+//						hasWriteObjectMethod = methodBinding != null
+//								&& methodBinding.isValidBinding()
+//								&& methodBinding.modifiers == ClassFileConstants.AccPrivate
+//								&& methodBinding.returnType == TypeBinding.VOID
+//								&& (throwsExceptions = methodBinding.thrownExceptions).length == 1
+//								&& throwsExceptions[0].id == TypeIds.T_JavaIoException;
+//					}
+//					argumentTypeBinding = this.scope.getType(TypeConstants.JAVA_IO_OBJECTINPUTSTREAM, 3);
+//					if (argumentTypeBinding.isValidBinding()) {
+//						methodBinding = sourceType.getExactMethod(TypeConstants.READOBJECT, new TypeBinding[] { argumentTypeBinding }, compilationUnitScope);
+//						hasReadObjectMethod = methodBinding != null
+//								&& methodBinding.isValidBinding()
+//								&& methodBinding.modifiers == ClassFileConstants.AccPrivate
+//								&& methodBinding.returnType == TypeBinding.VOID
+//								&& (throwsExceptions = methodBinding.thrownExceptions).length == 1
+//								&& throwsExceptions[0].id == TypeIds.T_JavaIoException;
+//					}
+//					needSerialVersion = !hasWriteObjectMethod || !hasReadObjectMethod;
+//				}
+//			}
 			// generics (and non static generic members) cannot extend Throwable
 			if (sourceType.findSuperTypeOriginatingFrom(TypeIds.T_JavaLangThrowable, true) != null) {
 				ReferenceBinding current = sourceType;
@@ -1283,12 +1282,13 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 								this.ignoreFurtherInvestigation = true;
 								continue;
 							}
-							if (needSerialVersion
-									&& ((fieldBinding.modifiers & (ClassFileConstants.AccStatic | ClassFileConstants.AccFinal)) == (ClassFileConstants.AccStatic | ClassFileConstants.AccFinal))
-									&& CharOperation.equals(TypeConstants.SERIALVERSIONUID, fieldBinding.name)
-									&& TypeBinding.equalsEquals(TypeBinding.LONG, fieldBinding.type)) {
-								needSerialVersion = false;
-							}
+							//cym 2015-04-12
+//							if (needSerialVersion
+//									&& ((fieldBinding.modifiers & (ClassFileConstants.AccStatic | ClassFileConstants.AccFinal)) == (ClassFileConstants.AccStatic | ClassFileConstants.AccFinal))
+//									&& CharOperation.equals(TypeConstants.SERIALVERSIONUID, fieldBinding.name)
+//									&& TypeBinding.equalsEquals(TypeBinding.LONG, fieldBinding.type)) {
+//								needSerialVersion = false;
+//							}
 							localMaxFieldCount++;
 							lastVisibleFieldID = field.binding.id;
 							break;
@@ -1313,23 +1313,24 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			if (this.maxFieldCount < localMaxFieldCount) {
 				this.maxFieldCount = localMaxFieldCount;
 			}
-			if (needSerialVersion) {
-				//check that the current type doesn't extend javax.rmi.CORBA.Stub
-				TypeBinding javaxRmiCorbaStub = this.scope.getType(TypeConstants.JAVAX_RMI_CORBA_STUB, 4);
-				if (javaxRmiCorbaStub.isValidBinding()) {
-					ReferenceBinding superclassBinding = this.binding.superclass;
-					loop: while (superclassBinding != null) {
-						if (TypeBinding.equalsEquals(superclassBinding, javaxRmiCorbaStub)) {
-							needSerialVersion = false;
-							break loop;
-						}
-						superclassBinding = superclassBinding.superclass();
-					}
-				}
-				if (needSerialVersion) {
-					this.scope.problemReporter().missingSerialVersion(this);
-				}
-			}
+			//cym 2015-04-12
+//			if (needSerialVersion) {
+//				//check that the current type doesn't extend javax.rmi.CORBA.Stub
+//				TypeBinding javaxRmiCorbaStub = this.scope.getType(TypeConstants.JAVAX_RMI_CORBA_STUB, 4);
+//				if (javaxRmiCorbaStub.isValidBinding()) {
+//					ReferenceBinding superclassBinding = this.binding.superclass;
+//					loop: while (superclassBinding != null) {
+//						if (TypeBinding.equalsEquals(superclassBinding, javaxRmiCorbaStub)) {
+//							needSerialVersion = false;
+//							break loop;
+//						}
+//						superclassBinding = superclassBinding.superclass();
+//					}
+//				}
+//				if (needSerialVersion) {
+//					this.scope.problemReporter().missingSerialVersion(this);
+//				}
+//			}
 	
 			// check extends/implements for annotation type
 			switch(kind(this.modifiers)) {
@@ -1367,7 +1368,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			//check element cym 2014-12-09
 			if(this.htmlElements != null){
 				for(HtmlElement element : this.htmlElements){
-					element.resolve(new ElementScope(element, this.scope));
+					element.resolve(new BlockScope(this.initializerScope, element));
 				}
 			}
 	

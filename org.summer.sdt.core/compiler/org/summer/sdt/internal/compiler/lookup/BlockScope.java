@@ -66,6 +66,15 @@ public class BlockScope extends Scope {
 	
 	//cym 2015-03-03 for secret variable used in forEach
 	public Set<char[]> secrets = new HashSet<char[]>();
+	
+	//used for htmlElement resolve
+	public HtmlNode element;
+	
+	//cym 2015-04-12 for HtmlElement resolve
+	public BlockScope(BlockScope parent, HtmlNode element) {
+		this(parent, true);
+		this.element = element;
+	}
 
 	public BlockScope(BlockScope parent) {
 		this(parent, true);

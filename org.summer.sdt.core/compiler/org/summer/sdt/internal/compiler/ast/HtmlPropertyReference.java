@@ -6,7 +6,6 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.MissingTypeBinding;
@@ -24,7 +23,7 @@ import org.summer.sdt.internal.compiler.lookup.VariableBinding;
  * @author cym
  *
  */
-public class PropertyReference extends Expression{
+public class HtmlPropertyReference extends Expression{
 	public char[] token;
 	public Expression receiver;
 	public long nameSourcePosition; //(start<<32)+end
@@ -32,12 +31,12 @@ public class PropertyReference extends Expression{
 	public FieldBinding binding;															// exact binding resulting from lookup
 	public TypeBinding actualReceiverType;
 
-	public PropertyReference(char[] source, long pos, Expression receiver) {
+	public HtmlPropertyReference(char[] source, long pos, Expression receiver) {
 		this(source, pos);
 		this.receiver = receiver;
 	}
 	
-	public PropertyReference(char[] source, long pos) {
+	public HtmlPropertyReference(char[] source, long pos) {
 		this.token = source;
 		this.nameSourcePosition = pos;
 		//by default the position are the one of the field (not true for super access)
@@ -88,18 +87,14 @@ public class PropertyReference extends Expression{
 	}
 	
 	public TypeBinding resolveType(BlockScope scope){
-		return interalResolveType((ElementScope) scope);
+		return interalResolveType(scope);
 		
 	}
 	
-	public TypeBinding resolveType(ElementScope scope) {
-		return interalResolveType(scope);
-	}
-	
-	private TypeBinding interalResolveType(ElementScope scope) {
+	private TypeBinding interalResolveType(BlockScope scope) {
 		//always ignore receiver cast, since may affect constant pool reference
 		if(this.receiver == null){
-			this.actualReceiverType = scope.context.resolvedType;
+			this.actualReceiverType = scope.element.resolvedType;
 		} else {
 			this.actualReceiverType = this.receiver.resolveType(scope);
 			if (this.actualReceiverType == null) {
@@ -213,8 +208,8 @@ public class PropertyReference extends Expression{
 
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		if(this.receiver instanceof PropertyReference){
-			output.append(((PropertyReference)this.receiver).token);
+		if(this.receiver instanceof HtmlPropertyReference){
+			output.append(((HtmlPropertyReference)this.receiver).token);
 			output.append('.').append(this.token);
 		} else if(this.receiver instanceof TypeReference){
 			output.append(this.token);
@@ -226,8 +221,8 @@ public class PropertyReference extends Expression{
 	
 	public StringBuffer buildInMarkupExtension(Scope scope, int indent, StringBuffer output){
 		output.append("\"");
-		if(this.receiver instanceof PropertyReference){
-			output.append(((PropertyReference)this.receiver).token).append("\"");
+		if(this.receiver instanceof HtmlPropertyReference){
+			output.append(((HtmlPropertyReference)this.receiver).token).append("\"");
 			output.append(", \"").append(this.token).append("\"");
 		} else if(this.receiver == null){
 			output.append(this.token).append("\"");

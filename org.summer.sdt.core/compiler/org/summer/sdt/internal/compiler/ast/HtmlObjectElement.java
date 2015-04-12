@@ -16,7 +16,6 @@ import org.summer.sdt.internal.compiler.lookup.TypeConstants;
  * 
  * @author cym
  * 
- *         using by XAML
  */
 public class HtmlObjectElement extends HtmlElement {
 	public HtmlObjectElement() {
@@ -117,7 +116,7 @@ public class HtmlObjectElement extends HtmlElement {
 		return output;
 	}
 	
-	public StringBuffer generateDynamicHTML(Scope initializerScope, int indent, StringBuffer output) {
+	public StringBuffer generateDynamicHTML(Scope scope, int indent, StringBuffer output) {
 		output.append('<').append(type.getLastToken());
 		for(HtmlAttribute attr : this.attributes){
 			if((attr.bits & ASTNode.IsTemplate) != 0){
@@ -285,7 +284,7 @@ public class HtmlObjectElement extends HtmlElement {
 		}
 	}
 	
-	public StringBuffer generateStaticHTML(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer generateStaticHTML(BlockScope scope, int indent, StringBuffer output) {
 		output.append("\n");
 		printIndent(indent, output);
 		output.append('<').append(type.getLastToken());

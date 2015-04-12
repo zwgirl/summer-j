@@ -37,7 +37,7 @@ import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
 import org.summer.sdt.internal.compiler.ast.MemberValuePair;
 import org.summer.sdt.internal.compiler.ast.MessageSend;
 import org.summer.sdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
-import org.summer.sdt.internal.compiler.ast.PropertyReference;
+import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
 import org.summer.sdt.internal.compiler.ast.QualifiedNameReference;
 import org.summer.sdt.internal.compiler.ast.QualifiedSuperReference;
 import org.summer.sdt.internal.compiler.ast.QualifiedTypeReference;
@@ -1402,8 +1402,8 @@ class DefaultBindingResolver extends BindingResolver {
 			return getVariableBinding(fieldRef.binding);
 		} else if (node instanceof FieldReference) {
 			return getVariableBinding(((FieldReference) node).binding);
-		}  else if (node instanceof PropertyReference) {   //cym 2015-03-22
-			return getVariableBinding(((PropertyReference) node).binding);
+		}  else if (node instanceof HtmlPropertyReference) {   //cym 2015-03-22
+			return getVariableBinding(((HtmlPropertyReference) node).binding);
 		}else if (node instanceof SingleTypeReference) {
 			if (node instanceof JavadocSingleTypeReference) {
 				JavadocSingleTypeReference typeRef = (JavadocSingleTypeReference) node;

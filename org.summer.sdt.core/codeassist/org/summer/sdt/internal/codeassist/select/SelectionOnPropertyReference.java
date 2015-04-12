@@ -30,13 +30,12 @@ package org.summer.sdt.internal.codeassist.select;
  */
 
 import org.summer.sdt.internal.compiler.ast.Expression;
-import org.summer.sdt.internal.compiler.ast.PropertyReference;
+import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
-public class SelectionOnPropertyReference extends PropertyReference {
+public class SelectionOnPropertyReference extends HtmlPropertyReference {
 
 	public SelectionOnPropertyReference(char[] source , long pos) {
 		super(source, pos);
@@ -52,8 +51,8 @@ public class SelectionOnPropertyReference extends PropertyReference {
 		return super.printExpression(0, output).append('>');
 	}
 
-	//cym 2014-12-26
-	public TypeBinding resolveType(ElementScope scope) {
+	//cym 2015-04-12
+	public TypeBinding resolveType(BlockScope scope){
 
 		super.resolveType(scope);
 		// tolerate some error cases
@@ -66,9 +65,5 @@ public class SelectionOnPropertyReference extends PropertyReference {
 			throw new SelectionNodeFound();
 		else
 			throw new SelectionNodeFound(this.binding);
-	}
-	
-	public TypeBinding resolveType(BlockScope scope){
-		return this.resolveType((ElementScope)scope);
 	}
 }

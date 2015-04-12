@@ -2134,7 +2134,7 @@ public class CompletionParser extends AssistParser {
 			return;
 		}
 		
-		PropertyReference propertyReference = new CompletionOnPropertyAccess(
+		HtmlPropertyReference propertyReference = new CompletionOnPropertyAccess(
 				this.identifierStack[this.identifierPtr],
 				this.identifierPositionStack[this.identifierPtr--], 
 				new CompletionOnPropertyAccess(

@@ -7,7 +7,6 @@ import org.summer.sdt.internal.compiler.html.Html2JsAttributeMapping;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.InvocationSite;
@@ -30,7 +29,7 @@ import org.summer.sdt.internal.compiler.lookup.TypeIds;
  *         using by XAML
  */
 public class HtmlAttribute extends HtmlNode implements InvocationSite{
-	public PropertyReference property;
+	public HtmlPropertyReference property;
 	public Expression value;
 	
 	public TypeBinding type;   //type of property 
@@ -59,7 +58,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	
 	public static final int NamedFlag = 1;
 	
-	public HtmlAttribute(PropertyReference property) {
+	public HtmlAttribute(HtmlPropertyReference property) {
 		super();
 		this.property = property;
 	}
@@ -85,28 +84,22 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		internalResolve(scope);
 	}
 	
-	public void resolve(ElementScope scope){
-		internalResolve(scope);
-	}
-	
 	private void internalResolve(BlockScope scope){
 		this.type = property.resolveType(scope);
 		
-		ClassScope classScope = scope.enclosingClassScope();
-
 		if((this.bits & ASTNode.IsNamedAttribute) != 0){
-//			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent;   //cym 2015-08-09
+			scope.element.tagBits |= HtmlBits.HasNameAttribute;
 		}
 		if(this.value instanceof HtmlMarkupExtension){
 			HtmlMarkupExtension markExt = (HtmlMarkupExtension) this.value;
 			markExt.resolve(scope);
-//			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent; //cym 2015-08-09
+			scope.element.tagBits |= HtmlBits.HasMarkupExtension;
 		}
 		
 		if(this.value instanceof HtmlFunctionExpression){
 			HtmlFunctionExpression function = (HtmlFunctionExpression) this.value;
 			function.resolve(scope);
-//			classScope.referenceContext.element.bits |= ASTNode.HasDynamicContent; //cym 2015-08-09
+			scope.element.tagBits |= HtmlBits.HasFunctionExpression;
 			return;
 		}
 		

@@ -2,7 +2,6 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class HtmlScript extends HtmlElement{
@@ -28,13 +27,10 @@ public class HtmlScript extends HtmlElement{
 		return null;
 	}
 	
-	public void resolve(ElementScope scope) {
-		this.constant = Constant.NotAConstant;
-	}
-	
 	@Override
 	public void resolve(BlockScope scope) {
-		
+		this.constant = Constant.NotAConstant;
+		scope.element.tagBits |= HtmlBits.HasScriptElement;
 	}
 
 }

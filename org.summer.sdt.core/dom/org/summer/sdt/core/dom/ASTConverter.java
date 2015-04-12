@@ -1794,8 +1794,8 @@ class ASTConverter {
 		}
 		
 		//cym add 2015-03-21
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.PropertyReference) {
-			return convert((org.summer.sdt.internal.compiler.ast.PropertyReference) expression);
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlPropertyReference) {
+			return convert((org.summer.sdt.internal.compiler.ast.HtmlPropertyReference) expression);
 		} 
 		
 		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlMarkupExtension) {
@@ -3135,7 +3135,7 @@ class ASTConverter {
 	}
 	
 	//TODO cym 2015-03-21 
-	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.PropertyReference propertyReference) {
+	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.HtmlPropertyReference propertyReference) {
 		final FieldAccess fieldAccess = new FieldAccess(this.ast);
 		fieldAccess.setSourceRange(propertyReference.sourceStart, propertyReference.sourceEnd - propertyReference.sourceStart + 1);
 		fieldAccess.setName(convert1(propertyReference));
@@ -3144,7 +3144,7 @@ class ASTConverter {
 	}
 	
 	//TODO cym 2015-03-21 
-	public SimpleName convert1(org.summer.sdt.internal.compiler.ast.PropertyReference propertyReference) {
+	public SimpleName convert1(org.summer.sdt.internal.compiler.ast.HtmlPropertyReference propertyReference) {
 		final SimpleName name = new SimpleName(this.ast);
 		name.internalSetIdentifier(new String(propertyReference.token));
 		if (this.resolveBindings) {

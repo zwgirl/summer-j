@@ -177,6 +177,10 @@ public interface TagBits {
 	/** summer cym 2015-02-12*/
 	long AnnotationModule = ASTNode.Bit63L;   //AnnotationFunctionalInterface
 	
+	//html tag
+	long SimpleElement = ASTNode.Bit32L;
+	long ComplexElement = ASTNode.Bit33L;
+	
 	long AllStandardAnnotationsMask =
 				  AnnotationTargetMASK
 				| AnnotationRetentionMASK

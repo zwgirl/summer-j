@@ -2,7 +2,6 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
@@ -22,7 +21,7 @@ public abstract class HtmlNode extends Expression {
 	public static final int ATTACH_ATTRIBUTE = 8;	
 	
 	public int kind;
-	public ElementScope scope;
+	public int tagBits;
 	
 	protected HtmlNode(){
 	}
@@ -63,11 +62,11 @@ public abstract class HtmlNode extends Expression {
 		return this.doGenerateExpression(scope, indent, output);
 	}
 	
-	public StringBuffer generateStaticHTML(Scope initializerScope, int indent, StringBuffer output) {
+	public StringBuffer generateStaticHTML(BlockScope scope, int indent, StringBuffer output) {
 		return output;
 	}
 	
-	public StringBuffer generateDynamicHTML(Scope initializerScope, int indent, StringBuffer output) {
+	public StringBuffer generateDynamicHTML(BlockScope scope, int indent, StringBuffer output) {
 		return output;
 	}
 }

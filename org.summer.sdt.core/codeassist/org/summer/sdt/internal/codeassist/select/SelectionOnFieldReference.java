@@ -31,7 +31,6 @@ package org.summer.sdt.internal.codeassist.select;
 
 import org.summer.sdt.internal.compiler.ast.FieldReference;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
@@ -49,22 +48,6 @@ public class SelectionOnFieldReference extends FieldReference {
 	}
 
 	public TypeBinding resolveType(BlockScope scope) {
-
-		super.resolveType(scope);
-		// tolerate some error cases
-		if (this.binding == null ||
-				!(this.binding.isValidBinding() ||
-					this.binding.problemId() == ProblemReasons.NotVisible
-					|| this.binding.problemId() == ProblemReasons.InheritedNameHidesEnclosingName
-					|| this.binding.problemId() == ProblemReasons.NonStaticReferenceInConstructorInvocation
-					|| this.binding.problemId() == ProblemReasons.NonStaticReferenceInStaticContext))
-			throw new SelectionNodeFound();
-		else
-			throw new SelectionNodeFound(this.binding);
-	}
-	
-	//cym 2014-12-26
-	public TypeBinding resolveType(ElementScope scope) {
 
 		super.resolveType(scope);
 		// tolerate some error cases

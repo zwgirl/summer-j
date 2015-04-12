@@ -9014,13 +9014,11 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		pushOnExpressionStack(markupExtension);	
 		
 		HtmlAttribute[] attrs = HtmlElement.NO_ATTRIBUTES;
-//		if(hasAttribute){
-			int length = this.attributeLengthStack[this.attributeLengthPtr--];
-			if(length != 0){
-				this.attributePtr = this.attributePtr - length;
-				System.arraycopy(this.attributeStack, this.attributePtr +1 , attrs = new HtmlAttribute[length], 0, length);
-			}
-//		}
+		int length = this.attributeLengthStack[this.attributeLengthPtr--];
+		if(length != 0){
+			this.attributePtr = this.attributePtr - length;
+			System.arraycopy(this.attributeStack, this.attributePtr +1 , attrs = new HtmlAttribute[length], 0, length);
+		}
 
 		markupExtension.attributes = attrs;
 		markupExtension.statementEnd = this.scanner.currentPosition - 1;
@@ -9029,11 +9027,11 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	}
 	
 	protected void consumeAttributeWithPropertyReference() {
-		//Attribute ::= SimpleName �� SimpleName '=' PropertyExpression
-		PropertyReference propertyReference = new PropertyReference(
+		//Attribute ::= SimpleName . SimpleName '=' PropertyExpression
+		HtmlPropertyReference propertyReference = new HtmlPropertyReference(
 				this.identifierStack[this.identifierPtr],
 				this.identifierPositionStack[this.identifierPtr--], 
-				new PropertyReference(
+				new HtmlPropertyReference(
 						this.identifierStack[this.identifierPtr], 
 						this.identifierPositionStack[this.identifierPtr--]));
 		this.identifierLengthPtr--;
@@ -9057,7 +9055,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		long positions = this.identifierPositionStack[this.identifierPtr--];
 		this.identifierLengthPtr--;
 		
-		HtmlAttribute attribute = new HtmlAttribute(new PropertyReference(attrName, positions));
+		HtmlAttribute attribute = new HtmlAttribute(new HtmlPropertyReference(attrName, positions));
 		attribute.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
 		
@@ -9077,7 +9075,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		TypeReference receiver = new SingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
 		this.identifierLengthPtr--;
 		
-		HtmlAttribute attr = new HtmlAttribute(new PropertyReference(attrName, positions, receiver));
+		HtmlAttribute attr = new HtmlAttribute(new HtmlPropertyReference(attrName, positions, receiver));
 
 		attr.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
@@ -9188,6 +9186,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		}
 		
 		HtmlObjectElement element = (HtmlObjectElement) this.elementStack[this.elementPtr1];
+		element.tagBits |= HtmlBits.IsComplexElement;
 		element.children = childs;
 		
 		length = this.attributeLengthStack[this.attributeLengthPtr--];
@@ -9234,6 +9233,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	protected void consumeSimpleElement(){
 		//SimpleElement ::=  ElementTag AttributeList '/>'
 		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
+		element.tagBits |= HtmlBits.IsSimpleElement;
 		int length = this.attributeLengthStack[this.attributeLengthPtr--];
 		if(length != 0){
 			this.attributePtr = this.attributePtr - length;

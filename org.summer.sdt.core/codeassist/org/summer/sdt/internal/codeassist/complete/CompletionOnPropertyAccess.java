@@ -35,7 +35,7 @@ package org.summer.sdt.internal.codeassist.complete;
 import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.lookup.*;
 
-public class CompletionOnPropertyAccess extends PropertyReference {
+public class CompletionOnPropertyAccess extends HtmlPropertyReference {
 
 	public boolean isInsideAnnotation;
 
@@ -55,10 +55,10 @@ public class CompletionOnPropertyAccess extends PropertyReference {
 		return super.printExpression(0, output).append('>');
 	}
 
-	//cym 2014-12-26
-	public TypeBinding resolveType(ElementScope scope) {
+	//cym 2015-04-12
+	public TypeBinding resolveType(BlockScope scope) {
 
-		this.actualReceiverType = scope.context.resolvedType;
+		this.actualReceiverType = scope.element.resolvedType;
 
 //		if ((this.actualReceiverType == null || !this.actualReceiverType.isValidBinding()) && this.receiver instanceof MessageSend) {
 //			MessageSend messageSend = (MessageSend) this.receiver;

@@ -5,7 +5,6 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
@@ -30,7 +29,7 @@ public abstract class HtmlElement extends HtmlNode {
 	public int declarationSourceEnd;
 	public int bodyStart;
 	public int bodyEnd; // doesn't include the trailing comment if any.
-	public ElementScope scope;
+//	public ElementScope scope;
 	
 	
 	protected HtmlElement(){
@@ -197,7 +196,7 @@ public abstract class HtmlElement extends HtmlNode {
 			closeType.resolveType(scope);
 		}
 		
-		ElementScope eleScope = new ElementScope(this, scope);
+		BlockScope eleScope = new BlockScope(scope, this);
 		resolveAttribute(eleScope);
 		resolveChild(eleScope);
 	}
