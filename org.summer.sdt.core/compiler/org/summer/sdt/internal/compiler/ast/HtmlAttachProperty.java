@@ -5,6 +5,7 @@ import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.html.Js2HtmlMapping;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
@@ -23,10 +24,10 @@ import org.summer.sdt.internal.compiler.lookup.VariableBinding;
  * @author cym
  *
  */
-public class HtmlPropertyReference extends PropertyReference{
-	public HtmlSimplePropertyReference receiver;
+public class HtmlAttachProperty extends PropertyReference{
+	public TypeReference receiver;
 
-	public HtmlPropertyReference(char[] source, long pos, HtmlSimplePropertyReference receiver) {
+	public HtmlAttachProperty(char[] source, long pos, TypeReference receiver) {
 		super(source, pos);
 		this.receiver = receiver;
 	}
@@ -78,11 +79,15 @@ public class HtmlPropertyReference extends PropertyReference{
 	
 	private TypeBinding interalResolveType(BlockScope scope) {
 		//always ignore receiver cast, since may affect constant pool reference
-		this.actualReceiverType = this.receiver.resolveType(scope);
-		if (this.actualReceiverType == null) {
-			this.constant = Constant.NotAConstant;
-			return null;
-		}
+//		if(this.receiver == null){
+//			this.actualReceiverType = scope.element.resolvedType;
+//		} else {
+			this.actualReceiverType = this.receiver.resolveType(scope);
+			if (this.actualReceiverType == null) {
+				this.constant = Constant.NotAConstant;
+				return null;
+			}
+//		}
 		
 		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
 		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.token, null);
@@ -189,23 +194,40 @@ public class HtmlPropertyReference extends PropertyReference{
 
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append(this.receiver.token);
-		output.append('.').append(this.token);
+//		if(this.receiver instanceof HtmlAttachProperty){
+//			output.append(((HtmlAttachProperty)this.receiver).token);
+//			output.append('.').append(this.token);
+//		} else if(this.receiver instanceof TypeReference){
+//			output.append(this.token);
+//		} else {
+//			output.append(this.token);
+//		}
 		return output;
 	}
 	
 	public StringBuffer html(Scope scope, int indent, StringBuffer output){
-		Js2HtmlMapping.getHtmlName(new String(this.receiver.token));
-		output.append(Js2HtmlMapping.getHtmlName(new String(this.receiver.token)));
-		output.append('.').append(Js2HtmlMapping.getHtmlName(new String(this.token)));
+//		if(this.receiver instanceof HtmlAttachProperty){
+//			HtmlAttachProperty propRef = (HtmlAttachProperty) this.receiver;
+//			Js2HtmlMapping.getHtmlName(new String(propRef.token));
+//			output.append(Js2HtmlMapping.getHtmlName(new String(propRef.token)));
+//			output.append('.').append(Js2HtmlMapping.getHtmlName(new String(this.token)));
+//		} else if(this.receiver instanceof TypeReference){
+//			output.append(this.token);
+//		} else {
+//			output.append(Js2HtmlMapping.getHtmlName(new String(this.token)));
+//		}
 		return output;
 	}
 	
 	public StringBuffer buildInjectPart(Scope scope, int indent, StringBuffer output){
-		output.append("[\"");
-		output.append(this.receiver.token).append("\"");
-		output.append(", \"").append(this.token).append("\"");
-		output.append("]");
+//		output.append("[\"");
+//		if(this.receiver instanceof HtmlAttachProperty){
+//			output.append(((HtmlAttachProperty)this.receiver).token).append("\"");
+//			output.append(", \"").append(this.token).append("\"");
+//		} else if(this.receiver == null){
+//			output.append(this.token).append("\"");
+//		}
+//		output.append("]");
 		
 		return output;
 	}

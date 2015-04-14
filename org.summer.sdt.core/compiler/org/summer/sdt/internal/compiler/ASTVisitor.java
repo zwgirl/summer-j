@@ -158,12 +158,19 @@ public abstract class ASTVisitor {
 	public void endVisit(FieldReference fieldReference, ClassScope scope) {
 		// do nothing by default
 	}
+	
+	//cym 2014-12-26
+	public void endVisit(HtmlAttachProperty propertyReference, BlockScope scope) {
+		// do nothing by default
+	}
+	
 	//cym 2014-12-26
 	public void endVisit(HtmlPropertyReference propertyReference, BlockScope scope) {
 		// do nothing by default
 	}
-	//cym 2014-12-26
-	public void endVisit(HtmlPropertyReference propertyReference, ClassScope scope) {
+	
+	//2015-04-14
+	public void endVisit(HtmlSimplePropertyReference propertyReference, BlockScope scope) {
 		// do nothing by default
 	}
 	
@@ -520,10 +527,6 @@ public abstract class ASTVisitor {
 		// do nothing by default
 	}
 	
-	public void endVisit(HtmlObjectElement element, ClassScope scope) {
-		// do nothing by default
-	}
-	
 	public void endVisit(HtmlMarkupExtension element, ClassScope scope) {
 		// do nothing by default
 	}
@@ -667,10 +670,15 @@ public abstract class ASTVisitor {
 	}
 	
 	//cym 2014-12-26
+	//cym 2015-04-14
+	public boolean visit(HtmlAttachProperty propertyReference, BlockScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
 	public boolean visit(HtmlPropertyReference propertyReference, BlockScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
-	public boolean visit(HtmlPropertyReference propertyReference, ClassScope scope) {
+	//cym 2015-04-14
+	public boolean visit(HtmlSimplePropertyReference propertyReference, BlockScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
 	//cym 2014-12-26 end
@@ -1032,10 +1040,6 @@ public abstract class ASTVisitor {
 	
 	//HTML
 	public boolean visit(HtmlElement element, ClassScope scope) {
-		return true; // do nothing by default, keep traversing
-	}
-	
-	public boolean visit(HtmlObjectElement element, ClassScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
 	

@@ -1797,10 +1797,22 @@ class ASTConverter {
 		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlPropertyReference) {
 			return convert((org.summer.sdt.internal.compiler.ast.HtmlPropertyReference) expression);
 		} 
+		//cym add 2015-04-14
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlAttachProperty) {
+			return convert((org.summer.sdt.internal.compiler.ast.HtmlAttachProperty) expression);
+		}
+		//cym add 2015-04-14
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference) {
+			return convert((org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference) expression);
+		}
 		
 		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlMarkupExtension) {
 			return convert((org.summer.sdt.internal.compiler.ast.HtmlMarkupExtension) expression);
 		} 
+		
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlElement) {
+			return convert((org.summer.sdt.internal.compiler.ast.HtmlElement) expression);
+		}
 		
 		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlFunctionExpression) {
 			return convert((org.summer.sdt.internal.compiler.ast.HtmlFunctionExpression) expression);
@@ -3097,11 +3109,11 @@ class ASTConverter {
 			htmlElement.attributes().add(convert(attribute));
 		}
 		
-		for(org.summer.sdt.internal.compiler.ast.HtmlElement child : element.children){
-			if(child instanceof org.summer.sdt.internal.compiler.ast.HtmlPCDATA ||
+		for(org.summer.sdt.internal.compiler.ast.HtmlNode child : element.children){
+			if(child instanceof org.summer.sdt.internal.compiler.ast.HtmlText ||
 					child instanceof org.summer.sdt.internal.compiler.ast.HtmlScript ||
 					child instanceof org.summer.sdt.internal.compiler.ast.HtmlComment){
-//				xamlElement.children().add(convert((org.summer.sdt.internal.compiler.ast.PCDATA)child));
+//				xamlElement.children().add(convert((org.summer.sdt.internal.compiler.ast.HtmlText)child));
 				continue;
 			} else {
 				htmlElement.children().add(convert(child));
@@ -3142,9 +3154,25 @@ class ASTConverter {
 
 		return fieldAccess;
 	}
+	//2015-04-14
+	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference propertyReference) {
+		final FieldAccess fieldAccess = new FieldAccess(this.ast);
+		fieldAccess.setSourceRange(propertyReference.sourceStart, propertyReference.sourceEnd - propertyReference.sourceStart + 1);
+		fieldAccess.setName(convert1(propertyReference));
+
+		return fieldAccess;
+	}
+	//2015-04-14
+	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.HtmlAttachProperty propertyReference) {
+		final FieldAccess fieldAccess = new FieldAccess(this.ast);
+		fieldAccess.setSourceRange(propertyReference.sourceStart, propertyReference.sourceEnd - propertyReference.sourceStart + 1);
+		fieldAccess.setName(convert1(propertyReference));
+
+		return fieldAccess;
+	}
 	
 	//TODO cym 2015-03-21 
-	public SimpleName convert1(org.summer.sdt.internal.compiler.ast.HtmlPropertyReference propertyReference) {
+	public SimpleName convert1(org.summer.sdt.internal.compiler.ast.PropertyReference propertyReference) {
 		final SimpleName name = new SimpleName(this.ast);
 		name.internalSetIdentifier(new String(propertyReference.token));
 		if (this.resolveBindings) {
@@ -3155,7 +3183,7 @@ class ASTConverter {
 	}
 	
 	//cym add 2014-11-11
-	public Expression convert(org.summer.sdt.internal.compiler.ast.HtmlPCDATA expression) {
+	public Expression convert(org.summer.sdt.internal.compiler.ast.HtmlText expression) {
 		int length = expression.sourceEnd - expression.sourceStart + 1;
 		int sourceStart = expression.sourceStart;
 		StringLiteral literal = new StringLiteral(this.ast);
@@ -3171,7 +3199,7 @@ class ASTConverter {
 	public HtmlAttribute convert(org.summer.sdt.internal.compiler.ast.HtmlAttribute attribute) {
 		final HtmlAttribute xamlAttribute = new HtmlAttribute(this.ast);
 		xamlAttribute.setSourceRange(attribute.sourceStart, attribute.sourceEnd - attribute.sourceStart + 1);
-		xamlAttribute.setProperty(convert(attribute.property));
+		xamlAttribute.setProperty((FieldAccess) convert(attribute.property));
 		xamlAttribute.setValue(convert(attribute.value));
 		return xamlAttribute;
 	}

@@ -103,6 +103,7 @@ import org.summer.sdt.internal.compiler.ast.CompoundAssignment;
 import org.summer.sdt.internal.compiler.ast.ConditionalExpression;
 import org.summer.sdt.internal.compiler.ast.ConstructorDeclaration;
 import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
+import org.summer.sdt.internal.compiler.ast.PropertyReference;
 import org.summer.sdt.internal.compiler.ast.StringLiteral;
 import org.summer.sdt.internal.compiler.ast.HtmlElement;
 import org.summer.sdt.internal.compiler.ast.EqualExpression;
@@ -1810,7 +1811,7 @@ public class ProblemReporter extends ProblemHandler {
 	 * @param type
 	 * @param fieldDecl
 	 */
-	public void duplicateNamedElementInType(HtmlPropertyReference fieldDecl) {
+	public void duplicateNamedElementInType(PropertyReference fieldDecl) {
 		this.handle(
 			IProblem.DuplicateField,
 			new String[] {new String("element"), new String(fieldDecl.token)},
@@ -3894,7 +3895,7 @@ public class ProblemReporter extends ProblemHandler {
 			nodeSourceEnd(indexer, arrayRef));
 	}
 	//cym 2015-04-02
-	public void noPropertyDefineInElement(HtmlPropertyReference fieldRef) {
+	public void noPropertyDefineInElement(PropertyReference fieldRef) {
 //		this.handle(
 //			IProblem.NoPropertyDefinedInElement,
 //			NoArgument,
@@ -3912,7 +3913,7 @@ public class ProblemReporter extends ProblemHandler {
 	}
 	
 	//cym 2014-12-26
-	public void invalidProperty(HtmlPropertyReference fieldRef, TypeBinding searchedType) {
+	public void invalidProperty(PropertyReference fieldRef, TypeBinding searchedType) {
 		if(isRecoveredName(fieldRef.token)) return;
 	
 		int id = IProblem.UndefinedField;
@@ -3946,7 +3947,7 @@ public class ProblemReporter extends ProblemHandler {
 				id = IProblem.AmbiguousField;
 				break;
 			case ProblemReasons.NoProperEnclosingInstance:
-				noSuchEnclosingInstance(fieldRef.actualReceiverType, fieldRef/*.receiver*/, false);
+				noSuchEnclosingInstance(fieldRef.resolvedType, fieldRef/*.receiver*/, false);
 				return;
 			case ProblemReasons.NonStaticReferenceInStaticContext :
 				id = IProblem.NonStaticFieldFromStaticInvocation;
@@ -7909,6 +7910,16 @@ public class ProblemReporter extends ProblemHandler {
 	public void tooManyMethods(TypeDeclaration typeDeclaration) {
 		this.handle(
 			IProblem.TooManyMethods,
+			new String[]{ new String(typeDeclaration.binding.readableName())},
+			new String[]{ new String(typeDeclaration.binding.shortReadableName())},
+			ProblemSeverities.Abort | ProblemSeverities.Error | ProblemSeverities.Fatal,
+			typeDeclaration.sourceStart,
+			typeDeclaration.sourceEnd);
+	}
+	//cym 2015-04-13
+	public void tooManyHtmlElements(TypeDeclaration typeDeclaration) {
+		this.handle(
+			IProblem.TooManyHtmlElements,
 			new String[]{ new String(typeDeclaration.binding.readableName())},
 			new String[]{ new String(typeDeclaration.binding.shortReadableName())},
 			ProblemSeverities.Abort | ProblemSeverities.Error | ProblemSeverities.Fatal,

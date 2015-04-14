@@ -1521,14 +1521,16 @@ public class BinaryTypeBinding extends ReferenceBinding {
 		
 		long range;
 		if ((range = ReferenceBinding.binarySearch(this.fields)) >= 0) {
-			nextMethod: for (int ifield = 0, end = (int)(range >> 32); ifield <= end; ifield++) {
+			nextIndexer: for (int ifield = 0, end = (int)(range >> 32); ifield <= end; ifield++) {
 				FieldBinding field = this.fields[ifield];
 				foundNothing = false; // inner type lookups must know that a method with this name exists
 				if ((field.modifiers & ClassFileConstants.AccIndexer) !=0 && field.parameters.length == argCount) {
 					TypeBinding[] toMatch = field.parameters;
 					for (int iarg = 0; iarg < argCount; iarg++)
-						if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
-							continue nextMethod;
+						//cym 2015-04-13
+//						if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
+						if (!argumentTypes[iarg].isCompatibleWith(toMatch[iarg]))
+							continue nextIndexer;
 					return field;
 				}
 			}

@@ -36,6 +36,7 @@ import org.summer.sdt.internal.compiler.html.HtmlFile;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
 import org.summer.sdt.internal.compiler.java.JavaFile;
+import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.javascript.JsFile;
 import org.summer.sdt.internal.compiler.javascript.JsTypes;
 import org.summer.sdt.internal.compiler.lookup.Binding;
@@ -107,9 +108,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	// 1.5 support
 	public TypeParameter[] typeParameters;
 	
-	//XAML root element
-//	public XAMLElement element;
+	//Html root element2
 	public HtmlElement[] htmlElements;
+	public int htmlBits;
 	
 	//cym 2015-02-13 for function type
 	public Argument[] arguments = ASTNode.NO_ARGUMENTS;
@@ -581,16 +582,31 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			return;
 		}
 		
-		//cym 2015-01-11
-		if((this.bits & (ASTNode.IsAnonymousType | ASTNode.IsLocalType | ASTNode.IsMemberType)) == 0 
-				&& (this.modifiers & ClassFileConstants.AccAnnotation) == 0 && (this.modifiers & ClassFileConstants.AccFunction) == 0){
-			if((this.binding.modifiers & ClassFileConstants.AccModule) == 0){
-				generateJavascript(scope);
-			}
-
-			if(this.htmlElements != null && this.htmlElements.length == 1 &&
-					CharOperation.equals(((ReferenceBinding)this.htmlElements[0].type.resolvedType).compoundName, TypeConstants.ORG_W3C_HTML_HTML)){
-				generateHtml(this.scope);
+//		//cym 2015-01-11
+//		if((this.bits & (ASTNode.IsAnonymousType | ASTNode.IsLocalType | ASTNode.IsMemberType)) == 0 
+//				&& (this.modifiers & ClassFileConstants.AccAnnotation) == 0 && (this.modifiers & ClassFileConstants.AccFunction) == 0){
+//			if((this.binding.modifiers & ClassFileConstants.AccModule) == 0){
+//				generateJavascript(scope);
+//			}
+//
+////			if(this.htmlElements != null && this.htmlElements.length == 1 &&
+////					CharOperation.equals(((ReferenceBinding)this.htmlElements[0].type.resolvedType).compoundName, TypeConstants.ORG_W3C_HTML_HTML)){
+////				generateHtml(this.scope);
+////			}
+//			if(this.htmlElements != null && this.htmlElements.length == 1 &&
+//					(this.htmlBits & HtmlBits.IsHtmlPage) != 0){
+//				generateHtml(this.scope);
+//			}
+//		}
+		
+		//cym 2015-04-13
+		if((this.binding.tagBits & TagBits.IsHtmlPage) != 0){
+			generateHtml(this.scope);
+		} else {
+			if((this.bits & (ASTNode.IsAnonymousType | ASTNode.IsLocalType | ASTNode.IsMemberType)) == 0 
+					&& (this.modifiers & ClassFileConstants.AccAnnotation) == 0 && (this.modifiers & ClassFileConstants.AccFunction) == 0){
+				if((this.binding.modifiers & ClassFileConstants.AccModule) == 0)
+					generateJavascript(scope);
 			}
 		}
 		
@@ -717,11 +733,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append("<!DOCTYPE HTML>").append('\n');
 			if(this.htmlElements != null ){
 				for(HtmlElement element : this.htmlElements){
-					if((element.bits & ASTNode.HasDynamicContent) != 0){
-						buildDOM(element, this.scope, 0, output);
-					} else {
-						buildHTML(element, this.scope, 0, output);
-					}
+//					if((element.tagBits & HtmlBits.HasDynamicContent) != 0){
+//						buildDOM(element, element.scope, 0, output);
+//					} else {
+						html(element, element.scope, 0, output);
+//					}
 				}
 			}
 			
@@ -737,12 +753,12 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 	}
 	
-	private void buildDOM(HtmlElement element, Scope scope, int indent, StringBuffer output) {
+	private void buildDOM(HtmlElement element, BlockScope scope, int indent, StringBuffer output) {
 		element.generateExpression(initializerScope, indent, output);
 	}
 	
-	private void buildHTML(HtmlElement element, Scope scope, int indent, StringBuffer output) {
-		element.generateStaticHTML(initializerScope, indent, output);
+	private void html(HtmlElement element, BlockScope scope, int indent, StringBuffer output) {
+		element.html(scope, indent, output);
 	}
 
 	public void generateJavascript(CompilationUnitScope unitScope) {
@@ -1189,6 +1205,15 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			if ((this.bits & ASTNode.UndocumentedEmptyBlock) != 0) {
 				this.scope.problemReporter().undocumentedEmptyBlock(this.bodyStart-1, this.bodyEnd);
 			}
+			
+			//cym 2015-04-13 check implements Page interface
+			boolean isHtmlPage = sourceType.isClass() && sourceType.id != TypeIds.T_JavaLangPage
+					&& sourceType.findSuperTypeOriginatingFrom(TypeIds.T_JavaLangPage, false) != null /*Page is not a class*/;
+			if(isHtmlPage){
+				sourceType.tagBits |= TagBits.IsHtmlPage;
+			}
+			
+			//cym 2015-04-12
 //			boolean needSerialVersion =
 //							this.scope.compilerOptions().getSeverity(CompilerOptions.MissingSerialVersion) != ProblemSeverities.Ignore
 //							&& sourceType.isClass()
@@ -1367,6 +1392,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			
 			//check element cym 2014-12-09
 			if(this.htmlElements != null){
+				if(isHtmlPage){
+					if(htmlElements.length > 1){
+						this.scope.problemReporter().tooManyHtmlElements(this);
+					}
+				}
 				for(HtmlElement element : this.htmlElements){
 					element.resolve(new BlockScope(this.initializerScope, element));
 				}
@@ -2307,7 +2337,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				this.scope.referenceCompilationUnit().compilationResult);
 		}
 	}
-
+	
+	//embed script of html 
 	public void generateInternal(Scope scope, int indent, StringBuffer output) {
 		output.append("(function(){ ");
 		
@@ -3023,44 +3054,41 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	
 	private void processXAML(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
 		if(type.htmlElements == null) {
+			output.append(type.binding.sourceName).append(".prototype.").append("doApplyTemplate").append(" = function(parent, data, index) {};");
 			return;
 		}
+		
+		output.append('\n');
+		printIndent(indent, output);
+		
+//		doApplyTemplate(Node parent, Object data, int index)
+		output.append(type.binding.sourceName).append(".prototype.").append("doApplyTemplate").append(" = function(parent, data, index) {");
+		
+//		type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_COMPONENT))
 		for(HtmlElement element : type.htmlElements){
-			if(element != null && (type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE)) ||
-					type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_COMPONENT)))){
+			if(element != null && (type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE)))){
 				output.append('\n');
-				printIndent(indent, output);
-				output.append(type.binding.sourceName).append(".prototype.").append("doCreate").append(" = function(parent, data) {");
-				output.append('\n');
-				printIndent(indent, output);
-				((HtmlObjectElement)element).buildElement(scope, indent, output, "parent", "this");
-				output.append('\n');
-				printIndent(indent, output);
-				output.append("};");
-			} else if(element != null && type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_ITEMTEMPLATE))){
-				output.append('\n');
-				printIndent(indent, output);
-				output.append(type.binding.sourceName).append(".prototype.").append("createRoot").append(" = function(parent, item) {");
-				((HtmlObjectElement)element).buildRootElement(scope, indent, output, "parent", "this");
-				output.append('\n');
-				printIndent(indent + 1, output);
-				output.append("return _n;");
+				printIndent(indent+1, output);
+				output.append("(function() {");
 				
-				output.append('\n');
-				printIndent(indent, output);
-				output.append("};");
-				
-				output.append('\n');
-				printIndent(indent, output);
-				output.append(type.binding.sourceName).append(".prototype.").append("createChild").append(" = function(parent) {");
+				element.buildRootElement(scope, indent + 2, output, "parent", "this");
 				if(element.children != null && element.children.length > 0){
-					element.buildDOMScript(scope, indent + 1, output, "parent", "this");
+					element.buildDOMScript(scope, indent + 3, output, JsConstant.NODE_NAME, "this");
 				}
+				
 				output.append('\n');
-				printIndent(indent, output);
-				output.append("};");
-			}
+				printIndent(indent+3, output);
+				output.append("this.after(data, index);");
+				
+				output.append('\n');
+				printIndent(indent+1, output);
+				output.append("}).call(this);");
+			} 
 		}
+		
+		output.append('\n');
+		printIndent(indent, output);
+		output.append("};");
 	}
 	
 	private char[] getMethodName(AbstractMethodDeclaration method){

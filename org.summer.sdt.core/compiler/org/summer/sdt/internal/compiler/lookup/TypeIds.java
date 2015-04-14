@@ -127,8 +127,8 @@ public interface TypeIds {
 	//summer cym 2014-11-20
 	final int T_JavaLangOverload = 101;
 	
-	//summer cym 2015-01-01
-	final int T_JavaLangAnnotationEventCallback = 79;
+	//lark cym 2015-04-12
+	final int T_JavaLangPage = 79;
 	
 	// new in 3.9 to identify known @Inject annotations
 	final int T_JavaxInjectInject = 80;
@@ -266,4 +266,7 @@ public interface TypeIds {
 	 * Set of type bits that should be inherited by any sub types.
 	 */
 	final int InheritableBits = BitAutoCloseable | BitCloseable | BitUninternedType;
+	
+	//cym 2015-04-13
+	final int BitHtmlPage = 32;
 } 

@@ -71,9 +71,10 @@ public class BlockScope extends Scope {
 	public HtmlNode element;
 	
 	//cym 2015-04-12 for HtmlElement resolve
-	public BlockScope(BlockScope parent, HtmlNode element) {
+	public BlockScope(BlockScope parent, HtmlElement element) {
 		this(parent, true);
 		this.element = element;
+		element.scope = this;
 	}
 
 	public BlockScope(BlockScope parent) {

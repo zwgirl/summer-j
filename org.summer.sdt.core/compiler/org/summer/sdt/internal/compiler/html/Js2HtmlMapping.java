@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * @author cym
  */
-public final class Html2JsAttributeMapping {
+public final class Js2HtmlMapping {
 	final static Map<String, String> html2js = new HashMap<String, String>();
 	final static Map<String, String> js2html = new HashMap<String, String>();
 	static{
@@ -19,13 +19,13 @@ public final class Html2JsAttributeMapping {
 		js2html.put("className", "class");
 	}
 	
-	public static String getJsAttributeName(String htmlAttr){
-		String result = html2js.get(htmlAttr);
-		return result == null ? htmlAttr : result;
+	public static String getJsName(String name){
+		String result = html2js.get(name);
+		return result == null ? name : result;
 	}
 	
-	public static String getHtmlAttributeName(String jsAttr){
-		String result = js2html.get(jsAttr);
-		return result == null ? jsAttr : result;
+	public static String getHtmlName(String name){
+		String result = js2html.get(name);
+		return result == null ? name : result;
 	}
 }

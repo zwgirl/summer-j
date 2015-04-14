@@ -35,16 +35,16 @@ package org.summer.sdt.internal.codeassist.complete;
 import org.summer.sdt.internal.compiler.ast.*;
 import org.summer.sdt.internal.compiler.lookup.*;
 
-public class CompletionOnPropertyAccess extends HtmlPropertyReference {
+public class CompletionOnHtmlAttachProperty extends HtmlAttachProperty {
 
 	public boolean isInsideAnnotation;
 
-	public CompletionOnPropertyAccess(char[] source, long pos, boolean isInsideAnnotation) {
-		super(source, pos);
+	public CompletionOnHtmlAttachProperty(char[] source, long pos, boolean isInsideAnnotation) {
+		super(source, pos, null);
 		this.isInsideAnnotation = isInsideAnnotation;
 	}
 	
-	public CompletionOnPropertyAccess(char[] source, long pos, Expression receiver, boolean isInsideAnnotation) {
+	public CompletionOnHtmlAttachProperty(char[] source, long pos, TypeReference receiver, boolean isInsideAnnotation) {
 		super(source, pos, receiver);
 		this.isInsideAnnotation = isInsideAnnotation;
 	}

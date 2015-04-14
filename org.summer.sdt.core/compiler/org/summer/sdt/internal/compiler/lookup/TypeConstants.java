@@ -44,8 +44,9 @@ public interface TypeConstants {
 	char[] OBJECT = "Object".toCharArray(); //$NON-NLS-1$
 	char[] GLOBAL = "Global".toCharArray(); //$NON-NLS-1$  //cym 2015-01-11
 	char[] WINDOW = "Window".toCharArray(); //$NON-NLS-1$  //cym 2014-12-13
-	char[] TEMPLATE = "Template".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
-	char[] ITEMTEMPLATE = "ItemTemplate".toCharArray(); //$NON-NLS-1$  //cym 2015-03-02
+	char[] BASETEMPLATESETTING = "BaseTemplateSetting".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
+	char[] TEMPLATE = "Template".toCharArray(); //$NON-NLS-1$  //cym 2015-04-14
+	char[] PAGE = "Page".toCharArray(); //$NON-NLS-1$  //cym 2015-04-13
 	
 	char[] COMPONENT = "Component".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] MODULE = "Module".toCharArray(); //$NON-NLS-1$  //cym 2015-02-12
@@ -158,8 +159,9 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_OBJECT = {JAVA, LANG, OBJECT};
 	char[][] JAVA_LANG_GLOBAL = {JAVA, LANG, GLOBAL};  //cym 2015-01-11
 	char[][] JAVA_LANG_WINDOW = {JAVA, LANG, WINDOW};  //cym 2014-12-13
-	char[][] JAVA_LANG_TEMPLATE = {JAVA, LANG, TEMPLATE};  //cym 2015-01-13
-	char[][] JAVA_LANG_ITEMTEMPLATE = {JAVA, LANG, ITEMTEMPLATE};  //cym 2015-03-02
+	char[][] JAVA_LANG_BASETEMPLATESETTING = {JAVA, LANG, BASETEMPLATESETTING};  //cym 2015-04-14
+	char[][] JAVA_LANG_TEMPLATE = {JAVA, LANG, TEMPLATE};  //cym 2015-04-14
+	char[][] JAVA_LANG_PAGE = {JAVA, LANG, PAGE};  //cym 2015-04-13
 	
 	char[][] JAVA_LANG_COMPONENT = {JAVA, LANG, COMPONENT};  //cym 2015-01-13
 	char[][] ORG_W3C_HTML_HTML = {ORG, W3C, HTMLPKG, HTML};  //cym 2015-01-13

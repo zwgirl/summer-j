@@ -2083,14 +2083,14 @@ public class CompletionParser extends AssistParser {
 	}
 	
 	//cym 2014-12-09
-	protected void consumeElementTag(){
+	protected void consumeHtmlElementTag(){
 		/* no need to take action if not inside completed identifiers */
 		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeElementTag();
+			super.consumeHtmlElementTag();
 			return;
 		}
 		
-		HtmlObjectElement element = new HtmlObjectElement();
+		HtmlElement element = new HtmlElement();
 		pushOnElementStack(element);
 		
 		element.type = createSingleAssistTypeReference(
@@ -2103,9 +2103,9 @@ public class CompletionParser extends AssistParser {
 		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
 	}
 	
-	protected void consumeAttribute() {
+	protected void consumeHtmlAttribute() {
 		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeAttribute();
+			super.consumeHtmlAttribute();
 			return;
 		}
 		
@@ -2113,7 +2113,7 @@ public class CompletionParser extends AssistParser {
 		char[] token = this.identifierStack[this.identifierPtr];
 		long positions = this.identifierPositionStack[this.identifierPtr--];
 		
-		CompletionOnPropertyAccess fr = new CompletionOnPropertyAccess(token, positions, false);
+		CompletionOnHtmlSimplePropertyAccess fr = new CompletionOnHtmlSimplePropertyAccess(token, positions, false);
 		this.assistNode = fr;
 		this.lastCheckPoint = fr.sourceEnd + 1;
 		
@@ -2128,16 +2128,16 @@ public class CompletionParser extends AssistParser {
 		pushOnAttributeStack(attr);
 	}
 	
-	protected void consumeAttributeWithPropertyReference() {
+	protected void consumeHtmlAttributeWithReceiver() {
 		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeAttributeWithPropertyReference();
+			super.consumeHtmlAttributeWithReceiver();
 			return;
 		}
 		
-		HtmlPropertyReference propertyReference = new CompletionOnPropertyAccess(
+		HtmlPropertyReference propertyReference = new CompletionOnHtmlPropertyAccess(
 				this.identifierStack[this.identifierPtr],
 				this.identifierPositionStack[this.identifierPtr--], 
-				new CompletionOnPropertyAccess(
+				new CompletionOnHtmlSimplePropertyAccess(
 						this.identifierStack[this.identifierPtr], 
 						this.identifierPositionStack[this.identifierPtr--], false), 
 						false);
@@ -2154,9 +2154,9 @@ public class CompletionParser extends AssistParser {
 		attr.sourceEnd = this.scanner.currentPosition - 1;
 	}
 	
-	protected void consumeAttributeWithTypeReference(){
+	protected void consumeHtmlAttachAttribute(){
 		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeAttributeWithTypeReference();
+			super.consumeHtmlAttachAttribute();
 			return;
 		}
 
@@ -2167,7 +2167,7 @@ public class CompletionParser extends AssistParser {
 		TypeReference receiver = new CompletionOnSingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
 		this.identifierLengthPtr--;
 		
-		HtmlAttribute attribute = new HtmlAttribute(new CompletionOnPropertyAccess(attrName, positions, receiver, false));
+		HtmlAttribute attribute = new HtmlAttribute(new CompletionOnHtmlAttachProperty(attrName, positions, receiver, false));
 
 		attribute.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
@@ -2177,12 +2177,11 @@ public class CompletionParser extends AssistParser {
 		
 		//check named attribute
 		if(CharOperation.equals(attribute.property.token, HtmlAttribute.NAME)){
-			HtmlObjectElement element = (HtmlObjectElement) this.elementStack[this.elementPtr1];
-			attribute.bits |= ASTNode.IsNamedAttribute;
-			if((attribute.bits & ASTNode.IsNamedAttribute) != 0){
+			HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
+			if((attribute.tagBits & HtmlBits.NamedField) != 0){
 				problemReporter().duplicateNamedElementInType(attribute.property);
 			} else {
-				attribute.bits |= ASTNode.IsNamedAttribute;
+				attribute.tagBits |= HtmlBits.NamedField;
 			}
 			StringLiteral str = (StringLiteral) attribute.value;
 			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
@@ -2196,9 +2195,9 @@ public class CompletionParser extends AssistParser {
 		pushOnAttributeStack(attribute);
 	}
 	
-	protected void consumeMarkupExtenson(){
+	protected void consumeHtmlMarkupExtenson(){
 		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeMarkupExtenson();
+			super.consumeHtmlMarkupExtenson();
 			return;
 		}
 		HtmlMarkupExtension markupExtension = new HtmlMarkupExtension();

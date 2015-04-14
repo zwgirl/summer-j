@@ -31,18 +31,15 @@ package org.summer.sdt.internal.codeassist.select;
 
 import org.summer.sdt.internal.compiler.ast.Expression;
 import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
+import org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
-public class SelectionOnPropertyReference extends HtmlPropertyReference {
+public class SelectionOnSimplePropertyRef extends HtmlSimplePropertyReference {
 
-	public SelectionOnPropertyReference(char[] source , long pos) {
+	public SelectionOnSimplePropertyRef(char[] source , long pos) {
 		super(source, pos);
-	}
-	
-	public SelectionOnPropertyReference(char[] source, long pos, Expression receiver) {
-		super(source, pos, receiver);
 	}
 
 	public StringBuffer printExpression(int indent, StringBuffer output){

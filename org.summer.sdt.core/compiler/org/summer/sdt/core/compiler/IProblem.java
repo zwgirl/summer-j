@@ -1847,4 +1847,6 @@ void setSourceStart(int sourceStart);
 	//cym 2015-04-02
 	int NoPropertyDefinedInElement = Internal + FieldRelated + 1210;
 	
+	int TooManyHtmlElements =  Internal + 1211;
+	
 }

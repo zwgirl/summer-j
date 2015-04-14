@@ -8,10 +8,10 @@ import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
-public class HtmlPCDATA  extends HtmlElement {
+public class HtmlText  extends HtmlNode {
 	public char[] source;
 
-	public HtmlPCDATA(char[] source, long pos) {
+	public HtmlText(char[] source, long pos) {
 		super();
 		this.source = source;
 		//by default the position are the one of the field (not true for super access)
@@ -37,11 +37,6 @@ public class HtmlPCDATA  extends HtmlElement {
 	@Override
 	public StringBuffer printExpression(int indent, StringBuffer output) {
 		return output;
-	}
-
-	@Override
-	protected void printTagName(int indent, StringBuffer output) {
-		
 	}
 	
 	public char[] translateEntity(boolean reservedReturn){
@@ -137,6 +132,11 @@ public class HtmlPCDATA  extends HtmlElement {
 	
 	@Override
 	public StringBuffer generateStaticHTML(BlockScope scope, int indent, StringBuffer output) {
+		return output.append(source);
+	}
+	
+	@Override
+	public StringBuffer html(BlockScope scope, int indent, StringBuffer output) {
 		return output.append(source);
 	}
 

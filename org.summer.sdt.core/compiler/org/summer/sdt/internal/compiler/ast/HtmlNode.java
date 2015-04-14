@@ -1,9 +1,8 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 /**
  * 
@@ -26,30 +25,6 @@ public abstract class HtmlNode extends Expression {
 	protected HtmlNode(){
 	}
 	
-	/**
-	 * Resolve the type of this expression in the context of a blockScope
-	 *
-	 * @param scope
-	 * @return
-	 * 	Return the actual type of this expression after resolution
-	 */
-	public TypeBinding resolveType(BlockScope scope) {
-		// by default... subclasses should implement a better TB if required.
-		return null;
-	}
-	
-	/**
-	 * Resolve the type of this expression in the context of a classScope
-	 *
-	 * @param scope
-	 * @return
-	 * 	Return the actual type of this expression after resolution
-	 */
-	public TypeBinding resolveType(ClassScope scope) {
-		// by default... subclasses should implement a better TB if required.
-		return null;
-	}
-	
 	@Override
 	public StringBuffer generateStatement(Scope scope, int indent, StringBuffer output) {
 		printIndent(indent, output);
@@ -68,5 +43,20 @@ public abstract class HtmlNode extends Expression {
 	
 	public StringBuffer generateDynamicHTML(BlockScope scope, int indent, StringBuffer output) {
 		return output;
+	}
+	
+	@Override
+	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
+	}
+	
+	protected StringBuffer buildDOMScript(Scope scope, int indent, StringBuffer output, String parent, String context){
+		return output;}
+	
+	public StringBuffer html(BlockScope scope, int indent, StringBuffer output) {
+		return output;
+	}
+	
+	public ASTNode parserElement(int position){
+		return null;
 	}
 }

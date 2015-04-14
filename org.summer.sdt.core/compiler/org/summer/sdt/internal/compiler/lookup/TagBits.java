@@ -181,6 +181,9 @@ public interface TagBits {
 	long SimpleElement = ASTNode.Bit32L;
 	long ComplexElement = ASTNode.Bit33L;
 	
+	//cym 2015-04-13
+	long IsHtmlPage = ASTNode.Bit60L;
+	
 	long AllStandardAnnotationsMask =
 				  AnnotationTargetMASK
 				| AnnotationRetentionMASK

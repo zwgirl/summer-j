@@ -1374,7 +1374,8 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 //				this.actualReceiverType.generate(output, scope.classScope().enclosingSourceType());
 				output.append('.').append("prototype.");
 			} else if(this.binding.isDefaultMethod()){
-				output.append(this.binding.declaringClass.sourceName);
+				this.binding.declaringClass.generate(output, scope.classScope().enclosingSourceType());
+//				output.append(this.binding.declaringClass.sourceName);
 				output.append(".prototype.");
 			} else if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0){
 				

@@ -37,6 +37,9 @@ import org.summer.sdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.summer.sdt.internal.compiler.ast.Expression;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldReference;
+import org.summer.sdt.internal.compiler.ast.HtmlBits;
+import org.summer.sdt.internal.compiler.ast.HtmlElement;
+import org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
@@ -45,7 +48,6 @@ import org.summer.sdt.internal.compiler.ast.MemberValuePair;
 import org.summer.sdt.internal.compiler.ast.MessageSend;
 import org.summer.sdt.internal.compiler.ast.NameReference;
 import org.summer.sdt.internal.compiler.ast.NormalAnnotation;
-import org.summer.sdt.internal.compiler.ast.HtmlObjectElement;
 import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.Reference;
@@ -283,26 +285,26 @@ public class SelectionParser extends AssistParser {
 		}
 	}
 	
-	protected void consumeAttributeWithPropertyReference() {
+	protected void consumeHtmlAttributeWithReceiver() {
 		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeAttributeWithPropertyReference();
+			super.consumeHtmlAttributeWithReceiver();
 			return;
 		}
 		
 		HtmlPropertyReference propertyReference = null;
 		char[] assistIdentifier = assistIdentifier();
 		if(this.identifierStack[this.identifierPtr] == assistIdentifier){
-			propertyReference = new SelectionOnPropertyReference(
+			propertyReference = new SelectionOnHtmlPropertyReference(
 					this.identifierStack[this.identifierPtr],
 					this.identifierPositionStack[this.identifierPtr--],
-					new HtmlPropertyReference(
+					new HtmlSimplePropertyReference(
 							this.identifierStack[this.identifierPtr], 
 							this.identifierPositionStack[this.identifierPtr--]));
 		} else {
 			propertyReference = new HtmlPropertyReference(
 					this.identifierStack[this.identifierPtr],
 					this.identifierPositionStack[this.identifierPtr--],
-					new SelectionOnPropertyReference(
+					new SelectionOnSimplePropertyRef(
 							this.identifierStack[this.identifierPtr], 
 							this.identifierPositionStack[this.identifierPtr--]));
 		}
@@ -320,9 +322,9 @@ public class SelectionParser extends AssistParser {
 		
 	}
 	
-	protected void consumeAttribute() {
+	protected void consumeHtmlAttribute() {
 		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeAttribute();
+			super.consumeHtmlAttribute();
 			return;
 		}
 		
@@ -330,7 +332,7 @@ public class SelectionParser extends AssistParser {
 		long positions = this.identifierPositionStack[this.identifierPtr--];
 		this.identifierLengthPtr--;
 		
-		HtmlAttribute attribute = new HtmlAttribute(new SelectionOnPropertyReference(attrName, positions));
+		HtmlAttribute attribute = new HtmlAttribute(new SelectionOnSimplePropertyRef(attrName, positions));
 		attribute.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
 		
@@ -340,9 +342,9 @@ public class SelectionParser extends AssistParser {
 		pushOnAttributeStack(attribute);
 	}
 	
-	protected void consumeAttributeWithTypeReference(){
+	protected void consumeHtmlAttachAttribute(){
 		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeAttributeWithTypeReference();
+			super.consumeHtmlAttachAttribute();
 			return;
 		}
 
@@ -353,7 +355,7 @@ public class SelectionParser extends AssistParser {
 		TypeReference receiver = new SelectionOnSingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
 		this.identifierLengthPtr--;
 		
-		HtmlAttribute attr = new HtmlAttribute(new SelectionOnPropertyReference(attrName, positions, receiver));
+		HtmlAttribute attr = new HtmlAttribute(new SelectionOnHtmlAttachProperty(attrName, positions, receiver));
 
 		attr.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
@@ -363,12 +365,11 @@ public class SelectionParser extends AssistParser {
 		
 		//check named attribute
 		if(CharOperation.equals(attr.property.token, HtmlAttribute.NAME)){
-			HtmlObjectElement element = (HtmlObjectElement) this.elementStack[this.elementPtr1];
-			attr.bits |= ASTNode.IsNamedAttribute;
-			if((attr.bits & ASTNode.IsNamedAttribute) != 0){
+			HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
+			if((attr.tagBits & HtmlBits.NamedField) != 0){
 				problemReporter().duplicateNamedElementInType(attr.property);
 			} else {
-				attr.bits |= ASTNode.IsNamedAttribute;
+				attr.tagBits |= HtmlBits.NamedField;
 			}
 			StringLiteral str = (StringLiteral) attr.value;
 			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);

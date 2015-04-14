@@ -527,7 +527,7 @@ public class Scanner implements TerminalTokens {
 		return result;
 	}
 	
-	//cym 2015-01-18
+	//cym 2015-01-18  for html PCDATA
 	public char[] getCurrentTokenSourceString1() {
 		//return the token REAL source (aka unicodes are precomputed).
 		//REMOVE the two " that are at the beginning and the end.
@@ -537,18 +537,65 @@ public class Scanner implements TerminalTokens {
 			//0 is used as a fast test flag so the real first char is in position 1
 			System.arraycopy(this.withoutUnicodeBuffer, 2,
 			//2 is 1 (real start) + 1 (to jump over the ")
-			result = new char[this.withoutUnicodePtr - 2], 0, this.withoutUnicodePtr - 2);
+			result = new char[this.withoutUnicodePtr - 2], 0, this.withoutUnicodePtr);
 		else {
 			int length;
 			System.arraycopy(
 				this.source,
 				this.startPosition + 1,
-				result = new char[length = this.currentPosition+1 - this.startPosition - 2],
+				result = new char[length = this.currentPosition -1 - this.startPosition],
 				0,
 				length);
 		}
 		return result;
 	}
+	
+	//cym 2015-04-14 form html comment
+	public char[] getCurrentTokenSourceString2() {
+		//return the token REAL source (aka unicodes are precomputed).
+		//REMOVE the two " that are at the beginning and the end.
+	
+		char[] result;
+		if (this.withoutUnicodePtr != 0)
+			//0 is used as a fast test flag so the real first char is in position 1
+			System.arraycopy(this.withoutUnicodeBuffer, 2,
+			//2 is 1 (real start) + 1 (to jump over the ")
+			result = new char[this.withoutUnicodePtr - 2], 0, this.withoutUnicodePtr);
+		else {
+			int length;
+			System.arraycopy(
+				this.source,
+				this.startPosition,
+				result = new char[length = this.currentPosition - this.startPosition],
+				0,
+				length);
+		}
+		return result;
+	}
+	
+	//cym 2015-04-14 for code data
+	public char[] getCurrentTokenSourceString3() {
+		//return the token REAL source (aka unicodes are precomputed).
+		//REMOVE the two " that are at the beginning and the end.
+	
+		char[] result;
+		if (this.withoutUnicodePtr != 0)
+			//0 is used as a fast test flag so the real first char is in position 1
+			System.arraycopy(this.withoutUnicodeBuffer, 2,
+			//2 is 1 (real start) + 1 (to jump over the ")
+			result = new char[this.withoutUnicodePtr - 2], 0, this.withoutUnicodePtr);
+		else {
+			int length;
+			System.arraycopy(
+				this.source,
+				this.startPosition,
+				result = new char[length = this.currentPosition - this.startPosition],
+				0,
+				length);
+		}
+		return result;
+	}
+	
 	public final String getCurrentStringLiteral() {
 		//return the token REAL source (aka unicodes are precomputed).
 		//REMOVE the two " that are at the beginning and the end.
@@ -1191,14 +1238,13 @@ public class Scanner implements TerminalTokens {
 	}
 	
 	//cym add 2014-11-04
-	protected boolean pcdata() throws InvalidInputException{
+	protected boolean htmlPcdata() throws InvalidInputException{
 		try {
 			boolean hasContent = false;
 			while (true) {
 				if (this.currentPosition >= this.eofPosition) {
 					this.currentPosition = this.startPosition + 1;
 					return false;
-//					throw new InvalidInputException(UNTERMINATED_STRING);
 				}
 			
 				int temp = this.currentPosition;
@@ -1215,7 +1261,7 @@ public class Scanner implements TerminalTokens {
 						case 13 : /* \ u000d: CARRIAGE RETURN         */
 						case 32 : /* \ u0020: SPACE                   */
 						case 9 : /* \ u0009: HORIZONTAL TABULATION   */
-							break;
+//							break;
 						default :
 							hasContent = true;
 					}
@@ -1230,7 +1276,7 @@ public class Scanner implements TerminalTokens {
 	}
 	
 	//cym 2015-03-24 XML comment
-	public boolean xmlComment() throws InvalidInputException{
+	public boolean htmlComment() throws InvalidInputException{
 		try { //get the next char
 			boolean isUnicode = false;
 			// consume next character
@@ -1298,7 +1344,8 @@ public class Scanner implements TerminalTokens {
 				
 				if ((this.source[this.currentPosition - 2] == '-') && (this.source[this.currentPosition - 3] == '-')) {
 					this.PCDATA  = true;
-					this.currentPosition--;
+					System.out.println("currentchar:" + Integer.valueOf(this.source[currentPosition]));
+//					this.currentPosition--;
 					return true;
 				}
 				
@@ -1313,7 +1360,7 @@ public class Scanner implements TerminalTokens {
 	protected int getNextToken0() throws InvalidInputException {
 		if(this.PCDATA){
 			this.startPosition = this.currentPosition - 1;
-			if(pcdata()){
+			if(htmlPcdata()){
 				return TokenNamePCDATA;
 			}
 		}
@@ -1522,7 +1569,7 @@ public class Scanner implements TerminalTokens {
 							if(getNextChar('!')) {
 								if(getNextChar('-')){
 									if(getNextChar('-')){
-										if(xmlComment()){
+										if(htmlComment()){
 											return TokenNameXmlComment;
 										}
 									}

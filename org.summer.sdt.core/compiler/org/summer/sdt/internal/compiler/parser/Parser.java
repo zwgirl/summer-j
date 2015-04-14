@@ -941,7 +941,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	protected int elementLengthPtr;
 	protected int[] elementLengthStack = new int[0];
 	protected int elementPtr1;
-	protected Expression[] elementStack = new Expression[AstStackIncrement];
+	protected HtmlNode[] elementStack = new HtmlNode[AstStackIncrement];
 	
 	private int nestedElement = 0;
 	
@@ -6563,67 +6563,67 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				break;
 	 
 	    case 103 : if (DEBUG) { System.out.println("ElementListopt ::="); }  //$NON-NLS-1$
-			    consumeElementListopt();  
+			    consumeHtmlElementListopt();  
 				break;
 	 
 	    case 106 : if (DEBUG) { System.out.println("ElementList ::= ElementList Element"); }  //$NON-NLS-1$
-			    consumeElementList();  
+			    consumeHtmlElementList();  
 				break;
 	 
 	    case 107 : if (DEBUG) { System.out.println("Script ::= ScriptHeader MethodBody EnterPCDATA GREATER"); }  //$NON-NLS-1$
-			    consumeScript();  
+			    consumeHtmlScript();  
 				break;
 	 
 	    case 108 : if (DEBUG) { System.out.println("ScriptHeader ::= LESS"); }  //$NON-NLS-1$
-			    consumeScriptHeader();  
+			    consumeHtmlScriptHeader();  
 				break;
 
 	    case 109 : if (DEBUG) { System.out.println("PCDATANode ::= PCDATA"); }  //$NON-NLS-1$
-			    consumePCDATANode();  
+			    consumeHtmlPCDATA();  
 				break;
 	 
 	    case 110 : if (DEBUG) { System.out.println("CommentNode ::= XmlComment EnterPCDATA"); }  //$NON-NLS-1$
-			    consumeCommentNode();  
+			    consumeHtmlComment();  
 				break;
 	 
 	    case 111 : if (DEBUG) { System.out.println("SimpleElement ::= ElementStart EnterCloseTag EnterPCDATA"); }  //$NON-NLS-1$
-			    consumeSimpleElement();  
+			    consumeHtmlSimpleElement();  
 				break;
 	 
 	    case 112 : if (DEBUG) { System.out.println("ComplexElement ::= ElementStart EnterPCDATA GREATER..."); }  //$NON-NLS-1$
-			    consumeComplexElement();  
+			    consumeHtmlComplexElement();  
 				break;
 	 
 	    case 113 : if (DEBUG) { System.out.println("ElementStart ::= ElementTag AttributeListopt"); }  //$NON-NLS-1$
-			    consumeElementStart();  
+			    consumeHtmlElementStart();  
 				break;
 	 
 	    case 114 : if (DEBUG) { System.out.println("ElementClose ::= CLOSE_ELEMENT EnterCloseTag SimpleName"); }  //$NON-NLS-1$
-			    consumeElementClose();  
+			    consumeHtmlElementClose();  
 				break;
 	 
 	    case 115 : if (DEBUG) { System.out.println("EnterCloseTag ::="); }  //$NON-NLS-1$
-			    consumeEnterCloseTag();  
+			    consumeHtmlEnterCloseTag();  
 				break;
 	 
 	    case 116 : if (DEBUG) { System.out.println("EnterPCDATA ::="); }  //$NON-NLS-1$
-			    consumeEnterPCADATA();  
+			    consumeHtmlEnterPCADATA();  
 				break;
 	 
 	    case 117 : if (DEBUG) { System.out.println("ElementTag ::= LESS SimpleName"); }  //$NON-NLS-1$
-			    consumeElementTag();  
+			    consumeHtmlElementTag();  
 				break;
 	 
 	    case 118 : if (DEBUG) { System.out.println("Attribute ::= SimpleName COLON SimpleName EQUAL..."); }  //$NON-NLS-1$
-			    consumeAttributeWithTypeReference();  
+			    consumeHtmlAttachAttribute();  
 				break;
 	 
 	    case 119 : if (DEBUG) { System.out.println("Attribute ::= SimpleName EQUAL PropertyExpression"); }  //$NON-NLS-1$
-			    consumeAttribute();  
+			    consumeHtmlAttribute();  
 				break;
 	 
 	    case 120 : if (DEBUG) { System.out.println("Attribute ::= SimpleName DOT SimpleName EQUAL..."); }  //$NON-NLS-1$
-			    consumeAttributeWithPropertyReference();  
+			    consumeHtmlAttributeWithReceiver();  
 				break;
 	 
 	    case 121 : if (DEBUG) { System.out.println("AttributeListopt ::="); }  //$NON-NLS-1$
@@ -6631,19 +6631,19 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				break;
 	 
 	    case 124 : if (DEBUG) { System.out.println("AttributeList ::= AttributeList Attribute"); }  //$NON-NLS-1$
-			    consumeAttributeList();  
+			    consumeHtmlAttributeList();  
 				break;
 	 
 	    case 134 : if (DEBUG) { System.out.println("FunctionExpression ::= FunctionExpressionHeader..."); }  //$NON-NLS-1$
-			    consumeFunctionExpression();  
+			    consumeHtmlFunctionExpression();  
 				break;
 	 
 	    case 135 : if (DEBUG) { System.out.println("FunctionExpressionHeader ::= function"); }  //$NON-NLS-1$
-			    consumeFunctionExpressionHeader();  
+			    consumeHtmlFunctionExpressionHeader();  
 				break;
 	 
 	    case 136 : if (DEBUG) { System.out.println("MarkupExtenson ::= LBRACE SimpleName AttributeListopt..."); }  //$NON-NLS-1$
-			    consumeMarkupExtenson();  
+			    consumeHtmlMarkupExtenson();  
 				break;
 	 
 	    case 137 : if (DEBUG) { System.out.println("ReduceImports ::="); }  //$NON-NLS-1$
@@ -8771,20 +8771,20 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		}
 	}
 	
-	protected void consumePCDATANode(){
-		HtmlPCDATA pcdata = new HtmlPCDATA(this.identifierStack[this.identifierPtr],
+	protected void consumeHtmlPCDATA(){
+		HtmlText pcdata = new HtmlText(this.identifierStack[this.identifierPtr],
 				this.identifierPositionStack[this.identifierPtr--]);
 
 		this.identifierLengthPtr--;
 		pushOnElementStack(pcdata);
 	}
 
-	protected void consumeEnterPCADATA(){
+	protected void consumeHtmlEnterPCADATA(){
 		if(this.nestedElement > 0)
 			this.scanner.PCDATA = true;
 	}
 	
-	protected void consumeCommentNode(){
+	protected void consumeHtmlComment(){
 		HtmlComment pcdata = new HtmlComment(this.identifierStack[this.identifierPtr],
 				this.identifierPositionStack[this.identifierPtr--]);
 
@@ -8793,7 +8793,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	}
 	
 	//cym  2015-04-07
-	protected void consumeScript(){
+	protected void consumeHtmlScript(){
 //		Script -> ScriptHeader MethodBody EnterPCDATA %>
 		
 		this.intPtr--; 
@@ -8830,7 +8830,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		
 		HtmlScript script = new HtmlScript(md);
 		script.sourceEnd = this.intStack[this.intPtr--];
-		script.declarationSourceStart = script.sourceEnd;
 		script.bodyStart = script.sourceEnd;
 		script.bodyEnd = this.endPosition;
 		
@@ -8840,7 +8839,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	
 	//cym  2015-04-07
 	private static final char[] SCRIPT = "inline script".toCharArray();
-	protected void consumeScriptHeader(){
+	protected void consumeHtmlScriptHeader(){
 		//ScriptMethodHeader ::= '<%'
 		MethodDeclaration method = new MethodDeclaration(this.compilationUnit.compilationResult);
 	
@@ -8875,7 +8874,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		}
 	}
 	
-	protected void consumeElementList() {
+	protected void consumeHtmlElementList() {
 		/*
 		 * This is a case where you have two sublists into the this.astStack that you want
 		 * to merge in one list. There is no action required on the this.astStack. The only
@@ -8892,12 +8891,12 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		this.elementLengthStack[this.elementLengthPtr - 1] += this.elementLengthStack[this.elementLengthPtr--];
 	}
 	
-	protected void consumeElementListopt(){
+	protected void consumeHtmlElementListopt(){
 		pushOnElementLengthStack(0);
 	}
 	
 	//cym  2015-04-07
-	protected void consumeFunctionExpression(){
+	protected void consumeHtmlFunctionExpression(){
 //		FunctionExpression ::= function MethodBody
 		
 		this.intPtr--; 
@@ -8938,7 +8937,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	//cym  2015-04-07
 	private static final char[] FUNCTION = "inline function".toCharArray();
 	private static final char[] EVENT = "event".toCharArray();
-	protected void consumeFunctionExpressionHeader(){
+	protected void consumeHtmlFunctionExpressionHeader(){
 		// MethodHeaderName ::= function
 		MethodDeclaration method = new MethodDeclaration(this.compilationUnit.compilationResult);
 	
@@ -9003,7 +9002,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 //
 //	}
 	
-	protected void consumeMarkupExtenson(){
+	protected void consumeHtmlMarkupExtenson(){
 		
 		HtmlMarkupExtension markupExtension = new HtmlMarkupExtension();
 		
@@ -9026,12 +9025,12 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 
 	}
 	
-	protected void consumeAttributeWithPropertyReference() {
+	protected void consumeHtmlAttributeWithReceiver() {
 		//Attribute ::= SimpleName . SimpleName '=' PropertyExpression
 		HtmlPropertyReference propertyReference = new HtmlPropertyReference(
 				this.identifierStack[this.identifierPtr],
 				this.identifierPositionStack[this.identifierPtr--], 
-				new HtmlPropertyReference(
+				new HtmlSimplePropertyReference(
 						this.identifierStack[this.identifierPtr], 
 						this.identifierPositionStack[this.identifierPtr--]));
 		this.identifierLengthPtr--;
@@ -9048,14 +9047,14 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		
 	}
 	
-	protected void consumeAttribute() {
+	protected void consumeHtmlAttribute() {
 //		Attribute ::= SimpleName '=' PropertyExpression
 				
 		char[] attrName = this.identifierStack[this.identifierPtr];
 		long positions = this.identifierPositionStack[this.identifierPtr--];
 		this.identifierLengthPtr--;
 		
-		HtmlAttribute attribute = new HtmlAttribute(new HtmlPropertyReference(attrName, positions));
+		HtmlAttribute attribute = new HtmlAttribute(new HtmlSimplePropertyReference(attrName, positions));
 		attribute.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
 		
@@ -9065,7 +9064,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		pushOnAttributeStack(attribute);
 	}
 	
-	protected void consumeAttributeWithTypeReference(){
+	protected void consumeHtmlAttachAttribute(){
 //		Attribute ::= SimpleName ':' SimpleName '=' PropertyExpression
 
 		char[] attrName = this.identifierStack[this.identifierPtr];
@@ -9075,7 +9074,8 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		TypeReference receiver = new SingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
 		this.identifierLengthPtr--;
 		
-		HtmlAttribute attr = new HtmlAttribute(new HtmlPropertyReference(attrName, positions, receiver));
+		HtmlAttribute attr = new HtmlAttribute(new HtmlAttachProperty(attrName, positions, receiver));
+		attr.tagBits |= HtmlBits.HasAttachAttribute;
 
 		attr.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
@@ -9083,13 +9083,15 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		attr.sourceStart = (int) (positions >>> 32);
 		attr.sourceEnd = attr.value.sourceEnd;
 		
+		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
+		element.tagBits |= HtmlBits.HasAttachAttribute;
+		
 		//check named attribute
 		if(CharOperation.equals(attr.property.token, HtmlAttribute.NAME)){
-			HtmlObjectElement element = (HtmlObjectElement) this.elementStack[this.elementPtr1];
-			if((attr.bits & ASTNode.IsNamedAttribute) != 0){
+			if((attr.tagBits & HtmlBits.NamedField) != 0){
 				problemReporter().duplicateNamedElementInType(attr.property);
 			} else {
-				attr.bits |= ASTNode.IsNamedAttribute;
+				attr.tagBits |= HtmlBits.NamedField;
 			}
 			StringLiteral str = (StringLiteral) attr.value;
 			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
@@ -9103,10 +9105,10 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		pushOnAttributeStack(attr);
 	}
 	
-	protected void consumeElementTag(){
+	protected void consumeHtmlElementTag(){
 //		ElementTag ::= '<' SimpleName
 		this.nestedElement++;
-		HtmlObjectElement element = new HtmlObjectElement();
+		HtmlElement element = new HtmlElement();
 		
 		element.type = new SingleTypeReference(
 				this.identifierStack[this.identifierPtr],
@@ -9134,11 +9136,11 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		}
 	}
 	
-	protected void consumeEnterCloseTag(){
+	protected void consumeHtmlEnterCloseTag(){
 		this.nestedElement--;
 	}
 	
-	protected void consumeElementStart(){
+	protected void consumeHtmlElementStart(){
 		// recovery
 		if (this.currentElement != null){
 //			if (this.currentElement instanceof RecoveredType
@@ -9155,7 +9157,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		}
 	}
 	
-	protected void consumeElementClose(){
+	protected void consumeHtmlElementClose(){
 		// recovery
 		if (this.currentElement != null){
 //			if (this.currentElement instanceof RecoveredType
@@ -9172,20 +9174,20 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		}
 	}
 	
-	protected void consumeComplexElement(){
+	protected void consumeHtmlComplexElement(){
 //		ComplexElement ::= ElementTag AttributeListopt EnterPCDATA '>' 
 //		    	ElementListopt
 //			 '</' EnterCloseTag SimpleName EnterPCDATA '>' 
 	
 		//copy element child
-		HtmlElement[] childs = HtmlElement.NO_ELEMENTS;
+		HtmlNode[] childs = HtmlElement.NO_ELEMENTS;
 		int length;
 		if ((length = this.elementLengthStack[this.elementLengthPtr--]) != 0) {
 			this.elementPtr1 -= length;
-			System.arraycopy(this.elementStack, this.elementPtr1 + 1, childs = new HtmlElement[length], 0, length);
+			System.arraycopy(this.elementStack, this.elementPtr1 + 1, childs = new HtmlNode[length], 0, length);
 		}
 		
-		HtmlObjectElement element = (HtmlObjectElement) this.elementStack[this.elementPtr1];
+		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
 		element.tagBits |= HtmlBits.IsComplexElement;
 		element.children = childs;
 		
@@ -9230,7 +9232,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 //		element.sourceEnd = this.scanner.currentPosition - 1;
 //	}
 	
-	protected void consumeSimpleElement(){
+	protected void consumeHtmlSimpleElement(){
 		//SimpleElement ::=  ElementTag AttributeList '/>'
 		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
 		element.tagBits |= HtmlBits.IsSimpleElement;
@@ -9285,7 +9287,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		pushOnAttributeLengthStack(0);
 	}
 	
-	protected void consumeAttributeList() {
+	protected void consumeHtmlAttributeList() {
 		this.attributeLengthStack[this.attributeLengthPtr - 1] += this.attributeLengthStack[this.attributeLengthPtr--];
 	}
 	
@@ -9301,7 +9303,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		this.elementLengthStack[this.elementLengthPtr] = pos;
 	}
 	
-	protected void pushOnElementStack(Expression node) {
+	protected void pushOnElementStack(HtmlNode node) {
 		/*add a new obj on top of the ast stack
 		astPtr points on the top*/
 	
@@ -10476,10 +10478,19 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			
 			//cym 2014-12-17
 			case TokenNameCODE_DATA:
+				pushIdentifier(this.scanner.getCurrentTokenSourceString3(),
+						(((long) this.scanner.startPosition - 1) << 32) + (this.scanner.currentPosition));
+//				System.out.println("TokenNameCODE_DATA: "  + new String(this.scanner.getCurrentTokenSourceString2()));
+				break;
 			case TokenNameXmlComment:  //cym 2015-03-24
+				pushIdentifier(this.scanner.getCurrentTokenSourceString2(),
+						(((long) this.scanner.startPosition - 1) << 32) + (this.scanner.currentPosition));
+//				System.out.println("TokenNameXmlComment: "  + new String(this.scanner.getCurrentTokenSourceString2()));
+				break;
 			case TokenNamePCDATA :
 				pushIdentifier(this.scanner.getCurrentTokenSourceString1(),
 						(((long) this.scanner.startPosition) << 32) + (this.scanner.currentPosition - 1));
+//				System.out.println("TokenNamePCDATA: "  + new String(this.scanner.getCurrentTokenSourceString1()));
 				break;
 			case TokenNamefalse :
 				pushOnExpressionStack(
@@ -13994,7 +14005,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		System.arraycopy(parser.stack, 0, this.stack = new int [length = parser.stack.length], 0, length);
 		System.arraycopy(parser.stack, 0, this.stack = new int [length = parser.stack.length], 0, length);
 		System.arraycopy(parser.stack, 0, this.stack = new int [length = parser.stack.length], 0, length);
-		System.arraycopy(parser.elementStack, 0, this.elementStack = new HtmlElement[length = parser.elementStack.length], 0, length);
+		System.arraycopy(parser.elementStack, 0, this.elementStack = new HtmlNode[length = parser.elementStack.length], 0, length);
 	
 		// Loose variables.
 		

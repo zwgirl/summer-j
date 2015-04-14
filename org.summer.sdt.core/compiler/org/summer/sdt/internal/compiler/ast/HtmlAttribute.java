@@ -3,10 +3,10 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.html.Html2JsAttributeMapping;
+import org.summer.sdt.internal.compiler.html.Js2HtmlMapping;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.InvocationSite;
@@ -29,7 +29,7 @@ import org.summer.sdt.internal.compiler.lookup.TypeIds;
  *         using by XAML
  */
 public class HtmlAttribute extends HtmlNode implements InvocationSite{
-	public HtmlPropertyReference property;
+	public PropertyReference property;
 	public Expression value;
 	
 	public TypeBinding type;   //type of property 
@@ -41,7 +41,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	public static final int FUNCTION = 2;
 	public static final int CLASS = 3;
 	public static final int STRING = 4;
-	public static final int TEMPLATE = 6;
+	public static final int TEMPLATESETTING = 6;
 	public static final int REFERENCE = 7;
 	
 	public static final int BYTE = 11;
@@ -58,7 +58,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	
 	public static final int NamedFlag = 1;
 	
-	public HtmlAttribute(HtmlPropertyReference property) {
+	public HtmlAttribute(PropertyReference property) {
 		super();
 		this.property = property;
 	}
@@ -81,28 +81,24 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	}
 
 	public void resolve(BlockScope scope) {
+		this.constant = Constant.NotAConstant;
 		internalResolve(scope);
 	}
 	
 	private void internalResolve(BlockScope scope){
 		this.type = property.resolveType(scope);
 		
-		if((this.bits & ASTNode.IsNamedAttribute) != 0){
-			scope.element.tagBits |= HtmlBits.HasNameAttribute;
+		if((this.tagBits & HtmlBits.NamedField) != 0){
+			scope.element.tagBits |= HtmlBits.NamedField;
+			this.tagBits |= HtmlBits.NamedField;
 		}
 		if(this.value instanceof HtmlMarkupExtension){
 			HtmlMarkupExtension markExt = (HtmlMarkupExtension) this.value;
 			markExt.resolve(scope);
 			scope.element.tagBits |= HtmlBits.HasMarkupExtension;
+			this.tagBits |= HtmlBits.HasMarkupExtension;
 		}
-		
-		if(this.value instanceof HtmlFunctionExpression){
-			HtmlFunctionExpression function = (HtmlFunctionExpression) this.value;
-			function.resolve(scope);
-			scope.element.tagBits |= HtmlBits.HasFunctionExpression;
-			return;
-		}
-		
+
 		if(this.type == null){
 			return;
 		}
@@ -148,23 +144,33 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		}
 		
 		if(this.type == scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE)){
-			propertyKind = TEMPLATE;
-			this.template = (ReferenceBinding) scope.getType(((Literal) this.value).source());
+			this.tagBits |= HtmlBits.HasTemplate;
+			propertyKind = TEMPLATESETTING;
+			if(this.value instanceof HtmlMarkupExtension){
+				
+			} else {
+				this.template = (ReferenceBinding) scope.getType(((Literal) this.value).source());
+				return;
+			}
+		}
+		
+		
+		if(this.value instanceof HtmlFunctionExpression){
+			HtmlFunctionExpression function = (HtmlFunctionExpression) this.value;
+			function.resolve(scope);
+			scope.element.tagBits |= HtmlBits.HasFunctionExpression;
 			return;
 		}
 		
 		ReferenceBinding refType = (ReferenceBinding) this.type;
 		if((refType.modifiers & ClassFileConstants.AccFunction) != 0 ){
 			propertyKind = FUNCTION;
-			this.bits |= ASTNode.IsEventCallback;
+			this.tagBits |= HtmlBits.IsEventCallback;
 			Literal stringLiteral = (Literal) this.value;
-//				this.method = scope.findMethod(scope.classScope().referenceContext.binding, stringLiteral.source, new TypeBinding[0], this, false);
-//				if(this.method == null){
-				this.field = scope.findField(scope.classScope().referenceContext.binding, stringLiteral.source(), this, true);
-				if(field == null){
-					scope.problemReporter().errorNoMethodFor(stringLiteral, this.type, new TypeBinding[0]); 
-				}
-//				}
+			this.field = scope.findField(scope.classScope().referenceContext.binding, stringLiteral.source(), this, true);
+			if(field == null){
+				scope.problemReporter().errorNoMethodFor(stringLiteral, this.type, new TypeBinding[0]); 
+			}
 		} else if(refType.isEnum()){
 			propertyKind = ENUM;
 			this.field = scope.getField(refType, ((Literal) this.value).source(), this);
@@ -220,20 +226,9 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		}
 	}
 	
-	/**
-	 * Every expression is responsible for generating its implicit conversion when necessary.
-	 *
-	 * @param currentScope org.summer.sdt.internal.compiler.lookup.BlockScope
-	 * @param codeStream org.summer.sdt.internal.compiler.codegen.CodeStream
-	 * @param valueRequired boolean
-	 */
-	public void generateCode(BlockScope currentScope, CodeStream codeStream, boolean valueRequired) {
-
-	}
-	
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.token))).append("=");
+		output.append(Js2HtmlMapping.getHtmlName(new String(property.token))).append("=");
 		
 		if(this.property.binding != null && this.property.binding.type instanceof ReferenceBinding 
 				&& (((ReferenceBinding)this.property.binding.type).modifiers & ClassFileConstants.AccFunction) != 0){
@@ -250,7 +245,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	}
 	
 	public StringBuffer buildProperty(Scope scope, int indent, StringBuffer output, String context) {
-		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.token))).append("=");
+		output.append(Js2HtmlMapping.getHtmlName(new String(property.token))).append("=");
 		
 		if(this.property.binding != null && this.property.binding.type instanceof ReferenceBinding 
 				&& (((ReferenceBinding)this.property.binding.type).modifiers & ClassFileConstants.AccFunction) != 0){
@@ -286,7 +281,8 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 						output.append(((Literal)this.value).source());
 					}
 				} else {
-					output.append("this.");
+//					output.append("this.");
+					output.append("__this.");
 					if(this.value instanceof Literal){
 						output.append(((Literal)this.value).source());
 					}
@@ -298,14 +294,15 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 						output.append(((Literal)this.value).source());
 					}
 				} else {
-					output.append("this.");
+//					output.append("this.");
+					output.append("__this.");
 					if(this.value instanceof Literal){
 						output.append(((Literal)this.value).source());
 					}
 				}
 			}
 			return output;
-		case TEMPLATE:
+		case TEMPLATESETTING:
 			output.append("new (");
 			this.template.generate(output, null);
 			output.append(")()");
@@ -324,7 +321,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 				me.doGenerateExpression(scope, indent, output);  //TODO 2015-03-03 cym
 				output.append(".provideValue(");
 				output.append("_n, \""); 
-				this.property.buildInMarkupExtension(scope, indent, output);
+				this.property.buildInjectPart(scope, indent, output);
 				output.append(");");
 			} else {
 				Literal s = (Literal) this.value;
@@ -350,7 +347,16 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	}
 	
 	public void buildScript(Scope scope, int indent, StringBuffer output, String node){
-		if((this.bits & ASTNode.IsNamedAttribute) != 0){
+		if(this.value instanceof HtmlMarkupExtension){
+			HtmlMarkupExtension me = (HtmlMarkupExtension) this.value;
+			me.doGenerateExpression(scope, indent, output);
+			
+			output.append(".inject(");
+			output.append(JsConstant.NODE_NAME).append(", ");
+			this.property.buildInjectPart(scope, indent, output);
+			output.append(");");
+			return;
+		} else if((this.tagBits & HtmlBits.NamedField) != 0){
 			output.append("\n");
 			printIndent(indent + 1, output);
 			output.append(node).append("[\"");
@@ -367,25 +373,27 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			output.append('.').append(((Literal) this.value).source());
 			output.append(" = ").append(node).append(";");
 			return;
-		}
+		} 
+//		else if(this.value instanceof HtmlFunctionExpression){
+//			
+//		}
+		
 		switch(propertyKind){
-		case TEMPLATE:
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append("var _t = new (");
-			this.template.generate(output, null);
-			output.append(")();");
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append("_t.create(_n);");
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append("_c.template = _t;");
-			break; 
+//		case TEMPLATESETTING:
+//			output.append("\n");
+//			printIndent(indent + 2, output);
+//			HtmlMarkupExtension me = (HtmlMarkupExtension) this.value;
+//			me.doGenerateExpression(scope, indent, output);
+//			
+//			output.append(".inject(");
+//			output.append("n, ");
+//			this.property.buildInMarkupExtension(scope, indent, output);
+//			output.append(");");
+//			return; 
 		case FUNCTION:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append("_n.addEventListener('").append(CharOperation.subarray(this.property.token, 2, -1)).append("', ");
+			output.append(JsConstant.NODE_NAME).append(".addEventListener('").append(CharOperation.subarray(this.property.token, 2, -1)).append("', ");
 			if(this.method != null){
 				if(this.method.isStatic()){
 					output.append(this.method.declaringClass.sourceName).append('.');
@@ -416,7 +424,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case CLASS:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append("_n.");
+			output.append(JsConstant.NODE_NAME).append('.');
 			this.property.doGenerateExpression(scope, indent, output);
 			
 			output.append(" = ");
@@ -426,7 +434,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case ENUM:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append("_n.");
+			output.append(JsConstant.NODE_NAME).append('.');
 			this.property.doGenerateExpression(scope, indent, output);
 			output.append(" = ");
 			((ReferenceBinding)this.property.binding.type).generate(output, null);
@@ -443,21 +451,96 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case BOOLEAN:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append("_n.");
+			output.append(JsConstant.NODE_NAME).append('.');
 			this.property.doGenerateExpression(scope, indent, output);
 			output.append(" = ");
-			if(this.value instanceof HtmlMarkupExtension){
-				HtmlMarkupExtension me = (HtmlMarkupExtension) this.value;
-				me.doGenerateExpression(scope, indent, output);
-				
-				output.append(".provideValue(");
-				output.append("_n, ");
-				this.property.buildInMarkupExtension(scope, indent, output);
-				output.append(");");
-			} else {
-				this.value.generateExpression(scope, indent, output).append(";");
-			}
+			this.value.generateExpression(scope, indent, output).append(";");
 		}
+	}
+	
+	@Override
+	public StringBuffer html(BlockScope scope, int indent, StringBuffer output) {
+		if((this.tagBits & HtmlBits.HasDynamicContent) != 0){
+			return output;
+		}
+		
+//		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.token))).append("=");
+//		
+//		if(this.property.binding != null && this.property.binding.type instanceof ReferenceBinding 
+//				&& (((ReferenceBinding)this.property.binding.type).modifiers & ClassFileConstants.AccFunction) != 0){
+//			output.append("\"__this.");
+//			if(this.value instanceof Literal){
+//				output.append(((Literal)this.value).source());
+//			}
+//			output.append("(event);\"");
+//		} else {
+//			value.generateExpression(scope, indent, output);
+//		}
+//		
+//		return output;
+//		
+		this.property.html(scope, indent, output);
+		output.append("=");
+		switch(propertyKind){
+		case FUNCTION:
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append(JsConstant.NODE_NAME).append(".addEventListener('").append(CharOperation.subarray(this.property.token, 2, -1)).append("', ");
+			if(this.method != null){
+				if(this.method.isStatic()){
+					output.append(this.method.declaringClass.sourceName).append('.');
+					if(this.value instanceof Literal){
+						output.append(((Literal)this.value).source());
+					}
+				} else {
+					output.append("this.");
+					if(this.value instanceof Literal){
+						output.append(((Literal)this.value).source());
+					}
+				}
+			} else if(this.field != null){
+				if(this.field.isStatic()){
+					output.append(this.field.declaringClass.sourceName).append('.');
+					if(this.value instanceof Literal){
+						output.append(((Literal)this.value).source());
+					}
+				} else {
+					output.append("this.");
+					if(this.value instanceof Literal){
+						output.append(((Literal)this.value).source());
+					}
+				}
+			}
+			output.append(", false);");
+			break;
+		case CLASS:
+		case ENUM:
+		case REFERENCE:
+		case STRING:
+		case BYTE:
+		case SHORT:
+		case INT:
+		case LONG:
+		case FLOAT:
+		case DOUBLE:
+		case BOOLEAN:
+			this.value.generateExpression(scope, indent, output);
+		}
+		return output;
+	}
+	
+	public ASTNode parserElement(int position){
+		if(this.property.sourceStart < position && this.property.sourceEnd >= position){
+			return this.property;
+		} 
+		if(this.value.sourceStart < position && this.value.sourceEnd >= position){
+			if(this.value instanceof HtmlMarkupExtension){
+				HtmlMarkupExtension markup = (HtmlMarkupExtension) this.value;
+				return markup.parserElement(position);
+			}
+			return this.value;
+		}
+		return null;
 	}
 	
 	@Override

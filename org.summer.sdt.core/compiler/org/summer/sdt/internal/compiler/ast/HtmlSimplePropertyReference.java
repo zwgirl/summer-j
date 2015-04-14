@@ -5,6 +5,7 @@ import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.html.Js2HtmlMapping;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
@@ -23,12 +24,10 @@ import org.summer.sdt.internal.compiler.lookup.VariableBinding;
  * @author cym
  *
  */
-public class HtmlPropertyReference extends PropertyReference{
-	public HtmlSimplePropertyReference receiver;
+public class HtmlSimplePropertyReference extends PropertyReference{
 
-	public HtmlPropertyReference(char[] source, long pos, HtmlSimplePropertyReference receiver) {
+	public HtmlSimplePropertyReference(char[] source, long pos) {
 		super(source, pos);
-		this.receiver = receiver;
 	}
 	
 	/**
@@ -78,11 +77,7 @@ public class HtmlPropertyReference extends PropertyReference{
 	
 	private TypeBinding interalResolveType(BlockScope scope) {
 		//always ignore receiver cast, since may affect constant pool reference
-		this.actualReceiverType = this.receiver.resolveType(scope);
-		if (this.actualReceiverType == null) {
-			this.constant = Constant.NotAConstant;
-			return null;
-		}
+		this.actualReceiverType = scope.element.resolvedType;
 		
 		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
 		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.token, null);
@@ -189,22 +184,18 @@ public class HtmlPropertyReference extends PropertyReference{
 
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append(this.receiver.token);
-		output.append('.').append(this.token);
+		output.append(this.token);
 		return output;
 	}
 	
 	public StringBuffer html(Scope scope, int indent, StringBuffer output){
-		Js2HtmlMapping.getHtmlName(new String(this.receiver.token));
-		output.append(Js2HtmlMapping.getHtmlName(new String(this.receiver.token)));
-		output.append('.').append(Js2HtmlMapping.getHtmlName(new String(this.token)));
+		output.append(Js2HtmlMapping.getHtmlName(new String(this.token)));
 		return output;
 	}
 	
 	public StringBuffer buildInjectPart(Scope scope, int indent, StringBuffer output){
 		output.append("[\"");
-		output.append(this.receiver.token).append("\"");
-		output.append(", \"").append(this.token).append("\"");
+		output.append(this.token).append("\"");
 		output.append("]");
 		
 		return output;

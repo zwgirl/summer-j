@@ -634,10 +634,6 @@ abstract public class ReferenceBinding extends TypeBinding {
 								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_EXCEPTION[2]))
 									this.id = TypeIds.T_JavaLangException;
 								return;
-							case 13:  //cym 2015-01-01
-								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_EVENTCALLBACK[2]))
-									this.id = TypeIds.T_JavaLangAnnotationEventCallback;
-								return;
 						}
 						return;
 					case 'F' :
@@ -686,6 +682,15 @@ abstract public class ReferenceBinding extends TypeBinding {
 									return;
 								} else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_OVERLOAD[2]))   //cym 2015-01-01
 									this.id = TypeIds.T_JavaLangOverload;
+								return;
+						}
+						return;
+					//cym 2015-04-13
+					case 'P' :
+						switch (typeName.length) {
+							case 4 :
+								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_PAGE[2]))
+									this.id = TypeIds.T_JavaLangPage;
 								return;
 						}
 						return;
@@ -775,11 +780,9 @@ abstract public class ReferenceBinding extends TypeBinding {
 										this.id = TypeIds.T_JavaLangAnnotationDocumented;
 									return;
 								case 'E' :
-									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_ELEMENTTYPE[3])){
+									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_ELEMENTTYPE[3]))
 										this.id = TypeIds.T_JavaLangAnnotationElementType;
-										return;
-									} else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_EVENTCALLBACK[3]))   //cym 2015-01-15
-										this.id = TypeIds.T_JavaLangAnnotationEventCallback;
+									return;
 								case 'I' :
 									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ANNOTATION_INHERITED[3]))
 										this.id = TypeIds.T_JavaLangAnnotationInherited;

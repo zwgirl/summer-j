@@ -3644,8 +3644,8 @@ public abstract class Scope {
 	//cym 2015-02-17
 	public final ReferenceBinding getJavaLangTemplate() {
 		CompilationUnitScope unitScope = compilationUnitScope();
-		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_TEMPLATE);
-		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_TEMPLATE, this);
+		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_BASETEMPLATESETTING);
+		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_BASETEMPLATESETTING, this);
 	}
 	
 	//cym 2015-02-17

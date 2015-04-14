@@ -1,15 +1,12 @@
 package org.summer.sdt.internal.compiler.ast;
 
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 
 /**
  * 
  * @author cym
  * 
- *         using by XAML
  */
 public class HtmlMarkupExtension extends HtmlElement {
 	

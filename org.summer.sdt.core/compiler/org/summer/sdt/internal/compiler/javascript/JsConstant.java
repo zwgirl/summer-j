@@ -104,4 +104,11 @@ public class JsConstant {
 
 	public static final String ENCLOSING = "__enclosing";
 	
+	public static final String APPEND_CHILD = "$.a";
+	public static final String CREATE_ELEMENT = "$.n";
+	public static final String CREATE_TEXT_NODE = "$.t";
+	public static final String GET_ELEMENT_BY_ID = "$";
+	public static final String NODE_NAME = "n";
+	public static final String THIS_CONTEX = "__this";
+	
 }

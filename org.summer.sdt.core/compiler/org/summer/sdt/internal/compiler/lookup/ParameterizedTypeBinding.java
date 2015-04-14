@@ -663,7 +663,9 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 					if (indexer.parameters.length == argCount) {
 						TypeBinding[] toMatch = indexer.parameters;
 						for (int iarg = 0; iarg < argCount; iarg++)
-							if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
+							//cym 2015-04-13
+//							if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
+							if (!argumentTypes[iarg].isCompatibleWith(toMatch[iarg]))
 								continue nextIndexer;
 						return indexer;
 					}
