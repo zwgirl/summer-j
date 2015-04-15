@@ -1,17 +1,23 @@
 package org.summer.sdt.internal.compiler.ast;
 
 public interface HtmlBits {
-	int NamedField = ASTNode.Bit1;
-	int HasMarkupExtension = ASTNode.Bit2;
-	int HasTemplate = ASTNode.Bit5;
-	int HasDynamicContent = NamedField | HasMarkupExtension | HasTemplate;
+	int NamedField = ASTNode.Bit1;   //命名属性字段
+	int HasMarkupExtension = ASTNode.Bit2;		//使用了标记扩展
+	int HasTemplate = ASTNode.Bit3;
+	int AttachedAttribute = ASTNode.Bit4;	//附加属性
+	int QualifiedNameAttribute = ASTNode.Bit5;	//限定属性
+	int HasDynamicContent = NamedField 
+			| HasMarkupExtension 
+			| HasTemplate
+			| AttachedAttribute
+			| QualifiedNameAttribute;
 	
-	int IsHtmlPage = ASTNode.Bit17;
-	int IsSimpleElement = ASTNode.Bit18;
-	int IsComplexElement = ASTNode.Bit19;
+	int HtmlPage = ASTNode.Bit17;
+		
+	int SimpleElement = ASTNode.Bit18;		//简单元素
+	int ComplexElement = ASTNode.Bit19;		//符合元素
 	
-	int HasScriptElement = ASTNode.Bit20;
-	int HasFunctionExpression = ASTNode.Bit21;
-	int IsEventCallback =  ASTNode.Bit22;
-	int HasAttachAttribute = ASTNode.Bit23;
+	int ScriptElement = ASTNode.Bit20;	//脚本元素
+	int FunctionExpression = ASTNode.Bit21;	//函数表达式
+	int EventCallback = ASTNode.Bit22;	//事件回调
 }

@@ -21,13 +21,21 @@ public class HtmlScript extends HtmlNode{
 	@Override
 	public void resolve(BlockScope scope) {
 		this.constant = Constant.NotAConstant;
-		scope.element.tagBits |= HtmlBits.HasScriptElement;
+		scope.element.tagBits |= HtmlBits.ScriptElement;
 	}
 	
 	@Override
 	public StringBuffer html(BlockScope scope, int indent, StringBuffer output) {
 		output.append("<script type = 'text/javascript'>");
-		
+		Statement[] statements = method.statements;
+		if(statements != null){
+			for(Statement statement : statements){
+				output.append('\n');
+				statement.generateStatement(scope, indent + 1, output);
+			}
+		}
+		output.append('\n');
+		printIndent(indent, output);
 		output.append("</script>");
 		return output;
 	}

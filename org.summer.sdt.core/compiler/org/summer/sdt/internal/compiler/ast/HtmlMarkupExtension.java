@@ -50,7 +50,7 @@ public class HtmlMarkupExtension extends HtmlElement {
 				output.append(", ");
 			}
 			
-			attribute.buildOptionPart(scope, indent, output);
+			attribute.buildMarkupExtensionOptionPart(scope, indent, output);
 			comma = true;
 		}
 		output.append("}");

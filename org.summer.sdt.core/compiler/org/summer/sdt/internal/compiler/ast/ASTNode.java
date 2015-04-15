@@ -321,9 +321,10 @@ public abstract class ASTNode implements TypeConstants, TypeIds {
 	// for all reference context entries.
 	public static final int HasFunctionalInterfaceTypes = ASTNode.Bit22;
 	
-//	//XAML
-//	public static final int IsNamedAttribute = ASTNode.Bit10;
-//	
+	//cym 2015-04-15 HTML inline method falg
+	public static final int HTML_INLINE_METHOD = ASTNode.Bit14;
+	public static final int HTML_SCRIPT_METHOD = ASTNode.Bit15;
+	
 //	//for XAML root element  cym 2014-12-10
 //	public static final int IsRootElement = Bit19;
 //	

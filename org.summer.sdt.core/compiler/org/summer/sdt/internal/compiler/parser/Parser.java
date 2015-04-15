@@ -937,7 +937,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	private boolean expectTypeAnnotation = false;
 	private boolean reparsingLambdaExpression = false;
 	
-	//XAML cym add
+	//HTML cym add
 	protected int elementLengthPtr;
 	protected int[] elementLengthStack = new int[0];
 	protected int elementPtr1;
@@ -949,6 +949,8 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	protected int[] attributeLengthStack = new int[0];
 	protected int attributePtr;
 	protected HtmlAttribute[] attributeStack = new HtmlAttribute[AstStackIncrement];
+	//cym 2015-04-15
+	private short htmlInlineFunctionCounter = 0, htmlScriptCounter = 0;
 	
 	public Parser () {
 		// Caveat Emptor: For inheritance purposes and then only in very special needs. Only minimal state is initialized !
@@ -6591,7 +6593,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				break;
 	 
 	    case 112 : if (DEBUG) { System.out.println("ComplexElement ::= ElementStart EnterPCDATA GREATER..."); }  //$NON-NLS-1$
-			    consumeHtmlComplexElement();  
+			    consumeHtmlElement();  
 				break;
 	 
 	    case 113 : if (DEBUG) { System.out.println("ElementStart ::= ElementTag AttributeListopt"); }  //$NON-NLS-1$
@@ -8838,13 +8840,14 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	}
 	
 	//cym  2015-04-07
-	private static final char[] SCRIPT = "inline script".toCharArray();
+	private static final char[] SCRIPT = "<html script".toCharArray();
 	protected void consumeHtmlScriptHeader(){
 		//ScriptMethodHeader ::= '<%'
 		MethodDeclaration method = new MethodDeclaration(this.compilationUnit.compilationResult);
+		method.bits |= ASTNode.HTML_SCRIPT_METHOD;
 	
 		//name
-		method.selector = SCRIPT;
+		method.selector = method.selector = CharOperation.concat(SCRIPT, String.valueOf(this.htmlScriptCounter++).toCharArray());
 		method.declarationSourceStart = method.sourceStart = this.scanner.currentPosition;
 		method.sourceEnd = this.scanner.currentPosition-1;
 		method.modifiers |= /*ClassFileConstants.AccStatic | */ClassFileConstants.AccFinal | ClassFileConstants.AccPrivate;
@@ -8935,14 +8938,15 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	}
 	
 	//cym  2015-04-07
-	private static final char[] FUNCTION = "inline function".toCharArray();
+	private static final char[] FUNCTION = "<inline function".toCharArray();
 	private static final char[] EVENT = "event".toCharArray();
 	protected void consumeHtmlFunctionExpressionHeader(){
 		// MethodHeaderName ::= function
 		MethodDeclaration method = new MethodDeclaration(this.compilationUnit.compilationResult);
-	
+		method.bits |= ASTNode.HTML_INLINE_METHOD;
+		
 		//name
-		method.selector = FUNCTION;
+		method.selector = CharOperation.concat(FUNCTION, String.valueOf(this.htmlInlineFunctionCounter++).toCharArray());
 		method.declarationSourceStart = method.sourceStart = this.scanner.currentPosition;
 		method.sourceEnd = this.scanner.currentPosition-1;
 		
@@ -9037,6 +9041,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		this.identifierLengthPtr--;
 		
 		HtmlAttribute attr = new HtmlAttribute(propertyReference);
+		attr.tagBits |= HtmlBits.QualifiedNameAttribute;
 		
 		attr.value = this.expressionStack[this.expressionPtr--];
 		expressionLengthPtr--;
@@ -9044,7 +9049,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		
 		attr.statementEnd = this.scanner.currentPosition - 1;
 		attr.sourceEnd = this.scanner.currentPosition - 1;
-		
 	}
 	
 	protected void consumeHtmlAttribute() {
@@ -9075,7 +9079,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		this.identifierLengthPtr--;
 		
 		HtmlAttribute attr = new HtmlAttribute(new HtmlAttachProperty(attrName, positions, receiver));
-		attr.tagBits |= HtmlBits.HasAttachAttribute;
+		attr.tagBits |= HtmlBits.AttachedAttribute;
 
 		attr.value =  this.expressionStack[this.expressionPtr--];
 		this.expressionLengthPtr--;
@@ -9084,7 +9088,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		attr.sourceEnd = attr.value.sourceEnd;
 		
 		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
-		element.tagBits |= HtmlBits.HasAttachAttribute;
+		element.tagBits |= HtmlBits.AttachedAttribute;
 		
 		//check named attribute
 		if(CharOperation.equals(attr.property.token, HtmlAttribute.NAME)){
@@ -9174,7 +9178,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		}
 	}
 	
-	protected void consumeHtmlComplexElement(){
+	protected void consumeHtmlElement(){
 //		ComplexElement ::= ElementTag AttributeListopt EnterPCDATA '>' 
 //		    	ElementListopt
 //			 '</' EnterCloseTag SimpleName EnterPCDATA '>' 
@@ -9188,7 +9192,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		}
 		
 		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
-		element.tagBits |= HtmlBits.IsComplexElement;
+		element.tagBits |= HtmlBits.ComplexElement;
 		element.children = childs;
 		
 		length = this.attributeLengthStack[this.attributeLengthPtr--];
@@ -9235,7 +9239,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	protected void consumeHtmlSimpleElement(){
 		//SimpleElement ::=  ElementTag AttributeList '/>'
 		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
-		element.tagBits |= HtmlBits.IsSimpleElement;
+		element.tagBits |= HtmlBits.SimpleElement;
 		int length = this.attributeLengthStack[this.attributeLengthPtr--];
 		if(length != 0){
 			this.attributePtr = this.attributePtr - length;

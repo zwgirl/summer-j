@@ -139,13 +139,17 @@ public class HtmlElement extends HtmlNode {
 		return output;
 	}
 	
-	protected StringBuffer buildDOMScript(Scope parentScope, int indent, StringBuffer output, String parent, String context){
+	protected StringBuffer buildDOMChildScript(Scope parentScope, int indent, StringBuffer output, String parent, String context){
 		output.append("\n");
 		printIndent(indent, output);
 		output.append("(function(p){");
 		
-		output.append("var n"); 
-		output.append(" = $.n(\"").append(type.getLastToken()).append("\");");
+		output.append("var n = "); 
+		if(CharOperation.equals(type.getLastToken(), TEXT)){
+			output.append("$.t();");
+		}else {
+			output.append("$.n").append("(\"").append(type.getLastToken()).append("\");");
+		}
 		output.append('\n');
 		printIndent(indent + 1, output).append("$.a(p, n);");
 		
@@ -154,7 +158,7 @@ public class HtmlElement extends HtmlNode {
 		}
 		
 		for(HtmlNode child : this.children){
-			child.buildDOMScript(scope, indent + 1, output, "n", context);
+			child.buildDOMChildScript(scope, indent + 1, output, "n", context);
 		}
 			
 		output.append("\n");
@@ -163,27 +167,8 @@ public class HtmlElement extends HtmlNode {
 		return output;
 	}
 	
-//	//used in create method of template
-//	public void buildElement(Scope scope, int indent, StringBuffer output, String parent, String context){
-//		output.append("\n");
-//		printIndent(indent + 1, output);
-//		output.append("var n"); 
-//		
-//		output.append(" = $.c(\"").append(this.type.getLastToken()).append("\");");
-//		
-//		output.append("$.a(parent, n);");
-//		
-//		for(HtmlAttribute attr : this.attributes){
-//			attr.generateExpression(scope, indent, output).append(";");
-//		}
-//	
-//		if(this.children != null && this.children.length > 0){
-//			this.buildDOMScript(scope, indent + 1, output, "_n", context);
-//		}
-//	}
-	
 	//used in createRoot method of itemTemplate
-	public void buildRootElement(Scope parentScope, int indent, StringBuffer output, String parent, String context){
+	public void buildTemplateRootElement(Scope parentScope, int indent, StringBuffer output, String parent, String context){
 		output.append('\n');
 		printIndent(indent+1, output);
 		output.append("this.before(data);");
@@ -196,10 +181,18 @@ public class HtmlElement extends HtmlNode {
 		
 		output.append("\n");
 		printIndent(indent + 1, output);
+		output.append("this._rootNodes.push(").append(JsConstant.NODE_NAME).append(");");
+		
+		output.append("\n");
+		printIndent(indent + 1, output);
 		output.append("this.setupDataContext(n, data, index);");
 		
 		for(HtmlAttribute attr : this.attributes){
 			attr.buildScript(scope, indent, output, JsConstant.NODE_NAME);
+		}
+		
+		for(HtmlNode child : this.children){
+			child.buildDOMChildScript(scope, indent + 1, output, "n", context);
 		}
 	}
 	
@@ -249,7 +242,7 @@ public class HtmlElement extends HtmlNode {
 			printIndent(indent, output);
 			output.append("</script>");
 		} else {
-			if((this.tagBits & HtmlBits.IsSimpleElement) != 0){
+			if((this.tagBits & HtmlBits.SimpleElement) != 0){
 				output.append(" />");
 				createEmbedScript(scope, indent, output, true);
 			} else {
@@ -367,7 +360,7 @@ public class HtmlElement extends HtmlNode {
 			printIndent(indent, output);
 			output.append("var _a = Node.prototype.appendChild;");
 			
-			buildDOMScript(scope, indent + 1, output, "document.body", "__this");
+			buildDOMChildScript(scope, indent + 1, output, "document.body", "__this");
 			output.append("</script>");
 		} else if(CharOperation.equals(type.getLastToken(), head)) {
 			output.append('>');

@@ -21,6 +21,7 @@ public abstract class HtmlNode extends Expression {
 	
 	public int kind;
 	public int tagBits;
+	public int bodyStart, bodyEnd;
 	
 	protected HtmlNode(){
 	}
@@ -49,7 +50,7 @@ public abstract class HtmlNode extends Expression {
 	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
 	}
 	
-	protected StringBuffer buildDOMScript(Scope scope, int indent, StringBuffer output, String parent, String context){
+	protected StringBuffer buildDOMChildScript(Scope scope, int indent, StringBuffer output, String parent, String context){
 		return output;}
 	
 	public StringBuffer html(BlockScope scope, int indent, StringBuffer output) {

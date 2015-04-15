@@ -28,5 +28,4 @@ public class HtmlComment extends HtmlNode{
 	public StringBuffer printExpression(int indent, StringBuffer output) {
 		return output;
 	}
-
 }

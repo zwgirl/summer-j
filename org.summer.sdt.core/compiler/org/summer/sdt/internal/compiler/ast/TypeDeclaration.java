@@ -733,11 +733,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append("<!DOCTYPE HTML>").append('\n');
 			if(this.htmlElements != null ){
 				for(HtmlElement element : this.htmlElements){
-//					if((element.tagBits & HtmlBits.HasDynamicContent) != 0){
-//						buildDOM(element, element.scope, 0, output);
-//					} else {
-						html(element, element.scope, 0, output);
-//					}
+					html(element, element.scope, 0, output);
 				}
 			}
 			
@@ -753,9 +749,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 	}
 	
-	private void buildDOM(HtmlElement element, BlockScope scope, int indent, StringBuffer output) {
-		element.generateExpression(initializerScope, indent, output);
-	}
+//	private void buildDOM(HtmlElement element, BlockScope scope, int indent, StringBuffer output) {
+//		element.generateExpression(initializerScope, indent, output);
+//	}
 	
 	private void html(HtmlElement element, BlockScope scope, int indent, StringBuffer output) {
 		element.html(scope, indent, output);
@@ -2737,6 +2733,14 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					continue;
 				}
 				
+				//skip html inline method and script
+				if((method.bits & ASTNode.HTML_INLINE_METHOD) != 0){
+					continue;
+				}
+				if((method.bits & ASTNode.HTML_SCRIPT_METHOD) != 0){
+					continue;
+				}
+				
 				if((method.modifiers & ClassFileConstants.AccPrivate) != 0){
 					generatePrivateMethod((MethodDeclaration) method, type.scope, indent, output);
 					continue;
@@ -2795,8 +2799,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		//generate static fields
 		generateFields(type.scope, indent, output, false, type);
 		
-		//process XAML Element
-		processXAML(type.scope, type, indent, output);
+		//process Html Element
+		processHtml(type.scope, type, indent, output);
 		
 		if(type.memberTypes != null){
 			for(TypeDeclaration member : type.memberTypes){
@@ -3052,7 +3056,10 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append(";");
 	}
 	
-	private void processXAML(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
+	private void processHtml(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
+		if(!type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE))){
+			return;
+		}
 		if(type.htmlElements == null) {
 			output.append(type.binding.sourceName).append(".prototype.").append("doApplyTemplate").append(" = function(parent, data, index) {};");
 			return;
@@ -3065,25 +3072,26 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append(type.binding.sourceName).append(".prototype.").append("doApplyTemplate").append(" = function(parent, data, index) {");
 		
 //		type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_COMPONENT))
+//		if(type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE))){
+//			
+//		}
 		for(HtmlElement element : type.htmlElements){
-			if(element != null && (type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE)))){
-				output.append('\n');
-				printIndent(indent+1, output);
-				output.append("(function() {");
-				
-				element.buildRootElement(scope, indent + 2, output, "parent", "this");
-				if(element.children != null && element.children.length > 0){
-					element.buildDOMScript(scope, indent + 3, output, JsConstant.NODE_NAME, "this");
-				}
-				
-				output.append('\n');
-				printIndent(indent+3, output);
-				output.append("this.after(data, index);");
-				
-				output.append('\n');
-				printIndent(indent+1, output);
-				output.append("}).call(this);");
-			} 
+			output.append('\n');
+			printIndent(indent+1, output);
+			output.append("(function() {");
+			
+			element.buildTemplateRootElement(scope, indent + 2, output, "parent", "this");
+//			if(element.children != null && element.children.length > 0){
+//				element.buildDOMScript(scope, indent + 3, output, JsConstant.NODE_NAME, "this");
+//			}
+			
+			output.append('\n');
+			printIndent(indent+3, output);
+			output.append("this.after(data, index);");
+			
+			output.append('\n');
+			printIndent(indent+1, output);
+			output.append("}).call(this);");
 		}
 		
 		output.append('\n');

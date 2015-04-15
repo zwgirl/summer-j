@@ -33,7 +33,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	public Expression value;
 	
 	public TypeBinding type;   //type of property 
-	public MethodBinding method;
+//	public MethodBinding method;
 	public ReferenceBinding template;
 	public FieldBinding field;
 	
@@ -154,18 +154,17 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			}
 		}
 		
-		
 		if(this.value instanceof HtmlFunctionExpression){
 			HtmlFunctionExpression function = (HtmlFunctionExpression) this.value;
 			function.resolve(scope);
-			scope.element.tagBits |= HtmlBits.HasFunctionExpression;
+			scope.element.tagBits |= HtmlBits.FunctionExpression;
 			return;
 		}
 		
 		ReferenceBinding refType = (ReferenceBinding) this.type;
 		if((refType.modifiers & ClassFileConstants.AccFunction) != 0 ){
 			propertyKind = FUNCTION;
-			this.tagBits |= HtmlBits.IsEventCallback;
+			this.tagBits |= HtmlBits.EventCallback;
 			Literal stringLiteral = (Literal) this.value;
 			this.field = scope.findField(scope.classScope().referenceContext.binding, stringLiteral.source(), this, true);
 			if(field == null){
@@ -261,7 +260,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		return output;
 	}
 	
-	public StringBuffer buildOptionPart(Scope scope, int indent, StringBuffer output){
+	public StringBuffer buildMarkupExtensionOptionPart(Scope scope, int indent, StringBuffer output){
 		
 		this.property.generateExpression(scope, indent, output).append(" : ");
 		switch(propertyKind){
@@ -274,20 +273,21 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			output.append('.').append(((Literal) this.value).source());
 			return output;
 		case FUNCTION:
-			if(this.method != null){
-				if(this.method.isStatic()){
-					output.append(this.method.declaringClass.sourceName).append('.');
-					if(this.value instanceof Literal){
-						output.append(((Literal)this.value).source());
-					}
-				} else {
-//					output.append("this.");
-					output.append("__this.");
-					if(this.value instanceof Literal){
-						output.append(((Literal)this.value).source());
-					}
-				}
-			} else if(this.field != null){
+//			if(this.method != null){
+//				if(this.method.isStatic()){
+//					output.append(this.method.declaringClass.sourceName).append('.');
+//					if(this.value instanceof Literal){
+//						output.append(((Literal)this.value).source());
+//					}
+//				} else {
+////					output.append("this.");
+//					output.append("__this.");
+//					if(this.value instanceof Literal){
+//						output.append(((Literal)this.value).source());
+//					}
+//				}
+//			} else 
+			if(this.field != null){
 				if(this.field.isStatic()){
 					output.append(this.field.declaringClass.sourceName).append('.');
 					if(this.value instanceof Literal){
@@ -348,6 +348,8 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	
 	public void buildScript(Scope scope, int indent, StringBuffer output, String node){
 		if(this.value instanceof HtmlMarkupExtension){
+			output.append("\n");
+			printIndent(indent + 1, output);
 			HtmlMarkupExtension me = (HtmlMarkupExtension) this.value;
 			me.doGenerateExpression(scope, indent, output);
 			
@@ -394,19 +396,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			output.append("\n");
 			printIndent(indent + 1, output);
 			output.append(JsConstant.NODE_NAME).append(".addEventListener('").append(CharOperation.subarray(this.property.token, 2, -1)).append("', ");
-			if(this.method != null){
-				if(this.method.isStatic()){
-					output.append(this.method.declaringClass.sourceName).append('.');
-					if(this.value instanceof Literal){
-						output.append(((Literal)this.value).source());
-					}
-				} else {
-					output.append("this.");
-					if(this.value instanceof Literal){
-						output.append(((Literal)this.value).source());
-					}
-				}
-			} else if(this.field != null){
+			if(this.field != null){
 				if(this.field.isStatic()){
 					output.append(this.field.declaringClass.sourceName).append('.');
 					if(this.value instanceof Literal){
@@ -464,54 +454,26 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			return output;
 		}
 		
-//		output.append(Html2JsAttributeMapping.getHtmlAttributeName(new String(property.token))).append("=");
-//		
-//		if(this.property.binding != null && this.property.binding.type instanceof ReferenceBinding 
-//				&& (((ReferenceBinding)this.property.binding.type).modifiers & ClassFileConstants.AccFunction) != 0){
-//			output.append("\"__this.");
-//			if(this.value instanceof Literal){
-//				output.append(((Literal)this.value).source());
-//			}
-//			output.append("(event);\"");
-//		} else {
-//			value.generateExpression(scope, indent, output);
-//		}
-//		
-//		return output;
-//		
 		this.property.html(scope, indent, output);
 		output.append("=");
 		switch(propertyKind){
 		case FUNCTION:
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append(JsConstant.NODE_NAME).append(".addEventListener('").append(CharOperation.subarray(this.property.token, 2, -1)).append("', ");
-			if(this.method != null){
-				if(this.method.isStatic()){
-					output.append(this.method.declaringClass.sourceName).append('.');
-					if(this.value instanceof Literal){
-						output.append(((Literal)this.value).source());
-					}
-				} else {
-					output.append("this.");
-					if(this.value instanceof Literal){
-						output.append(((Literal)this.value).source());
-					}
-				}
-			} else if(this.field != null){
+			output.append("\"");
+			if(this.field != null){
 				if(this.field.isStatic()){
-					output.append(this.field.declaringClass.sourceName).append('.');
+					this.field.declaringClass.generate(output, scope.classScope().enclosingSourceType());
+					output.append('.');
 					if(this.value instanceof Literal){
 						output.append(((Literal)this.value).source());
 					}
 				} else {
-					output.append("this.");
+					output.append("__this.");
 					if(this.value instanceof Literal){
 						output.append(((Literal)this.value).source());
 					}
 				}
 			}
-			output.append(", false);");
+			output.append("(event);\" ");
 			break;
 		case CLASS:
 		case ENUM:
@@ -524,6 +486,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case FLOAT:
 		case DOUBLE:
 		case BOOLEAN:
+		default:
 			this.value.generateExpression(scope, indent, output);
 		}
 		return output;
