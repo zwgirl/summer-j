@@ -466,6 +466,7 @@ Element -> ComplexElement
 --Element -> EmptyElement
 Element -> SimpleElement
 --Element -> AttributeElement
+Element -> AttributeElement
 Element -> PCDATANode
 Element -> Script
 Element -> CommentNode
@@ -490,67 +491,85 @@ ElementList ::= ElementList Element
 --/:$readableName ScriptHeader:/
 
 Script -> ScriptHeader MethodBody EnterPCDATA >
-/.$putCase consumeScript(); $break ./
+/.$putCase consumeHtmlScript(); $break ./
 /:$readableName Script:/
 
 ScriptHeader ::= <
-/.$putCase consumeScriptHeader(); $break./
+/.$putCase consumeHtmlScriptHeader(); $break./
 /:$readableName ScriptHeader:/
 
 PCDATANode ::= PCDATA 
-/.$putCase consumePCDATANode(); $break ./
+/.$putCase consumeHtmlPCDATANode(); $break ./
 /:$readableName PCDATANode:/
 
 CommentNode ::= XmlComment EnterPCDATA
-/.$putCase consumeCommentNode(); $break ./
+/.$putCase consumeHtmlCommentNode(); $break ./
 /:$readableName CommentNode:/
 
 SimpleElement ::=  ElementStart EnterCloseTag EnterPCDATA '/>'
-/.$putCase consumeSimpleElement(); $break ./
+/.$putCase consumeHtmlSimpleElement(); $break ./
 
 ComplexElement ::= ElementStart EnterPCDATA '>' 
     ElementListopt
 	ElementClose 
-/.$putCase consumeComplexElement(); $break ./
+/.$putCase consumeHtmlComplexElement(); $break ./
 /:$readableName ComplexElement:/
 /:$recovery_template <:/
 
+--AttributeElementTag ::= '<' SimpleName '.' SimpleName
+--/.$putCase consumeHtmlAttributeElementTag(); $break ./
+--/:$readableName AttributeElementTag:/
+
+AttributeElementStart ::= '<' SimpleName '.' SimpleName
+/.$putCase consumeHtmlAttributeElementStart(); $break ./
+/:$readableName ElementStart:/
+
+AttributeElement ::= AttributeElementStart EnterPCDATA '>'
+       ElementListopt
+    '</' SimpleName '.' SimpleName EnterPCDATA '>'
+/.$putCase consumeHtmlAttributeElement(); $break ./
+/:$readableName AttributeElement:/
+
 ElementStart ::= ElementTag AttributeListopt
-/.$putCase consumeElementStart(); $break ./
+/.$putCase consumeHtmlElementStart(); $break ./
 /:$readableName ElementStart:/
 
 ElementClose ::= '</' EnterCloseTag SimpleName EnterPCDATA '>' 
-/.$putCase consumeElementClose(); $break ./
+/.$putCase consumeHtmlElementClose(); $break ./
 /:$readableName ElementClose:/
 
 EnterCloseTag ::= $empty
-/.$putCase consumeEnterCloseTag(); $break ./
+/.$putCase consumeHtmlEnterCloseTag(); $break ./
 /:$readableName EnterCloseTag:/
 
 EnterPCDATA ::= $empty
-/.$putCase consumeEnterPCADATA(); $break ./
+/.$putCase consumeHtmlEnterPCADATA(); $break ./
 /:$readableName EnterPCADATA:/
 
 ElementTag ::= '<' SimpleName
-/.$putCase consumeElementTag(); $break ./
+ElementTag ::= '<' switch
+/.$putCase consumeHtmlElementTag(); $break ./
 /:$readableName ElementTag:/
 
 Attribute ::= SimpleName ':' SimpleName '=' PropertyExpression
-/.$putCase consumeAttributeWithTypeReference(); $break ./
+/.$putCase consumeHtmlAttachAttribute(); $break ./
 Attribute ::= SimpleName '=' PropertyExpression
-/.$putCase consumeAttribute(); $break ./
+Attribute ::= in '=' PropertyExpression
+Attribute ::= class '=' PropertyExpression
+Attribute ::= for '=' PropertyExpression
+/.$putCase consumeHtmlAttribute(); $break ./
 Attribute ::= SimpleName '.' SimpleName '=' PropertyExpression
-/.$putCase consumeAttributeWithPropertyReference(); $break ./
+/.$putCase consumeHtmlAttributeWithReceiver(); $break ./
 /:$readableName Attribute:/
 
 AttributeListopt ::= $empty
-/.$putCase consumeAttributeListopt(); $break ./
+/.$putCase consumeHtmlAttributeListopt(); $break ./
 AttributeListopt -> AttributeList
 /:$readableName AttributeListopt:/
 
 AttributeList ::= Attribute
 AttributeList ::= AttributeList Attribute
-/.$putCase consumeAttributeList(); $break ./
+/.$putCase consumeHtmlAttributeList(); $break ./
 /:$readableName AttributeList:/
 
 PropertyExpression ::= StringLiteral
@@ -564,15 +583,15 @@ PropertyExpression ::= MarkupExtenson
 PropertyExpression ::= FunctionExpression
 
 FunctionExpression ::= FunctionExpressionHeader MethodBody
-/.$putCase consumeFunctionExpression(); $break ./
+/.$putCase consumeHtmlFunctionExpression(); $break ./
 /:$readableName FunctionExpression:/
 
 FunctionExpressionHeader ::= function
-/.$putCase consumeFunctionExpressionHeader(); $break ./
+/.$putCase consumeHtmlFunctionExpressionHeader(); $break ./
 /:$readableName FunctionExpressionHeader:/
 
 MarkupExtenson ::= { SimpleName AttributeListopt }
-/.$putCase consumeMarkupExtenson(true); $break ./
+/.$putCase consumeHtmlMarkupExtenson(); $break ./
 /:$readableName MarkupExtenson:/
 /:$recovery_template }:/
 ----------------------------------------------

@@ -1344,7 +1344,7 @@ public class Scanner implements TerminalTokens {
 				
 				if ((this.source[this.currentPosition - 2] == '-') && (this.source[this.currentPosition - 3] == '-')) {
 					this.PCDATA  = true;
-					System.out.println("currentchar:" + Integer.valueOf(this.source[currentPosition]));
+//					System.out.println("currentchar:" + Integer.valueOf(this.source[currentPosition]));
 //					this.currentPosition--;
 					return true;
 				}

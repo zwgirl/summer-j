@@ -3664,7 +3664,120 @@ class ASTConverter {
 		int sourceStart = typeReference.sourceStart;
 		int length = 0;
 		int dimensions = typeReference.dimensions();
-		if (typeReference instanceof org.summer.sdt.internal.compiler.ast.SingleTypeReference) {
+		
+		//cym 2015-04-15
+		if (typeReference instanceof org.summer.sdt.internal.compiler.ast.SingleTypeReference1) {
+			annotations = typeReference.annotations != null ? typeReference.annotations[0] : null;
+			int annotationsEnd = annotations != null ? annotations[annotations.length - 1].declarationSourceEnd + 1 : -1;
+			// this is either an ArrayTypeReference or a SingleTypeReference
+			char[] name = ((org.summer.sdt.internal.compiler.ast.SingleTypeReference1) typeReference).getTypeName()[0];
+			length = typeReference.sourceEnd - typeReference.sourceStart + 1;
+			// need to find out if this is an array type of primitive types or not
+			if (isPrimitiveType(name)) {
+				int[] positions = retrieveEndOfElementTypeNamePosition(sourceStart < annotationsEnd ? annotationsEnd : sourceStart, sourceStart + length);
+				int end = positions[1];
+				if (end == -1) {
+					end = sourceStart + length - 1;
+				}
+				final PrimitiveType primitiveType = new PrimitiveType(this.ast);
+				primitiveType.setPrimitiveTypeCode(getPrimitiveTypeCode(name));
+				primitiveType.setSourceRange(sourceStart, end - sourceStart + 1);
+				type = primitiveType;
+				if (typeReference.annotations != null && (annotations = typeReference.annotations[0]) != null) {
+					annotateType(primitiveType, annotations);
+				}
+			} else if (typeReference instanceof ParameterizedSingleTypeReference) {
+				ParameterizedSingleTypeReference parameterizedSingleTypeReference = (ParameterizedSingleTypeReference) typeReference;
+				final SimpleName simpleName = new SimpleName(this.ast);
+				simpleName.internalSetIdentifier(new String(name));
+				int[] positions = retrieveEndOfElementTypeNamePosition(sourceStart < annotationsEnd ? annotationsEnd : sourceStart, sourceStart + length);
+				int end = positions[1];
+				if (end == -1) {
+					end = sourceStart + length - 1;
+				}
+				if (positions[0] != -1) {
+					simpleName.setSourceRange(positions[0], end - positions[0] + 1);
+				} else {
+					simpleName.setSourceRange(sourceStart, end - sourceStart + 1);					
+				}
+
+				switch(this.ast.apiLevel) {
+					case AST.JLS2_INTERNAL :
+						SimpleType simpleType = new SimpleType(this.ast);
+						simpleType.setName(simpleName);
+						simpleType.setFlags(simpleType.getFlags() | ASTNode.MALFORMED);
+						simpleType.setSourceRange(sourceStart, end - sourceStart + 1);
+						type = simpleType;
+						if (this.resolveBindings) {
+							this.recordNodes(simpleName, typeReference);
+						}
+						break;
+					default :
+						simpleType = new SimpleType(this.ast);
+						simpleType.setName(simpleName);
+						simpleType.setSourceRange(simpleName.getStartPosition(), simpleName.getLength());
+						if (typeReference.annotations != null && (annotations = typeReference.annotations[0]) != null) {
+							annotateType(simpleType, annotations);
+						}
+						int newSourceStart = simpleType.getStartPosition();
+						if (newSourceStart > 0 && newSourceStart < sourceStart) 
+							sourceStart = newSourceStart;
+						final ParameterizedType parameterizedType = new ParameterizedType(this.ast);
+						parameterizedType.setType(simpleType);
+						type = parameterizedType;
+						TypeReference[] typeArguments = parameterizedSingleTypeReference.typeArguments;
+						if (typeArguments != null) {
+							Type type2 = null;
+							for (int i = 0, max = typeArguments.length; i < max; i++) {
+								type2 = convertType(typeArguments[i]);
+								((ParameterizedType) type).typeArguments().add(type2);
+								end = type2.getStartPosition() + type2.getLength() - 1;
+							}
+							end = retrieveClosingAngleBracketPosition(end + 1);
+							type.setSourceRange(sourceStart, end - sourceStart + 1);
+						} else {
+							type.setSourceRange(sourceStart, end - sourceStart + 1);
+						}
+						if (this.resolveBindings) {
+							this.recordNodes(simpleName, typeReference);
+							this.recordNodes(simpleType, typeReference);
+						}
+				}
+			} else {
+				final SimpleName simpleName = new SimpleName(this.ast);
+				simpleName.internalSetIdentifier(new String(name));
+				// we need to search for the starting position of the first brace in order to set the proper length
+				// PR http://dev.eclipse.org/bugs/show_bug.cgi?id=10759
+				int[] positions = retrieveEndOfElementTypeNamePosition(sourceStart < annotationsEnd ? annotationsEnd : sourceStart, sourceStart + length);
+				int end = positions[1];
+				if (end == -1) {
+					end = sourceStart + length - 1;
+				}
+				if (positions[0] != -1) {
+					simpleName.setSourceRange(positions[0], end - positions[0] + 1);
+				} else {
+					simpleName.setSourceRange(sourceStart, end - sourceStart + 1);
+				}
+				final SimpleType simpleType = new SimpleType(this.ast);
+				simpleType.setName(simpleName);
+				type = simpleType;
+				type.setSourceRange(sourceStart, end - sourceStart + 1);
+				type = simpleType;
+				if (this.resolveBindings) {
+					this.recordNodes(simpleName, typeReference);
+				}
+				if (typeReference.annotations != null && (annotations = typeReference.annotations[0]) != null) {
+					annotateType(simpleType, annotations);
+				}
+			}
+			if (dimensions != 0) {
+				type = convertToArray(type, sourceStart, length, dimensions, typeReference.getAnnotationsOnDimensions(true));
+				if (this.resolveBindings) {
+					// store keys for inner types
+					completeRecord((ArrayType) type, typeReference);
+				}
+			}
+		} else if (typeReference instanceof org.summer.sdt.internal.compiler.ast.SingleTypeReference) {
 			annotations = typeReference.annotations != null ? typeReference.annotations[0] : null;
 			int annotationsEnd = annotations != null ? annotations[annotations.length - 1].declarationSourceEnd + 1 : -1;
 			// this is either an ArrayTypeReference or a SingleTypeReference
@@ -3775,7 +3888,7 @@ class ASTConverter {
 					completeRecord((ArrayType) type, typeReference);
 				}
 			}
-		} else {
+		} else { ////cym 2015-04-15 end
 			if (typeReference instanceof ParameterizedQualifiedTypeReference) {
 				ParameterizedQualifiedTypeReference parameterizedQualifiedTypeReference = (ParameterizedQualifiedTypeReference) typeReference;
 				char[][] tokens = parameterizedQualifiedTypeReference.tokens;
@@ -4005,6 +4118,8 @@ class ASTConverter {
 		}
 		return type;
 	}
+	
+
 
 	private Type createBaseType(TypeReference typeReference, long[] positions,
 			org.summer.sdt.internal.compiler.ast.Annotation[][] typeAnnotations, char[][] tokens, int lenth,

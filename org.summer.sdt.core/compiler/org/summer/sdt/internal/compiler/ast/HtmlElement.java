@@ -14,7 +14,7 @@ import org.summer.sdt.internal.compiler.lookup.TypeBinding;
  * 
  * @author cym
  * 
- *         using by XAML
+ *         using by HTML
  */
 public class HtmlElement extends HtmlNode {
 	public static final HtmlAttribute[] NO_ATTRIBUTES = new HtmlAttribute[0];

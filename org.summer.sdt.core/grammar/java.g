@@ -466,6 +466,7 @@ Element -> ComplexElement
 --Element -> EmptyElement
 Element -> SimpleElement
 --Element -> AttributeElement
+Element -> AttributeElement
 Element -> PCDATANode
 Element -> Script
 Element -> CommentNode
@@ -515,6 +516,20 @@ ComplexElement ::= ElementStart EnterPCDATA '>'
 /:$readableName ComplexElement:/
 /:$recovery_template <:/
 
+--AttributeElementTag ::= '<' SimpleName '.' SimpleName
+--/.$putCase consumeHtmlAttributeElementTag(); $break ./
+--/:$readableName AttributeElementTag:/
+
+AttributeElementStart ::= '<' SimpleName '.' SimpleName
+/.$putCase consumeHtmlAttributeElementStart(); $break ./
+/:$readableName ElementStart:/
+
+AttributeElement ::= AttributeElementStart EnterPCDATA '>'
+       ElementListopt
+    '</' SimpleName '.' SimpleName EnterPCDATA '>'
+/.$putCase consumeHtmlAttributeElement(); $break ./
+/:$readableName AttributeElement:/
+
 ElementStart ::= ElementTag AttributeListopt
 /.$putCase consumeHtmlElementStart(); $break ./
 /:$readableName ElementStart:/
@@ -532,12 +547,16 @@ EnterPCDATA ::= $empty
 /:$readableName EnterPCADATA:/
 
 ElementTag ::= '<' SimpleName
+ElementTag ::= '<' switch
 /.$putCase consumeHtmlElementTag(); $break ./
 /:$readableName ElementTag:/
 
 Attribute ::= SimpleName ':' SimpleName '=' PropertyExpression
 /.$putCase consumeHtmlAttachAttribute(); $break ./
 Attribute ::= SimpleName '=' PropertyExpression
+Attribute ::= in '=' PropertyExpression
+Attribute ::= class '=' PropertyExpression
+Attribute ::= for '=' PropertyExpression
 /.$putCase consumeHtmlAttribute(); $break ./
 Attribute ::= SimpleName '.' SimpleName '=' PropertyExpression
 /.$putCase consumeHtmlAttributeWithReceiver(); $break ./

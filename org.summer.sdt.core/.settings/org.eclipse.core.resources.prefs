@@ -3,6 +3,7 @@ encoding//compiler/org/summer/sdt/internal/compiler/ast/CompilationUnitDeclarati
 encoding//compiler/org/summer/sdt/internal/compiler/ast/HtmlText.java=UTF-8
 encoding//compiler/org/summer/sdt/internal/compiler/ast/LambdaExpression.java=UTF-8
 encoding//compiler/org/summer/sdt/internal/compiler/ast/ReferenceExpression.java=UTF-8
+encoding//compiler/org/summer/sdt/internal/compiler/html/SvgTags.java=UTF-8
 encoding//compiler/org/summer/sdt/internal/compiler/lookup/BoundSet.java=UTF-8
 encoding//compiler/org/summer/sdt/internal/compiler/lookup/ConstraintExpressionFormula.java=UTF-8
 encoding//compiler/org/summer/sdt/internal/compiler/lookup/InferenceContext18.java=UTF-8

@@ -441,10 +441,15 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case BOOLEAN:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append(JsConstant.NODE_NAME).append('.');
-			this.property.doGenerateExpression(scope, indent, output);
-			output.append(" = ");
-			this.value.generateExpression(scope, indent, output).append(";");
+//			output.append(JsConstant.NODE_NAME).append('.');
+//			this.property.doGenerateExpression(scope, indent, output);
+//			output.append(" = ");
+//			this.value.generateExpression(scope, indent, output).append(";");
+			
+			output.append("$.attr(").append(JsConstant.NODE_NAME).append(',');
+			output.append(" \"");
+			this.property.doGenerateExpression(scope, indent, output).append("\", ");
+			this.value.generateExpression(scope, indent, output).append(");");
 		}
 	}
 	

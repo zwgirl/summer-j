@@ -943,7 +943,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	protected int elementPtr1;
 	protected HtmlNode[] elementStack = new HtmlNode[AstStackIncrement];
 	
-	private int nestedElement = 0;
+	protected int nestedElement = 0;
 	
 	protected int attributeLengthPtr;
 	protected int[] attributeLengthStack = new int[0];
@@ -9114,7 +9114,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		this.nestedElement++;
 		HtmlElement element = new HtmlElement();
 		
-		element.type = new SingleTypeReference(
+		element.type = new SingleTypeReference1(
 				this.identifierStack[this.identifierPtr],
 				this.identifierPositionStack[this.identifierPtr--]);
 		this.identifierLengthPtr--;
@@ -9203,7 +9203,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		
 		element.statementEnd = this.scanner.currentPosition - 1;
 		
-		element.closeType = new SingleTypeReference(
+		element.closeType = new SingleTypeReference1(
 				this.identifierStack[this.identifierPtr],
 				this.identifierPositionStack[this.identifierPtr--]);
 		
@@ -9315,7 +9315,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		if (++this.elementPtr1 >= stackLength) {
 			System.arraycopy(
 				this.elementStack, 0,
-				this.elementStack = new HtmlElement[stackLength + AstStackIncrement], 0,
+				this.elementStack = new HtmlNode[stackLength + AstStackIncrement], 0,
 				stackLength);
 			this.elementPtr1 = stackLength;
 		}

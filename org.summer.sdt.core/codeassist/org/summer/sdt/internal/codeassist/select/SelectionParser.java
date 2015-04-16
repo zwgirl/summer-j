@@ -56,6 +56,7 @@ import org.summer.sdt.internal.compiler.ast.ReturnStatement;
 import org.summer.sdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.summer.sdt.internal.compiler.ast.SingleNameReference;
 import org.summer.sdt.internal.compiler.ast.SingleTypeReference;
+import org.summer.sdt.internal.compiler.ast.SingleTypeReference1;
 import org.summer.sdt.internal.compiler.ast.Statement;
 import org.summer.sdt.internal.compiler.ast.StringLiteral;
 import org.summer.sdt.internal.compiler.ast.SuperReference;
@@ -340,6 +341,26 @@ public class SelectionParser extends AssistParser {
 		attribute.sourceEnd = attribute.value.sourceEnd;
 		
 		pushOnAttributeStack(attribute);
+	}
+	
+	@Override
+	protected void consumeHtmlElementTag() {
+		if ((indexOfAssistIdentifier(true)) < 0) {
+			super.consumeHtmlElementTag();
+			return;
+		}
+		this.nestedElement++;
+		HtmlElement element = new HtmlElement();
+		
+		element.type = new SelectionOnSingleTypeReference1(
+				this.identifierStack[this.identifierPtr],
+				this.identifierPositionStack[this.identifierPtr--]);
+		this.identifierLengthPtr--;
+		
+		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
+		element.sourceEnd = element.type.sourceEnd;
+		
+		pushOnElementStack(element);
 	}
 	
 	protected void consumeHtmlAttachAttribute(){
