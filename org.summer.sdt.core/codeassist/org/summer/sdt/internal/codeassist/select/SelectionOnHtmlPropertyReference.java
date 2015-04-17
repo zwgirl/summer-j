@@ -38,7 +38,7 @@ import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class SelectionOnHtmlPropertyReference extends HtmlPropertyReference {
 
-	public SelectionOnHtmlPropertyReference(char[] source, long pos, HtmlSimplePropertyReference receiver) {
+	public SelectionOnHtmlPropertyReference(char[][] source, long[] pos, HtmlSimplePropertyReference receiver) {
 		super(source, pos, receiver);
 	}
 

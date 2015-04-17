@@ -1,5 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
@@ -25,16 +26,23 @@ import org.summer.sdt.internal.compiler.lookup.VariableBinding;
  *
  */
 public abstract class PropertyReference extends Expression{
-	public char[] token;
+	public char[][] tokens;
+	public long[] positions;
 	public FieldBinding binding;
 	public TypeBinding actualReceiverType;// exact binding resulting from lookup
 
-	public PropertyReference(char[] source, long pos) {
-		this.token = source;
+	public PropertyReference(char[][] source, long[] pos) {
+		this.tokens = source;
+		this.positions = pos;
+		
 		//by default the position are the one of the field (not true for super access)
-		this.sourceStart = (int) (pos >>> 32);
-		this.sourceEnd = (int) (pos & 0x00000000FFFFFFFFL);
+//		this.sourceStart = (int) (pos >>> 32);
+//		this.sourceEnd = (int) (pos & 0x00000000FFFFFFFFL);
 		this.bits |= Binding.FIELD;
+	}
+	
+	public char[] name(){
+		return CharOperation.concatWith(this.tokens, '-');
 	}
 	
 	/**
@@ -74,7 +82,7 @@ public abstract class PropertyReference extends Expression{
 	}
 	
 	public StringBuffer printExpression(int indent, StringBuffer output) {
-		return output.append('.').append(this.token);
+		return output.append('.').append(CharOperation.concatWith(this.tokens, '-'));
 	}
 	
 //	public TypeBinding resolveType(BlockScope scope){

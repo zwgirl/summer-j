@@ -26,7 +26,7 @@ import org.summer.sdt.internal.compiler.lookup.VariableBinding;
 public class HtmlPropertyReference extends PropertyReference{
 	public HtmlSimplePropertyReference receiver;
 
-	public HtmlPropertyReference(char[] source, long pos, HtmlSimplePropertyReference receiver) {
+	public HtmlPropertyReference(char[][] source, long[] pos, HtmlSimplePropertyReference receiver) {
 		super(source, pos);
 		this.receiver = receiver;
 	}
@@ -68,7 +68,7 @@ public class HtmlPropertyReference extends PropertyReference{
 	}
 	
 	public StringBuffer printExpression(int indent, StringBuffer output) {
-		return output.append('.').append(this.token);
+		return output.append('.').append(this.name());
 	}
 	
 	public TypeBinding resolveType(BlockScope scope){
@@ -85,7 +85,7 @@ public class HtmlPropertyReference extends PropertyReference{
 		}
 		
 		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
-		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.token, null);
+		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.name(), null);
 		
 		//cym 2012-02-12
 		if(fieldBinding.isValidBinding() && (fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
@@ -189,22 +189,22 @@ public class HtmlPropertyReference extends PropertyReference{
 
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append(this.receiver.token);
-		output.append('.').append(this.token);
+		output.append(this.receiver.name());
+		output.append('.').append(this.name());
 		return output;
 	}
 	
 	public StringBuffer html(Scope scope, int indent, StringBuffer output){
-		Js2HtmlMapping.getHtmlName(new String(this.receiver.token));
-		output.append(Js2HtmlMapping.getHtmlName(new String(this.receiver.token)));
-		output.append('.').append(Js2HtmlMapping.getHtmlName(new String(this.token)));
+		Js2HtmlMapping.getHtmlName(new String(this.receiver.name()));
+		output.append(Js2HtmlMapping.getHtmlName(new String(this.receiver.name())));
+		output.append('.').append(Js2HtmlMapping.getHtmlName(new String(this.name())));
 		return output;
 	}
 	
 	public StringBuffer buildInjectPart(Scope scope, int indent, StringBuffer output){
 		output.append("[\"");
-		output.append(this.receiver.token).append("\"");
-		output.append(", \"").append(this.token).append("\"");
+		output.append(this.receiver.name()).append("\"");
+		output.append(", \"").append(this.name()).append("\"");
 		output.append("]");
 		
 		return output;

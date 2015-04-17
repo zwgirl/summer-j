@@ -286,123 +286,123 @@ public class SelectionParser extends AssistParser {
 		}
 	}
 	
-	protected void consumeHtmlAttributeWithReceiver() {
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeHtmlAttributeWithReceiver();
-			return;
-		}
-		
-		HtmlPropertyReference propertyReference = null;
-		char[] assistIdentifier = assistIdentifier();
-		if(this.identifierStack[this.identifierPtr] == assistIdentifier){
-			propertyReference = new SelectionOnHtmlPropertyReference(
-					this.identifierStack[this.identifierPtr],
-					this.identifierPositionStack[this.identifierPtr--],
-					new HtmlSimplePropertyReference(
-							this.identifierStack[this.identifierPtr], 
-							this.identifierPositionStack[this.identifierPtr--]));
-		} else {
-			propertyReference = new HtmlPropertyReference(
-					this.identifierStack[this.identifierPtr],
-					this.identifierPositionStack[this.identifierPtr--],
-					new SelectionOnSimplePropertyRef(
-							this.identifierStack[this.identifierPtr], 
-							this.identifierPositionStack[this.identifierPtr--]));
-		}
-		this.identifierLengthPtr--;
-		this.identifierLengthPtr--;
-		
-		HtmlAttribute attr = new HtmlAttribute(propertyReference);
-		
-		attr.value = this.expressionStack[this.expressionPtr--];
-		expressionLengthPtr--;
-		pushOnAttributeStack(attr);
-		
-		attr.statementEnd = this.scanner.currentPosition - 1;
-		attr.sourceEnd = this.scanner.currentPosition - 1;
-		
-	}
+//	protected void consumeHtmlAttributeWithReceiver() {
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlAttributeWithReceiver();
+//			return;
+//		}
+//		
+//		HtmlPropertyReference propertyReference = null;
+//		char[] assistIdentifier = assistIdentifier();
+//		if(this.identifierStack[this.identifierPtr] == assistIdentifier){
+//			propertyReference = new SelectionOnHtmlPropertyReference(
+//					this.identifierStack[this.identifierPtr],
+//					this.identifierPositionStack[this.identifierPtr--],
+//					new HtmlSimplePropertyReference(
+//							this.identifierStack[this.identifierPtr], 
+//							this.identifierPositionStack[this.identifierPtr--]));
+//		} else {
+//			propertyReference = new HtmlPropertyReference(
+//					this.identifierStack[this.identifierPtr],
+//					this.identifierPositionStack[this.identifierPtr--],
+//					new SelectionOnSimplePropertyRef(
+//							this.identifierStack[this.identifierPtr], 
+//							this.identifierPositionStack[this.identifierPtr--]));
+//		}
+//		this.identifierLengthPtr--;
+//		this.identifierLengthPtr--;
+//		
+//		HtmlAttribute attr = new HtmlAttribute(propertyReference);
+//		
+//		attr.value = this.expressionStack[this.expressionPtr--];
+//		expressionLengthPtr--;
+//		pushOnAttributeStack(attr);
+//		
+//		attr.statementEnd = this.scanner.currentPosition - 1;
+//		attr.sourceEnd = this.scanner.currentPosition - 1;
+//		
+//	}
 	
-	protected void consumeHtmlAttribute() {
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeHtmlAttribute();
-			return;
-		}
-		
-		char[] attrName = this.identifierStack[this.identifierPtr];
-		long positions = this.identifierPositionStack[this.identifierPtr--];
-		this.identifierLengthPtr--;
-		
-		HtmlAttribute attribute = new HtmlAttribute(new SelectionOnSimplePropertyRef(attrName, positions));
-		attribute.value =  this.expressionStack[this.expressionPtr--];
-		this.expressionLengthPtr--;
-		
-		attribute.sourceStart = (int) (positions >>> 32);
-		attribute.sourceEnd = attribute.value.sourceEnd;
-		
-		pushOnAttributeStack(attribute);
-	}
-	
-	@Override
-	protected void consumeHtmlElementTag() {
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeHtmlElementTag();
-			return;
-		}
-		this.nestedElement++;
-		HtmlElement element = new HtmlElement();
-		
-		element.type = new SelectionOnSingleTypeReference1(
-				this.identifierStack[this.identifierPtr],
-				this.identifierPositionStack[this.identifierPtr--]);
-		this.identifierLengthPtr--;
-		
-		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
-		element.sourceEnd = element.type.sourceEnd;
-		
-		pushOnElementStack(element);
-	}
-	
-	protected void consumeHtmlAttachAttribute(){
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeHtmlAttachAttribute();
-			return;
-		}
-
-		char[] attrName = this.identifierStack[this.identifierPtr];
-		long positions = this.identifierPositionStack[this.identifierPtr--];
-		this.identifierLengthPtr--;
-		
-		TypeReference receiver = new SelectionOnSingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
-		this.identifierLengthPtr--;
-		
-		HtmlAttribute attr = new HtmlAttribute(new SelectionOnHtmlAttachProperty(attrName, positions, receiver));
-
-		attr.value =  this.expressionStack[this.expressionPtr--];
-		this.expressionLengthPtr--;
-		
-		attr.sourceStart = (int) (positions >>> 32);
-		attr.sourceEnd = attr.value.sourceEnd;
-		
-		//check named attribute
-		if(CharOperation.equals(attr.property.token, HtmlAttribute.NAME)){
-			HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
-			if((attr.tagBits & HtmlBits.NamedField) != 0){
-				problemReporter().duplicateNamedElementInType(attr.property);
-			} else {
-				attr.tagBits |= HtmlBits.NamedField;
-			}
-			StringLiteral str = (StringLiteral) attr.value;
-			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
-			fieldDecl.type = element.type;
-			fieldDecl.bits |= ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal;
-			
-			pushOnAstStack(fieldDecl);
-			concatNodeLists();
-		}
-		
-		pushOnAttributeStack(attr);
-	}
+//	protected void consumeHtmlAttribute() {
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlAttribute();
+//			return;
+//		}
+//		
+//		char[] attrName = this.identifierStack[this.identifierPtr];
+//		long positions = this.identifierPositionStack[this.identifierPtr--];
+//		this.identifierLengthPtr--;
+//		
+//		HtmlAttribute attribute = new HtmlAttribute(new SelectionOnSimplePropertyRef(attrName, positions));
+//		attribute.value =  this.expressionStack[this.expressionPtr--];
+//		this.expressionLengthPtr--;
+//		
+//		attribute.sourceStart = (int) (positions >>> 32);
+//		attribute.sourceEnd = attribute.value.sourceEnd;
+//		
+//		pushOnAttributeStack(attribute);
+//	}
+//	
+//	@Override
+//	protected void consumeHtmlElementTag() {
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlElementTag();
+//			return;
+//		}
+//		this.nestedElement++;
+//		HtmlElement element = new HtmlElement();
+//		
+//		element.type = new SelectionOnSingleTypeReference1(
+//				this.identifierStack[this.identifierPtr],
+//				this.identifierPositionStack[this.identifierPtr--]);
+//		this.identifierLengthPtr--;
+//		
+//		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
+//		element.sourceEnd = element.type.sourceEnd;
+//		
+//		pushOnElementStack(element);
+//	}
+//	
+//	protected void consumeHtmlAttachAttribute(){
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlAttachAttribute();
+//			return;
+//		}
+//
+//		char[] attrName = this.identifierStack[this.identifierPtr];
+//		long positions = this.identifierPositionStack[this.identifierPtr--];
+//		this.identifierLengthPtr--;
+//		
+//		TypeReference receiver = new SelectionOnSingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
+//		this.identifierLengthPtr--;
+//		
+//		HtmlAttribute attr = new HtmlAttribute(new SelectionOnHtmlAttachProperty(attrName, positions, receiver));
+//
+//		attr.value =  this.expressionStack[this.expressionPtr--];
+//		this.expressionLengthPtr--;
+//		
+//		attr.sourceStart = (int) (positions >>> 32);
+//		attr.sourceEnd = attr.value.sourceEnd;
+//		
+//		//check named attribute
+//		if(CharOperation.equals(attr.property.token, HtmlAttribute.NAME)){
+//			HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
+//			if((attr.tagBits & HtmlBits.NamedField) != 0){
+//				problemReporter().duplicateNamedElementInType(attr.property);
+//			} else {
+//				attr.tagBits |= HtmlBits.NamedField;
+//			}
+//			StringLiteral str = (StringLiteral) attr.value;
+//			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
+//			fieldDecl.type = element.type;
+//			fieldDecl.bits |= ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal;
+//			
+//			pushOnAstStack(fieldDecl);
+//			concatNodeLists();
+//		}
+//		
+//		pushOnAttributeStack(attr);
+//	}
 	
 //	protected void consumeAttribute() {
 //		if ((indexOfAssistIdentifier(true)) < 0) {

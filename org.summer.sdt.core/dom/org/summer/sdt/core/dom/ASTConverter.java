@@ -3174,7 +3174,7 @@ class ASTConverter {
 	//TODO cym 2015-03-21 
 	public SimpleName convert1(org.summer.sdt.internal.compiler.ast.PropertyReference propertyReference) {
 		final SimpleName name = new SimpleName(this.ast);
-		name.internalSetIdentifier(new String(propertyReference.token));
+		name.internalSetIdentifier(new String(propertyReference.name()));
 		if (this.resolveBindings) {
 			recordNodes(name, propertyReference);
 		}

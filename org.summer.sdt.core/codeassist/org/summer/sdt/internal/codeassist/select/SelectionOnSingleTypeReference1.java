@@ -33,7 +33,7 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class SelectionOnSingleTypeReference1 extends SingleTypeReference1 {
-	public SelectionOnSingleTypeReference1(char[] source, long pos) {
+	public SelectionOnSingleTypeReference1(char[][] source, long[] pos) {
 		super(source, pos);
 	}
 	public void aboutToResolve(Scope scope) {
@@ -56,7 +56,7 @@ public class SelectionOnSingleTypeReference1 extends SingleTypeReference1 {
 	}
 	public StringBuffer printExpression(int indent, StringBuffer output) {
 	
-		return output.append("<SelectOnType:").append(this.token).append('>');//$NON-NLS-1$
+		return output.append("<SelectOnType:").append(this.name()).append('>');//$NON-NLS-1$
 	}
 	public TypeBinding resolveTypeEnclosing(BlockScope scope, ReferenceBinding enclosingType) {
 		super.resolveTypeEnclosing(scope, enclosingType);

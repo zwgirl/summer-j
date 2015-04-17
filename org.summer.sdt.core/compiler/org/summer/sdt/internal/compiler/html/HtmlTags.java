@@ -341,5 +341,14 @@ public class HtmlTags {
 //		maps.put("media", "HTMLMediaElement");
 //		maps.put("template", "HTMLTemplateElement");
 	}
+	
+	public static char[] getMappingClass(char[] name){
+		String result = maps.get(new String(name));
+		if(result == null){
+			return new char[0];
+		}
+		
+		return result.toCharArray();
+	}
 }
 

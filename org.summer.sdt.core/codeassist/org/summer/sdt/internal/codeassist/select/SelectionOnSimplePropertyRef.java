@@ -38,7 +38,7 @@ import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class SelectionOnSimplePropertyRef extends HtmlSimplePropertyReference {
 
-	public SelectionOnSimplePropertyRef(char[] source , long pos) {
+	public SelectionOnSimplePropertyRef(char[][] source , long[] pos) {
 		super(source, pos);
 	}
 

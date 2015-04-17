@@ -40,7 +40,7 @@ import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class SelectionOnHtmlAttachProperty extends HtmlAttachProperty {
 
-	public SelectionOnHtmlAttachProperty(char[] source, long pos, TypeReference receiver) {
+	public SelectionOnHtmlAttachProperty(char[][] source, long[] pos, TypeReference receiver) {
 		super(source, pos, receiver);
 	}
 

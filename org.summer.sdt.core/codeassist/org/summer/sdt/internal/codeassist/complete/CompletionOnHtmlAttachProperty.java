@@ -39,12 +39,12 @@ public class CompletionOnHtmlAttachProperty extends HtmlAttachProperty {
 
 	public boolean isInsideAnnotation;
 
-	public CompletionOnHtmlAttachProperty(char[] source, long pos, boolean isInsideAnnotation) {
+	public CompletionOnHtmlAttachProperty(char[][] source, long[] pos, boolean isInsideAnnotation) {
 		super(source, pos, null);
 		this.isInsideAnnotation = isInsideAnnotation;
 	}
 	
-	public CompletionOnHtmlAttachProperty(char[] source, long pos, TypeReference receiver, boolean isInsideAnnotation) {
+	public CompletionOnHtmlAttachProperty(char[][] source, long[] pos, TypeReference receiver, boolean isInsideAnnotation) {
 		super(source, pos, receiver);
 		this.isInsideAnnotation = isInsideAnnotation;
 	}

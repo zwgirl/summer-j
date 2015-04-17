@@ -10,8 +10,10 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
  */
 public class HtmlMarkupExtension extends HtmlElement {
 	
-	public HtmlMarkupExtension() {
-		super();
+	public HtmlMarkupExtension(char[][] tokens, long[] positions) {
+		super(tokens, positions);
+		
+		type = new SingleTypeReference1(tokens, positions);
 	}
 
 	@Override

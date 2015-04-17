@@ -18,6 +18,7 @@ import java.util.Stack;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
+import org.summer.sdt.internal.compiler.html.HtmlTags;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -33,36 +34,40 @@ import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 
 public class SingleTypeReference1 extends TypeReference {
 
-	public char[] token;
+	public char[][] tokens;
+	public long[] positions;
 
-	public SingleTypeReference1(char[] source, long pos) {
+	public SingleTypeReference1(char[][] source, long[] positions) {
 
-			this.token = source;
-			this.sourceStart = (int) (pos>>>32)  ;
-			this.sourceEnd = (int) (pos & 0x00000000FFFFFFFFL) ;
+			this.tokens = source;
+			this.positions = positions;
+//			this.sourceStart = (int) (pos>>>32)  ;
+//			this.sourceEnd = (int) (pos & 0x00000000FFFFFFFFL) ;
 
 	}
 
 	public TypeReference augmentTypeWithAdditionalDimensions(int additionalDimensions, Annotation[][] additionalAnnotations, boolean isVarargs) {
-		int totalDimensions = this.dimensions() + additionalDimensions;
-		Annotation [][] allAnnotations = getMergedAnnotationsOnDimensions(additionalDimensions, additionalAnnotations);
-		ArrayTypeReference arrayTypeReference = new ArrayTypeReference(this.token, totalDimensions, allAnnotations, (((long) this.sourceStart) << 32) + this.sourceEnd);
-		arrayTypeReference.annotations = this.annotations;
-		arrayTypeReference.bits |= (this.bits & ASTNode.HasTypeAnnotations);
-		if (!isVarargs)
-			arrayTypeReference.extendedDimensions = additionalDimensions;
-		return arrayTypeReference;
+//		int totalDimensions = this.dimensions() + additionalDimensions;
+//		Annotation [][] allAnnotations = getMergedAnnotationsOnDimensions(additionalDimensions, additionalAnnotations);
+//		ArrayTypeReference arrayTypeReference = new ArrayTypeReference(this.token, totalDimensions, allAnnotations, (((long) this.sourceStart) << 32) + this.sourceEnd);
+//		arrayTypeReference.annotations = this.annotations;
+//		arrayTypeReference.bits |= (this.bits & ASTNode.HasTypeAnnotations);
+//		if (!isVarargs)
+//			arrayTypeReference.extendedDimensions = additionalDimensions;
+//		return arrayTypeReference;
+		
+		return this;
 	}
 
 	public char[] getLastToken() {
-		return this.token;
+		return CharOperation.concatWith(this.tokens, '-');
 	}
 	protected TypeBinding getTypeBinding(Scope scope) {
 		if (this.resolvedType != null)
 			return this.resolvedType;
 
 //		this.resolvedType = scope.getType(this.token);
-		this.resolvedType = scope.getType("HTMLElement".toCharArray());
+		this.resolvedType = scope.getType(HtmlTags.getMappingClass(CharOperation.concatWith(this.tokens, '-')));
 		
 		if (this.resolvedType instanceof TypeVariableBinding) {
 			TypeVariableBinding typeVariable = (TypeVariableBinding) this.resolvedType;
@@ -84,21 +89,29 @@ public class SingleTypeReference1 extends TypeReference {
 	}
 
 	public char [][] getTypeName() {
-		return new char[][] { this.token };
+//		return new char[][] { this.token };
+		return this.tokens;
 	}
 
 	@Override
 	public boolean isBaseTypeReference() {
-		return this.token == BYTE    ||
-			   this.token == SHORT   ||
-			   this.token == INT     ||
-			   this.token == LONG    ||
-			   this.token == FLOAT   ||
-			   this.token == DOUBLE  ||
-			   this.token == CHAR    ||
-			   this.token == BOOLEAN ||
-			   this.token == NULL    ||
-			   this.token == VOID;	    
+		if(this.tokens.length>1){
+			return false;
+		}
+		return this.tokens[0] == BYTE    ||
+			   this.tokens[0] == SHORT   ||
+			   this.tokens[0] == INT     ||
+			   this.tokens[0] == LONG    ||
+			   this.tokens[0] == FLOAT   ||
+			   this.tokens[0] == DOUBLE  ||
+			   this.tokens[0] == CHAR    ||
+			   this.tokens[0] == BOOLEAN ||
+			   this.tokens[0] == NULL    ||
+			   this.tokens[0] == VOID;	    
+	}
+	
+	public char[] name(){
+		return CharOperation.concatWith(tokens, '-');
 	}
 	
 	public StringBuffer printExpression(int indent, StringBuffer output){
@@ -106,36 +119,37 @@ public class SingleTypeReference1 extends TypeReference {
 			printAnnotations(this.annotations[0], output);
 			output.append(' ');
 		}
-		return output.append(this.token);
+//		return output.append(this.token);
+		return output.append(CharOperation.concatWith(this.tokens, '-'));
 	}
 
 	public TypeBinding resolveTypeEnclosing(BlockScope scope, ReferenceBinding enclosingType) {
-		this.resolvedType = scope.getMemberType(this.token, enclosingType);
-		boolean hasError = false;
-		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=391500
-		resolveAnnotations(scope, 0); // defaultNullness not relevant, the only caller within the compiler: QAE
-		TypeBinding memberType = this.resolvedType; // load after possible update in resolveAnnotations()
-		if (!memberType.isValidBinding()) {
-			hasError = true;
-			scope.problemReporter().invalidEnclosingType(this, memberType, enclosingType);
-			memberType = ((ReferenceBinding)memberType).closestMatch();
-			if (memberType == null) {
+//		this.resolvedType = scope.getMemberType(this.token, enclosingType);
+//		boolean hasError = false;
+//		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=391500
+//		resolveAnnotations(scope, 0); // defaultNullness not relevant, the only caller within the compiler: QAE
+//		TypeBinding memberType = this.resolvedType; // load after possible update in resolveAnnotations()
+//		if (!memberType.isValidBinding()) {
+//			hasError = true;
+//			scope.problemReporter().invalidEnclosingType(this, memberType, enclosingType);
+//			memberType = ((ReferenceBinding)memberType).closestMatch();
+//			if (memberType == null) {
 				return null;
-			}
-		}
-		if (isTypeUseDeprecated(memberType, scope))
-			reportDeprecatedType(memberType, scope);
-		memberType = scope.environment().convertToRawType(memberType, false /*do not force conversion of enclosing types*/);
-		if (memberType.isRawType()
-				&& (this.bits & IgnoreRawTypeCheck) == 0
-				&& scope.compilerOptions().getSeverity(CompilerOptions.RawTypeReference) != ProblemSeverities.Ignore){
-			scope.problemReporter().rawTypeReference(this, memberType);
-		}
-		if (hasError) {
-			// do not store the computed type, keep the problem type instead
-			return memberType;
-		}
-		return this.resolvedType = memberType;
+//			}
+//		}
+//		if (isTypeUseDeprecated(memberType, scope))
+//			reportDeprecatedType(memberType, scope);
+//		memberType = scope.environment().convertToRawType(memberType, false /*do not force conversion of enclosing types*/);
+//		if (memberType.isRawType()
+//				&& (this.bits & IgnoreRawTypeCheck) == 0
+//				&& scope.compilerOptions().getSeverity(CompilerOptions.RawTypeReference) != ProblemSeverities.Ignore){
+//			scope.problemReporter().rawTypeReference(this, memberType);
+//		}
+//		if (hasError) {
+//			// do not store the computed type, keep the problem type instead
+//			return memberType;
+//		}
+//		return this.resolvedType = memberType;
 	}
 
 	public void traverse(ASTVisitor visitor, BlockScope scope) {
@@ -161,32 +175,7 @@ public class SingleTypeReference1 extends TypeReference {
 	}
 
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output){
-		int id = this.resolvedType.id;
-		if(id < TypeIds.T_LastWellKnownTypeId){
-			switch(id){
-				case TypeIds.T_char:
-				case TypeIds.T_JavaLangCharacter:
-				case TypeIds.T_byte:
-				case TypeIds.T_JavaLangByte:
-				case TypeIds.T_short:
-				case TypeIds.T_JavaLangShort:
-				case TypeIds.T_int:
-				case TypeIds.T_JavaLangInteger:
-				case TypeIds.T_long:
-				case TypeIds.T_JavaLangLong:
-				case TypeIds.T_float:
-				case TypeIds.T_JavaLangFloat:
-				case TypeIds.T_double:
-				case TypeIds.T_JavaLangDouble:
-					output.append("Number");
-					break;
-				default:
-					output.append(this.token);
-			}
-		} else {
-			ReferenceBinding binding = (ReferenceBinding) this.resolvedType;
-			binding.generate(output, scope.classScope().enclosingSourceType());
-		}
+		output.append(CharOperation.concatWith(this.tokens, '-'));
 		return output;
 	}
 }

@@ -77,7 +77,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	}
 	
 	protected void printPropertyName(int indent, StringBuffer output) {
-		output.append(property.token);
+		output.append(property.name());
 	}
 
 	public void resolve(BlockScope scope) {
@@ -227,7 +227,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append(Js2HtmlMapping.getHtmlName(new String(property.token))).append("=");
+		output.append(Js2HtmlMapping.getHtmlName(new String(property.name()))).append("=");
 		
 		if(this.property.binding != null && this.property.binding.type instanceof ReferenceBinding 
 				&& (((ReferenceBinding)this.property.binding.type).modifiers & ClassFileConstants.AccFunction) != 0){
@@ -244,7 +244,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	}
 	
 	public StringBuffer buildProperty(Scope scope, int indent, StringBuffer output, String context) {
-		output.append(Js2HtmlMapping.getHtmlName(new String(property.token))).append("=");
+		output.append(Js2HtmlMapping.getHtmlName(new String(property.name()))).append("=");
 		
 		if(this.property.binding != null && this.property.binding.type instanceof ReferenceBinding 
 				&& (((ReferenceBinding)this.property.binding.type).modifiers & ClassFileConstants.AccFunction) != 0){
@@ -395,7 +395,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case FUNCTION:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append(JsConstant.NODE_NAME).append(".addEventListener('").append(CharOperation.subarray(this.property.token, 2, -1)).append("', ");
+			output.append(JsConstant.NODE_NAME).append(".addEventListener('").append(CharOperation.subarray(this.property.name(), 2, -1)).append("', ");
 			if(this.field != null){
 				if(this.field.isStatic()){
 					output.append(this.field.declaringClass.sourceName).append('.');

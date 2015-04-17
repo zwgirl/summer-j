@@ -20,6 +20,9 @@ public class HtmlElement extends HtmlNode {
 	public static final HtmlAttribute[] NO_ATTRIBUTES = new HtmlAttribute[0];
 	public static final HtmlNode[] NO_ELEMENTS= new HtmlNode[0];
 
+	public char[][] tokens;
+	public long[] positions;
+	
 	public TypeReference type;
 	public TypeReference closeType;
 	public HtmlAttribute[] attributes = NO_ATTRIBUTES;
@@ -27,13 +30,14 @@ public class HtmlElement extends HtmlNode {
 	public HtmlNode[] children = NO_ELEMENTS;
 	public int declarationSourceStart;
 	public int declarationSourceEnd;
-	public int bodyStart;
-	public int bodyEnd; // doesn't include the trailing comment if any.
 	public BlockScope scope;
 	
 	
-	public HtmlElement(){
+	public HtmlElement(char[][] tokens, long[] positions){
 		super();
+		
+		this.tokens = tokens;
+		this.positions = positions;
 	}
 	
 

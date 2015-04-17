@@ -39,12 +39,12 @@ public class CompletionOnHtmlPropertyAccess extends HtmlPropertyReference {
 
 	public boolean isInsideAnnotation;
 
-	public CompletionOnHtmlPropertyAccess(char[] source, long pos, boolean isInsideAnnotation) {
+	public CompletionOnHtmlPropertyAccess(char[][] source, long[] pos, boolean isInsideAnnotation) {
 		super(source, pos, null);
 		this.isInsideAnnotation = isInsideAnnotation;
 	}
 	
-	public CompletionOnHtmlPropertyAccess(char[] source, long pos, HtmlSimplePropertyReference receiver, boolean isInsideAnnotation) {
+	public CompletionOnHtmlPropertyAccess(char[][] source, long[] pos, HtmlSimplePropertyReference receiver, boolean isInsideAnnotation) {
 		super(source, pos, receiver);
 		this.isInsideAnnotation = isInsideAnnotation;
 	}

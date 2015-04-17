@@ -25,7 +25,7 @@ import org.summer.sdt.internal.compiler.lookup.VariableBinding;
 public class HtmlAttachProperty extends PropertyReference{
 	public TypeReference receiver;
 
-	public HtmlAttachProperty(char[] source, long pos, TypeReference receiver) {
+	public HtmlAttachProperty(char[][] source, long[] pos, TypeReference receiver) {
 		super(source, pos);
 		this.receiver = receiver;
 	}
@@ -67,7 +67,7 @@ public class HtmlAttachProperty extends PropertyReference{
 	}
 	
 	public StringBuffer printExpression(int indent, StringBuffer output) {
-		return output.append('.').append(this.token);
+		return output.append('.').append(this.name());
 	}
 	
 	public TypeBinding resolveType(BlockScope scope){
@@ -88,7 +88,7 @@ public class HtmlAttachProperty extends PropertyReference{
 //		}
 		
 		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
-		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.token, null);
+		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.name(), null);
 		
 		//cym 2012-02-12
 		if(fieldBinding.isValidBinding() && (fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
