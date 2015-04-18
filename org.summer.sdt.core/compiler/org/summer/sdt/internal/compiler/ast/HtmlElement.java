@@ -36,6 +36,15 @@ public class HtmlElement extends HtmlNode {
 	public HtmlElement(char[][] tokens, long[] positions){
 		super();
 		
+		this.tokens = tokens; 
+		this.positions = positions;
+		
+		type = createTypeReference();
+	}
+	
+	public HtmlElement(char[][] tokens, long[] positions, char[] prefix, long prefixPos){
+		super(prefix, prefixPos);
+		
 		this.tokens = tokens;
 		this.positions = positions;
 		
@@ -87,6 +96,11 @@ public class HtmlElement extends HtmlNode {
 			if (this.children != null) {
 				for (int i = 0, length = this.children.length; i < length; i++)
 					children[i].traverse(visitor, scope);
+			}
+			
+			if(this.attributes != null){
+				for (int i = 0, length = this.attributes.length; i < length; i++)
+					attributes[i].traverse(visitor, scope);
 			}
 		}
 		visitor.endVisit(this, scope);

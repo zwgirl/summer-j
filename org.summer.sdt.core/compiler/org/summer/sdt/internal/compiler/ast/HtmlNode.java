@@ -12,8 +12,15 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
 public abstract class HtmlNode extends Expression {
 	public int tagBits;
 	public int bodyStart, bodyEnd;
+	public char[] prefix;
+	public long prefixPos;
 	
 	protected HtmlNode(){
+	}
+	
+	protected HtmlNode(char[] prefix, long prefixPos){
+		this.prefix = prefix;
+		this.prefixPos = prefixPos;
 	}
 	
 	@Override

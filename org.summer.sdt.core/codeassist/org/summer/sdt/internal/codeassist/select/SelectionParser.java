@@ -39,7 +39,7 @@ import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldReference;
 import org.summer.sdt.internal.compiler.ast.HtmlBits;
 import org.summer.sdt.internal.compiler.ast.HtmlElement;
-import org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference;
+import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.LocalDeclaration;

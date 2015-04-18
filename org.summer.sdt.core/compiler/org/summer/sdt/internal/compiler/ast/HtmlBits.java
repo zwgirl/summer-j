@@ -4,12 +4,12 @@ public interface HtmlBits {
 	int NamedField = ASTNode.Bit1;   //命名属性字段
 	int HasMarkupExtension = ASTNode.Bit2;		//使用了标记扩展
 	int HasTemplate = ASTNode.Bit3;
-	int AttachedAttribute = ASTNode.Bit4;	//附加属性
-	int QualifiedNameAttribute = ASTNode.Bit5;	//限定属性
-	int HasDynamicContent = NamedField 
-			| HasMarkupExtension 
+	int PrefixAttribute = ASTNode.Bit4;	//指定了名称空间的属性
+	int JoinAttribute = ASTNode.Bit5;	//限定属性
+	int HasDynamicContent = NamedField
+			| HasMarkupExtension
 			| HasTemplate
-			| QualifiedNameAttribute;
+			| JoinAttribute;
 	
 	int HtmlPage = ASTNode.Bit17;
 		
@@ -21,9 +21,12 @@ public interface HtmlBits {
 	int EventCallback = ASTNode.Bit22;	//事件回调
 	
 	int SWITCH_ELEMENT = ASTNode.Bit24;
-	int ATTRIBUTE_ELEMENT = ASTNode.Bit25;
-	int COMMON_ELEMENT = ASTNode.Bit26;
-	int VAR_ELEMENT = ASTNode.Bit27;
+	int NS_SWITCH_ELEMENT = ASTNode.Bit25;
+	int ATTRIBUTE_ELEMENT = ASTNode.Bit26;
+	int COMMON_ELEMENT = ASTNode.Bit27;
+	int NS_COMMON_ELEMENT = ASTNode.Bit28;
+	int NS_VAR_ELEMENT = ASTNode.Bit29;
+	int VAR_ELEMENT = ASTNode.Bit30;
 	
 	int ElementTypeMask = SWITCH_ELEMENT | ATTRIBUTE_ELEMENT | COMMON_ELEMENT | VAR_ELEMENT;
 	

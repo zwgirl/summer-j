@@ -103,7 +103,7 @@ import org.summer.sdt.internal.compiler.ast.CompoundAssignment;
 import org.summer.sdt.internal.compiler.ast.ConditionalExpression;
 import org.summer.sdt.internal.compiler.ast.ConstructorDeclaration;
 import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
-import org.summer.sdt.internal.compiler.ast.PropertyReference;
+import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
 import org.summer.sdt.internal.compiler.ast.StringLiteral;
 import org.summer.sdt.internal.compiler.ast.HtmlElement;
 import org.summer.sdt.internal.compiler.ast.EqualExpression;
@@ -1811,7 +1811,7 @@ public class ProblemReporter extends ProblemHandler {
 	 * @param type
 	 * @param fieldDecl
 	 */
-	public void duplicateNamedElementInType(PropertyReference fieldDecl) {
+	public void duplicateNamedElementInType(HtmlPropertyReference fieldDecl) {
 		this.handle(
 			IProblem.DuplicateField,
 			new String[] {new String("element"), new String(fieldDecl.name())},
@@ -3895,7 +3895,7 @@ public class ProblemReporter extends ProblemHandler {
 			nodeSourceEnd(indexer, arrayRef));
 	}
 	//cym 2015-04-02
-	public void noPropertyDefineInElement(PropertyReference fieldRef) {
+	public void noPropertyDefineInElement(HtmlPropertyReference fieldRef) {
 //		this.handle(
 //			IProblem.NoPropertyDefinedInElement,
 //			NoArgument,
@@ -3913,7 +3913,7 @@ public class ProblemReporter extends ProblemHandler {
 	}
 	
 	//cym 2014-12-26
-	public void invalidProperty(PropertyReference fieldRef, TypeBinding searchedType) {
+	public void invalidProperty(HtmlPropertyReference fieldRef, TypeBinding searchedType) {
 		if(isRecoveredName(fieldRef.name())) return;
 	
 		int id = IProblem.UndefinedField;

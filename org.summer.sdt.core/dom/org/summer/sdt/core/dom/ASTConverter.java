@@ -1797,14 +1797,14 @@ class ASTConverter {
 		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlPropertyReference) {
 			return convert((org.summer.sdt.internal.compiler.ast.HtmlPropertyReference) expression);
 		} 
-		//cym add 2015-04-14
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlAttachProperty) {
-			return convert((org.summer.sdt.internal.compiler.ast.HtmlAttachProperty) expression);
-		}
-		//cym add 2015-04-14
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference) {
-			return convert((org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference) expression);
-		}
+//		//cym add 2015-04-14
+//		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlAttachProperty) {
+//			return convert((org.summer.sdt.internal.compiler.ast.HtmlAttachProperty) expression);
+//		}
+//		//cym add 2015-04-14
+//		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference) {
+//			return convert((org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference) expression);
+//		}
 		
 		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlMarkupExtension) {
 			return convert((org.summer.sdt.internal.compiler.ast.HtmlMarkupExtension) expression);
@@ -3154,25 +3154,25 @@ class ASTConverter {
 
 		return fieldAccess;
 	}
-	//2015-04-14
-	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference propertyReference) {
-		final FieldAccess fieldAccess = new FieldAccess(this.ast);
-		fieldAccess.setSourceRange(propertyReference.sourceStart, propertyReference.sourceEnd - propertyReference.sourceStart + 1);
-		fieldAccess.setName(convert1(propertyReference));
-
-		return fieldAccess;
-	}
-	//2015-04-14
-	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.HtmlAttachProperty propertyReference) {
-		final FieldAccess fieldAccess = new FieldAccess(this.ast);
-		fieldAccess.setSourceRange(propertyReference.sourceStart, propertyReference.sourceEnd - propertyReference.sourceStart + 1);
-		fieldAccess.setName(convert1(propertyReference));
-
-		return fieldAccess;
-	}
+//	//2015-04-14
+//	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference propertyReference) {
+//		final FieldAccess fieldAccess = new FieldAccess(this.ast);
+//		fieldAccess.setSourceRange(propertyReference.sourceStart, propertyReference.sourceEnd - propertyReference.sourceStart + 1);
+//		fieldAccess.setName(convert1(propertyReference));
+//
+//		return fieldAccess;
+//	}
+//	//2015-04-14
+//	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.HtmlAttachProperty propertyReference) {
+//		final FieldAccess fieldAccess = new FieldAccess(this.ast);
+//		fieldAccess.setSourceRange(propertyReference.sourceStart, propertyReference.sourceEnd - propertyReference.sourceStart + 1);
+//		fieldAccess.setName(convert1(propertyReference));
+//
+//		return fieldAccess;
+//	}
 	
 	//TODO cym 2015-03-21 
-	public SimpleName convert1(org.summer.sdt.internal.compiler.ast.PropertyReference propertyReference) {
+	public SimpleName convert1(org.summer.sdt.internal.compiler.ast.HtmlPropertyReference propertyReference) {
 		final SimpleName name = new SimpleName(this.ast);
 		name.internalSetIdentifier(new String(propertyReference.name()));
 		if (this.resolveBindings) {

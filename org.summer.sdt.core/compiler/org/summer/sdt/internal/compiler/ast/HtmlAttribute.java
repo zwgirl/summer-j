@@ -1,8 +1,8 @@
 package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.html.Js2HtmlMapping;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.javascript.JsConstant;
@@ -29,11 +29,10 @@ import org.summer.sdt.internal.compiler.lookup.TypeIds;
  *         using by XAML
  */
 public class HtmlAttribute extends HtmlNode implements InvocationSite{
-	public PropertyReference property;
+	public HtmlPropertyReference property;
 	public Expression value;
 	
 	public TypeBinding type;   //type of property 
-//	public MethodBinding method;
 	public ReferenceBinding template;
 	public FieldBinding field;
 	
@@ -58,7 +57,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	
 	public static final int NamedFlag = 1;
 	
-	public HtmlAttribute(PropertyReference property) {
+	public HtmlAttribute(HtmlPropertyReference property) {
 		super();
 		this.property = property;
 	}
@@ -371,13 +370,13 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			output.append('.').append(((Literal) this.value).source());
 			output.append(" = ").append(node).append(";");
 			return;
-		} else if((this.tagBits & HtmlBits.AttachedAttribute) != 0){
-			HtmlAttachProperty attachProp = (HtmlAttachProperty) this.property;
-			if(attachProp.actualReceiverType == null){
+		} else if((this.tagBits & HtmlBits.PrefixAttribute) != 0){
+			HtmlPropertyReference attachProp = (HtmlPropertyReference) this.property;
+			if(attachProp.receiverType == null){
 				return;
 			}
 			output.append("$.attrNS(");
-			attachProp.actualReceiverType.generate(output, scope.enclosingSourceType());
+			attachProp.receiverType.generate(output, scope.enclosingSourceType());
 			output.append(".xmlns, ").append(JsConstant.NODE_NAME).append(", \"");
 			this.property.doGenerateExpression(scope, indent, output).append("\", ");
 			this.value.generateExpression(scope, indent, output).append(");");
@@ -527,6 +526,11 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	@Override
 	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
 		return doGenerateExpression(scope, indent, output);
+	}
+	
+	@Override
+	public void traverse(ASTVisitor visitor, BlockScope scope) {
+		super.traverse(visitor, scope);
 	}
 	
 	public TypeBinding[] genericTypeArguments() { return null;}

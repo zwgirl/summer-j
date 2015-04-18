@@ -137,6 +137,7 @@ public interface TypeConstants {
     char[] ITYPEBINDING = "ITypeBinding".toCharArray(); //$NON-NLS-1$
     char[] W3C = "w3c".toCharArray();  //$NON-NLS-1$  //cym 2015-01-13
     char[] HTMLPKG = "html".toCharArray();  //$NON-NLS-1$  //cym 2015-01-13
+    char[] SVGPKG = "svg".toCharArray();  //$NON-NLS-1$  //cym 2015-04-18
     char[] EVENTPKG = "event".toCharArray();  //$NON-NLS-1$  //cym 2015-04-07
     
 	// Constant compound names
@@ -165,6 +166,8 @@ public interface TypeConstants {
 	
 	char[][] JAVA_LANG_COMPONENT = {JAVA, LANG, COMPONENT};  //cym 2015-01-13
 	char[][] ORG_W3C_HTML_HTML = {ORG, W3C, HTMLPKG, HTML};  //cym 2015-01-13
+	char[][] ORG_W3C_HTML = {ORG, W3C, HTMLPKG};  //cym 2015-04-18
+	char[][] ORG_W3C_SVG = {ORG, W3C, SVGPKG};  //cym 2015-04-18
 	char[][] ORG_W3C_EVENT_EVENT = {ORG, W3C, EVENTPKG, EVENT};  //cym 2015-04-07
 	char[][] JAVA_LANG_STRING = {JAVA, LANG, "String".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_STRINGBUFFER = {JAVA, LANG, "StringBuffer".toCharArray()}; //$NON-NLS-1$

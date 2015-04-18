@@ -19,18 +19,25 @@ import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.html.HtmlTags;
+import org.summer.sdt.internal.compiler.html.LarkTags;
 import org.summer.sdt.internal.compiler.html.SvgTags;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
+import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
+import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
 import org.summer.sdt.internal.compiler.lookup.MethodScope;
+import org.summer.sdt.internal.compiler.lookup.PackageBinding;
+import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
+import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
+import org.summer.sdt.internal.compiler.problem.AbortCompilation;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 
 public class HtmlTypeReference extends TypeReference {
@@ -67,33 +74,61 @@ public class HtmlTypeReference extends TypeReference {
 		if (this.resolvedType != null)
 			return this.resolvedType;
 
-//		this.resolvedType = scope.getType(this.token);
 		if(!(scope instanceof BlockScope)){
 			return null;
 		}
+		
+		char[] selector = CharOperation.concatWith(this.tokens, '-');
+		
+		char[][] compoundName;
 		if(((BlockScope)scope).inSVG){
-			this.resolvedType = scope.getType(SvgTags.getMappingClass(CharOperation.concatWith(this.tokens, '-')));
+			compoundName = SvgTags.getMappingClass(selector);
 		} else {
-			this.resolvedType = scope.getType(HtmlTags.getMappingClass(CharOperation.concatWith(this.tokens, '-')));
+			compoundName = HtmlTags.getMappingClass(selector);
+			if(compoundName == null){
+				compoundName = LarkTags.getMappingClass(selector);
+			}
+		} 
+		
+		if(compoundName == null){
+			return new ProblemReferenceBinding(new char[][]{getLastToken()}, scope.environment().createMissingType(null, new char[][]{selector}), ProblemReasons.NotFound);
 		}
 		
-		if (this.resolvedType instanceof TypeVariableBinding) {
-			TypeVariableBinding typeVariable = (TypeVariableBinding) this.resolvedType;
-			if (typeVariable.declaringElement instanceof SourceTypeBinding) {
-				scope.tagAsAccessingEnclosingInstanceStateOf((ReferenceBinding) typeVariable.declaringElement, true /* type variable access */);
+		Binding binding = scope.getOnlyPackage(CharOperation.subarray(compoundName, 0, compoundName.length-1));
+		if (binding != null && !binding.isValidBinding()) {
+			if (binding instanceof ProblemReferenceBinding && binding.problemId() == ProblemReasons.NotFound) {
+				ProblemReferenceBinding problemBinding = (ProblemReferenceBinding) binding;
+				return new ProblemReferenceBinding(problemBinding.compoundName, scope.environment().createMissingType(null, compoundName), ProblemReasons.NotFound);
 			}
-		} else if (this.resolvedType instanceof LocalTypeBinding) {
-			LocalTypeBinding localType = (LocalTypeBinding) this.resolvedType;
-			MethodScope methodScope = scope.methodScope();
-			if (methodScope != null && !methodScope.isStatic) {
-				methodScope.tagAsAccessingEnclosingInstanceStateOf(localType, false /* ! type variable access */);
-			}
+			return (ReferenceBinding) binding; // not found
 		}
-
-		if (scope.kind == Scope.CLASS_SCOPE && this.resolvedType.isValidBinding())
-			if (((ClassScope) scope).detectHierarchyCycle(this.resolvedType, this))
-				return null;
+	    PackageBinding packageBinding = binding == null ? null : (PackageBinding) binding;
+	    this.resolvedType = scope.getType(compoundName[compoundName.length-1], packageBinding);
 		return this.resolvedType;
+	}
+	
+	protected TypeBinding findNextTypeBinding(int tokenIndex, Scope scope, PackageBinding packageBinding) {
+		LookupEnvironment env = scope.environment();
+		try {
+			env.missingClassFileLocation = this;
+			if (this.resolvedType == null) {
+				this.resolvedType = scope.getType(this.tokens[tokenIndex], packageBinding);
+			} else {
+				this.resolvedType = scope.getMemberType(this.tokens[tokenIndex], (ReferenceBinding) this.resolvedType);
+				if (!this.resolvedType.isValidBinding()) {
+					this.resolvedType = new ProblemReferenceBinding(
+						CharOperation.subarray(this.tokens, 0, tokenIndex + 1),
+						(ReferenceBinding)this.resolvedType.closestMatch(),
+						this.resolvedType.problemId());
+				}
+			}
+			return this.resolvedType;
+		} catch (AbortCompilation e) {
+			e.updateContext(this, scope.referenceCompilationUnit().compilationResult);
+			throw e;
+		} finally {
+			env.missingClassFileLocation = null;
+		}
 	}
 
 	public char [][] getTypeName() {

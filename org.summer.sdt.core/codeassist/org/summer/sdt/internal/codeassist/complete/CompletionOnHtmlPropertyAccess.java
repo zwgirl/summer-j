@@ -44,7 +44,7 @@ public class CompletionOnHtmlPropertyAccess extends HtmlPropertyReference {
 		this.isInsideAnnotation = isInsideAnnotation;
 	}
 	
-	public CompletionOnHtmlPropertyAccess(char[][] source, long[] pos, HtmlSimplePropertyReference receiver, boolean isInsideAnnotation) {
+	public CompletionOnHtmlPropertyAccess(char[][] source, long[] pos, HtmlPropertyReference receiver, boolean isInsideAnnotation) {
 		super(source, pos, receiver);
 		this.isInsideAnnotation = isInsideAnnotation;
 	}
@@ -58,7 +58,7 @@ public class CompletionOnHtmlPropertyAccess extends HtmlPropertyReference {
 	//cym 2015-04-12
 	public TypeBinding resolveType(BlockScope scope) {
 
-		this.actualReceiverType = scope.element.resolvedType;
+		this.receiverType = (ReferenceBinding) scope.element.resolvedType;
 
 //		if ((this.actualReceiverType == null || !this.actualReceiverType.isValidBinding()) && this.receiver instanceof MessageSend) {
 //			MessageSend messageSend = (MessageSend) this.receiver;
@@ -78,10 +78,10 @@ public class CompletionOnHtmlPropertyAccess extends HtmlPropertyReference {
 //			}
 //		}
 
-		if (this.actualReceiverType == null || !this.actualReceiverType.isValidBinding())
+		if (this.receiverType == null || !this.receiverType.isValidBinding())
 			throw new CompletionNodeFound();
 		else
-			throw new CompletionNodeFound(this, this.actualReceiverType, scope);
+			throw new CompletionNodeFound(this, this.receiverType, scope);
 		// array types are passed along to find the length field
 	}
 	

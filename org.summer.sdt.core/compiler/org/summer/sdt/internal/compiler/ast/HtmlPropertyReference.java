@@ -1,10 +1,12 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.html.Js2HtmlMapping;
 import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
@@ -23,12 +25,48 @@ import org.summer.sdt.internal.compiler.lookup.VariableBinding;
  * @author cym
  *
  */
-public class HtmlPropertyReference extends PropertyReference{
-	public HtmlSimplePropertyReference receiver;
+public class HtmlPropertyReference extends Expression{
+	public char[][] tokens;
+	public long[] positions;
+	public HtmlPropertyReference receiver;
+	public char[] prefix;   //namespace
+	public long prefixPos;
+	
+	public FieldBinding binding;
+	public ReferenceBinding receiverType;// exact binding resulting from lookup
 
-	public HtmlPropertyReference(char[][] source, long[] pos, HtmlSimplePropertyReference receiver) {
-		super(source, pos);
+	public HtmlPropertyReference(char[][] source, long[] pos, HtmlPropertyReference receiver) {
+		this.tokens = source;
+		this.positions = pos;
 		this.receiver = receiver;
+		
+		this.bits |= Binding.FIELD;
+	}
+	
+	public HtmlPropertyReference(char[][] source, long[] pos) {
+		this(source, pos, null);
+	}
+	
+	public HtmlPropertyReference(char[][] source, long[] postions, char[] prefix, long prefixPos) {
+		this.tokens = source;
+		this.positions = postions;
+		
+		this.prefix = prefix;
+		this.prefixPos = prefixPos;
+		
+		this.bits |= Binding.FIELD;
+	}
+	
+	public char[] name(){
+		return CharOperation.concatWith(this.tokens, '-');
+	}
+	
+	public char[] nameWithNS(){
+		if(prefix == null){
+			return name();
+		}
+		
+		return CharOperation.concatWith(new char[][]{prefix, name()}, ':');
 	}
 	
 	/**
@@ -68,7 +106,7 @@ public class HtmlPropertyReference extends PropertyReference{
 	}
 	
 	public StringBuffer printExpression(int indent, StringBuffer output) {
-		return output.append('.').append(this.name());
+		return output.append('.').append(CharOperation.concatWith(this.tokens, '-'));
 	}
 	
 	public TypeBinding resolveType(BlockScope scope){
@@ -78,22 +116,29 @@ public class HtmlPropertyReference extends PropertyReference{
 	
 	private TypeBinding interalResolveType(BlockScope scope) {
 		//always ignore receiver cast, since may affect constant pool reference
-		this.actualReceiverType = this.receiver.resolveType(scope);
-		if (this.actualReceiverType == null) {
-			this.constant = Constant.NotAConstant;
+		if(this.receiver == null){
+			this.receiverType = (ReferenceBinding) scope.element.resolvedType;
+		} else {
+			this.receiverType = (ReferenceBinding) this.receiver.resolveType(scope);
+			if (this.receiverType == null) {
+				this.constant = Constant.NotAConstant;
+			}
+		}
+		
+		if(this.receiverType == null){
 			return null;
 		}
 		
 		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
-		FieldBinding fieldBinding = this.binding = scope.getField(this.actualReceiverType, this.name(), null);
+		FieldBinding fieldBinding = this.binding = scope.getField(this.receiverType, this.name(), null);
 		
 		//cym 2012-02-12
 		if(fieldBinding.isValidBinding() && (fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
-			scope.problemReporter().invalidProperty(this, this.actualReceiverType);   //TODO need more clear  //cym 2015-02-27
+			scope.problemReporter().invalidProperty(this, this.receiverType);   //TODO need more clear  //cym 2015-02-27
 		}
 		if (!fieldBinding.isValidBinding()) {
 			this.constant = Constant.NotAConstant;
-			if (this.actualReceiverType instanceof ProblemReferenceBinding) {
+			if (this.receiverType instanceof ProblemReferenceBinding) {
 				// problem already got signaled on receiver, do not report secondary problem
 				return null;
 			}
@@ -112,7 +157,7 @@ public class HtmlPropertyReference extends PropertyReference{
 			//cym add 2015-04-02
 		
 			if (!avoidSecondary) {
-				scope.problemReporter().invalidProperty(this, this.actualReceiverType);
+				scope.problemReporter().invalidProperty(this, this.receiverType);
 			}
 			if (fieldBinding instanceof ProblemFieldBinding) {
 				ProblemFieldBinding problemFieldBinding = (ProblemFieldBinding) fieldBinding;
@@ -133,8 +178,8 @@ public class HtmlPropertyReference extends PropertyReference{
 		}
 		// handle indirect inheritance thru variable secondary bound
 		// receiver may receive generic cast, as part of implicit conversion
-		TypeBinding oldReceiverType = this.actualReceiverType;
-		this.actualReceiverType = this.actualReceiverType.getErasureCompatibleType(fieldBinding.declaringClass);
+		TypeBinding oldReceiverType = this.receiverType;
+		this.receiverType = (ReferenceBinding) this.receiverType.getErasureCompatibleType(fieldBinding.declaringClass);
 //		this.receiver.computeConversion(scope, this.actualReceiverType, this.actualReceiverType);
 //		if (TypeBinding.notEquals(this.actualReceiverType, oldReceiverType) && TypeBinding.notEquals(this.receiver.postConversionType(scope), this.actualReceiverType)) { // record need for explicit cast at codegen since receiver could not handle it
 //			this.bits |= NeedReceiverGenericCast;
@@ -160,10 +205,6 @@ public class HtmlPropertyReference extends PropertyReference{
 		return fieldType;
 	}
 	
-	public void setActualReceiverType(ReferenceBinding receiverType) {
-		this.actualReceiverType = receiverType;
-	}
-	
 	public void setDepth(int depth) {
 		this.bits &= ~ASTNode.DepthMASK; // flush previous depth if any
 		if (depth > 0) {
@@ -173,6 +214,7 @@ public class HtmlPropertyReference extends PropertyReference{
 	
 	public void traverse(ASTVisitor visitor, BlockScope scope) {
 		if (visitor.visit(this, scope)) {
+			this.receiver.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
 	}
@@ -189,22 +231,31 @@ public class HtmlPropertyReference extends PropertyReference{
 
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append(this.receiver.name());
-		output.append('.').append(this.name());
+		if(this.receiver != null){
+			output.append(this.receiver.name());
+			output.append('.');
+		}
+		output.append(this.name());
 		return output;
 	}
 	
 	public StringBuffer html(Scope scope, int indent, StringBuffer output){
-		Js2HtmlMapping.getHtmlName(new String(this.receiver.name()));
-		output.append(Js2HtmlMapping.getHtmlName(new String(this.receiver.name())));
-		output.append('.').append(Js2HtmlMapping.getHtmlName(new String(this.name())));
+		if(this.receiver != null){
+			Js2HtmlMapping.getHtmlName(new String(this.receiver.name()));
+			output.append(Js2HtmlMapping.getHtmlName(new String(this.receiver.name())));
+			output.append('.');
+		}
+		output.append(Js2HtmlMapping.getHtmlName(new String(this.name())));
 		return output;
 	}
 	
 	public StringBuffer buildInjectPart(Scope scope, int indent, StringBuffer output){
 		output.append("[\"");
-		output.append(this.receiver.name()).append("\"");
-		output.append(", \"").append(this.name()).append("\"");
+		if(this.receiver != null){
+			output.append(this.receiver.name()).append("\"");
+			output.append(", \"");
+		}
+		output.append(this.name()).append("\"");
 		output.append("]");
 		
 		return output;

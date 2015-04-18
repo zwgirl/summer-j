@@ -29,16 +29,14 @@ package org.summer.sdt.internal.codeassist.select;
  *
  */
 
-import org.summer.sdt.internal.compiler.ast.Expression;
 import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
-import org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class SelectionOnHtmlPropertyReference extends HtmlPropertyReference {
 
-	public SelectionOnHtmlPropertyReference(char[][] source, long[] pos, HtmlSimplePropertyReference receiver) {
+	public SelectionOnHtmlPropertyReference(char[][] source, long[] pos, HtmlPropertyReference receiver) {
 		super(source, pos, receiver);
 	}
 

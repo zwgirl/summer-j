@@ -502,18 +502,18 @@ HtmlName -> SimpleName
 HtmlName ::= HtmlName - SimpleName
 /.$putCase consumeHtmlName(); $break ./
 HtmlName ::= HtmlName - IntegerLiteral
-/.$putCase consumeHtmlName1(); $break ./
+/.$putCase consumeHtmlNameInt(); $break ./
 
-StartTag ::= < HtmlName : HtmlName
+StartTag ::= < SimpleName : HtmlName
 /.$putCase consumeHtmlNSStartTag(); $break ./
 StartTag ::= < HtmlName
 /.$putCase consumeHtmlStartTag(); $break ./
-StartTag ::= < HtmlName '.' HtmlName
-/.$putCase consumeHtmlAttributeElementStartTag(); $break ./
-StartTag ::= < HtmlName : switch
+StartTag ::= < . HtmlName
+/.$putCase consumeHtmlJoinElementStartTag(); $break ./
+StartTag ::= < SimpleName : switch
 StartTag ::= < switch
 /.$putCase consumeHtmlSwitchStartTag(); $break ./
-StartTag ::= < HtmlName : var
+StartTag ::= < SimpleName : var
 StartTag ::= < var
 /.$putCase consumeHtmlVarStartTag(); $break ./
 /:$readableName StartTag:/
@@ -537,25 +537,28 @@ ExitCloseTag ::= $empty
 
 CloseTag ::= </ HtmlName
 /.$putCase consumeHtmlCloseTag(); $break ./
-CloseTag ::= </ HtmlName : HtmlName
+CloseTag ::= </ SimpleName : HtmlName
 /.$putCase consumeHtmlNSCloseTag(); $break ./
-CloseTag ::= </ HtmlName '.' HtmlName
+CloseTag ::= </ . HtmlName
 /.$putCase consumeHtmlAttributeElementCloseTag(); $break ./
 
-CloseTag ::= </ HtmlName : switch
+CloseTag ::= </ SimpleName : switch
 CloseTag ::= </ switch
-/.$putCase consumeHtmlSwitchCloseTag(); $break ./
-CloseTag ::= </ HtmlName : var
+/.$putCase consumeHtmlNSSwitchCloseTag(); $break ./
+CloseTag ::= </ SimpleName : var
+/.$putCase consumeHtmlNSVarCloseTag(); $break ./
 CloseTag ::= </ var
 /.$putCase consumeHtmlVarCloseTag(); $break ./
 /:$readableName CloseTag:/
 
 AttributeStart ::= HtmlName
 /.$putCase consumeHtmlAttributeStart(); $break ./
-AttributeStart ::= HtmlName : HtmlName
+AttributeStart ::= SimpleName : HtmlName
 /.$putCase consumeHtmlAttachAttributeStart(); $break ./
 AttributeStart ::= HtmlName . HtmlName
 /.$putCase consumeHtmlAttributeWithReceiverStart(); $break ./
+--AttributeStart ::= HtmlName . HtmlName . HtmlName
+--/.$putCase consumeHtmlAttributeWithReceiverStart(); $break ./
 AttributeStart ::= in 
 /.$putCase consumeHtmlInAttributeStart(); $break ./
 AttributeStart ::= class
@@ -564,6 +567,7 @@ AttributeStart ::= for
 /.$putCase consumeHtmlForAttributeStart(); $break ./
 /:$readableName AttributeStart:/
 
+Attribute ::= AttributeStart
 Attribute ::= AttributeStart '=' PropertyExpression
 /.$putCase consumeHtmlAttribute(); $break ./
 /:$readableName Attribute:/
