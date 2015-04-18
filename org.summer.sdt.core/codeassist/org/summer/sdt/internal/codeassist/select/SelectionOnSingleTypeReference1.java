@@ -22,7 +22,7 @@ package org.summer.sdt.internal.codeassist.select;
  *
  */
 import org.summer.sdt.internal.compiler.ast.SingleTypeReference;
-import org.summer.sdt.internal.compiler.ast.SingleTypeReference1;
+import org.summer.sdt.internal.compiler.ast.HtmlTypeReference;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.PackageBinding;
@@ -32,7 +32,7 @@ import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
-public class SelectionOnSingleTypeReference1 extends SingleTypeReference1 {
+public class SelectionOnSingleTypeReference1 extends HtmlTypeReference {
 	public SelectionOnSingleTypeReference1(char[][] source, long[] pos) {
 		super(source, pos);
 	}

@@ -42,9 +42,9 @@ public class Scanner implements TerminalTokens {
 	public long complianceLevel;
 
 	// 1.4 feature
-	public boolean useAssertAsAnIndentifier = false;
+//	public boolean useAssertAsAnIndentifier = false;   //cym 2015-04-17
 	//flag indicating if processed source contains occurrences of keyword assert
-	public boolean containsAssertKeyword = false;
+//	public boolean containsAssertKeyword = false;  //cym 2015-04-17
 
 	// 1.5 feature
 	public boolean useEnumAsAnIndentifier = false;
@@ -3101,7 +3101,7 @@ public class Scanner implements TerminalTokens {
 		//then the length. If there are several
 		//keywors with the same length AND the same first char, then do another
 		//dispatch on the second char
-		this.useAssertAsAnIndentifier = false;
+//		this.useAssertAsAnIndentifier = false;   //cym 2015-04-17
 		this.useEnumAsAnIndentifier = false;
 	
 		char[] src = this.source;
@@ -3163,7 +3163,7 @@ public class Scanner implements TerminalTokens {
 		//then the length. If there are several
 		//keywords with the same length AND the same first char, then do another
 		//dispatch on the second char
-		this.useAssertAsAnIndentifier = false;
+//		this.useAssertAsAnIndentifier = false;   //cym 2015-04-17
 		this.useEnumAsAnIndentifier = false;
 	
 		char[] src = this.source;
@@ -4118,7 +4118,7 @@ public class Scanner implements TerminalTokens {
 		this.startPosition = -1;
 		this.eofPosition = sourceLength;
 		this.initialPosition = this.currentPosition = 0;
-		this.containsAssertKeyword = false;
+//		this.containsAssertKeyword = false;   //cym 2015-04-17
 		this.linePtr = -1;
 	}
 	/*

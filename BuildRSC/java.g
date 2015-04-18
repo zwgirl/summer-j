@@ -501,13 +501,19 @@ CommentNode ::= XmlComment EnterTextNode
 HtmlName -> SimpleName
 HtmlName ::= HtmlName - SimpleName
 /.$putCase consumeHtmlName(); $break ./
+HtmlName ::= HtmlName - IntegerLiteral
+/.$putCase consumeHtmlName1(); $break ./
 
+StartTag ::= < HtmlName : HtmlName
+/.$putCase consumeHtmlNSStartTag(); $break ./
 StartTag ::= < HtmlName
 /.$putCase consumeHtmlStartTag(); $break ./
 StartTag ::= < HtmlName '.' HtmlName
 /.$putCase consumeHtmlAttributeElementStartTag(); $break ./
+StartTag ::= < HtmlName : switch
 StartTag ::= < switch
 /.$putCase consumeHtmlSwitchStartTag(); $break ./
+StartTag ::= < HtmlName : var
 StartTag ::= < var
 /.$putCase consumeHtmlVarStartTag(); $break ./
 /:$readableName StartTag:/
@@ -531,10 +537,15 @@ ExitCloseTag ::= $empty
 
 CloseTag ::= </ HtmlName
 /.$putCase consumeHtmlCloseTag(); $break ./
+CloseTag ::= </ HtmlName : HtmlName
+/.$putCase consumeHtmlNSCloseTag(); $break ./
 CloseTag ::= </ HtmlName '.' HtmlName
 /.$putCase consumeHtmlAttributeElementCloseTag(); $break ./
+
+CloseTag ::= </ HtmlName : switch
 CloseTag ::= </ switch
 /.$putCase consumeHtmlSwitchCloseTag(); $break ./
+CloseTag ::= </ HtmlName : var
 CloseTag ::= </ var
 /.$putCase consumeHtmlVarCloseTag(); $break ./
 /:$readableName CloseTag:/

@@ -70,14 +70,10 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	
 	@Override
 	public StringBuffer printStatement(int indent, StringBuffer output) {
-		printPropertyName(indent, output);
+		output.append(property.name());
 		output.append(" = ");
 		value.printExpression(indent, output);
 		return output;
-	}
-	
-	protected void printPropertyName(int indent, StringBuffer output) {
-		output.append(property.name());
 	}
 
 	public void resolve(BlockScope scope) {
@@ -375,7 +371,18 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			output.append('.').append(((Literal) this.value).source());
 			output.append(" = ").append(node).append(";");
 			return;
-		} 
+		} else if((this.tagBits & HtmlBits.AttachedAttribute) != 0){
+			HtmlAttachProperty attachProp = (HtmlAttachProperty) this.property;
+			if(attachProp.actualReceiverType == null){
+				return;
+			}
+			output.append("$.attrNS(");
+			attachProp.actualReceiverType.generate(output, scope.enclosingSourceType());
+			output.append(".xmlns, ").append(JsConstant.NODE_NAME).append(", \"");
+			this.property.doGenerateExpression(scope, indent, output).append("\", ");
+			this.value.generateExpression(scope, indent, output).append(");");
+			return;
+		}
 //		else if(this.value instanceof HtmlFunctionExpression){
 //			
 //		}

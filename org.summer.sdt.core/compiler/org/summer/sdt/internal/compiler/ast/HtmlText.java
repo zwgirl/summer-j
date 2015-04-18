@@ -36,6 +36,7 @@ public class HtmlText  extends HtmlNode {
 
 	@Override
 	public StringBuffer printExpression(int indent, StringBuffer output) {
+		output.append(source);
 		return output;
 	}
 	
@@ -128,11 +129,6 @@ public class HtmlText  extends HtmlNode {
 			Character c = entityMap.get(new String(CharOperation.subarray(name, 1, name.length - 1)));
 			return c == null ? 0 : c ;
 		}
-	}
-	
-	@Override
-	public StringBuffer generateStaticHTML(BlockScope scope, int indent, StringBuffer output) {
-		return output.append(source);
 	}
 	
 	@Override

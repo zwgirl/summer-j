@@ -26,6 +26,7 @@ public class HtmlComment extends HtmlNode{
 
 	@Override
 	public StringBuffer printExpression(int indent, StringBuffer output) {
+		output.append(source);
 		return output;
 	}
 }

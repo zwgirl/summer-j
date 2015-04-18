@@ -42,8 +42,18 @@ public class HtmlScript extends HtmlNode{
 
 	@Override
 	public StringBuffer printExpression(int indent, StringBuffer output) {
-		// TODO Auto-generated method stub
-		return null;
+		output.append("<script type = 'text/javascript'>");
+		Statement[] statements = method.statements;
+		if(statements != null){
+			for(Statement statement : statements){
+				output.append('\n');
+				statement.printStatement(indent, output);
+			}
+		}
+		output.append('\n');
+		printIndent(indent, output);
+		output.append("</script>");
+		return output;
 	}
 
 	@Override

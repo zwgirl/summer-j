@@ -19,6 +19,7 @@ import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.html.HtmlTags;
+import org.summer.sdt.internal.compiler.html.SvgTags;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
@@ -32,12 +33,12 @@ import org.summer.sdt.internal.compiler.lookup.TypeIds;
 import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
 import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 
-public class SingleTypeReference1 extends TypeReference {
+public class HtmlTypeReference extends TypeReference {
 
 	public char[][] tokens;
 	public long[] positions;
 
-	public SingleTypeReference1(char[][] source, long[] positions) {
+	public HtmlTypeReference(char[][] source, long[] positions) {
 
 			this.tokens = source;
 			this.positions = positions;
@@ -67,7 +68,14 @@ public class SingleTypeReference1 extends TypeReference {
 			return this.resolvedType;
 
 //		this.resolvedType = scope.getType(this.token);
-		this.resolvedType = scope.getType(HtmlTags.getMappingClass(CharOperation.concatWith(this.tokens, '-')));
+		if(!(scope instanceof BlockScope)){
+			return null;
+		}
+		if(((BlockScope)scope).inSVG){
+			this.resolvedType = scope.getType(SvgTags.getMappingClass(CharOperation.concatWith(this.tokens, '-')));
+		} else {
+			this.resolvedType = scope.getType(HtmlTags.getMappingClass(CharOperation.concatWith(this.tokens, '-')));
+		}
 		
 		if (this.resolvedType instanceof TypeVariableBinding) {
 			TypeVariableBinding typeVariable = (TypeVariableBinding) this.resolvedType;

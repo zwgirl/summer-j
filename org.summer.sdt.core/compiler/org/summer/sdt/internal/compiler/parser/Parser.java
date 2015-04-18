@@ -1524,10 +1524,12 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		//convert constructor that do not have the type's name into methods
 		typeDecl.checkConstructors(this);
 	
+		//cym 2015-04-17
 		//always add <clinit> (will be remove at code gen time if empty)
-		if (this.scanner.containsAssertKeyword) {
-			typeDecl.bits |= ASTNode.ContainsAssertion;
-		}
+//		if (this.scanner.containsAssertKeyword) {
+//			typeDecl.bits |= ASTNode.ContainsAssertion;
+//		}
+		
 		typeDecl.addClinit();
 		typeDecl.bodyEnd = this.endStatementPosition;
 		if (length == 0 && !containsComment(typeDecl.bodyStart, typeDecl.bodyEnd)) {
@@ -2850,10 +2852,13 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 					typeDecl.createDefaultConstructor(!this.diet || insideFieldInitializer, true);
 			}
 		}
+		
+		//cym 2015-04-17
 		//always add <clinit> (will be remove at code gen time if empty)
-		if (this.scanner.containsAssertKeyword) {
-			typeDecl.bits |= ASTNode.ContainsAssertion;
-		}
+//		if (this.scanner.containsAssertKeyword) {
+//			typeDecl.bits |= ASTNode.ContainsAssertion;
+//		}
+		
 		typeDecl.addClinit();
 		typeDecl.bodyEnd = this.endStatementPosition;
 		if (length == 0 && !containsComment(typeDecl.bodyStart, typeDecl.bodyEnd)) {
@@ -4058,10 +4063,12 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			enumDeclaration.createDefaultConstructor(!this.diet || insideFieldInitializer, true);
 		}
 	
+		//cym 2015-04-17
 		//always add <clinit> (will be remove at code gen time if empty)
-		if (this.scanner.containsAssertKeyword) {
-			enumDeclaration.bits |= ASTNode.ContainsAssertion;
-		}
+//		if (this.scanner.containsAssertKeyword) {
+//			enumDeclaration.bits |= ASTNode.ContainsAssertion;
+//		}
+		
 		enumDeclaration.addClinit();
 		enumDeclaration.bodyEnd = this.endStatementPosition;
 		if (length == 0 && !containsComment(enumDeclaration.bodyStart, enumDeclaration.bodyEnd)) {
@@ -4752,10 +4759,11 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			}
 		}
 	
+		//cym 2015-04-17
 		//always add <clinit> (will be remove at code gen time if empty)
-		if (this.scanner.containsAssertKeyword) {
-			typeDecl.bits |= ASTNode.ContainsAssertion;
-		}
+//		if (this.scanner.containsAssertKeyword) {
+//			typeDecl.bits |= ASTNode.ContainsAssertion;
+//		}
 		typeDecl.addClinit();
 		typeDecl.bodyEnd = this.endStatementPosition;
 		if (length == 0 && !containsComment(typeDecl.bodyStart, typeDecl.bodyEnd)) {
@@ -6656,7 +6664,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			    consumeHtmlAttributeStart();  
 				break;
 	 
-	    case 126 : if (DEBUG) { System.out.println("AttributeStart ::= HtmlName COLON HtmlName"); }  //$NON-NLS-1$
+	    case 126 : if (DEBUG) { System.out.println("AttributeStart ::= SimpleName COLON HtmlName"); }  //$NON-NLS-1$
 			    consumeHtmlAttachAttributeStart();  
 				break;
 	 
@@ -8951,7 +8959,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	}
 	
 	protected void consumeHtmlName(){
-		this.identifierLengthStack[--this.identifierLengthPtr]++;
+ 		this.identifierLengthStack[--this.identifierLengthPtr]++;
 	}
 	
 	//cym  2015-04-07
@@ -9036,8 +9044,8 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	
 	protected void consumeHtmlMarkupExtenson(){
 		
-		HtmlMarkupExtension markupExtension = new HtmlMarkupExtension(new char[][]{this.identifierStack[this.identifierPtr]}, 
-				new long[]{this.identifierPositionStack[this.identifierPtr--]});
+		HtmlMarkupExtension markupExtension = new HtmlMarkupExtension(this.identifierStack[this.identifierPtr], 
+				this.identifierPositionStack[this.identifierPtr--]);
 
 //		markupExtension.type = new SingleTypeReference1(
 //				this.identifierStack[this.identifierPtr],
@@ -9107,7 +9115,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	}
 
 	protected void consumeHtmlAttachAttributeStart(){
-//		Attribute ::= HtmlName ':' HtmlName
+//		Attribute ::= SimpleName ':' HtmlName
 		
 		char[][] tokens;
 		int length = this.identifierLengthStack[this.identifierLengthPtr--];
@@ -9117,19 +9125,22 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		long[] positions;
 		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
 		
-		char[][] tokens2;
-		length = this.identifierLengthStack[this.identifierLengthPtr--];
-		this.identifierPtr -= length;
-		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens2 = new char[length][], 0, length);
+//		char[][] tokens2;
+//		length = this.identifierLengthStack[this.identifierLengthPtr--];
+//		this.identifierPtr -= length;
+//		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens2 = new char[length][], 0, length);
+//		
+//		long[] positions2;
+//		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions2 = new long[length], 0, length);
 		
-		long[] positions2;
-		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions2 = new long[length], 0, length);
+		TypeReference receiver = new SingleTypeReference(this.identifierStack[this.identifierPtr], 
+				this.identifierPositionStack[this.identifierPtr--]);
+		this.identifierLengthPtr--;
 		
-		TypeReference receiver = new SingleTypeReference1(tokens2, positions2);
 		HtmlAttribute attribute = new HtmlAttribute(new HtmlAttachProperty(tokens, positions, receiver));
 		attribute.tagBits |= HtmlBits.AttachedAttribute;
 		
-		attribute.sourceStart = attribute.bodyStart = (int) (positions2[0] >>> 32);
+		attribute.sourceStart = attribute.bodyStart = receiver.sourceStart;
 		attribute.sourceEnd = (int)positions[positions.length-1];
 		
 		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
@@ -9216,7 +9227,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		HtmlElement element = new HtmlElement(tokens, positions);
 		element.tagBits &= HtmlBits.COMMON_ELEMENT;
 		
-		element.type = new SingleTypeReference1(tokens, positions);
+//		element.type = new SingleTypeReference1(tokens, positions);
 		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
 		pushOnElementStack(element);
 	}
@@ -9230,7 +9241,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		HtmlElement element = new HtmlElement(new char[][]{VAR}, new long[]{(((long) thisStart << 32)) + (thisStart + 3)});
 		element.tagBits &= HtmlBits.VAR_ELEMENT;
 
-		element.type = new SingleTypeReference1( new char[][]{VAR}, new long[]{(((long) thisStart << 32)) + (thisStart + 3)});
+//		element.type = new SingleTypeReference1( new char[][]{VAR}, new long[]{(((long) thisStart << 32)) + (thisStart + 3)});
 		
 		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
 		element.sourceEnd = element.type.sourceEnd;
@@ -9247,7 +9258,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		HtmlElement element = new HtmlElement(new char[][]{SWITCH}, new long[]{(((long) thisStart << 32)) + (thisStart + 5)});
 		element.tagBits &= HtmlBits.SWITCH_ELEMENT;
 
-		element.type = new SingleTypeReference1(new char[][]{SWITCH}, new long[]{(((long) thisStart << 32)) + (thisStart + 5)});
+//		element.type = new SingleTypeReference1(new char[][]{SWITCH}, new long[]{(((long) thisStart << 32)) + (thisStart + 5)});
 		
 		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
 		element.sourceEnd = element.type.sourceEnd;
@@ -9278,7 +9289,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		HtmlElement element = new HtmlAttributeElement(tokens, positions, tokens2, positions2);
 		element.tagBits &= HtmlBits.ATTRIBUTE_ELEMENT;
 		
-		element.type = new SingleTypeReference1(tokens2, positions2);
+		element.type = new HtmlTypeReference(tokens2, positions2);
 		
 		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
 		element.sourceEnd = element.type.sourceEnd;
@@ -10467,16 +10478,18 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				break;
 			case TokenNameIdentifier :
 				pushIdentifier();
-				if (this.scanner.useAssertAsAnIndentifier  &&
-						this.lastErrorEndPositionBeforeRecovery < this.scanner.currentPosition) {
-					long positions = this.identifierPositionStack[this.identifierPtr];
-					if(!this.statementRecoveryActivated) problemReporter().useAssertAsAnIdentifier((int) (positions >>> 32), (int) positions);
-				}
-				if (this.scanner.useEnumAsAnIndentifier  &&
-						this.lastErrorEndPositionBeforeRecovery < this.scanner.currentPosition) {
-					long positions = this.identifierPositionStack[this.identifierPtr];
-					if(!this.statementRecoveryActivated) problemReporter().useEnumAsAnIdentifier((int) (positions >>> 32), (int) positions);
-				}
+				//cym 2015-04-17
+//				if (this.scanner.useAssertAsAnIndentifier  &&
+//						this.lastErrorEndPositionBeforeRecovery < this.scanner.currentPosition) {
+//					long positions = this.identifierPositionStack[this.identifierPtr];
+//					if(!this.statementRecoveryActivated) problemReporter().useAssertAsAnIdentifier((int) (positions >>> 32), (int) positions);
+//				}
+//				
+//				if (this.scanner.useEnumAsAnIndentifier  &&
+//						this.lastErrorEndPositionBeforeRecovery < this.scanner.currentPosition) {
+//					long positions = this.identifierPositionStack[this.identifierPtr];
+//					if(!this.statementRecoveryActivated) problemReporter().useEnumAsAnIdentifier((int) (positions >>> 32), (int) positions);
+//				}
 				break;
 			case TokenNameinterface :
 				//'class' is pushing two int (positions) on the stack ==> 'interface' needs to do it too....

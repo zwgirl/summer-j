@@ -69,12 +69,21 @@ public class BlockScope extends Scope {
 	
 	//used for htmlElement resolve
 	public HtmlNode element;
+	public boolean inSVG = false;
 	
 	//cym 2015-04-12 for HtmlElement resolve
+	public BlockScope(BlockScope parent, HtmlElement element, boolean inSVG) {
+		this(parent, true);
+		this.element = element;
+		element.scope = this;
+		this.inSVG = inSVG;
+	}
+	//cym 2015-04-17 for HtmlElement resolve
 	public BlockScope(BlockScope parent, HtmlElement element) {
 		this(parent, true);
 		this.element = element;
 		element.scope = this;
+		this.inSVG = parent.inSVG;
 	}
 
 	public BlockScope(BlockScope parent) {

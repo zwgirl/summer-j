@@ -4,11 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class SvgTags {
+	public static final char[] SVG = "svg".toCharArray();
 	
 	private final static  Map<String, String> tagMaps = new HashMap<String, String>();
-
 	static{
-
 
 		/**
 		* <p>A key interface definition is the <a>SVGSVGElement</a> interface,
@@ -378,6 +377,12 @@ public final class SvgTags {
 		* element.
 		*/
 		tagMaps.put("line", "SVGLineElement");
+		
+		/**
+		* The <a>SVGEllipseElement</a> interface corresponds to the <a>'ellipse'</a>
+		* element.
+		*/
+		tagMaps.put("ellipse", "SVGEllipseElement");
 
 //		/**
 //		* <p>The <a>SVGAnimatedPoints</a> interface supports elements which have a
@@ -889,5 +894,14 @@ public final class SvgTags {
 		*/
 		tagMaps.put("foreignObject", "SVGForeignObjectElement");
 
+	}
+	
+	public static char[] getMappingClass(char[] name){
+		String result = tagMaps.get(new String(name));
+		if(result == null){
+			return new char[0];
+		}
+		
+		return result.toCharArray();
 	}
 }

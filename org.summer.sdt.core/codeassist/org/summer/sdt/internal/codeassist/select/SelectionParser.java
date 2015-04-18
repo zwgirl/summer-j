@@ -56,7 +56,7 @@ import org.summer.sdt.internal.compiler.ast.ReturnStatement;
 import org.summer.sdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.summer.sdt.internal.compiler.ast.SingleNameReference;
 import org.summer.sdt.internal.compiler.ast.SingleTypeReference;
-import org.summer.sdt.internal.compiler.ast.SingleTypeReference1;
+import org.summer.sdt.internal.compiler.ast.HtmlTypeReference;
 import org.summer.sdt.internal.compiler.ast.Statement;
 import org.summer.sdt.internal.compiler.ast.StringLiteral;
 import org.summer.sdt.internal.compiler.ast.SuperReference;

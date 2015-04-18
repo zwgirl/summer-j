@@ -2,7 +2,7 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
+import org.summer.sdt.internal.compiler.html.SvgTags;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
@@ -38,8 +38,15 @@ public class HtmlElement extends HtmlNode {
 		
 		this.tokens = tokens;
 		this.positions = positions;
+		
+		type = createTypeReference();
 	}
 	
+
+	protected TypeReference createTypeReference() {
+		return new HtmlTypeReference(tokens, positions);
+	}
+
 
 	public StringBuffer print(int indent, StringBuffer output) {
 		return printStatement(indent, output);
@@ -51,15 +58,21 @@ public class HtmlElement extends HtmlNode {
 		
 		output.append("<");
 		printTagName(indent, output);
-//		printProperties(indent, output);
 		
-		if(this.kind == EMPTY_ELEMENT){
+		for(HtmlAttribute attribute: this.attributes){
+			output.append(" ");
+			attribute.print(indent, output);
+		}
+		
+		if((this.tagBits & HtmlBits.SimpleElement) != 0){
 			return output.append("/>");
 		} else {
 			output.append(">");
 		}
 		
-//		printChildElement(indent, output);
+		for(HtmlNode child : this.children){
+			child.print(indent, output);
+		}
 		
 		output.append("\n");
 		printIndent(indent, output).append("</");
@@ -80,7 +93,7 @@ public class HtmlElement extends HtmlNode {
 	}
 	
 	protected void printTagName(int indent, StringBuffer output){
-		
+		output.append(CharOperation.concatWith(tokens, '-'));
 	}
 	
 	/**
@@ -107,19 +120,24 @@ public class HtmlElement extends HtmlNode {
 		return null;
 	}
 	
-	public void resolve(BlockScope scope) {
+	public void resolve(BlockScope parentScope) {
+		if(CharOperation.equals(SvgTags.SVG, CharOperation.concatWith(this.tokens, '-'))){
+			this.scope = new BlockScope(parentScope, this, true);
+		} else {
+			this.scope = new BlockScope(parentScope, this);
+		}
+		
 		this.constant = Constant.NotAConstant;
 		if(this.type != null){
 			this.resolvedType = type.resolveType(scope);
 		}
 		
 		if(this.closeType != null){
-			closeType.resolveType(scope);
+			closeType.resolveType(this.scope);
 		}
 		
-		BlockScope eleScope = new BlockScope(scope, this);
-		resolveAttribute(eleScope);
-		resolveChild(eleScope);
+		resolveAttribute(this.scope);
+		resolveChild(this.scope);
 	}
 	
 	protected void resolveChild(BlockScope scope){
@@ -152,17 +170,22 @@ public class HtmlElement extends HtmlNode {
 		if(CharOperation.equals(type.getLastToken(), TEXT)){
 			output.append("$.t();");
 		}else {
-			output.append("$.n").append("(\"").append(type.getLastToken()).append("\");");
+			if(this.scope.inSVG){
+				output.append("$.svg_n");
+			} else {
+				output.append("$.n");
+			}
+			output.append("(\"").append(type.getLastToken()).append("\");");
 		}
 		output.append('\n');
 		printIndent(indent + 1, output).append("$.a(p, n);");
 		
 		for(HtmlAttribute attr : this.attributes){
-			attr.buildScript(scope, indent, output, "n");
+			attr.buildScript(this.scope, indent, output, "n");
 		}
 		
 		for(HtmlNode child : this.children){
-			child.buildDOMChildScript(scope, indent + 1, output, "n", context);
+			child.buildDOMChildScript(this.scope, indent + 1, output, "n", context);
 		}
 			
 		output.append("\n");

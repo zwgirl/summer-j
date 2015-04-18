@@ -3666,11 +3666,11 @@ class ASTConverter {
 		int dimensions = typeReference.dimensions();
 		
 		//cym 2015-04-15
-		if (typeReference instanceof org.summer.sdt.internal.compiler.ast.SingleTypeReference1) {
+		if (typeReference instanceof org.summer.sdt.internal.compiler.ast.HtmlTypeReference) {
 			annotations = typeReference.annotations != null ? typeReference.annotations[0] : null;
 			int annotationsEnd = annotations != null ? annotations[annotations.length - 1].declarationSourceEnd + 1 : -1;
 			// this is either an ArrayTypeReference or a SingleTypeReference
-			char[] name = ((org.summer.sdt.internal.compiler.ast.SingleTypeReference1) typeReference).getTypeName()[0];
+			char[] name = ((org.summer.sdt.internal.compiler.ast.HtmlTypeReference) typeReference).getTypeName()[0];
 			length = typeReference.sourceEnd - typeReference.sourceStart + 1;
 			// need to find out if this is an array type of primitive types or not
 			if (isPrimitiveType(name)) {

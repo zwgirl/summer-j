@@ -9,7 +9,6 @@ public interface HtmlBits {
 	int HasDynamicContent = NamedField 
 			| HasMarkupExtension 
 			| HasTemplate
-			| AttachedAttribute
 			| QualifiedNameAttribute;
 	
 	int HtmlPage = ASTNode.Bit17;

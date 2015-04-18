@@ -1,5 +1,6 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
@@ -192,41 +193,16 @@ public class HtmlAttachProperty extends PropertyReference{
 
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-//		if(this.receiver instanceof HtmlAttachProperty){
-//			output.append(((HtmlAttachProperty)this.receiver).token);
-//			output.append('.').append(this.token);
-//		} else if(this.receiver instanceof TypeReference){
-//			output.append(this.token);
-//		} else {
-//			output.append(this.token);
-//		}
+		output.append(CharOperation.concatWith(this.tokens, '-'));
 		return output;
 	}
 	
 	public StringBuffer html(Scope scope, int indent, StringBuffer output){
-//		if(this.receiver instanceof HtmlAttachProperty){
-//			HtmlAttachProperty propRef = (HtmlAttachProperty) this.receiver;
-//			Js2HtmlMapping.getHtmlName(new String(propRef.token));
-//			output.append(Js2HtmlMapping.getHtmlName(new String(propRef.token)));
-//			output.append('.').append(Js2HtmlMapping.getHtmlName(new String(this.token)));
-//		} else if(this.receiver instanceof TypeReference){
-//			output.append(this.token);
-//		} else {
-//			output.append(Js2HtmlMapping.getHtmlName(new String(this.token)));
-//		}
+		output.append(receiver.getLastToken()).append(":").append(CharOperation.concatWith(this.tokens, '-'));
 		return output;
 	}
 	
 	public StringBuffer buildInjectPart(Scope scope, int indent, StringBuffer output){
-//		output.append("[\"");
-//		if(this.receiver instanceof HtmlAttachProperty){
-//			output.append(((HtmlAttachProperty)this.receiver).token).append("\"");
-//			output.append(", \"").append(this.token).append("\"");
-//		} else if(this.receiver == null){
-//			output.append(this.token).append("\"");
-//		}
-//		output.append("]");
-		
 		return output;
 	}
 }
