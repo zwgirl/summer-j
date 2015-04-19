@@ -49,4 +49,8 @@ public abstract class HtmlNode extends Expression {
 	public ASTNode parserElement(int position){
 		return null;
 	}
+	
+	public StringBuffer option(BlockScope scope, int indent, StringBuffer output) {
+		return output;
+	}
 }

@@ -568,7 +568,10 @@ AttributeStart ::= for
 /:$readableName AttributeStart:/
 
 Attribute ::= AttributeStart
-Attribute ::= AttributeStart '=' PropertyExpression
+/.$putCase consumeHtmlAttributeWithoutValue(); $break ./
+/:$readableName Attribute:/
+
+Attribute ::= AttributeStart '=' AttributeValue
 /.$putCase consumeHtmlAttribute(); $break ./
 /:$readableName Attribute:/
 
@@ -582,15 +585,17 @@ AttributeList ::= AttributeList Attribute
 /.$putCase consumeHtmlAttributeList(); $break ./
 /:$readableName AttributeList:/
 
-PropertyExpression ::= StringLiteral
-PropertyExpression ::= IntegerLiteral
-PropertyExpression ::= LongLiteral
-PropertyExpression ::= FloatingPointLiteral
-PropertyExpression ::= DoubleLiteral
-PropertyExpression ::= CharacterLiteral
-PropertyExpression ::= BooleanLiteral
-PropertyExpression ::= MarkupExtenson
-PropertyExpression ::= FunctionExpression
+AttributeValue ::= StringLiteral
+AttributeValue ::= IntegerLiteral
+AttributeValue ::= LongLiteral
+AttributeValue ::= FloatingPointLiteral
+AttributeValue ::= DoubleLiteral
+AttributeValue ::= CharacterLiteral
+AttributeValue ::= BooleanLiteral
+AttributeValue ::= MarkupExtenson
+AttributeValue ::= FunctionExpression
+/.$putCase consumeHtmlAttributeValue(); $break ./
+/:$readableName ValueExpression:/
 
 FunctionExpression ::= FunctionExpressionHeader MethodBody
 /.$putCase consumeHtmlFunctionExpression(); $break ./

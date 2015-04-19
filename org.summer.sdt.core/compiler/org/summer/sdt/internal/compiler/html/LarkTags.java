@@ -13,7 +13,7 @@ public final class LarkTags {
 
 		tagMaps.put("template", new char[][]{JAVA, LANG, "TemplateSetting".toCharArray()});
 		tagMaps.put("collection-template", new char[][]{JAVA, LANG, "CollectionTemplateSetting".toCharArray()});
-		tagMaps.put("include", new char[][]{JAVA, LANG, "Include".toCharArray()});
+		tagMaps.put("fragment", new char[][]{JAVA, LANG, "FragmentSetting".toCharArray()});
 
 	}
 	

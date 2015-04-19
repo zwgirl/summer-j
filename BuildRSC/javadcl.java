@@ -5131,7 +5131,7 @@ abstract class javadcl implements javadef
             "CloseTag",
             "AttributeStart",
             "Attribute",
-            "PropertyExpression",
+            "AttributeValue",
             "AttributeList",
             "MarkupExtenson",
             "FunctionExpression",

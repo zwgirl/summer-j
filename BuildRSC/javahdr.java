@@ -63,9 +63,11 @@
 1#124# ExitCloseTag
 1#131# CloseTag
 1#137# AttributeStart
+1#138# Attribute
 1#139# Attribute
 1#141# AttributeListopt
 1#143# AttributeList
+1#152# ValueExpression
 1#153# FunctionExpression
 1#154# FunctionExpressionHeader
 1#155# MarkupExtenson

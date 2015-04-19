@@ -21,7 +21,7 @@ public class HtmlScript extends HtmlNode{
 	@Override
 	public void resolve(BlockScope scope) {
 		this.constant = Constant.NotAConstant;
-		scope.element.tagBits |= HtmlBits.ScriptElement;
+		scope.element.tagBits |= HtmlBits.ScriptNode;
 	}
 	
 	@Override

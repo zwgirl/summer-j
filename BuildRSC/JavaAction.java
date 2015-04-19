@@ -273,7 +273,11 @@ protected void consumeRule(int act) {
 		    consumeHtmlForAttributeStart();  
 			break;
  
-    case 139 : if (DEBUG) { System.out.println("Attribute ::= AttributeStart EQUAL PropertyExpression"); }  //$NON-NLS-1$
+    case 138 : if (DEBUG) { System.out.println("Attribute ::= AttributeStart"); }  //$NON-NLS-1$
+		    consumeHtmlAttributeWithoutValue();  
+			break;
+ 
+    case 139 : if (DEBUG) { System.out.println("Attribute ::= AttributeStart EQUAL AttributeValue"); }  //$NON-NLS-1$
 		    consumeHtmlAttribute();  
 			break;
  
@@ -283,6 +287,10 @@ protected void consumeRule(int act) {
  
     case 143 : if (DEBUG) { System.out.println("AttributeList ::= AttributeList Attribute"); }  //$NON-NLS-1$
 		    consumeHtmlAttributeList();  
+			break;
+ 
+    case 152 : if (DEBUG) { System.out.println("AttributeValue ::= FunctionExpression"); }  //$NON-NLS-1$
+		    consumeHtmlAttributeValue();  
 			break;
  
     case 153 : if (DEBUG) { System.out.println("FunctionExpression ::= FunctionExpressionHeader..."); }  //$NON-NLS-1$
