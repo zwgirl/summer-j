@@ -3912,6 +3912,16 @@ public class ProblemReporter extends ProblemHandler {
 				fieldRef.sourceEnd);
 	}
 	
+	//cym 2015-04-21
+	public void invalidEnumLiternal(Literal liternal) {
+		this.handle(
+				IProblem.InvalidEnumLiteral,
+				NoArgument,
+				new String[]{new String(liternal.source())},
+				liternal.sourceStart,
+				liternal.sourceEnd);
+	}
+	
 	//cym 2014-12-26
 	public void invalidProperty(HtmlPropertyReference fieldRef, TypeBinding searchedType) {
 		if(isRecoveredName(fieldRef.name())) return;

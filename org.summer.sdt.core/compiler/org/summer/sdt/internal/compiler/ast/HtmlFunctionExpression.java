@@ -1,6 +1,11 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
+import org.summer.sdt.internal.compiler.lookup.TypeConstants;
 
 public class HtmlFunctionExpression extends Expression{
 	private final MethodDeclaration md;
@@ -30,6 +35,19 @@ public class HtmlFunctionExpression extends Expression{
 		}
 		output.append("'");
 		return output;
+	}
+	
+	@Override
+	public TypeBinding resolveTypeExpecting(BlockScope scope,
+			TypeBinding expectedType) {
+		if(expectedType.isBaseType()){
+			scope.problemReporter().typeMismatchError((TypeBinding)scope.getTypeOrPackage(TypeConstants.JAVA_LANG_FUNCTION), expectedType, this, null);
+		}
+		
+		if((((ReferenceBinding)expectedType).modifiers & ClassFileConstants.AccFunction) == 0 ){
+			scope.problemReporter().typeMismatchError((TypeBinding)scope.getTypeOrPackage(TypeConstants.JAVA_LANG_FUNCTION), expectedType, this, null);
+		}
+		return super.resolveTypeExpecting(scope, expectedType);
 	}
 
 }

@@ -42,7 +42,7 @@ public abstract class HtmlNode extends Expression {
 	protected StringBuffer buildDOMChildScript(Scope scope, int indent, StringBuffer output, String parent, String context){
 		return output;}
 	
-	public StringBuffer html(BlockScope scope, int indent, StringBuffer output) {
+	public StringBuffer html(BlockScope scope, int indent, StringBuffer output, char[] _this) {
 		return output;
 	}
 	

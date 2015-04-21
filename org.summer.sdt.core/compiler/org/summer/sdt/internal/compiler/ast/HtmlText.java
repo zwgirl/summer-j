@@ -132,7 +132,7 @@ public class HtmlText  extends HtmlNode {
 	}
 	
 	@Override
-	public StringBuffer html(BlockScope scope, int indent, StringBuffer output) {
+	public StringBuffer html(BlockScope scope, int indent, StringBuffer output, char[] _this) {
 		return output.append(source);
 	}
 

@@ -25,7 +25,7 @@ public class HtmlScript extends HtmlNode{
 	}
 	
 	@Override
-	public StringBuffer html(BlockScope scope, int indent, StringBuffer output) {
+	public StringBuffer html(BlockScope scope, int indent, StringBuffer output, char[] _this) {
 		output.append("<script type = 'text/javascript'>");
 		Statement[] statements = method.statements;
 		if(statements != null){

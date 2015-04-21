@@ -754,7 +754,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 //	}
 	
 	private void html(HtmlElement element, BlockScope scope, int indent, StringBuffer output) {
-		element.html(scope, indent, output);
+		element.html(scope, indent, output, "__this".toCharArray());
 	}
 
 	public void generateJavascript(CompilationUnitScope unitScope) {

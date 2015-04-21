@@ -265,7 +265,7 @@ public class HtmlElement extends HtmlNode {
 	private static final char[] head = "head".toCharArray();
 	private static final char[] meta = "meta".toCharArray();
 	private static final char[] TEXT = "Text".toCharArray();
-	public StringBuffer html(BlockScope parentScope, int indent, StringBuffer output) {
+	public StringBuffer html(BlockScope parentScope, int indent, StringBuffer output, char[] _this) {
 		if((this.tagBits & HtmlBits.Lark_Element_Mask) !=0){
 			if((this.tagBits & HtmlBits.Fragment) != 0){
 				if(this.type.resolvedType != null){
@@ -291,12 +291,12 @@ public class HtmlElement extends HtmlNode {
 			if((attr.tagBits & HtmlBits.HasDynamicContent) != 0)
 				continue;
 			output.append(" ");
-			attr.html(scope, indent, output);
+			attr.html(scope, indent, output, _this);
 		}
 		if(CharOperation.equals(type.getLastToken(), head)) {
 			output.append('>');
 			for(HtmlNode child : this.children){
-				child.html(scope, indent + 1, output);
+				child.html(scope, indent + 1, output, _this);
 			}
 			//output meta
 			output.append("\n");
@@ -334,7 +334,7 @@ public class HtmlElement extends HtmlNode {
 				output.append('>');
 				createEmbedScript(scope, indent, output, false);
 				for(HtmlNode child : this.children){
-					child.html(scope, indent + 1, output);
+					child.html(scope, indent + 1, output, _this);
 				}
 				output.append("</").append(type.getLastToken()).append('>');
 			}

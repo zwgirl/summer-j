@@ -4677,6 +4677,7 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
       <key
             sequence="CTRL+ALT+H"
+            
             commandId="org.summer.sdt.ui.edit.text.java.open.call.hierarchy"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
 	  <!-- COMMAND+ALT+H is "Hide Others" on carbon, so don't overwrite it -->

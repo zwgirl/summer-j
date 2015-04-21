@@ -1849,4 +1849,7 @@ void setSourceStart(int sourceStart);
 	
 	int TooManyHtmlElements =  Internal + 1211;
 	
+	//cym 2015-04-21
+	int InvalidEnumLiteral = Internal + FieldRelated + 1213;
+	
 }

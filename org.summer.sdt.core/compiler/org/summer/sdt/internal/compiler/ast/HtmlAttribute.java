@@ -33,23 +33,23 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	public Expression value;
 	
 	public TypeBinding type;   //type of property 
-	public ReferenceBinding template;
+	public ReferenceBinding binding;
 	public FieldBinding field;
 	
-//	public static final int ENUM = 1;
-//	public static final int FUNCTION = 2;
-//	public static final int CLASS = 3;
-//	public static final int STRING = 4;
-//	public static final int TEMPLATESETTING = 6;
-//	public static final int REFERENCE = 7;
-//	
-//	public static final int BYTE = 11;
-//	public static final int SHORT = 12;
-//	public static final int INT = 13;
-//	public static final int LONG = 14;
-//	public static final int FLOAT = 15;
-//	public static final int DOUBLE = 16;
-//	public static final int BOOLEAN = 17;
+	public static final int ENUM = 11;
+	public static final int FUNCTION = 12;
+	public static final int CLASS = 13;
+	public static final int TEMPLATESETTING =16;
+	public static final int REFERENCE = 17;
+	
+	public static final int BYTE = 1;
+	public static final int SHORT =2;
+	public static final int INT = 3;
+	public static final int LONG = 4;
+	public static final int FLOAT = 5;
+	public static final int DOUBLE = 6;
+	public static final int BOOLEAN = 7;
+	public static final int STRING = 8;
 	
 	private int propertyKind;
 	
@@ -90,33 +90,46 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		switch(this.type.id){
 			case TypeIds.T_byte:
 			case TypeIds.T_JavaLangByte:
+				propertyKind = BYTE;
+				break;
 			case TypeIds.T_short:
 			case TypeIds.T_JavaLangShort:
+				propertyKind = SHORT;
+				break;
 			case TypeIds.T_int:
 			case TypeIds.T_JavaLangInteger:
+				propertyKind = INT;
+				break;
 			case TypeIds.T_long:
 			case TypeIds.T_JavaLangLong:
+				propertyKind = LONG;
+				break;
 			case TypeIds.T_float:
 			case TypeIds.T_JavaLangFloat:
+				propertyKind = FLOAT;
+				break;
 			case TypeIds.T_double:
 			case TypeIds.T_JavaLangDouble:
+				propertyKind = DOUBLE;
+				break;
 			case TypeIds.T_boolean:
 			case TypeIds.T_JavaLangBoolean:
+				propertyKind = BOOLEAN;
+				break;
 			case TypeIds.T_JavaLangString:
-			
+				propertyKind = STRING;
+				break;
+		}
+		
+		if(this.propertyKind < 9 && this.propertyKind >= 1){
 			value.resolveTypeExpecting(scope, this.type);
 			return;
 		}
 		
 		ReferenceBinding refType = (ReferenceBinding) this.type;
 		
-//		if(this.value instanceof HtmlFunctionExpression){
-//			HtmlFunctionExpression function = (HtmlFunctionExpression) this.value;
-//			function.resolve(scope);
-//			scope.element.tagBits |= HtmlBits.FunctionExpression;
-//			return;
-//		}
 		if((refType.modifiers & ClassFileConstants.AccFunction) != 0 ){
+			this.propertyKind = FUNCTION;
 			this.tagBits |= HtmlBits.EventCallback;
 			if(this.value instanceof StringLiteral){
 				StringLiteral stringLiteral = (StringLiteral) this.value;
@@ -131,11 +144,17 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			} else if(this.value instanceof HtmlFunctionExpression){
 				
 			} else {
-				scope.problemReporter().errorNoMethodFor(stringLiteral, this.type, new TypeBinding[0]); 
+				scope.problemReporter().invalidEnumLiternal((Literal)this.value);
 			}
 		} else if(refType.isEnum()){
+			this.propertyKind = ENUM;
 			if(!(this.value instanceof StringLiteral)){
-				scope.problemReporter().errorNoMethodFor(stringLiteral, this.type, new TypeBinding[0]);
+				if(this.value instanceof Literal){
+					scope.problemReporter().invalidEnumLiternal((Literal)this.value);
+				} else {
+					
+				}
+
 				return;
 			}
 			this.field = scope.getField(refType, ((Literal) this.value).source(), this);
@@ -179,17 +198,16 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 				}
 			}
 		} else if(this.type instanceof ParameterizedTypeBinding && ((ParameterizedTypeBinding)this.type).original().id == TypeIds.T_JavaLangClass) {
+			this.propertyKind = CLASS;
 			ParameterizedTypeBinding pType = (ParameterizedTypeBinding) this.type;
-			TypeBinding orignal = pType.original();
+			TypeBinding orignal = pType.arguments[0];
 			this.binding = (ReferenceBinding) scope.getType(((Literal) this.value).source());
-			if(!orignal.isCompatibleWith(this.binding)){
+			if(!this.binding.isCompatibleWith(orignal)){
 				scope.problemReporter().invalidProperty(property, property.binding.type);  //TODO cym 2015-02-27
 			}
 		}  else {
 			if(this.value instanceof HtmlMarkupExtension){
 				
-			} else {
-				this.template = (ReferenceBinding) scope.getType(((Literal) this.value).source());
 			}
 		}
 	}
@@ -234,7 +252,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		this.property.generateExpression(scope, indent, output).append(" : ");
 		switch(propertyKind){
 		case CLASS:
-			this.template.generate(output, null);
+			this.binding.generate(output, null);
 			output.append(".prototype.__class");
 			return output;
 		case ENUM:
@@ -259,7 +277,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			return output;
 		case TEMPLATESETTING:
 			output.append("new (");
-			this.template.generate(output, null);
+			this.binding.generate(output, null);
 			output.append(")()");
 			return output;
 		case REFERENCE:
@@ -405,7 +423,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	}
 	
 	@Override
-	public StringBuffer html(BlockScope scope, int indent, StringBuffer output) {
+	public StringBuffer html(BlockScope scope, int indent, StringBuffer output, char[] _this) {
 		if((this.tagBits & HtmlBits.HasDynamicContent) != 0){
 			return output;
 		}
@@ -431,17 +449,17 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			}
 			output.append("(event);\" ");
 			break;
-		case CLASS:
-		case ENUM:
-		case REFERENCE:
-		case STRING:
-		case BYTE:
-		case SHORT:
-		case INT:
-		case LONG:
-		case FLOAT:
-		case DOUBLE:
-		case BOOLEAN:
+//		case CLASS:
+//		case ENUM:
+//		case REFERENCE:
+//		case STRING:
+//		case BYTE:
+//		case SHORT:
+//		case INT:
+//		case LONG:
+//		case FLOAT:
+//		case DOUBLE:
+//		case BOOLEAN:
 		default:
 			this.value.generateExpression(scope, indent, output);
 		}
@@ -479,7 +497,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		this.property.generateExpression(scope, indent, output).append(" : ");
 		switch(propertyKind){
 		case CLASS:
-			this.template.generate(output, null);
+			this.binding.generate(output, null);
 			output.append(".prototype.__class");
 			return output;
 		case ENUM:
@@ -504,7 +522,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			return output;
 		case TEMPLATESETTING:
 			output.append("new (");
-			this.template.generate(output, null);
+			this.binding.generate(output, null);
 			output.append(")()");
 			return output;
 		case REFERENCE:
