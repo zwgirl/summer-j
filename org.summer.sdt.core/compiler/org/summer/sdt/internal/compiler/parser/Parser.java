@@ -2473,50 +2473,8 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	
 	//cym 2015-02-13
 	protected void consumeFunctionTypeDeclaration() {
-		//FunctionTypeDeclaration ::= FunctionTypeHeaderName FormalParameterListopt FunctionTypeHeaderRightParen 
-		// ClassDeclaration ::= ClassHeader ClassBody
-		
-//		concatNodeLists(); //cym 2015-01-04 fieldDeclaration in XAML
-		
-		int length;
-//		if ((length = this.astLengthStack[this.astLengthPtr--]) != 0) {
-//			//there are length declarations
-//			//dispatch according to the type of the declarations
-//			dispatchDeclarationInto(length);
-//		}
-	
 		TypeDeclaration typeDecl = (TypeDeclaration) this.astStack[this.astPtr];
-		
-//		//convert constructor that do not have the type's name into methods
-//		boolean hasConstructor = typeDecl.checkConstructors(this);
-//	
-//		//add the default constructor when needed (interface don't have it)
-//		if (!hasConstructor) {
-//			switch(TypeDeclaration.kind(typeDecl.modifiers)) {
-//				case TypeDeclaration.CLASS_DECL :
-//				case TypeDeclaration.ENUM_DECL :
-//					boolean insideFieldInitializer = false;
-//					if (this.diet) {
-//						for (int i = this.nestedType; i > 0; i--){
-//							if (this.variablesCounter[i] > 0) {
-//								insideFieldInitializer = true;
-//								break;
-//							}
-//						}
-//					}
-//					typeDecl.createDefaultConstructor(!this.diet || insideFieldInitializer, true);
-//			}
-//		}
-//		//always add <clinit> (will be remove at code gen time if empty)
-//		if (this.scanner.containsAssertKeyword) {
-//			typeDecl.bits |= ASTNode.ContainsAssertion;
-//		}
-//		typeDecl.addClinit();
 		typeDecl.bodyEnd = this.endStatementPosition;
-//		if (length == 0 && !containsComment(typeDecl.bodyStart, typeDecl.bodyEnd)) {
-//			typeDecl.bits |= ASTNode.UndocumentedEmptyBlock;
-//		}
-	
 		typeDecl.declarationSourceEnd = flushCommentsDefinedPriorTo(this.endStatementPosition);
 	}
 	//cym 2015-02-03
@@ -2526,12 +2484,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		// AnnotationMethodHeaderName ::= Modifiersopt TypeParameters Type 'Identifier' '('
 		// RecoveryMethodHeaderName ::= Modifiersopt TypeParameters Type 'Identifier' '('
 		TypeDeclaration md = null;
-//		if(isAnnotationMethod) {
-//			md = new AnnotationMethodDeclaration(this.compilationUnit.compilationResult);
-//			this.recordStringLiterals = false;
-//		} else {
-			md = new TypeDeclaration(this.compilationUnit.compilationResult);
-//		}
+		md = new TypeDeclaration(this.compilationUnit.compilationResult);
 	
 		//name
 		md.name = this.identifierStack[this.identifierPtr];
@@ -2545,8 +2498,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		
 		//type
 		TypeReference returnType = getTypeReference(this.intStack[this.intPtr--]);
-//		if (isAnnotationMethod)
-//			rejectIllegalLeadingTypeAnnotations(returnType);
 		md.returnType = returnType;
 		md.bits |= (returnType.bits & ASTNode.HasTypeAnnotations);
 		
@@ -2557,9 +2508,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		md.modifiers = this.intStack[this.intPtr--];
 		md.modifiers |= ClassFileConstants.AccFunction;
 	
-//		//modifiers
-//		md.declarationSourceStart = this.intStack[this.intPtr--];
-//		md.modifiers = this.intStack[this.intPtr--];
 		// consume annotations
 		if ((length = this.expressionLengthStack[this.expressionLengthPtr--]) != 0) {
 			System.arraycopy(
@@ -9074,8 +9022,10 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 	
 	protected void consumeHtmlMarkupExtenson(){
 		
-		HtmlMarkupExtension markupExtension = new HtmlMarkupExtension(this.identifierStack[this.identifierPtr], 
-				this.identifierPositionStack[this.identifierPtr--]);
+		char[] token = this.identifierStack[this.identifierPtr];
+		long position = this.identifierPositionStack[this.identifierPtr--];
+		HtmlMarkupExtension markupExtension = new HtmlMarkupExtension(token, 
+				position, new SingleTypeReference(token, position));
 
 //		markupExtension.type = new SingleTypeReference1(
 //				this.identifierStack[this.identifierPtr],
@@ -9492,10 +9442,10 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 			System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens = new char[length][], 0, length);
 			checkCloseTag(element, tokens, HtmlBits.COMMON_ELEMENT);
 		} else if((flag & HtmlBits.VAR_ELEMENT ) != 0){
-			int thisStart = this.intStack[this.intPtr--];
+			this.intPtr--;
 			checkCloseTag(element, new char[][]{VAR}, HtmlBits.VAR_ELEMENT);
 		} else if((flag & HtmlBits.SWITCH_ELEMENT ) != 0){
-			int thisStart = this.intStack[this.intPtr--];
+			this.intPtr--;
 			checkCloseTag(element, new char[][]{SWITCH}, HtmlBits.SWITCH_ELEMENT);
 		}
 		

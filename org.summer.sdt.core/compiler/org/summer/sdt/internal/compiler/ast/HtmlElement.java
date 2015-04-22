@@ -8,7 +8,6 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
@@ -35,22 +34,22 @@ public class HtmlElement extends HtmlNode {
 	public BlockScope scope;
 	
 	
-	public HtmlElement(char[][] tokens, long[] positions, HtmlTypeReference htmlTypeReference){
+	public HtmlElement(char[][] tokens, long[] positions, TypeReference type){
 		super();
 		
 		this.tokens = tokens; 
 		this.positions = positions;
 		
-		type = htmlTypeReference;
+		this.type = type;
 	}
 	
-	public HtmlElement(char[][] tokens, long[] positions, char[] prefix, long prefixPos, HtmlTypeReference htmlTypeReference){
+	public HtmlElement(char[][] tokens, long[] positions, char[] prefix, long prefixPos, TypeReference type){
 		super(prefix, prefixPos);
 		
 		this.tokens = tokens;
 		this.positions = positions;
 		
-		type = htmlTypeReference;
+		this.type = type;
 	}
 	
 

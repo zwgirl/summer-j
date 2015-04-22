@@ -1,8 +1,5 @@
 package org.summer.sdt.internal.compiler.ast;
 
-import org.summer.sdt.core.compiler.CharOperation;
-import org.summer.sdt.internal.compiler.html.HtmlTagConstants;
-import org.summer.sdt.internal.compiler.html.SvgTags;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
@@ -15,13 +12,9 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
  */
 public class HtmlMarkupExtension extends HtmlElement {
 	
-	public HtmlMarkupExtension(char[] tokens, long positions) {
-		super(new char[][]{tokens}, new long[]{positions}, null);
+	public HtmlMarkupExtension(char[] tokens, long positions, TypeReference type) {
+		super(new char[][]{tokens}, new long[]{positions}, type);
 	}
-	
-//	protected TypeReference createTypeReference(){
-//		return new SingleTypeReference(tokens[0], positions[0]);
-//	}
 
 	@Override
 	public StringBuffer print(int indent, StringBuffer output) {
