@@ -35,28 +35,28 @@ public class HtmlElement extends HtmlNode {
 	public BlockScope scope;
 	
 	
-	public HtmlElement(char[][] tokens, long[] positions){
+	public HtmlElement(char[][] tokens, long[] positions, HtmlTypeReference htmlTypeReference){
 		super();
 		
 		this.tokens = tokens; 
 		this.positions = positions;
 		
-		type = createTypeReference();
+		type = htmlTypeReference;
 	}
 	
-	public HtmlElement(char[][] tokens, long[] positions, char[] prefix, long prefixPos){
+	public HtmlElement(char[][] tokens, long[] positions, char[] prefix, long prefixPos, HtmlTypeReference htmlTypeReference){
 		super(prefix, prefixPos);
 		
 		this.tokens = tokens;
 		this.positions = positions;
 		
-		type = createTypeReference();
+		type = htmlTypeReference;
 	}
 	
 
-	protected TypeReference createTypeReference() {
-		return new HtmlTypeReference(tokens, positions);
-	}
+//	protected TypeReference createTypeReference() {
+//		return new HtmlTypeReference(tokens, positions);
+//	}
 
 
 	public StringBuffer print(int indent, StringBuffer output) {
@@ -416,7 +416,14 @@ public class HtmlElement extends HtmlNode {
 	
 	//cym 2015-02-22
 	public ASTNode parserElement(int position){
+		if (this.bodyStart > position)
+			return null;
+			
+		
 		for(HtmlAttribute attribute : this.attributes){
+			if (attribute.bodyStart > position)
+				return null;
+			
 			if(attribute.property.sourceStart < position && attribute.property.sourceEnd >= position){
 				return attribute.property;
 			} 
@@ -431,9 +438,10 @@ public class HtmlElement extends HtmlNode {
 		}
 		
 		for(HtmlNode child : this.children){
-			if(child.sourceStart < position && child.sourceEnd >= position){
-				return child.parserElement(position);
-			}
+			if (child.bodyStart > position)
+				continue;
+			
+			return child.parserElement(position);
 		}
 		return null;
 		

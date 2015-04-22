@@ -108,7 +108,7 @@ Export-Package: org.summer.sdt.internal.corext,
  org.summer.sdt.ui.text.java.correction,
  org.summer.sdt.ui.text.java.hover,
  org.summer.sdt.ui.wizards
-Require-Bundle: org.summer.sdt.core;bundle-version="1.0.0",
+Require-Bundle: org.summer.sdt.core;bundle-version="3.8.100",
  org.eclipse.help;bundle-version="[3.4.0,4.0.0)",
  org.eclipse.core.expressions;bundle-version="[3.4.100,4.0.0)",
  org.eclipse.core.filesystem;bundle-version="[1.2.0,2.0.0)",

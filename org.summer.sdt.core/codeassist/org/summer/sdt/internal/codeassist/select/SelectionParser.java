@@ -286,6 +286,52 @@ public class SelectionParser extends AssistParser {
 		}
 	}
 	
+	protected void consumeHtmlAttributeStart() {
+//		Attribute ::= HtmlName
+		
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlAttributeStart();
+//			return;
+//		}
+		
+		int index;
+		
+		/* no need to take action if not inside assist identifiers */
+		if ((index = indexOfAssistIdentifier()) < 0) {
+			super.consumeHtmlAttributeStart();
+			return;
+		}
+		/* retrieve identifiers subset and whole positions, the assist node positions
+			should include the entire replaced source. */
+		int length = this.identifierLengthStack[this.identifierLengthPtr];
+		char[][] subset = identifierSubSet(index+1); // include the assistIdentifier
+		this.identifierLengthPtr--;
+		this.identifierPtr -= length;
+		
+		long[] positions;
+		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
+		
+		HtmlAttribute attribute = new HtmlAttribute(new SelectionOnHtmlPropertyReference(subset, positions, null));
+		attribute.sourceStart = attribute.bodyStart = (int) (positions[0] >>> 32);
+		attribute.sourceEnd = (int) positions[positions.length - 1];
+		
+		pushOnAttributeStack(attribute);
+		
+//		char[][] tokens;
+//		int length = this.identifierLengthStack[this.identifierLengthPtr--];
+//		this.identifierPtr -= length;
+//		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens = new char[length][], 0, length);
+//		
+//		long[] positions;
+//		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
+//		
+//		HtmlAttribute attribute = new HtmlAttribute(new HtmlPropertyReference(tokens, positions));
+//		attribute.sourceStart = attribute.bodyStart = (int) (positions[0] >>> 32);
+//		attribute.sourceEnd = (int) positions[positions.length - 1];
+//		
+//		pushOnAttributeStack(attribute);
+	}
+	
 //	protected void consumeHtmlAttributeWithReceiver() {
 //		if ((indexOfAssistIdentifier(true)) < 0) {
 //			super.consumeHtmlAttributeWithReceiver();

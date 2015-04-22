@@ -9254,7 +9254,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		char[] prefix = this.identifierStack[this.identifierPtr--];
 		this.identifierLengthPtr--;
 		
-		HtmlElement element = new HtmlElement(tokens, positions, prefix, prefixPos);
+		HtmlElement element = new HtmlElement(tokens, positions, prefix, prefixPos, new HtmlTypeReference(tokens, positions));
 		element.tagBits &= HtmlBits.COMMON_ELEMENT;
 		
 //		element.type = new SingleTypeReference1(tokens, positions);
@@ -9274,7 +9274,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		long[] positions;
 		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
 		
-		HtmlElement element = new HtmlElement(tokens, positions);
+		HtmlElement element = new HtmlElement(tokens, positions, new HtmlTypeReference(tokens, positions));
 		element.tagBits &= HtmlBits.COMMON_ELEMENT;
 		
 //		element.type = new SingleTypeReference1(tokens, positions);
@@ -9288,7 +9288,8 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		this.nestedElement++;
 		
 		int thisStart = this.intStack[this.intPtr--];
-		HtmlElement element = new HtmlElement(new char[][]{VAR}, new long[]{(((long) thisStart << 32)) + (thisStart + 3)});
+		HtmlElement element = new HtmlElement(new char[][]{VAR}, new long[]{(((long) thisStart << 32)) + (thisStart + 3)}, 
+				new HtmlTypeReference(new char[][]{VAR}, new long[]{(((long) thisStart << 32)) + (thisStart + 3)}));
 		element.tagBits &= HtmlBits.VAR_ELEMENT;
 
 //		element.type = new SingleTypeReference1( new char[][]{VAR}, new long[]{(((long) thisStart << 32)) + (thisStart + 3)});
@@ -9305,7 +9306,8 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		this.nestedElement++;
 		
 		int thisStart = this.intStack[this.intPtr--];
-		HtmlElement element = new HtmlElement(new char[][]{SWITCH}, new long[]{(((long) thisStart << 32)) + (thisStart + 5)});
+		HtmlElement element = new HtmlElement(new char[][]{SWITCH}, new long[]{(((long) thisStart << 32)) + (thisStart + 5)},
+				new HtmlTypeReference(new char[][]{SWITCH}, new long[]{(((long) thisStart << 32)) + (thisStart + 5)}));
 		element.tagBits &= HtmlBits.SWITCH_ELEMENT;
 
 //		element.type = new SingleTypeReference1(new char[][]{SWITCH}, new long[]{(((long) thisStart << 32)) + (thisStart + 5)});
@@ -9328,23 +9330,41 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		long[] positions;
 		System.arraycopy(this.identifierPositionStack, this.identifierPtr, positions = new long[length], 0, length);
 		
-		char[][] tokens2;
-		length = this.identifierLengthStack[this.identifierLengthPtr--];
-		this.identifierPtr -= length;
-		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens2 = new char[length][], 0, length);
+//		char[][] tokens2;
+//		length = this.identifierLengthStack[this.identifierLengthPtr--];
+//		this.identifierPtr -= length;
+//		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens2 = new char[length][], 0, length);
+//		
+//		long[] positions2;
+//		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions2 = new long[length], 0, length);
 		
-		long[] positions2;
-		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions2 = new long[length], 0, length);
-		
-		HtmlElement element = new HtmlAttributeElement(tokens, positions, tokens2, positions2);
+		HtmlElement element = new HtmlAttributeElement(tokens, positions);
 		element.tagBits &= HtmlBits.ATTRIBUTE_ELEMENT;
 		
-		element.type = new HtmlTypeReference(tokens2, positions2);
+		element.type = new HtmlTypeReference(tokens, positions);
 		
 		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
 		element.sourceEnd = element.type.sourceEnd;
 		
 		pushOnElementStack(element);
+		
+//		char[][] tokens2;
+//		length = this.identifierLengthStack[this.identifierLengthPtr--];
+//		this.identifierPtr -= length;
+//		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens2 = new char[length][], 0, length);
+//		
+//		long[] positions2;
+//		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions2 = new long[length], 0, length);
+//		
+//		HtmlElement element = new HtmlAttributeElement(tokens, positions, tokens2, positions2);
+//		element.tagBits &= HtmlBits.ATTRIBUTE_ELEMENT;
+//		
+//		element.type = new HtmlTypeReference(tokens2, positions2);
+//		
+//		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
+//		element.sourceEnd = element.type.sourceEnd;
+//		
+//		pushOnElementStack(element);
 	}
 	
 	protected void consumeHtmlCloseTag(){

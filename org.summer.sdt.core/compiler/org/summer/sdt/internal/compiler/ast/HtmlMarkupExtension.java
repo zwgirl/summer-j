@@ -1,5 +1,10 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import org.summer.sdt.core.compiler.CharOperation;
+import org.summer.sdt.internal.compiler.html.HtmlTagConstants;
+import org.summer.sdt.internal.compiler.html.SvgTags;
+import org.summer.sdt.internal.compiler.impl.Constant;
+import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -11,12 +16,12 @@ import org.summer.sdt.internal.compiler.lookup.Scope;
 public class HtmlMarkupExtension extends HtmlElement {
 	
 	public HtmlMarkupExtension(char[] tokens, long positions) {
-		super(new char[][]{tokens}, new long[]{positions});
+		super(new char[][]{tokens}, new long[]{positions}, null);
 	}
 	
-	protected TypeReference createTypeReference(){
-		return new SingleTypeReference(tokens[0], positions[0]);
-	}
+//	protected TypeReference createTypeReference(){
+//		return new SingleTypeReference(tokens[0], positions[0]);
+//	}
 
 	@Override
 	public StringBuffer print(int indent, StringBuffer output) {
@@ -35,6 +40,16 @@ public class HtmlMarkupExtension extends HtmlElement {
 		output.append("{").append(type.getLastToken());
 		printProperties(indent, output);
 		return output.append(" }");
+	}
+	
+	public void resolve(BlockScope parentScope) {
+		this.scope = new BlockScope(parentScope, this);
+		this.constant = Constant.NotAConstant;
+		if(this.type != null){
+			this.resolvedType = type.resolveType(this.scope);
+		}
+		
+		resolveAttribute(this.scope);
 	}
 
 	@Override
@@ -61,6 +76,32 @@ public class HtmlMarkupExtension extends HtmlElement {
 		output.append(")");
 
 		return output;
+	}
+	
+	public StringBuffer optionValue(BlockScope scope, int indent, StringBuffer output){
+		if(this.resolvedType == null){
+			return output;
+		}
+		ReferenceBinding rb = (ReferenceBinding) this.resolvedType;
+		output.append("new (");
+		rb.generate(output, null);
+		output.append(")(");
+		
+		output.append("{");
+		boolean comma = false;
+		for(HtmlAttribute attribute : this.attributes){
+			if(comma){
+				output.append(", ");
+			}
+			
+			attribute.option(scope, indent, output);
+			comma = true;
+		}
+		output.append("}");
+		output.append(")");
+
+		return output;
+		
 	}
 
 	@Override

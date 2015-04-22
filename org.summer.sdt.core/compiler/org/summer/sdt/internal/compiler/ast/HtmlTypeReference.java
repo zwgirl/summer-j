@@ -49,8 +49,8 @@ public class HtmlTypeReference extends TypeReference {
 
 			this.tokens = source;
 			this.positions = positions;
-//			this.sourceStart = (int) (pos>>>32)  ;
-//			this.sourceEnd = (int) (pos & 0x00000000FFFFFFFFL) ;
+			this.sourceStart = (int) (positions[0]>>>32)  ;
+			this.sourceEnd = (int) positions[positions.length-1];
 
 	}
 

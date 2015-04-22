@@ -35,26 +35,25 @@ public class HtmlPropertyReference extends Expression{
 	public FieldBinding binding;
 	public ReferenceBinding receiverType;// exact binding resulting from lookup
 
-	public HtmlPropertyReference(char[][] source, long[] pos, HtmlPropertyReference receiver) {
+	public HtmlPropertyReference(char[][] source, long[] postions, HtmlPropertyReference receiver) {
 		this.tokens = source;
-		this.positions = pos;
+		this.positions = postions;
 		this.receiver = receiver;
+		
+		this.sourceStart = (int)this.positions[0] >>> 32;
+		this.sourceEnd = (int)this.positions[this.positions.length-1];
 		
 		this.bits |= Binding.FIELD;
 	}
 	
-	public HtmlPropertyReference(char[][] source, long[] pos) {
-		this(source, pos, null);
+	public HtmlPropertyReference(char[][] source, long[] postions) {
+		this(source, postions, null);
 	}
 	
 	public HtmlPropertyReference(char[][] source, long[] postions, char[] prefix, long prefixPos) {
-		this.tokens = source;
-		this.positions = postions;
-		
+		this(source, postions, null);
 		this.prefix = prefix;
 		this.prefixPos = prefixPos;
-		
-		this.bits |= Binding.FIELD;
 	}
 	
 	public char[] name(){

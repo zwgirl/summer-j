@@ -40,7 +40,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	public static final int FUNCTION = 12;
 	public static final int CLASS = 13;
 	public static final int TEMPLATESETTING =16;
-	public static final int REFERENCE = 17;
+	public static final int INSTANCE = 17;
 	
 	public static final int BYTE = 1;
 	public static final int SHORT =2;
@@ -52,6 +52,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	public static final int STRING = 8;
 	
 	private int propertyKind;
+	boolean flag = false;
 	
 	public final static char[] NAME = "name".toCharArray();
 	
@@ -81,6 +82,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	}
 	
 	private void internalResolve(BlockScope scope){
+		flag = true;
 		this.type = property.resolveType(scope);
 
 		if(this.type == null){
@@ -206,8 +208,9 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 				scope.problemReporter().invalidProperty(property, property.binding.type);  //TODO cym 2015-02-27
 			}
 		}  else {
+			this.propertyKind = INSTANCE;
 			if(this.value instanceof HtmlMarkupExtension){
-				
+				this.value.resolve(scope);
 			}
 		}
 	}
@@ -280,7 +283,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			this.binding.generate(output, null);
 			output.append(")()");
 			return output;
-		case REFERENCE:
+		case INSTANCE:
 		case BYTE:
 		case SHORT:
 		case INT:
@@ -403,7 +406,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			((ReferenceBinding)this.property.binding.type).generate(output, null);
 			output.append('.').append(((Literal) this.value).source());
 			break;
-		case REFERENCE:
+		case INSTANCE:
 		case STRING:
 		case BYTE:
 		case SHORT:
@@ -525,7 +528,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			this.binding.generate(output, null);
 			output.append(")()");
 			return output;
-		case REFERENCE:
+		case INSTANCE:
 		case BYTE:
 		case SHORT:
 		case INT:
@@ -536,10 +539,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case STRING:
 			if(this.value instanceof HtmlMarkupExtension){
 				HtmlMarkupExtension me = (HtmlMarkupExtension) value;
-				me.doGenerateExpression(scope, indent, output);  //TODO 2015-03-03 cym
-				output.append(".provideValue(");
-				output.append("_n, \""); 
-				this.property.buildInjectPart(scope, indent, output);
+				me.optionValue(scope, indent, output);
 				output.append(");");
 			} else {
 				Literal s = (Literal) this.value;

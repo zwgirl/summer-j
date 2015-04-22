@@ -38,7 +38,6 @@ import org.eclipse.lark.common.project.facet.core.ClasspathHelper;
 import org.eclipse.lark.common.project.facet.core.JavaFacet;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.wst.common.project.facet.core.IProjectFacetVersion;
-
 /**
  * @author <a href="mailto:konstantin.komissarchik@oracle.com">Konstantin Komissarchik</a>
  */
