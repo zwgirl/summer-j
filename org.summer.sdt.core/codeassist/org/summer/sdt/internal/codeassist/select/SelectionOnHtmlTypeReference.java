@@ -22,12 +22,6 @@ package org.summer.sdt.internal.codeassist.select;
  *
  */
 import org.summer.sdt.internal.compiler.ast.HtmlTypeReference;
-import org.summer.sdt.internal.compiler.lookup.Binding;
-import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.PackageBinding;
-import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
-import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
-import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
@@ -38,34 +32,16 @@ public class SelectionOnHtmlTypeReference extends HtmlTypeReference {
 	public void aboutToResolve(Scope scope) {
 		getTypeBinding(scope.parent); // step up from the ClassScope
 	}
+	
 	protected TypeBinding getTypeBinding(Scope scope) {
-		// it can be a package, type or member type
-//		Binding binding = scope.getTypeOrPackage(new char[][] {this.token});
-		Binding binding = scope.getTypeOrPackage(new char[][] {"HTMLElement".toCharArray()});
-		if (!binding.isValidBinding()) {
-			if (binding instanceof TypeBinding) {
-				scope.problemReporter().invalidType(this, (TypeBinding) binding);
-			} else if (binding instanceof PackageBinding) {
-				ProblemReferenceBinding problemBinding = new ProblemReferenceBinding(((PackageBinding)binding).compoundName, null, binding.problemId());
-				scope.problemReporter().invalidType(this, problemBinding);
-			}
+		super.getTypeBinding(scope);
+		if (!this.resolvedType.isValidBinding()) {
 			throw new SelectionNodeFound();
 		}
-		throw new SelectionNodeFound(binding);
+		throw new SelectionNodeFound(this.resolvedType);
 	}
 	public StringBuffer printExpression(int indent, StringBuffer output) {
 	
 		return output.append("<SelectOnType:").append(this.name()).append('>');//$NON-NLS-1$
-	}
-	public TypeBinding resolveTypeEnclosing(BlockScope scope, ReferenceBinding enclosingType) {
-		super.resolveTypeEnclosing(scope, enclosingType);
-	
-			// tolerate some error cases
-			if (this.resolvedType == null ||
-					!(this.resolvedType.isValidBinding() ||
-						this.resolvedType.problemId() == ProblemReasons.NotVisible))
-			throw new SelectionNodeFound();
-		else
-			throw new SelectionNodeFound(this.resolvedType);
 	}
 }

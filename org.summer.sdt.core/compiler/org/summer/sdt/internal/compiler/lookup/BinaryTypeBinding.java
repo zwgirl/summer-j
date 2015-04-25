@@ -2222,8 +2222,9 @@ public class BinaryTypeBinding extends ReferenceBinding {
 			}
 		}
 		this.typeBits |= (this.superclass.typeBits & TypeIds.InheritableBits);
-		if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
-			this.typeBits |= applyCloseableClassWhitelists();
+		//cym 2015-04-24
+//		if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
+//			this.typeBits |= applyCloseableClassWhitelists();
 		return this.superclass;
 	}
 	// NOTE: superInterfaces of binary types are resolved when needed
@@ -2258,8 +2259,9 @@ public class BinaryTypeBinding extends ReferenceBinding {
 				}	
 			}
 			this.typeBits |= (this.superInterfaces[i].typeBits & TypeIds.InheritableBits);
-			if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
-				this.typeBits |= applyCloseableInterfaceWhitelists();
+			//cym 2015-04-24
+//			if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
+//				this.typeBits |= applyCloseableInterfaceWhitelists();
 		}
 		this.tagBits &= ~TagBits.HasUnresolvedSuperinterfaces;
 		return this.superInterfaces;

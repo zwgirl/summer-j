@@ -13,37 +13,26 @@
  *******************************************************************************/
 package org.summer.sdt.internal.compiler.ast;
 
-import java.util.Stack;
-
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.html.HtmlTags;
-import org.summer.sdt.internal.compiler.html.LarkTags;
-import org.summer.sdt.internal.compiler.html.SvgTags;
-import org.summer.sdt.internal.compiler.impl.CompilerOptions;
+import org.summer.sdt.internal.compiler.html.Namespace;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
-import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
-import org.summer.sdt.internal.compiler.lookup.MethodScope;
 import org.summer.sdt.internal.compiler.lookup.PackageBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
-import org.summer.sdt.internal.compiler.lookup.SourceTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.TypeIds;
-import org.summer.sdt.internal.compiler.lookup.TypeVariableBinding;
 import org.summer.sdt.internal.compiler.problem.AbortCompilation;
-import org.summer.sdt.internal.compiler.problem.ProblemSeverities;
 
 public class HtmlTypeReference extends TypeReference {
 
 	public char[][] tokens;
 	public long[] positions;
+	public char[][] actualTokens;
 
 	public HtmlTypeReference(char[][] source, long[] positions) {
 
@@ -51,60 +40,65 @@ public class HtmlTypeReference extends TypeReference {
 			this.positions = positions;
 			this.sourceStart = (int) (positions[0]>>>32)  ;
 			this.sourceEnd = (int) positions[positions.length-1];
-
 	}
 
 	public TypeReference augmentTypeWithAdditionalDimensions(int additionalDimensions, Annotation[][] additionalAnnotations, boolean isVarargs) {
-//		int totalDimensions = this.dimensions() + additionalDimensions;
-//		Annotation [][] allAnnotations = getMergedAnnotationsOnDimensions(additionalDimensions, additionalAnnotations);
-//		ArrayTypeReference arrayTypeReference = new ArrayTypeReference(this.token, totalDimensions, allAnnotations, (((long) this.sourceStart) << 32) + this.sourceEnd);
-//		arrayTypeReference.annotations = this.annotations;
-//		arrayTypeReference.bits |= (this.bits & ASTNode.HasTypeAnnotations);
-//		if (!isVarargs)
-//			arrayTypeReference.extendedDimensions = additionalDimensions;
-//		return arrayTypeReference;
-		
 		return this;
 	}
 
 	public char[] getLastToken() {
 		return CharOperation.concatWith(this.tokens, '-');
 	}
+	
+	private void caculateActualTokens(Scope scope){
+		if(actualTokens == null){
+			HtmlElement element = ((BlockScope)scope).element;
+			char[] selector = CharOperation.concatWith(this.tokens, '-');
+			
+			char[] ns = element.namespace();
+			if(ns == null){
+				ns = Namespace.UNKNOWN;
+			}
+			this.actualTokens = Namespace.getMappingClass(ns, selector);
+			if(this.actualTokens == null){
+				this.actualTokens = new char[][] {selector};
+			}
+		}
+	}
+	
 	protected TypeBinding getTypeBinding(Scope scope) {
 		if (this.resolvedType != null)
 			return this.resolvedType;
-
 		if(!(scope instanceof BlockScope)){
 			return null;
 		}
 		
-		char[] selector = CharOperation.concatWith(this.tokens, '-');
+		if(((BlockScope)scope).element == null){
+			return null;
+		}
 		
-		char[][] compoundName;
-		if(((BlockScope)scope).inSVG){
-			compoundName = SvgTags.getMappingClass(selector);
+		caculateActualTokens(scope);
+		try{
+		if(this.actualTokens.length == 1){
+		    this.resolvedType = scope.getType(this.actualTokens[this.actualTokens.length-1]);
+			return this.resolvedType;
 		} else {
-			compoundName = HtmlTags.getMappingClass(selector);
-			if(compoundName == null){
-				compoundName = LarkTags.getMappingClass(selector);
+			Binding binding = scope.getOnlyPackage(CharOperation.subarray(this.actualTokens, 0, this.actualTokens.length-1));
+			if (binding != null && !binding.isValidBinding()) {
+				if (binding instanceof ProblemReferenceBinding && binding.problemId() == ProblemReasons.NotFound) {
+					ProblemReferenceBinding problemBinding = (ProblemReferenceBinding) binding;
+					return new ProblemReferenceBinding(problemBinding.compoundName, scope.environment().createMissingType(null, this.actualTokens), ProblemReasons.NotFound);
+				}
+				return (ReferenceBinding) binding; // not found
 			}
-		} 
-		
-		if(compoundName == null){
-			return new ProblemReferenceBinding(new char[][]{getLastToken()}, scope.environment().createMissingType(null, new char[][]{selector}), ProblemReasons.NotFound);
+		    PackageBinding packageBinding = binding == null ? null : (PackageBinding) binding;
+		    this.resolvedType = scope.getType(this.actualTokens[this.actualTokens.length-1], packageBinding);
+			return this.resolvedType;
 		}
-		
-		Binding binding = scope.getOnlyPackage(CharOperation.subarray(compoundName, 0, compoundName.length-1));
-		if (binding != null && !binding.isValidBinding()) {
-			if (binding instanceof ProblemReferenceBinding && binding.problemId() == ProblemReasons.NotFound) {
-				ProblemReferenceBinding problemBinding = (ProblemReferenceBinding) binding;
-				return new ProblemReferenceBinding(problemBinding.compoundName, scope.environment().createMissingType(null, compoundName), ProblemReasons.NotFound);
-			}
-			return (ReferenceBinding) binding; // not found
+		}catch (ArrayIndexOutOfBoundsException e){
+			e.printStackTrace();
 		}
-	    PackageBinding packageBinding = binding == null ? null : (PackageBinding) binding;
-	    this.resolvedType = scope.getType(compoundName[compoundName.length-1], packageBinding);
-		return this.resolvedType;
+		return resolvedType;
 	}
 	
 	protected TypeBinding findNextTypeBinding(int tokenIndex, Scope scope, PackageBinding packageBinding) {
@@ -132,7 +126,6 @@ public class HtmlTypeReference extends TypeReference {
 	}
 
 	public char [][] getTypeName() {
-//		return new char[][] { this.token };
 		return this.tokens;
 	}
 
@@ -162,59 +155,13 @@ public class HtmlTypeReference extends TypeReference {
 			printAnnotations(this.annotations[0], output);
 			output.append(' ');
 		}
-//		return output.append(this.token);
 		return output.append(CharOperation.concatWith(this.tokens, '-'));
 	}
 
-	public TypeBinding resolveTypeEnclosing(BlockScope scope, ReferenceBinding enclosingType) {
-//		this.resolvedType = scope.getMemberType(this.token, enclosingType);
-//		boolean hasError = false;
-//		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=391500
-//		resolveAnnotations(scope, 0); // defaultNullness not relevant, the only caller within the compiler: QAE
-//		TypeBinding memberType = this.resolvedType; // load after possible update in resolveAnnotations()
-//		if (!memberType.isValidBinding()) {
-//			hasError = true;
-//			scope.problemReporter().invalidEnclosingType(this, memberType, enclosingType);
-//			memberType = ((ReferenceBinding)memberType).closestMatch();
-//			if (memberType == null) {
-				return null;
-//			}
-//		}
-//		if (isTypeUseDeprecated(memberType, scope))
-//			reportDeprecatedType(memberType, scope);
-//		memberType = scope.environment().convertToRawType(memberType, false /*do not force conversion of enclosing types*/);
-//		if (memberType.isRawType()
-//				&& (this.bits & IgnoreRawTypeCheck) == 0
-//				&& scope.compilerOptions().getSeverity(CompilerOptions.RawTypeReference) != ProblemSeverities.Ignore){
-//			scope.problemReporter().rawTypeReference(this, memberType);
-//		}
-//		if (hasError) {
-//			// do not store the computed type, keep the problem type instead
-//			return memberType;
-//		}
-//		return this.resolvedType = memberType;
-	}
-
 	public void traverse(ASTVisitor visitor, BlockScope scope) {
-//		if (visitor.visit(this, scope)) {
-//			if (this.annotations != null) {
-//				Annotation [] typeAnnotations = this.annotations[0];
-//				for (int i = 0, length = typeAnnotations == null ? 0 : typeAnnotations.length; i < length; i++)
-//					typeAnnotations[i].traverse(visitor, scope);
-//			}
-//		}
-//		visitor.endVisit(this, scope);
 	}
 
 	public void traverse(ASTVisitor visitor, ClassScope scope) {
-//		if (visitor.visit(this, scope)) {
-//			if (this.annotations != null) {
-//				Annotation [] typeAnnotations = this.annotations[0];
-//				for (int i = 0, length = typeAnnotations == null ? 0 : typeAnnotations.length; i < length; i++)
-//					typeAnnotations[i].traverse(visitor, scope);
-//			}
-//		}
-//		visitor.endVisit(this, scope);
 	}
 
 	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output){

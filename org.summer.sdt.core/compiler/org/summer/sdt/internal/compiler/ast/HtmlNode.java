@@ -1,6 +1,5 @@
 package org.summer.sdt.internal.compiler.ast;
 
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 
@@ -31,26 +30,17 @@ public abstract class HtmlNode extends Expression {
 	}
 	
 	@Override
-	public StringBuffer generateExpression(Scope scope, int indent, StringBuffer output) {
-		return this.doGenerateExpression(scope, indent, output);
-	}
-	
-	@Override
-	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
-	}
-	
-	protected StringBuffer buildDOMChildScript(Scope scope, int indent, StringBuffer output, String parent, String context){
-		return output;}
-	
-	public StringBuffer html(BlockScope scope, int indent, StringBuffer output, char[] _this) {
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output){
 		return output;
 	}
+	
+	protected abstract StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String _this);
+	
+	public abstract StringBuffer html(BlockScope scope, int indent, StringBuffer output, String _this);
+	
+	public abstract StringBuffer option(BlockScope scope, int indent, StringBuffer output, String _this);
 	
 	public ASTNode parserElement(int position){
 		return null;
-	}
-	
-	public StringBuffer option(BlockScope scope, int indent, StringBuffer output) {
-		return output;
 	}
 }

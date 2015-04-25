@@ -733,7 +733,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append("<!DOCTYPE HTML>").append('\n');
 			if(this.htmlElements != null ){
 				for(HtmlElement element : this.htmlElements){
-					html(element, element.scope, 0, output);
+					html(element, element.createScope(scope), 0, output);
 				}
 			}
 			
@@ -754,7 +754,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 //	}
 	
 	private void html(HtmlElement element, BlockScope scope, int indent, StringBuffer output) {
-		element.html(scope, indent, output, "__this".toCharArray());
+		element.html(scope, indent, output, "__this");
 	}
 
 	public void generateJavascript(CompilationUnitScope unitScope) {
@@ -1209,6 +1209,18 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				sourceType.tagBits |= TagBits.IsHtmlPage;
 			}
 			
+			//check element cym 2014-12-09
+			if(this.htmlElements != null){
+				if(isHtmlPage){
+					if(htmlElements.length > 1){
+						this.scope.problemReporter().tooManyHtmlElements(this);
+					}
+				}
+				for(HtmlElement element : this.htmlElements){
+					element.resolve(new BlockScope(this.initializerScope, element));
+				}
+			}
+			
 			//cym 2015-04-12
 //			boolean needSerialVersion =
 //							this.scope.compilerOptions().getSeverity(CompilerOptions.MissingSerialVersion) != ProblemSeverities.Ignore
@@ -1384,18 +1396,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						}
 					}
 					break;
-			}
-			
-			//check element cym 2014-12-09
-			if(this.htmlElements != null){
-				if(isHtmlPage){
-					if(htmlElements.length > 1){
-						this.scope.problemReporter().tooManyHtmlElements(this);
-					}
-				}
-				for(HtmlElement element : this.htmlElements){
-					element.resolve(new BlockScope(this.initializerScope, element));
-				}
 			}
 	
 			int missingAbstractMethodslength = this.missingAbstractMethods == null ? 0 : this.missingAbstractMethods.length;
@@ -3068,26 +3068,14 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append('\n');
 		printIndent(indent, output);
 		
-//		doApplyTemplate(Node parent, Object data, int index)
 		output.append(type.binding.sourceName).append(".prototype.").append("doApplyTemplate").append(" = function(parent, data, index) {");
 		
-//		type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_COMPONENT))
-//		if(type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE))){
-//			
-//		}
 		for(HtmlElement element : type.htmlElements){
 			output.append('\n');
 			printIndent(indent+1, output);
 			output.append("(function() {");
 			
-			element.buildTemplateRootElement(scope, indent + 2, output, "parent", "this");
-//			if(element.children != null && element.children.length > 0){
-//				element.buildDOMScript(scope, indent + 3, output, JsConstant.NODE_NAME, "this");
-//			}
-			
-			output.append('\n');
-			printIndent(indent+3, output);
-			output.append("this.after(data, index);");
+			element.templateRootElement(scope, indent + 2, output, "parent", "this");
 			
 			output.append('\n');
 			printIndent(indent+1, output);

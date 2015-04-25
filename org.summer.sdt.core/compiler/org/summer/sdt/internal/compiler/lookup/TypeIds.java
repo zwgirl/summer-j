@@ -87,22 +87,21 @@ public interface TypeIds {
 	final int T_JavaLangAnnotationRetentionPolicy = 51;
 	final int T_JavaLangAnnotationElementType = 52;
 
-	final int T_JavaIoPrintStream = 53;
-
-	final int T_JavaLangReflectField = 54;
-	final int T_JavaLangReflectMethod = 55;
-
-	final int T_JavaIoExternalizable = 56;
-	final int T_JavaIoObjectStreamException = 57;
-	final int T_JavaIoException = 58;
+	//cym 2015-04-25
+//	final int T_JavaIoPrintStream = 53;
+//	final int T_JavaLangReflectField = 54;
+//	final int T_JavaLangReflectMethod = 55;
+//	final int T_JavaIoExternalizable = 56;
+//	final int T_JavaIoObjectStreamException = 57;
+//	final int T_JavaIoException = 58;
 	
 	final int T_JavaUtilCollection = 59;
 	
 	// java 7
 	final int T_JavaLangSafeVarargs = 60;
 	
-	final int T_JavaLangInvokeMethodHandlePolymorphicSignature = 61;
-
+	//cym 2015-04-25
+//	final int T_JavaLangInvokeMethodHandlePolymorphicSignature = 61;
 	// java 7 java.lang.AutoCloseable
 	final int T_JavaLangAutoCloseable = 62;
 	
@@ -111,15 +110,16 @@ public interface TypeIds {
 	final int T_ConfiguredAnnotationNonNull = 66;
 	final int T_ConfiguredAnnotationNonNullByDefault = 67;
 	
-	// new in 3.8 to identify org.eclipse.core.runtime.Assert
-	final int T_OrgEclipseCoreRuntimeAssert = 68;
-	// new in 3.9 to identify more assertion utilities:
-	final int T_JunitFrameworkAssert = 69;
-	final int T_OrgJunitAssert = 70;
-	final int T_OrgApacheCommonsLangValidate = 71;
-	final int T_OrgApacheCommonsLang3Validate = 72;
-	final int T_ComGoogleCommonBasePreconditions = 73;
-	final int T_JavaUtilObjects = 74;
+	//cym 2015-04-25
+//	// new in 3.8 to identify org.eclipse.core.runtime.Assert
+//	final int T_OrgEclipseCoreRuntimeAssert = 68;
+//	// new in 3.9 to identify more assertion utilities:
+//	final int T_JunitFrameworkAssert = 69;
+//	final int T_OrgJunitAssert = 70;
+//	final int T_OrgApacheCommonsLangValidate = 71;
+//	final int T_OrgApacheCommonsLang3Validate = 72;
+//	final int T_ComGoogleCommonBasePreconditions = 73;
+//	final int T_JavaUtilObjects = 74;
 
 	// java 8
 	final int T_JavaLangFunctionalInterface = 77;
@@ -128,7 +128,20 @@ public interface TypeIds {
 	final int T_JavaLangOverload = 101;
 	
 	//lark cym 2015-04-12
-	final int T_JavaLangPage = 79;
+	final int T_JavaLangPage = 102;
+	//lark cym 2015-04-24
+	final int T_OrgW3cHtmlHtml = 103;
+	final int T_OrgW3cSvgSvg= 104;
+	final int T_OrgW3cHtmlHead = 105;
+	final int T_OrgW3cHtmlBody = 106;
+	final int T_OrgW3cDomText = 107;
+	
+	final int T_JavaLangTemplate = 108;
+	final int T_JavaLangBaseTemplateSetting = 109;
+	final int T_JavaLangTemplateSetting = 110;
+	final int T_JavaLangCollectionTemplateSetting = 111;
+	final int T_JavaLangFragmentSetting = 112;
+	final int T_JavaLangFragment = 113;
 	
 	// new in 3.9 to identify known @Inject annotations
 	final int T_JavaxInjectInject = 80;
@@ -269,4 +282,5 @@ public interface TypeIds {
 	
 	//cym 2015-04-13
 	final int BitHtmlPage = 32;
+
 } 

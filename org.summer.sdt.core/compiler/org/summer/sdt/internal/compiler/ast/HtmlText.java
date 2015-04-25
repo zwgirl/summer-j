@@ -6,7 +6,6 @@ import java.util.Map;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.codegen.CodeStream;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class HtmlText  extends HtmlNode {
 	public char[] source;
@@ -27,11 +26,6 @@ public class HtmlText  extends HtmlNode {
 	@Override
 	public void resolve(BlockScope scope) {
 		
-	}
-	@Override
-	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
-		output.append(source);
-		return output;
 	}
 
 	@Override
@@ -125,15 +119,24 @@ public class HtmlText  extends HtmlNode {
 			char[] num = CharOperation.subarray(name, 2, name.length - 1);
 			return (char) CharOperation.parseInt(num, 0, num.length);
 		} else {
-//			char[] name = CharOperation.subarray(array, 1, array.length-1);
 			Character c = entityMap.get(new String(CharOperation.subarray(name, 1, name.length - 1)));
 			return c == null ? 0 : c ;
 		}
 	}
 	
 	@Override
-	public StringBuffer html(BlockScope scope, int indent, StringBuffer output, char[] _this) {
+	public StringBuffer html(BlockScope scope, int indent, StringBuffer output, String _this) {
 		return output.append(source);
+	}
+
+	@Override
+	protected StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String _this) {
+		return output;
+	}
+
+	@Override
+	public StringBuffer option(BlockScope scope, int indent, StringBuffer output, String _this) {
+		return output;
 	}
 
 }

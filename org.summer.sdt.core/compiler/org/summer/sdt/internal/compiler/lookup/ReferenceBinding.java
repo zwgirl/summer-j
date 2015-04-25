@@ -463,7 +463,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 		sig.getChars(0, sigLength, result, 0);
 		return result;
 	}
-	
+	final int T_OrgW3cHtmlHtml = 103;
+	final int T_OrgW3cSvgSvg= 104;
+	final int T_OrgW3cHtmlHead = 105;
+	final int T_OrgW3cHtmlBody = 106;
 	public void computeId() {
 		// note that more (configurable) ids are assigned from PackageBinding#checkIfNullAnnotationType() 
 	
@@ -474,10 +477,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 				char[] packageName = this.compoundName[0];
 				// expect only java.*.* and javax.*.* and junit.*.* and org.junit.*
 				switch (packageName.length) {
-					case 3: // only one type in this group, yet:
-						if (CharOperation.equals(TypeConstants.ORG_JUNIT_ASSERT, this.compoundName))
-							this.id = TypeIds.T_OrgJunitAssert;
-						return;						
+//					case 3: // only one type in this group, yet:
+//						if (CharOperation.equals(TypeConstants.ORG_JUNIT_ASSERT, this.compoundName))
+//							this.id = TypeIds.T_OrgJunitAssert;
+//						return;	
 					case 4:
 						if (!CharOperation.equals(TypeConstants.JAVA, packageName))
 							return;
@@ -488,10 +491,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 								if (CharOperation.equals(TypeConstants.JAVAX_ANNOTATION_INJECT_INJECT, this.compoundName))
 									this.id = TypeIds.T_JavaxInjectInject;
 								return;
-							case 'u':
-								if (CharOperation.equals(TypeConstants.JUNIT_FRAMEWORK_ASSERT, this.compoundName))
-									this.id = TypeIds.T_JunitFrameworkAssert;
-								return;
+//							case 'u':
+//								if (CharOperation.equals(TypeConstants.JUNIT_FRAMEWORK_ASSERT, this.compoundName))
+//									this.id = TypeIds.T_JunitFrameworkAssert;
+//								return;
 						}
 						return;
 					default: return;
@@ -508,30 +511,31 @@ abstract public class ReferenceBinding extends TypeBinding {
 						case 'i' :
 							if (CharOperation.equals(packageName, TypeConstants.IO)) {
 								switch (typeName[0]) {
-									case 'C' :
-										if (CharOperation.equals(typeName, TypeConstants.JAVA_IO_CLOSEABLE[2]))
-											this.typeBits |= TypeIds.BitCloseable; // don't assign id, only typeBit (for analysis of resource leaks) 
-										return;
-									case 'E' :
-										if (CharOperation.equals(typeName, TypeConstants.JAVA_IO_EXTERNALIZABLE[2]))
-											this.id = TypeIds.T_JavaIoExternalizable;
-										return;
-									case 'I' :
-										if (CharOperation.equals(typeName, TypeConstants.JAVA_IO_IOEXCEPTION[2]))
-											this.id = TypeIds.T_JavaIoException;
-										return;
-									case 'O' :
-										if (CharOperation.equals(typeName, TypeConstants.JAVA_IO_OBJECTSTREAMEXCEPTION[2]))
-											this.id = TypeIds.T_JavaIoObjectStreamException;
-										return;
-									case 'P' :
-										if (CharOperation.equals(typeName, TypeConstants.JAVA_IO_PRINTSTREAM[2]))
-											this.id = TypeIds.T_JavaIoPrintStream;
-										return;
-									case 'S' :
-										if (CharOperation.equals(typeName, TypeConstants.JAVA_IO_SERIALIZABLE[2]))
-											this.id = TypeIds.T_JavaIoSerializable;
-										return;
+								//cym 2015-04-24
+//									case 'C' :
+//										if (CharOperation.equals(typeName, TypeConstants.JAVA_IO_CLOSEABLE[2]))
+//											this.typeBits |= TypeIds.BitCloseable; // don't assign id, only typeBit (for analysis of resource leaks) 
+//										return;
+//									case 'E' :
+//										if (CharOperation.equals(typeName, TypeConstants.JAVA_IO_EXTERNALIZABLE[2]))
+//											this.id = TypeIds.T_JavaIoExternalizable;
+//										return;
+//									case 'I' :
+//										if (CharOperation.equals(typeName, TypeConstants.JAVA_IO_IOEXCEPTION[2]))
+//											this.id = TypeIds.T_JavaIoException;
+//										return;
+//									case 'O' :
+//										if (CharOperation.equals(typeName, TypeConstants.JAVA_IO_OBJECTSTREAMEXCEPTION[2]))
+//											this.id = TypeIds.T_JavaIoObjectStreamException;
+//										return;
+//									case 'P' :
+//										if (CharOperation.equals(typeName, TypeConstants.JAVA_IO_PRINTSTREAM[2]))
+//											this.id = TypeIds.T_JavaIoPrintStream;
+//										return;
+//									case 'S' :
+//										if (CharOperation.equals(typeName, TypeConstants.JAVA_IO_SERIALIZABLE[2]))
+//											this.id = TypeIds.T_JavaIoSerializable;
+//										return;
 								}
 							}
 							return;
@@ -546,10 +550,11 @@ abstract public class ReferenceBinding extends TypeBinding {
 										if (CharOperation.equals(typeName, TypeConstants.JAVA_UTIL_ITERATOR[2]))
 											this.id = TypeIds.T_JavaUtilIterator;
 										return;
-									case 'O' :
-										if (CharOperation.equals(typeName, TypeConstants.JAVA_UTIL_OBJECTS[2]))
-											this.id = TypeIds.T_JavaUtilObjects;
-										return;
+									//cym 2015-04-25
+//									case 'O' :
+//										if (CharOperation.equals(typeName, TypeConstants.JAVA_UTIL_OBJECTS[2]))
+//											this.id = TypeIds.T_JavaUtilObjects;
+//										return;
 								}
 							}
 							return;
@@ -572,10 +577,11 @@ abstract public class ReferenceBinding extends TypeBinding {
 									this.typeBits |= TypeIds.BitAutoCloseable; 
 								}
 								return;
-							case 14:
-								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ASSERTIONERROR[2]))
-									this.id = TypeIds.T_JavaLangAssertionError;
-								return;
+								//cym 2015-04-24
+//							case 14:
+//								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ASSERTIONERROR[2]))
+//									this.id = TypeIds.T_JavaLangAssertionError;
+//								return;
 						}
 						return;
 					case 'B' :
@@ -587,6 +593,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 							case 7 :
 								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_BOOLEAN[2]))
 									this.id = TypeIds.T_JavaLangBoolean;
+								return;
+							case 19 :   //cym 2015-04-25
+								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_BASETEMPLATESETTING[2]))
+									this.id = TypeIds.T_JavaLangBaseTemplateSetting;
 								return;
 						}
 						return;
@@ -605,6 +615,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 							case 22 :
 								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_CLASSNOTFOUNDEXCEPTION[2]))
 									this.id = TypeIds.T_JavaLangClassNotFoundException;
+								return;
+							case 25 :  //cym 2015-04-25
+								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_COLLECTIONTEMPLATESETTING[2]))
+									this.id = TypeIds.T_JavaLangCollectionTemplateSetting;
 								return;
 						}
 						return;
@@ -637,10 +651,20 @@ abstract public class ReferenceBinding extends TypeBinding {
 						}
 						return;
 					case 'F' :
-						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FLOAT[2]))
-							this.id = TypeIds.T_JavaLangFloat;
-						else if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FUNCTIONAL_INTERFACE[2]))
-							this.id = TypeIds.T_JavaLangFunctionalInterface;
+						switch (typeName.length) {
+						case 5 :
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FLOAT[2]))
+								this.id = TypeIds.T_JavaLangFloat;
+							return;
+						case 19 :
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FUNCTIONAL_INTERFACE[2]))
+								this.id = TypeIds.T_JavaLangFunctionalInterface;
+							return;
+						case 8 :  //cym 2015-04-25
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FRAGMENT[2]))
+								this.id = TypeIds.T_JavaLangFragment;
+							return;
+						}
 						return;
 					case 'I' :
 						switch (typeName.length) {
@@ -741,8 +765,20 @@ abstract public class ReferenceBinding extends TypeBinding {
 						}
 						return;
 					case 'T' :
-						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_THROWABLE[2]))
-							this.id = TypeIds.T_JavaLangThrowable;
+						switch (typeName.length) {
+						case 8 :   //cym 2015-04-25
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_TEMPLATE[2]))
+								this.id = TypeIds.T_JavaLangTemplate;
+							return;
+						case 9 :
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_THROWABLE[2]))
+								this.id = TypeIds.T_JavaLangThrowable;
+							return;
+						case 15 :   //cym 2015-04-25
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_TEMPLATESETTING[2]))
+								this.id = TypeIds.T_JavaLangTemplateSetting;
+							return;
+						}
 						return;
 					case 'V' :
 						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_VOID[2]))
@@ -752,11 +788,35 @@ abstract public class ReferenceBinding extends TypeBinding {
 			break;
 	
 			case 4:
-				// expect one type from com.*.*.*:
-				if (CharOperation.equals(TypeConstants.COM_GOOGLE_INJECT_INJECT, this.compoundName)) {
-					this.id = TypeIds.T_ComGoogleInjectInject;
+//				// expect one type from com.*.*.*:
+//				if (CharOperation.equals(TypeConstants.COM_GOOGLE_INJECT_INJECT, this.compoundName)) {
+//					this.id = TypeIds.T_ComGoogleInjectInject;
+//					return;
+//				}
+				//2015-04-24
+				if (CharOperation.equals(TypeConstants.ORG_W3C_HTML_HTML, this.compoundName)) {
+					this.id = TypeIds.T_OrgW3cHtmlHtml;
 					return;
 				}
+				if (CharOperation.equals(TypeConstants.ORG_W3C_HTML_HEAD, this.compoundName)) {
+					this.id = TypeIds.T_OrgW3cHtmlHead;
+					return;
+				}
+				if (CharOperation.equals(TypeConstants.ORG_W3C_HTML_BODY, this.compoundName)) {
+					this.id = TypeIds.T_OrgW3cHtmlBody;
+					return;
+				}
+				
+				if (CharOperation.equals(TypeConstants.ORG_W3C_SVG_SVG, this.compoundName)) {
+					this.id = TypeIds.T_OrgW3cSvgSvg;
+					return;
+				}
+				
+				if (CharOperation.equals(TypeConstants.ORG_W3C_DOM_TEXT, this.compoundName)) {
+					this.id = TypeIds.T_OrgW3cDomText;
+					return;
+				}
+				
 				// otherwise only expect java.*.*.*
 				if (!CharOperation.equals(TypeConstants.JAVA, this.compoundName[0]))
 					return;
@@ -810,35 +870,36 @@ abstract public class ReferenceBinding extends TypeBinding {
 							}
 						}
 						return;
-					case 'i':
-						if (CharOperation.equals(packageName, TypeConstants.INVOKE)) {
-							if (typeName.length == 0) return; // just to be safe
-							switch (typeName[0]) {
-								case 'M' :
-									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_$_POLYMORPHICSIGNATURE[3]))
-										this.id = TypeIds.T_JavaLangInvokeMethodHandlePolymorphicSignature;
-									return;
-							}
-						}
-						return;
-					case 'r' :
-						if (CharOperation.equals(packageName, TypeConstants.REFLECT)) {
-							switch (typeName[0]) {
-								case 'C' :
-									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_REFLECT_CONSTRUCTOR[2]))
-										this.id = TypeIds.T_JavaLangReflectConstructor;
-									return;
-								case 'F' :
-									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_REFLECT_FIELD[2]))
-										this.id = TypeIds.T_JavaLangReflectField;
-									return;
-								case 'M' :
-									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_REFLECT_METHOD[2]))
-										this.id = TypeIds.T_JavaLangReflectMethod;
-									return;
-							}
-						}
-						return;
+						//cym 2015-04-24
+//					case 'i':
+//						if (CharOperation.equals(packageName, TypeConstants.INVOKE)) {
+//							if (typeName.length == 0) return; // just to be safe
+//							switch (typeName[0]) {
+//								case 'M' :
+//									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_$_POLYMORPHICSIGNATURE[3]))
+//										this.id = TypeIds.T_JavaLangInvokeMethodHandlePolymorphicSignature;
+//									return;
+//							}
+//						}
+//						return;
+//					case 'r' :
+//						if (CharOperation.equals(packageName, TypeConstants.REFLECT)) {
+//							switch (typeName[0]) {
+//								case 'C' :
+//									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_REFLECT_CONSTRUCTOR[2]))
+//										this.id = TypeIds.T_JavaLangReflectConstructor;
+//									return;
+//								case 'F' :
+//									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_REFLECT_FIELD[2]))
+//										this.id = TypeIds.T_JavaLangReflectField;
+//									return;
+//								case 'M' :
+//									if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_REFLECT_METHOD[2]))
+//										this.id = TypeIds.T_JavaLangReflectMethod;
+//									return;
+//							}
+//						}
+//						return;
 				}
 				break;
 			case 5 :
@@ -853,89 +914,91 @@ abstract public class ReferenceBinding extends TypeBinding {
 						if (CharOperation.equals(TypeConstants.LANG, packageName)) {
 							packageName = this.compoundName[2];
 							if (packageName.length == 0) return; // just to be safe
-							switch (packageName[0]) {
-								case 'i' :
-									if (CharOperation.equals(packageName, TypeConstants.INVOKE)) { 
-										typeName = this.compoundName[3];
-										if (typeName.length == 0) return; // just to be safe
-										switch (typeName[0]) {
-											case 'M' :
-												char[] memberTypeName = this.compoundName[4];
-												if (memberTypeName.length == 0) return; // just to be safe
-												if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_POLYMORPHICSIGNATURE[3])
-														&& CharOperation.equals(memberTypeName, TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_POLYMORPHICSIGNATURE[4]))
-													this.id = TypeIds.T_JavaLangInvokeMethodHandlePolymorphicSignature;
-												return;
-										}
-									}
-									return;
-							}
+							//cym 2015-04-24
+//							switch (packageName[0]) {
+//								case 'i' :
+//									if (CharOperation.equals(packageName, TypeConstants.INVOKE)) { 
+//										typeName = this.compoundName[3];
+//										if (typeName.length == 0) return; // just to be safe
+//										switch (typeName[0]) {
+//											case 'M' :
+//												char[] memberTypeName = this.compoundName[4];
+//												if (memberTypeName.length == 0) return; // just to be safe
+//												if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_POLYMORPHICSIGNATURE[3])
+//														&& CharOperation.equals(memberTypeName, TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_POLYMORPHICSIGNATURE[4]))
+//													this.id = TypeIds.T_JavaLangInvokeMethodHandlePolymorphicSignature;
+//												return;
+//										}
+//									}
+//									return;
+//							}
 							return;
 						}
 						return;
-					case 'o':
-						if (!CharOperation.equals(TypeConstants.ORG, this.compoundName[0]))
-							return;
-						packageName = this.compoundName[1];
-						if (packageName.length == 0) return; // just to be safe
-	
-						switch (packageName[0]) {
-							case 'e':
-								if (CharOperation.equals(TypeConstants.ECLIPSE, packageName)) {
-									packageName = this.compoundName[2];
-									if (packageName.length == 0) return; // just to be safe
-									switch (packageName[0]) {
-										case 'c' :
-											if (CharOperation.equals(packageName, TypeConstants.CORE)) { 
-												typeName = this.compoundName[3];
-												if (typeName.length == 0) return; // just to be safe
-												switch (typeName[0]) {
-													case 'r' :
-														char[] memberTypeName = this.compoundName[4];
-														if (memberTypeName.length == 0) return; // just to be safe
-														if (CharOperation.equals(typeName, TypeConstants.ORG_ECLIPSE_CORE_RUNTIME_ASSERT[3])
-																&& CharOperation.equals(memberTypeName, TypeConstants.ORG_ECLIPSE_CORE_RUNTIME_ASSERT[4]))
-															this.id = TypeIds.T_OrgEclipseCoreRuntimeAssert;
-														return;
-												}
-											}
-											return;
-									}
-									return;
-								}
-								return;
-							case 'a':
-								if (CharOperation.equals(TypeConstants.APACHE, packageName)) {
-									if (CharOperation.equals(TypeConstants.COMMONS, this.compoundName[2])) {
-										if (CharOperation.equals(TypeConstants.ORG_APACHE_COMMONS_LANG_VALIDATE, this.compoundName))
-											this.id = TypeIds.T_OrgApacheCommonsLangValidate;
-										else if (CharOperation.equals(TypeConstants.ORG_APACHE_COMMONS_LANG3_VALIDATE, this.compoundName))
-											this.id = TypeIds.T_OrgApacheCommonsLang3Validate;
-									}
-								}
-								return;
-						}
-						return;
-					case 'c':
-						if (!CharOperation.equals(TypeConstants.COM, this.compoundName[0]))
-							return;
-						if (CharOperation.equals(TypeConstants.COM_GOOGLE_COMMON_BASE_PRECONDITIONS, this.compoundName))
-							this.id = TypeIds.T_ComGoogleCommonBasePreconditions;
-						return;
+						//cym 2015-04-24
+//					case 'o':
+//						if (!CharOperation.equals(TypeConstants.ORG, this.compoundName[0]))
+//							return;
+//						packageName = this.compoundName[1];
+//						if (packageName.length == 0) return; // just to be safe
+//	
+//						switch (packageName[0]) {
+//							case 'e':
+//								if (CharOperation.equals(TypeConstants.ECLIPSE, packageName)) {
+//									packageName = this.compoundName[2];
+//									if (packageName.length == 0) return; // just to be safe
+//									switch (packageName[0]) {
+//										case 'c' :
+//											if (CharOperation.equals(packageName, TypeConstants.CORE)) { 
+//												typeName = this.compoundName[3];
+//												if (typeName.length == 0) return; // just to be safe
+//												switch (typeName[0]) {
+//													case 'r' :
+//														char[] memberTypeName = this.compoundName[4];
+//														if (memberTypeName.length == 0) return; // just to be safe
+//														if (CharOperation.equals(typeName, TypeConstants.ORG_ECLIPSE_CORE_RUNTIME_ASSERT[3])
+//																&& CharOperation.equals(memberTypeName, TypeConstants.ORG_ECLIPSE_CORE_RUNTIME_ASSERT[4]))
+//															this.id = TypeIds.T_OrgEclipseCoreRuntimeAssert;
+//														return;
+//												}
+//											}
+//											return;
+//									}
+//									return;
+//								}
+//								return;
+//							case 'a':
+//								if (CharOperation.equals(TypeConstants.APACHE, packageName)) {
+//									if (CharOperation.equals(TypeConstants.COMMONS, this.compoundName[2])) {
+//										if (CharOperation.equals(TypeConstants.ORG_APACHE_COMMONS_LANG_VALIDATE, this.compoundName))
+//											this.id = TypeIds.T_OrgApacheCommonsLangValidate;
+//										else if (CharOperation.equals(TypeConstants.ORG_APACHE_COMMONS_LANG3_VALIDATE, this.compoundName))
+//											this.id = TypeIds.T_OrgApacheCommonsLang3Validate;
+//									}
+//								}
+//								return;
+//						}
+//						return;
+//					case 'c':
+//						if (!CharOperation.equals(TypeConstants.COM, this.compoundName[0]))
+//							return;
+//						if (CharOperation.equals(TypeConstants.COM_GOOGLE_COMMON_BASE_PRECONDITIONS, this.compoundName))
+//							this.id = TypeIds.T_ComGoogleCommonBasePreconditions;
+//						return;
 				}
 				break;
-			case 6:
-				if (!CharOperation.equals(TypeConstants.JDT, this.compoundName[2]) || !CharOperation.equals(TypeConstants.ITYPEBINDING, this.compoundName[5]))
-					return;
-				if (CharOperation.equals(TypeConstants.ORG_ECLIPSE_JDT_CORE_DOM_ITYPEBINDING, this.compoundName))
-					this.typeBits |= TypeIds.BitUninternedType;
-				break;
-			case 7 :
-				if (!CharOperation.equals(TypeConstants.JDT, this.compoundName[2]) || !CharOperation.equals(TypeConstants.TYPEBINDING, this.compoundName[6]))
-					return;
-				if (CharOperation.equals(TypeConstants.ORG_ECLIPSE_JDT_INTERNAL_COMPILER_LOOKUP_TYPEBINDING, this.compoundName))
-					this.typeBits |= TypeIds.BitUninternedType;
-				break;
+//			case 6:
+//				if (!CharOperation.equals(TypeConstants.JDT, this.compoundName[2]) || !CharOperation.equals(TypeConstants.ITYPEBINDING, this.compoundName[5]))
+//					return;
+//				if (CharOperation.equals(TypeConstants.ORG_ECLIPSE_JDT_CORE_DOM_ITYPEBINDING, this.compoundName))
+//					this.typeBits |= TypeIds.BitUninternedType;
+//				break;
+//			case 7 :
+//				if (!CharOperation.equals(TypeConstants.JDT, this.compoundName[2]) || !CharOperation.equals(TypeConstants.TYPEBINDING, this.compoundName[6]))
+//					return;
+//				if (CharOperation.equals(TypeConstants.ORG_ECLIPSE_JDT_INTERNAL_COMPILER_LOOKUP_TYPEBINDING, this.compoundName))
+//					this.typeBits |= TypeIds.BitUninternedType;
+//				break;
 		}
 	}
 	
@@ -1915,66 +1978,66 @@ abstract public class ReferenceBinding extends TypeBinding {
 		return Binding.NO_FIELDS;
 	}
 	
-	/*
-	 * If a type - known to be a Closeable - is mentioned in one of our white lists
-	 * answer the typeBit for the white list (BitWrapperCloseable or BitResourceFreeCloseable).
-	 */
-	protected int applyCloseableClassWhitelists() {
-		switch (this.compoundName.length) {
-			case 3:
-				if (CharOperation.equals(TypeConstants.JAVA, this.compoundName[0])) {
-					if (CharOperation.equals(TypeConstants.IO, this.compoundName[1])) {
-						char[] simpleName = this.compoundName[2];
-						int l = TypeConstants.JAVA_IO_WRAPPER_CLOSEABLES.length;
-						for (int i = 0; i < l; i++) {
-							if (CharOperation.equals(simpleName, TypeConstants.JAVA_IO_WRAPPER_CLOSEABLES[i]))
-								return TypeIds.BitWrapperCloseable;
-						}
-						l = TypeConstants.JAVA_IO_RESOURCE_FREE_CLOSEABLES.length;
-						for (int i = 0; i < l; i++) {
-							if (CharOperation.equals(simpleName, TypeConstants.JAVA_IO_RESOURCE_FREE_CLOSEABLES[i]))
-								return TypeIds.BitResourceFreeCloseable;
-						}
-					}
-				}
-				break;
-			case 4:
-				if (CharOperation.equals(TypeConstants.JAVA, this.compoundName[0])) {
-					if (CharOperation.equals(TypeConstants.UTIL, this.compoundName[1])) {
-						if (CharOperation.equals(TypeConstants.ZIP, this.compoundName[2])) {
-							char[] simpleName = this.compoundName[3];
-							int l = TypeConstants.JAVA_UTIL_ZIP_WRAPPER_CLOSEABLES.length;
-							for (int i = 0; i < l; i++) {
-								if (CharOperation.equals(simpleName, TypeConstants.JAVA_UTIL_ZIP_WRAPPER_CLOSEABLES[i]))
-									return TypeIds.BitWrapperCloseable;
-							}
-						}
-					}
-				}
-				break;
-		}
-		int l = TypeConstants.OTHER_WRAPPER_CLOSEABLES.length;
-		for (int i = 0; i < l; i++) {
-			if (CharOperation.equals(this.compoundName, TypeConstants.OTHER_WRAPPER_CLOSEABLES[i]))
-				return TypeIds.BitWrapperCloseable;
-		}	
-		return 0;
-	}
-	
-	
-	/*
-	 * If a type - known to be a Closeable - is mentioned in one of our white lists
-	 * answer the typeBit for the white list (BitWrapperCloseable or BitResourceFreeCloseable).
-	 */
-	protected int applyCloseableInterfaceWhitelists() {
-		switch (this.compoundName.length) {
-			case 4:
-				if (CharOperation.equals(this.compoundName, TypeConstants.RESOURCE_FREE_CLOSEABLE_STREAM))
-					return TypeIds.BitResourceFreeCloseable;
-				break;
-		}
-		return 0;
-	}
+//	/*
+//	 * If a type - known to be a Closeable - is mentioned in one of our white lists
+//	 * answer the typeBit for the white list (BitWrapperCloseable or BitResourceFreeCloseable).
+//	 */
+//	protected int applyCloseableClassWhitelists() {
+//		switch (this.compoundName.length) {
+//			case 3:
+//				if (CharOperation.equals(TypeConstants.JAVA, this.compoundName[0])) {
+//					if (CharOperation.equals(TypeConstants.IO, this.compoundName[1])) {
+//						char[] simpleName = this.compoundName[2];
+//						int l = TypeConstants.JAVA_IO_WRAPPER_CLOSEABLES.length;
+//						for (int i = 0; i < l; i++) {
+//							if (CharOperation.equals(simpleName, TypeConstants.JAVA_IO_WRAPPER_CLOSEABLES[i]))
+//								return TypeIds.BitWrapperCloseable;
+//						}
+//						l = TypeConstants.JAVA_IO_RESOURCE_FREE_CLOSEABLES.length;
+//						for (int i = 0; i < l; i++) {
+//							if (CharOperation.equals(simpleName, TypeConstants.JAVA_IO_RESOURCE_FREE_CLOSEABLES[i]))
+//								return TypeIds.BitResourceFreeCloseable;
+//						}
+//					}
+//				}
+//				break;
+//			case 4:
+//				if (CharOperation.equals(TypeConstants.JAVA, this.compoundName[0])) {
+//					if (CharOperation.equals(TypeConstants.UTIL, this.compoundName[1])) {
+//						if (CharOperation.equals(TypeConstants.ZIP, this.compoundName[2])) {
+//							char[] simpleName = this.compoundName[3];
+//							int l = TypeConstants.JAVA_UTIL_ZIP_WRAPPER_CLOSEABLES.length;
+//							for (int i = 0; i < l; i++) {
+//								if (CharOperation.equals(simpleName, TypeConstants.JAVA_UTIL_ZIP_WRAPPER_CLOSEABLES[i]))
+//									return TypeIds.BitWrapperCloseable;
+//							}
+//						}
+//					}
+//				}
+//				break;
+//		}
+//		int l = TypeConstants.OTHER_WRAPPER_CLOSEABLES.length;
+//		for (int i = 0; i < l; i++) {
+//			if (CharOperation.equals(this.compoundName, TypeConstants.OTHER_WRAPPER_CLOSEABLES[i]))
+//				return TypeIds.BitWrapperCloseable;
+//		}	
+//		return 0;
+//	}
+//	
+//	
+//	/*
+//	 * If a type - known to be a Closeable - is mentioned in one of our white lists
+//	 * answer the typeBit for the white list (BitWrapperCloseable or BitResourceFreeCloseable).
+//	 */
+//	protected int applyCloseableInterfaceWhitelists() {
+//		switch (this.compoundName.length) {
+//			case 4:
+//				if (CharOperation.equals(this.compoundName, TypeConstants.RESOURCE_FREE_CLOSEABLE_STREAM))
+//					return TypeIds.BitResourceFreeCloseable;
+//				break;
+//		}
+//		return 0;
+//	}
 	
 	private MethodBinding [] getInterfaceAbstractContracts(Scope scope) throws InvalidInputException {
 		

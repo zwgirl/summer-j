@@ -39,6 +39,10 @@ public class SelectionOnHtmlPropertyReference extends HtmlPropertyReference {
 	public SelectionOnHtmlPropertyReference(char[][] source, long[] pos, HtmlPropertyReference receiver) {
 		super(source, pos, receiver);
 	}
+	
+	public SelectionOnHtmlPropertyReference(char[][] source, long[] pos) {
+		super(source, pos);
+	}
 
 	public StringBuffer printExpression(int indent, StringBuffer output){
 

@@ -143,12 +143,13 @@ private boolean checkStandardAnnotations(long annotationTagBits, TypeReferencePa
 			return true;
 		}
 	}
-	if ((annotationTagBits & TagBits.AnnotationPolymorphicSignature) != 0) {
-		char[][] compoundName = TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_$_POLYMORPHICSIGNATURE;
-		if (checkAnnotationTypeReference(CharOperation.concatWith(compoundName, '.'), pattern)) {
-			return true;
-		}
-	}
+	//cym 2015-04-24
+//	if ((annotationTagBits & TagBits.AnnotationPolymorphicSignature) != 0) {
+//		char[][] compoundName = TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_$_POLYMORPHICSIGNATURE;
+//		if (checkAnnotationTypeReference(CharOperation.concatWith(compoundName, '.'), pattern)) {
+//			return true;
+//		}
+//	}
 	return false;
 }
 private boolean checkTypeName(char[] simpleName, char[] qualification, char[] fullyQualifiedTypeName, boolean isCaseSensitive, boolean isCamelCase) {

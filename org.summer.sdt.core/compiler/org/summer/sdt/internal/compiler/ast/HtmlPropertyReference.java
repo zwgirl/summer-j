@@ -3,13 +3,12 @@ package org.summer.sdt.internal.compiler.ast;
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
-import org.summer.sdt.internal.compiler.codegen.CodeStream;
-import org.summer.sdt.internal.compiler.html.Js2HtmlMapping;
+import org.summer.sdt.internal.compiler.html.HtmlTagConstants;
+import org.summer.sdt.internal.compiler.html.Namespace;
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
-import org.summer.sdt.internal.compiler.lookup.InferenceContext18;
 import org.summer.sdt.internal.compiler.lookup.MissingTypeBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemFieldBinding;
 import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
@@ -18,7 +17,6 @@ import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
-import org.summer.sdt.internal.compiler.lookup.VariableBinding;
 
 /**
  * 
@@ -29,11 +27,11 @@ public class HtmlPropertyReference extends Expression{
 	public char[][] tokens;
 	public long[] positions;
 	public HtmlPropertyReference receiver;
-	public char[] prefix;   //namespace
-	public long prefixPos;
 	
 	public FieldBinding binding;
 	public ReferenceBinding receiverType;// exact binding resulting from lookup
+	
+	public int tagBits;
 
 	public HtmlPropertyReference(char[][] source, long[] postions, HtmlPropertyReference receiver) {
 		this.tokens = source;
@@ -50,48 +48,8 @@ public class HtmlPropertyReference extends Expression{
 		this(source, postions, null);
 	}
 	
-	public HtmlPropertyReference(char[][] source, long[] postions, char[] prefix, long prefixPos) {
-		this(source, postions, null);
-		this.prefix = prefix;
-		this.prefixPos = prefixPos;
-	}
-	
 	public char[] name(){
 		return CharOperation.concatWith(this.tokens, '-');
-	}
-	
-	public char[] nameWithNS(){
-		if(prefix == null){
-			return name();
-		}
-		
-		return CharOperation.concatWith(new char[][]{prefix, name()}, ':');
-	}
-	
-	/**
-	 * Field reference code generation
-	 *
-	 * @param currentScope org.summer.sdt.internal.compiler.lookup.BlockScope
-	 * @param codeStream org.summer.sdt.internal.compiler.codegen.CodeStream
-	 * @param valueRequired boolean
-	 */
-	public void generateCode(BlockScope currentScope, CodeStream codeStream, boolean valueRequired) {
-		
-	}
-	
-	/**
-	 * @see org.summer.sdt.internal.compiler.lookup.InvocationSite#genericTypeArguments()
-	 */
-	public TypeBinding[] genericTypeArguments() {
-		return null;
-	}
-	
-	public InferenceContext18 freshInferenceContext(Scope scope) {
-		return null;
-	}
-	
-	public FieldBinding lastFieldBinding() {
-		return this.binding;
 	}
 	
 	public Constant optimizedBooleanConstant() {
@@ -177,7 +135,6 @@ public class HtmlPropertyReference extends Expression{
 		}
 		// handle indirect inheritance thru variable secondary bound
 		// receiver may receive generic cast, as part of implicit conversion
-		TypeBinding oldReceiverType = this.receiverType;
 		this.receiverType = (ReferenceBinding) this.receiverType.getErasureCompatibleType(fieldBinding.declaringClass);
 //		this.receiver.computeConversion(scope, this.actualReceiverType, this.actualReceiverType);
 //		if (TypeBinding.notEquals(this.actualReceiverType, oldReceiverType) && TypeBinding.notEquals(this.receiver.postConversionType(scope), this.actualReceiverType)) { // record need for explicit cast at codegen since receiver could not handle it
@@ -203,29 +160,12 @@ public class HtmlPropertyReference extends Expression{
 		}
 		return fieldType;
 	}
-	
-	public void setDepth(int depth) {
-		this.bits &= ~ASTNode.DepthMASK; // flush previous depth if any
-		if (depth > 0) {
-			this.bits |= (depth & 0xFF) << ASTNode.DepthSHIFT; // encoded on 8 bits
-		}
-	}
-	
+
 	public void traverse(ASTVisitor visitor, BlockScope scope) {
 		if (visitor.visit(this, scope)) {
 			this.receiver.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
-	}
-	
-	public VariableBinding nullAnnotatedVariableBinding(boolean supportTypeAnnotations) {
-		if (this.binding != null) {
-			if (supportTypeAnnotations
-					|| ((this.binding.tagBits & TagBits.AnnotationNullMASK) != 0)) {
-				return this.binding;
-			}
-		}
-		return null;
 	}
 
 	@Override
@@ -239,12 +179,7 @@ public class HtmlPropertyReference extends Expression{
 	}
 	
 	public StringBuffer html(Scope scope, int indent, StringBuffer output){
-		if(this.receiver != null){
-			Js2HtmlMapping.getHtmlName(new String(this.receiver.name()));
-			output.append(Js2HtmlMapping.getHtmlName(new String(this.receiver.name())));
-			output.append('.');
-		}
-		output.append(Js2HtmlMapping.getHtmlName(new String(this.name())));
+		output.append(this.name());
 		return output;
 	}
 	
@@ -258,5 +193,24 @@ public class HtmlPropertyReference extends Expression{
 		output.append("]");
 		
 		return output;
+	}
+
+	public StringBuffer option(BlockScope scope, int indent, StringBuffer output) {
+		if(this.receiver != null){
+			output.append(this.receiver.name());
+			output.append('.');
+		}
+		output.append(this.name());
+		return output;
+	}
+
+	public boolean isDefaultXmlns() {
+		return this.tokens.length == 1 && tokens[0][0] == 'x' &&
+				CharOperation.equals(tokens[0], Namespace.XMLNS);
+	}
+
+	public boolean isName() {
+		return this.tokens.length == 1 && tokens[0][0] == 'n' &&
+				CharOperation.equals(tokens[0], HtmlTagConstants.NAME);
 	}
 }

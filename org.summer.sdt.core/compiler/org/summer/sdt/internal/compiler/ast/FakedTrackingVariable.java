@@ -527,12 +527,13 @@ public class FakedTrackingVariable extends LocalDeclaration {
 		boolean isResourceProducer = false;
 		if (expression.resolvedType instanceof ReferenceBinding) {
 			ReferenceBinding resourceType = (ReferenceBinding) expression.resolvedType;
-			if (resourceType.hasTypeBit(TypeIds.BitResourceFreeCloseable)) {
-				if (isBlacklistedMethod(expression))
-					isResourceProducer = true;
-				else
-					return null; // (a) resource-free closeable: -> null
-			}
+			//cym 2015-04-24
+//			if (resourceType.hasTypeBit(TypeIds.BitResourceFreeCloseable)) {
+//				if (isBlacklistedMethod(expression))
+//					isResourceProducer = true;
+//				else
+//					return null; // (a) resource-free closeable: -> null
+//			}
 		}
 
 		// analyze by node type:
@@ -575,15 +576,16 @@ public class FakedTrackingVariable extends LocalDeclaration {
 		return newTracker;
 	}
 
-	private static boolean isBlacklistedMethod(Expression expression) {
-		if (expression instanceof MessageSend) {
-			MethodBinding method = ((MessageSend) expression).binding;
-			if (method != null && method.isValidBinding())
-				// for all methods in java.nio.file.Files that return a resource (Stream) it really needs closing
-				return CharOperation.equals(method.declaringClass.compoundName, TypeConstants.JAVA_NIO_FILE_FILES);
-		}
-		return false;
-	}
+	//cym 2015-04-24
+//	private static boolean isBlacklistedMethod(Expression expression) {
+//		if (expression instanceof MessageSend) {
+//			MethodBinding method = ((MessageSend) expression).binding;
+//			if (method != null && method.isValidBinding())
+//				// for all methods in java.nio.file.Files that return a resource (Stream) it really needs closing
+//				return CharOperation.equals(method.declaringClass.compoundName, TypeConstants.JAVA_NIO_FILE_FILES);
+//		}
+//		return false;
+//	}
 
 	public static void cleanUpAfterAssignment(BlockScope currentScope, int lhsBits, Expression expression) {
 		// remove all remaining track vars with no original binding

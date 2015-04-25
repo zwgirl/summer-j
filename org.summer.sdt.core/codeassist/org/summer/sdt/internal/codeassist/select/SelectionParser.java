@@ -289,13 +289,7 @@ public class SelectionParser extends AssistParser {
 	protected void consumeHtmlAttributeStart() {
 //		Attribute ::= HtmlName
 		
-//		if ((indexOfAssistIdentifier(true)) < 0) {
-//			super.consumeHtmlAttributeStart();
-//			return;
-//		}
-		
 		int index;
-		
 		/* no need to take action if not inside assist identifiers */
 		if ((index = indexOfAssistIdentifier()) < 0) {
 			super.consumeHtmlAttributeStart();
@@ -316,6 +310,115 @@ public class SelectionParser extends AssistParser {
 		attribute.sourceEnd = (int) positions[positions.length - 1];
 		
 		pushOnAttributeStack(attribute);
+	}
+	
+	protected void consumeHtmlJoinAttributeStart() {
+		//AttributeStart ::= HtmlName . HtmlName
+		int index;
+		/* no need to take action if not inside assist identifiers */
+		if ((index = indexOfAssistIdentifier()) < 0) {
+			super.consumeHtmlAttributeStart();
+			return;
+		}
+		
+		/* retrieve identifiers subset and whole positions, the assist node positions
+		should include the entire replaced source. */
+		int length = this.identifierLengthStack[this.identifierLengthPtr];
+		char[][] tokens = identifierSubSet(index+1); // include the assistIdentifier
+		this.identifierLengthPtr--;
+		this.identifierPtr -= length;
+		
+//		char[][] tokens;
+//		int length = this.identifierLengthStack[this.identifierLengthPtr--];
+//		this.identifierPtr -= length;
+//		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens = new char[length][], 0, length);
+		
+		long[] positions;
+		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
+		
+		char[][] tokens2;
+		length = this.identifierLengthStack[this.identifierLengthPtr--];
+		this.identifierPtr -= length;
+		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens2 = new char[length][], 0, length);
+		
+		long[] positions2;
+		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions2 = new long[length], 0, length);
+		
+		HtmlPropertyReference propertyReference = new HtmlPropertyReference(
+				tokens, positions, new SelectionOnHtmlPropertyReference(tokens2, positions2));
+		
+		HtmlAttribute attr = new HtmlAttribute(propertyReference);
+		
+		pushOnAttributeStack(attr);
+		
+		attr.statementEnd = this.scanner.currentPosition - 1;
+		attr.sourceEnd = this.scanner.currentPosition - 1;
+	}
+	
+	@Override
+	protected void consumeHtmlStartTag() {
+		
+//		StartTag ::= '<' HtmlName
+		int index;
+		
+		/* no need to take action if not inside assist identifiers */
+		if ((index = indexOfAssistIdentifier()) < 0) {
+			super.consumeHtmlStartTag();
+			return;
+		}
+		
+		this.nestedElement++;
+		
+		/* retrieve identifiers subset and whole positions, the assist node positions
+			should include the entire replaced source. */
+		int length = this.identifierLengthStack[this.identifierLengthPtr];
+		char[][] tokens = identifierSubSet(index+1); // include the assistIdentifier
+		this.identifierLengthPtr--;
+		this.identifierPtr -= length;
+		
+		long[] positions;
+		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
+		
+		HtmlElement element = new HtmlElement(tokens, positions, new SelectionOnHtmlTypeReference(tokens, positions));
+		element.tagBits &= HtmlBits.COMMON_ELEMENT;
+		
+		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
+		pushOnElementStack(element);
+	}
+	
+	protected void consumeHtmlNSStartTag(){
+//		StartTag ::= '<' SimpleName : HtmlName
+		
+		int index;
+		if ((index = this.indexOfAssistIdentifier()) < 0) {
+			super.consumeHtmlNSStartTag();
+			return;
+		} else if(this.identifierLengthPtr > -1 &&
+					(this.identifierLengthStack[this.identifierLengthPtr] - 1) != index) {
+			super.consumeHtmlNSStartTag();
+			return;
+		}
+		
+		this.nestedElement++;
+		/* retrieve identifiers subset and whole positions, the assist node positions
+		should include the entire replaced source. */
+		int length = this.identifierLengthStack[this.identifierLengthPtr];
+		char[][] tokens = identifierSubSet(index+1); // include the assistIdentifier
+		this.identifierLengthPtr--;
+		this.identifierPtr -= length;
+		
+		long[] positions;
+		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
+		
+		long prefixPos = this.identifierPositionStack[this.identifierPtr];
+		char[] prefix = this.identifierStack[this.identifierPtr--];
+		this.identifierLengthPtr--;
+		
+		HtmlElement element = new HtmlElement(tokens, positions, prefix, prefixPos, new SelectionOnHtmlTypeReference(tokens, positions));
+		element.tagBits &= HtmlBits.COMMON_ELEMENT;
+		
+		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
+		pushOnElementStack(element);
 		
 //		char[][] tokens;
 //		int length = this.identifierLengthStack[this.identifierLengthPtr--];
@@ -325,11 +428,16 @@ public class SelectionParser extends AssistParser {
 //		long[] positions;
 //		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
 //		
-//		HtmlAttribute attribute = new HtmlAttribute(new HtmlPropertyReference(tokens, positions));
-//		attribute.sourceStart = attribute.bodyStart = (int) (positions[0] >>> 32);
-//		attribute.sourceEnd = (int) positions[positions.length - 1];
+//		long prefixPos = this.identifierPositionStack[this.identifierPtr];
+//		char[] prefix = this.identifierStack[this.identifierPtr--];
+//		this.identifierLengthPtr--;
 //		
-//		pushOnAttributeStack(attribute);
+//		HtmlElement element = new HtmlElement(tokens, positions, prefix, prefixPos, new HtmlTypeReference(tokens, positions));
+//		element.tagBits &= HtmlBits.COMMON_ELEMENT;
+//		
+////		element.type = new SingleTypeReference1(tokens, positions);
+//		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
+//		pushOnElementStack(element);
 	}
 	
 //	protected void consumeHtmlAttributeWithReceiver() {

@@ -3556,11 +3556,12 @@ public abstract class Scope {
 		return new ProblemMethodBinding(selector, argumentTypes, ProblemReasons.NotFound);
 	}
 
-	public final ReferenceBinding getJavaIoSerializable() {
-		CompilationUnitScope unitScope = compilationUnitScope();
-		unitScope.recordQualifiedReference(TypeConstants.JAVA_IO_SERIALIZABLE);
-		return unitScope.environment.getResolvedType(TypeConstants.JAVA_IO_SERIALIZABLE, this);
-	}
+	//cym 2015-04-24
+//	public final ReferenceBinding getJavaIoSerializable() {
+//		CompilationUnitScope unitScope = compilationUnitScope();
+//		unitScope.recordQualifiedReference(TypeConstants.JAVA_IO_SERIALIZABLE);
+//		return unitScope.environment.getResolvedType(TypeConstants.JAVA_IO_SERIALIZABLE, this);
+//	}
 
 	public final ReferenceBinding getJavaLangAnnotationAnnotation() {
 		CompilationUnitScope unitScope = compilationUnitScope();
@@ -3568,11 +3569,12 @@ public abstract class Scope {
 		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_ANNOTATION_ANNOTATION, this);
 	}
 
-	public final ReferenceBinding getJavaLangAssertionError() {
-		CompilationUnitScope unitScope = compilationUnitScope();
-		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_ASSERTIONERROR);
-		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_ASSERTIONERROR, this);
-	}
+	//cym 2015-04-24
+//	public final ReferenceBinding getJavaLangAssertionError() {
+//		CompilationUnitScope unitScope = compilationUnitScope();
+//		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_ASSERTIONERROR);
+//		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_ASSERTIONERROR, this);
+//	}
 
 	public final ReferenceBinding getJavaLangClass() {
 		CompilationUnitScope unitScope = compilationUnitScope();
@@ -4882,17 +4884,18 @@ public abstract class Scope {
 					case TypeIds.T_long:
 					case TypeIds.T_float:
 					case TypeIds.T_double:
-						TypeBinding superType = getJavaIoSerializable();
-						if (!typesToVisit.contains(superType)) {
-							typesToVisit.add(superType);
-							max++;
-						}
-						superType = getJavaLangCloneable();
-						if (!typesToVisit.contains(superType)) {
-							typesToVisit.add(superType);
-							max++;
-						}
-						superType = getJavaLangObject();
+						//cym 2015-04-24
+//						TypeBinding superType = getJavaIoSerializable();
+//						if (!typesToVisit.contains(superType)) {
+//							typesToVisit.add(superType);
+//							max++;
+//						}
+//						superType = getJavaLangCloneable();
+//						if (!typesToVisit.contains(superType)) {
+//							typesToVisit.add(superType);
+//							max++;
+//						}
+						TypeBinding superType = getJavaLangObject();
 						if (!typesToVisit.contains(superType)) {
 							typesToVisit.add(superType);
 							max++;

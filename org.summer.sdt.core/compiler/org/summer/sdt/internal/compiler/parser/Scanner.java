@@ -4393,7 +4393,7 @@ public class Scanner implements TerminalTokens {
 			case TokenNameCLOSE_ELEMENT :
 				return "</"; //$NON-NLS-1$
 			case TokenNameCLOSE_TAG :
-				return "/��"; //$NON-NLS-1$
+				return "/>"; //$NON-NLS-1$
 				
 			case TokenNameEOF :
 				return "EOF"; //$NON-NLS-1$
@@ -4471,7 +4471,9 @@ public class Scanner implements TerminalTokens {
 			case TerminalTokens.TokenNamefloat:
 			case TerminalTokens.TokenNamefalse:
 			case TerminalTokens.TokenNamefinally:
+			case TerminalTokens.TokenNamefunction:   //cym 2015-04-23
 			case TerminalTokens.TokenNameif:
+			case TerminalTokens.TokenNamein:   //cym 2015-04-23
 			case TerminalTokens.TokenNameint:
 			case TerminalTokens.TokenNameimport:
 			case TerminalTokens.TokenNameinterface:
@@ -4498,6 +4500,8 @@ public class Scanner implements TerminalTokens {
 			case TerminalTokens.TokenNamethrow:
 			case TerminalTokens.TokenNamethrows:
 			case TerminalTokens.TokenNametransient:
+			case TerminalTokens.TokenNametypeof:   //cym 2015-04-23
+			case TerminalTokens.TokenNamevar:   //cym 2015-04-23
 			case TerminalTokens.TokenNamevoid:
 			case TerminalTokens.TokenNamevolatile:
 			case TerminalTokens.TokenNamewhile:

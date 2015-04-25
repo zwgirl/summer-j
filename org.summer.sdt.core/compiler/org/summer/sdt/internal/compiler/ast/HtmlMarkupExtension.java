@@ -2,8 +2,10 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
+import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 /**
  * 
@@ -35,7 +37,7 @@ public class HtmlMarkupExtension extends HtmlElement {
 		return output.append(" }");
 	}
 	
-	public void resolve(BlockScope parentScope) {
+	protected TypeBinding internalResolve1(BlockScope parentScope){
 		this.scope = new BlockScope(parentScope, this);
 		this.constant = Constant.NotAConstant;
 		if(this.type != null){
@@ -43,10 +45,57 @@ public class HtmlMarkupExtension extends HtmlElement {
 		}
 		
 		resolveAttribute(this.scope);
+		return resolvedType;
+		
+	}
+	
+	public void resolve(BlockScope parentScope) {
+		this.internalResolve1(parentScope);
+	}
+	
+	/**
+	 * Resolve the type of this expression in the context of a blockScope
+	 *
+	 * @param scope
+	 * @return
+	 * 	Return the actual type of this expression after resolution
+	 */
+	public TypeBinding resolveType(BlockScope scope) {
+		return this.internalResolve1(scope);
+	}
+	
+	/**
+	 * Resolve the type of this expression in the context of a classScope
+	 *
+	 * @param scope
+	 * @return
+	 * 	Return the actual type of this expression after resolution
+	 */
+	public TypeBinding resolveType(ClassScope scope) {
+		// by default... subclasses should implement a better TB if required.
+		return null;
+	}
+	
+	public TypeBinding resolveTypeExpecting(BlockScope parentScope, TypeBinding expectedType) {
+		setExpectedType(expectedType); // needed in case of generic method invocation
+		this.scope = new BlockScope(parentScope, this);
+		TypeBinding expressionType = this.resolveType(scope);
+		if (expressionType == null) return null;
+//		if (TypeBinding.equalsEquals(expressionType, expectedType)) return expressionType;
+//	
+//		if (!expressionType.isCompatibleWith(expectedType)) {
+//			if (scope.isBoxingCompatibleWith(expressionType, expectedType)) {
+//				computeConversion(scope, expectedType, expressionType);
+//			} else {
+//				scope.problemReporter().typeMismatchError(expressionType, expectedType, this, null);
+//				return null;
+//			}
+//		}
+		return expressionType;
 	}
 
 	@Override
-	public StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+	public StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parent, String _this ) {
 		if(this.resolvedType == null){
 			return output;
 		}
@@ -62,7 +111,7 @@ public class HtmlMarkupExtension extends HtmlElement {
 				output.append(", ");
 			}
 			
-			attribute.buildMarkupExtensionOptionPart(scope, indent, output);
+			attribute.option(scope, indent, output, _this);
 			comma = true;
 		}
 		output.append("}");
@@ -71,7 +120,7 @@ public class HtmlMarkupExtension extends HtmlElement {
 		return output;
 	}
 	
-	public StringBuffer optionValue(BlockScope scope, int indent, StringBuffer output){
+	public StringBuffer optionValue(BlockScope scope, int indent, StringBuffer output, String _this){
 		if(this.resolvedType == null){
 			return output;
 		}
@@ -87,19 +136,13 @@ public class HtmlMarkupExtension extends HtmlElement {
 				output.append(", ");
 			}
 			
-			attribute.option(scope, indent, output);
+			attribute.option(scope, indent, output, _this);
 			comma = true;
 		}
 		output.append("}");
 		output.append(")");
 
 		return output;
-		
-	}
-
-	@Override
-	protected void printTagName(int indent, StringBuffer output) {
-		// TODO Auto-generated method stub
 		
 	}
 

@@ -1198,9 +1198,10 @@ public class ClassScope extends Scope {
 				// only want to reach here when no errors are reported
 				sourceType.setSuperClass(superclass);
 				sourceType.typeBits |= (superclass.typeBits & TypeIds.InheritableBits);
-				// further analysis against white lists for the unlikely case we are compiling java.io.*:
-				if ((sourceType.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0)
-					sourceType.typeBits |= sourceType.applyCloseableClassWhitelists();
+				//cym 2015-04-24
+//				// further analysis against white lists for the unlikely case we are compiling java.io.*:
+//				if ((sourceType.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0)
+//					sourceType.typeBits |= sourceType.applyCloseableClassWhitelists();
 				return true;
 			}
 		}
@@ -1344,9 +1345,10 @@ public class ClassScope extends Scope {
 			}
 			// only want to reach here when no errors are reported
 			sourceType.typeBits |= (superInterface.typeBits & TypeIds.InheritableBits);
+			//cym 2015-04-24
 			// further analysis against white lists for the unlikely case we are compiling java.util.stream.Stream:
-			if ((sourceType.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0)
-				sourceType.typeBits |= sourceType.applyCloseableInterfaceWhitelists();
+//			if ((sourceType.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0)
+//				sourceType.typeBits |= sourceType.applyCloseableInterfaceWhitelists();
 			interfaceBindings[count++] = superInterface;
 		}
 		// hold onto all correctly resolved superinterfaces

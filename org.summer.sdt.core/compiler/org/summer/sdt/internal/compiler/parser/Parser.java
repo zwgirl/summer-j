@@ -9069,7 +9069,7 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				tokens, positions, new HtmlPropertyReference(tokens2, positions2));
 		
 		HtmlAttribute attr = new HtmlAttribute(propertyReference);
-		attr.tagBits |= HtmlBits.JoinAttribute;
+//		attr.tagBits |= HtmlBits.JoinAttribute;
 		
 		pushOnAttributeStack(attr);
 		
@@ -9105,32 +9105,25 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		long[] positions;
 		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
 		
-//		TypeReference receiver = new SingleTypeReference(this.identifierStack[this.identifierPtr], 
-//				this.identifierPositionStack[this.identifierPtr--]);
-//		this.identifierLengthPtr--;
-		
 		long prefixPos = this.identifierPositionStack[this.identifierPtr];
-		HtmlAttribute attribute = new HtmlAttribute(new HtmlPropertyReference(tokens, positions, 
-				this.identifierStack[this.identifierPtr--], prefixPos));
+		char[] prefix = this.identifierStack[this.identifierPtr--];
+		HtmlAttribute attribute = new HtmlAttribute(prefix, prefixPos, new HtmlPropertyReference(tokens, positions));
 		this.identifierLengthPtr--;
-		
-		attribute.tagBits |= HtmlBits.PrefixAttribute;
 		
 		attribute.sourceStart = attribute.bodyStart = (int)prefixPos >>> 32;
 		attribute.sourceEnd = (int)positions[positions.length-1];
 		
-		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
-		element.tagBits |= HtmlBits.PrefixAttribute;
+//		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
 
 		//check named attribute
-		if(CharOperation.equals(attribute.property.name(), HtmlAttribute.NAME)){
-			if((element.tagBits & HtmlBits.NamedField) != 0){
-				problemReporter().duplicateNamedElementInType(attribute.property);
-			} else {
-				attribute.tagBits |= HtmlBits.NamedField;
-				element.tagBits |= HtmlBits.NamedField;
-			}
-		}
+//		if(CharOperation.equals(attribute.property.name(), HtmlAttribute.NAME)){
+//			if((element.tagBits & HtmlBits.NamedField) != 0){
+//				problemReporter().duplicateNamedElementInType(attribute.property);
+//			} else {
+//				attribute.tagBits |= HtmlBits.NamedField;
+//				element.tagBits |= HtmlBits.NamedField;
+//			}
+//		}
 		
 		pushOnAttributeStack(attribute);
 	}
@@ -9177,15 +9170,17 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
 		
 		//check named attribute
-		if((attribute.tagBits & HtmlBits.NamedField) != 0){
-			StringLiteral str = (StringLiteral) attribute.value;
-			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
-			fieldDecl.type = element.type;
-			fieldDecl.bits |= ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal;
-			
-			pushOnAstStack(fieldDecl);
-			concatNodeLists();
-		}
+//		if((attribute.tagBits & HtmlBits.NamedField) != 0){
+//			StringLiteral str = (StringLiteral) attribute.value;
+//			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
+//			fieldDecl.type = element.type;
+//			fieldDecl.bits |= ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal;
+//			
+//			element.namedField = fieldDecl;
+//			
+//			pushOnAstStack(fieldDecl);
+//			concatNodeLists();
+//		}
 	}
 	
 	protected void consumeHtmlNSStartTag(){
@@ -9242,8 +9237,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				new HtmlTypeReference(new char[][]{VAR}, new long[]{(((long) thisStart << 32)) + (thisStart + 3)}));
 		element.tagBits &= HtmlBits.VAR_ELEMENT;
 
-//		element.type = new SingleTypeReference1( new char[][]{VAR}, new long[]{(((long) thisStart << 32)) + (thisStart + 3)});
-		
 		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
 		element.sourceEnd = element.type.sourceEnd;
 		
@@ -9260,8 +9253,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 				new HtmlTypeReference(new char[][]{SWITCH}, new long[]{(((long) thisStart << 32)) + (thisStart + 5)}));
 		element.tagBits &= HtmlBits.SWITCH_ELEMENT;
 
-//		element.type = new SingleTypeReference1(new char[][]{SWITCH}, new long[]{(((long) thisStart << 32)) + (thisStart + 5)});
-		
 		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
 		element.sourceEnd = element.type.sourceEnd;
 		
@@ -9279,14 +9270,6 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		
 		long[] positions;
 		System.arraycopy(this.identifierPositionStack, this.identifierPtr, positions = new long[length], 0, length);
-		
-//		char[][] tokens2;
-//		length = this.identifierLengthStack[this.identifierLengthPtr--];
-//		this.identifierPtr -= length;
-//		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens2 = new char[length][], 0, length);
-//		
-//		long[] positions2;
-//		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions2 = new long[length], 0, length);
 		
 		HtmlElement element = new HtmlAttributeElement(tokens, positions);
 		element.tagBits &= HtmlBits.ATTRIBUTE_ELEMENT;

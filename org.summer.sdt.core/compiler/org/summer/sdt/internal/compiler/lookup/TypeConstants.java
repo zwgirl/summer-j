@@ -46,31 +46,38 @@ public interface TypeConstants {
 	char[] WINDOW = "Window".toCharArray(); //$NON-NLS-1$  //cym 2014-12-13
 	char[] BASETEMPLATESETTING = "BaseTemplateSetting".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] TEMPLATE = "Template".toCharArray(); //$NON-NLS-1$  //cym 2015-04-14
+	char[] TEMPLATESETTING = "TemplateSetting".toCharArray(); //$NON-NLS-1$  //cym 2015-04-25
+	char[] COLLECTIONTEMPLATESETTING = "CollectionTemplateSetting".toCharArray(); //$NON-NLS-1$  //cym 2015-04-25
+	char[] FRAGMENT = "Fragment".toCharArray(); //$NON-NLS-1$  //cym 2015-04-25
 	char[] PAGE = "Page".toCharArray(); //$NON-NLS-1$  //cym 2015-04-13
+	char[] EVENT = "Event".toCharArray(); //$NON-NLS-1$  //cym cym 2015-04-24
+	char[] TEXT_NODE = "Text".toCharArray(); //$NON-NLS-1$  //cym cym 2015-04-24
+	char[] HTML_ELEMENT = "HTMLHtmlElement".toCharArray(); //$NON-NLS-1$  //cym cym 2015-04-24
+	char[] SVG_ELEMENT = "SVGSVGElement".toCharArray(); //$NON-NLS-1$  //cym cym 2015-04-24
+	char[] HEAD_ELEMENT = "HTMLHeadElement".toCharArray(); //$NON-NLS-1$  //cym 2015-04-24
+	char[] BODY_ELEMENT = "HTMLBodyElement".toCharArray(); //$NON-NLS-1$  //cym 2015-04-24
 	
 	char[] COMPONENT = "Component".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] MODULE = "Module".toCharArray(); //$NON-NLS-1$  //cym 2015-02-12
 	char[] FUNCTION = "Function".toCharArray(); //$NON-NLS-1$  //cym 2015-02-16
 	char[] ANONYM = "Anonym".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
-	char[] HTML = "html".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
-	char[] EVENT = "Event".toCharArray(); //$NON-NLS-1$  //cym 2015-04-07
 	char[] ARRAY = "Array".toCharArray(); //$NON-NLS-1$  //cym 2014-12-03
 	char[] OVERLOAD = "Overload".toCharArray(); //$NON-NLS-1$  //cym 2015-02-24
 	char[] REMOTINGBEAN = "RemotingBean".toCharArray(); //$NON-NLS-1$  //cym 2015-03-10
 	char[] REMOTINGSERVICE = "RemotingService".toCharArray(); //$NON-NLS-1$  //cym 2015-03-10
 	char[] MAIN = "main".toCharArray(); //$NON-NLS-1$
-	char[] SERIALVERSIONUID = "serialVersionUID".toCharArray(); //$NON-NLS-1$
-	char[] SERIALPERSISTENTFIELDS = "serialPersistentFields".toCharArray(); //$NON-NLS-1$
-	char[] READRESOLVE = "readResolve".toCharArray(); //$NON-NLS-1$
-	char[] WRITEREPLACE = "writeReplace".toCharArray(); //$NON-NLS-1$
-	char[] READOBJECT = "readObject".toCharArray(); //$NON-NLS-1$
-	char[] WRITEOBJECT = "writeObject".toCharArray(); //$NON-NLS-1$
+//	char[] SERIALVERSIONUID = "serialVersionUID".toCharArray(); //$NON-NLS-1$
+//	char[] SERIALPERSISTENTFIELDS = "serialPersistentFields".toCharArray(); //$NON-NLS-1$
+//	char[] READRESOLVE = "readResolve".toCharArray(); //$NON-NLS-1$
+//	char[] WRITEREPLACE = "writeReplace".toCharArray(); //$NON-NLS-1$
+//	char[] READOBJECT = "readObject".toCharArray(); //$NON-NLS-1$
+//	char[] WRITEOBJECT = "writeObject".toCharArray(); //$NON-NLS-1$
 	char[] CharArray_JAVA_LANG_OBJECT = "java.lang.Object".toCharArray(); //$NON-NLS-1$
 	char[] CharArray_JAVA_LANG_ENUM = "java.lang.Enum".toCharArray(); //$NON-NLS-1$
 	char[] CharArray_JAVA_LANG_ANNOTATION_ANNOTATION = "java.lang.annotation.Annotation".toCharArray(); //$NON-NLS-1$
-	char[] CharArray_JAVA_IO_OBJECTINPUTSTREAM = "java.io.ObjectInputStream".toCharArray(); //$NON-NLS-1$
-	char[] CharArray_JAVA_IO_OBJECTOUTPUTSTREAM = "java.io.ObjectOutputStream".toCharArray(); //$NON-NLS-1$
-	char[] CharArray_JAVA_IO_OBJECTSTREAMFIELD = "java.io.ObjectStreamField".toCharArray(); //$NON-NLS-1$
+//	char[] CharArray_JAVA_IO_OBJECTINPUTSTREAM = "java.io.ObjectInputStream".toCharArray(); //$NON-NLS-1$
+//	char[] CharArray_JAVA_IO_OBJECTOUTPUTSTREAM = "java.io.ObjectOutputStream".toCharArray(); //$NON-NLS-1$
+//	char[] CharArray_JAVA_IO_OBJECTSTREAMFIELD = "java.io.ObjectStreamField".toCharArray(); //$NON-NLS-1$
 	char[] ANONYM_PREFIX = "new ".toCharArray(); //$NON-NLS-1$
 	char[] ANONYM_SUFFIX = "(){}".toCharArray(); //$NON-NLS-1$
     char[] WILDCARD_NAME = { '?' };
@@ -122,17 +129,17 @@ public interface TypeConstants {
     char[] ORG = "org".toCharArray(); //$NON-NLS-1$
     char[] ECLIPSE = "eclipse".toCharArray(); //$NON-NLS-1$
     char[] CORE = "core".toCharArray(); //$NON-NLS-1$
-    char[] RUNTIME = "runtime".toCharArray(); //$NON-NLS-1$
-    char[] APACHE = "apache".toCharArray(); //$NON-NLS-1$
-    char[] COMMONS = "commons".toCharArray(); //$NON-NLS-1$
-    char[] LANG3 = "lang3".toCharArray(); //$NON-NLS-1$
-    char[] COM = "com".toCharArray(); //$NON-NLS-1$
-    char[] GOOGLE = "google".toCharArray(); //$NON-NLS-1$
-    char[] JDT = "jdt".toCharArray(); //$NON-NLS-1$
-    char[] INTERNAL = "internal".toCharArray(); //$NON-NLS-1$
-    char[] COMPILER = "compiler".toCharArray(); //$NON-NLS-1$
-    char[] LOOKUP = "lookup".toCharArray(); //$NON-NLS-1$
-    char[] TYPEBINDING = "TypeBinding".toCharArray(); //$NON-NLS-1$
+//    char[] RUNTIME = "runtime".toCharArray(); //$NON-NLS-1$
+//    char[] APACHE = "apache".toCharArray(); //$NON-NLS-1$
+//    char[] COMMONS = "commons".toCharArray(); //$NON-NLS-1$
+//    char[] LANG3 = "lang3".toCharArray(); //$NON-NLS-1$
+//    char[] COM = "com".toCharArray(); //$NON-NLS-1$
+//    char[] GOOGLE = "google".toCharArray(); //$NON-NLS-1$
+//    char[] JDT = "jdt".toCharArray(); //$NON-NLS-1$
+//    char[] INTERNAL = "internal".toCharArray(); //$NON-NLS-1$
+//    char[] COMPILER = "compiler".toCharArray(); //$NON-NLS-1$
+//    char[] LOOKUP = "lookup".toCharArray(); //$NON-NLS-1$
+//    char[] TYPEBINDING = "TypeBinding".toCharArray(); //$NON-NLS-1$
     char[] DOM = "dom".toCharArray(); //$NON-NLS-1$
     char[] ITYPEBINDING = "ITypeBinding".toCharArray(); //$NON-NLS-1$
     char[] W3C = "w3c".toCharArray();  //$NON-NLS-1$  //cym 2015-01-13
@@ -144,7 +151,7 @@ public interface TypeConstants {
 	char[][] JAVA_LANG = {JAVA, LANG};
 	char[][] JAVA_IO = {JAVA, IO};
 	char[][] JAVA_LANG_ANNOTATION_ANNOTATION = {JAVA, LANG, ANNOTATION, "Annotation".toCharArray()}; //$NON-NLS-1$
-	char[][] JAVA_LANG_ASSERTIONERROR = {JAVA, LANG, "AssertionError".toCharArray()}; //$NON-NLS-1$
+//	char[][] JAVA_LANG_ASSERTIONERROR = {JAVA, LANG, "AssertionError".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_CLASS = {JAVA, LANG, "Class".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ARRAY = {JAVA, LANG, "Array".toCharArray()}; //$NON-NLS-1$   --cym 2014-12-03
 	char[][] JAVA_LANG_FUNCTION = {JAVA, LANG, FUNCTION}; //$NON-NLS-1$   --cym 2015-02-16
@@ -163,12 +170,20 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_BASETEMPLATESETTING = {JAVA, LANG, BASETEMPLATESETTING};  //cym 2015-04-14
 	char[][] JAVA_LANG_TEMPLATE = {JAVA, LANG, TEMPLATE};  //cym 2015-04-14
 	char[][] JAVA_LANG_PAGE = {JAVA, LANG, PAGE};  //cym 2015-04-13
+	char[][] JAVA_LANG_TEMPLATESETTING = {JAVA, LANG, TEMPLATESETTING};  //cym 2015-04-25
+	char[][] JAVA_LANG_COLLECTIONTEMPLATESETTING = {JAVA, LANG, COLLECTIONTEMPLATESETTING};  //cym 2015-04-25
+	char[][] JAVA_LANG_FRAGMENT = {JAVA, LANG, FRAGMENT};  //cym 2015-04-25
+	
 	
 	char[][] JAVA_LANG_COMPONENT = {JAVA, LANG, COMPONENT};  //cym 2015-01-13
-	char[][] ORG_W3C_HTML_HTML = {ORG, W3C, HTMLPKG, HTML};  //cym 2015-01-13
+	char[][] ORG_W3C_HTML_HTML = {ORG, W3C, HTMLPKG, HTML_ELEMENT};  //cym 2015-04-24
+	char[][] ORG_W3C_HTML_HEAD = {ORG, W3C, HTMLPKG, HEAD_ELEMENT};  //cym 2015-04-24
+	char[][] ORG_W3C_HTML_BODY = {ORG, W3C, HTMLPKG, BODY_ELEMENT};  //cym 2015-04-24
 	char[][] ORG_W3C_HTML = {ORG, W3C, HTMLPKG};  //cym 2015-04-18
 	char[][] ORG_W3C_SVG = {ORG, W3C, SVGPKG};  //cym 2015-04-18
-	char[][] ORG_W3C_EVENT_EVENT = {ORG, W3C, EVENTPKG, EVENT};  //cym 2015-04-07
+	char[][] ORG_W3C_SVG_SVG = {ORG, W3C, SVGPKG, SVG_ELEMENT};  //cym 2015-04-24
+	char[][] ORG_W3C_EVENT_EVENT = {ORG, W3C, EVENTPKG, EVENT};  //cym 2015-04-24
+	char[][] ORG_W3C_DOM_TEXT = {ORG, W3C, DOM, TEXT_NODE};  //cym 2015-04-24
 	char[][] JAVA_LANG_STRING = {JAVA, LANG, "String".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_STRINGBUFFER = {JAVA, LANG, "StringBuffer".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_STRINGBUILDER = {JAVA, LANG, "StringBuilder".toCharArray()}; //$NON-NLS-1$
@@ -176,8 +191,8 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_RUNTIMEEXCEPTION = {JAVA, LANG, "RuntimeException".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_THROWABLE = {JAVA, LANG, "Throwable".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_REFLECT_CONSTRUCTOR = {JAVA, LANG, REFLECT, "Constructor".toCharArray()}; //$NON-NLS-1$
-	char[][] JAVA_IO_PRINTSTREAM = {JAVA, IO, "PrintStream".toCharArray()}; //$NON-NLS-1$
-	char[][] JAVA_IO_SERIALIZABLE = {JAVA, IO, "Serializable".toCharArray()}; //$NON-NLS-1$
+//	char[][] JAVA_IO_PRINTSTREAM = {JAVA, IO, "PrintStream".toCharArray()}; //$NON-NLS-1$
+//	char[][] JAVA_IO_SERIALIZABLE = {JAVA, IO, "Serializable".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_BYTE = {JAVA, LANG, "Byte".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_SHORT = {JAVA, LANG, "Short".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_CHARACTER = {JAVA, LANG, "Character".toCharArray()}; //$NON-NLS-1$
@@ -207,37 +222,37 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_ANNOTATION_TARGET = {JAVA, LANG, ANNOTATION, "Target".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ANNOTATION_RETENTIONPOLICY = {JAVA, LANG, ANNOTATION, "RetentionPolicy".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_ANNOTATION_ELEMENTTYPE = {JAVA, LANG, ANNOTATION, "ElementType".toCharArray()}; //$NON-NLS-1$
-	char[][] JAVA_LANG_REFLECT_FIELD = new char[][] {JAVA, LANG, REFLECT, "Field".toCharArray()}; //$NON-NLS-1$
-	char[][] JAVA_LANG_REFLECT_METHOD = new char[][] {JAVA, LANG, REFLECT, "Method".toCharArray()}; //$NON-NLS-1$
-	char[][] JAVA_IO_CLOSEABLE = new char[][] { JAVA, IO, "Closeable".toCharArray()};//$NON-NLS-1$
-	char[][] JAVA_IO_OBJECTSTREAMEXCEPTION = new char[][] { JAVA, IO, "ObjectStreamException".toCharArray()};//$NON-NLS-1$
-	char[][] JAVA_IO_EXTERNALIZABLE = {JAVA, IO, "Externalizable".toCharArray()}; //$NON-NLS-1$
-	char[][] JAVA_IO_IOEXCEPTION = new char[][] { JAVA, IO, "IOException".toCharArray()};//$NON-NLS-1$
-	char[][] JAVA_IO_OBJECTOUTPUTSTREAM = new char[][] { JAVA, IO, "ObjectOutputStream".toCharArray()}; //$NON-NLS-1$
-	char[][] JAVA_IO_OBJECTINPUTSTREAM = new char[][] { JAVA, IO, "ObjectInputStream".toCharArray()}; //$NON-NLS-1$
-	char[][] JAVA_NIO_FILE_FILES = new char[][] { JAVA, "nio".toCharArray(), "file".toCharArray(), "Files".toCharArray() };   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
+//	char[][] JAVA_LANG_REFLECT_FIELD = new char[][] {JAVA, LANG, REFLECT, "Field".toCharArray()}; //$NON-NLS-1$
+//	char[][] JAVA_LANG_REFLECT_METHOD = new char[][] {JAVA, LANG, REFLECT, "Method".toCharArray()}; //$NON-NLS-1$
+//	char[][] JAVA_IO_CLOSEABLE = new char[][] { JAVA, IO, "Closeable".toCharArray()};//$NON-NLS-1$
+//	char[][] JAVA_IO_OBJECTSTREAMEXCEPTION = new char[][] { JAVA, IO, "ObjectStreamException".toCharArray()};//$NON-NLS-1$
+//	char[][] JAVA_IO_EXTERNALIZABLE = {JAVA, IO, "Externalizable".toCharArray()}; //$NON-NLS-1$
+//	char[][] JAVA_IO_IOEXCEPTION = new char[][] { JAVA, IO, "IOException".toCharArray()};//$NON-NLS-1$
+//	char[][] JAVA_IO_OBJECTOUTPUTSTREAM = new char[][] { JAVA, IO, "ObjectOutputStream".toCharArray()}; //$NON-NLS-1$
+//	char[][] JAVA_IO_OBJECTINPUTSTREAM = new char[][] { JAVA, IO, "ObjectInputStream".toCharArray()}; //$NON-NLS-1$
+//	char[][] JAVA_NIO_FILE_FILES = new char[][] { JAVA, "nio".toCharArray(), "file".toCharArray(), "Files".toCharArray() };   //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
 	// javax.rmi.CORBA.Stub
-	char[][] JAVAX_RMI_CORBA_STUB = new char[][] {
-			JAVAX,
-			"rmi".toCharArray(), //$NON-NLS-1$
-			"CORBA".toCharArray(), //$NON-NLS-1$
-			"Stub".toCharArray(), //$NON-NLS-1$
-	};
+//	char[][] JAVAX_RMI_CORBA_STUB = new char[][] {
+//			JAVAX,
+//			"rmi".toCharArray(), //$NON-NLS-1$
+//			"CORBA".toCharArray(), //$NON-NLS-1$
+//			"Stub".toCharArray(), //$NON-NLS-1$
+//	};
 	char[][] JAVA_LANG_SAFEVARARGS =  {JAVA, LANG, "SafeVarargs".toCharArray()}; //$NON-NLS-1$
 	char[] INVOKE = "invoke".toCharArray(); //$NON-NLS-1$
-	char[][] JAVA_LANG_INVOKE_METHODHANDLE_POLYMORPHICSIGNATURE = { // Signature while parsing binary file
-			JAVA,
-			LANG,
-			INVOKE,
-			"MethodHandle".toCharArray(), //$NON-NLS-1$
-			"PolymorphicSignature".toCharArray() //$NON-NLS-1$
-	};
-	char[][] JAVA_LANG_INVOKE_METHODHANDLE_$_POLYMORPHICSIGNATURE = { // Signature while parsing source file
-			JAVA,
-			LANG,
-			INVOKE,
-			"MethodHandle$PolymorphicSignature".toCharArray() //$NON-NLS-1$
-	};
+//	char[][] JAVA_LANG_INVOKE_METHODHANDLE_POLYMORPHICSIGNATURE = { // Signature while parsing binary file
+//			JAVA,
+//			LANG,
+//			INVOKE,
+//			"MethodHandle".toCharArray(), //$NON-NLS-1$
+//			"PolymorphicSignature".toCharArray() //$NON-NLS-1$
+//	};
+//	char[][] JAVA_LANG_INVOKE_METHODHANDLE_$_POLYMORPHICSIGNATURE = { // Signature while parsing source file
+//			JAVA,
+//			LANG,
+//			INVOKE,
+//			"MethodHandle$PolymorphicSignature".toCharArray() //$NON-NLS-1$
+//	};
 	char[][] JAVA_LANG_INVOKE_LAMBDAMETAFACTORY = {JAVA, LANG, INVOKE, "LambdaMetafactory".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_INVOKE_SERIALIZEDLAMBDA = {JAVA, LANG, INVOKE, "SerializedLambda".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_INVOKE_METHODHANDLES = {JAVA, LANG, INVOKE, "MethodHandles".toCharArray()}; //$NON-NLS-1$
@@ -254,119 +269,119 @@ public interface TypeConstants {
 			this.numCloseableArgs = num;
 		}
 	}
-	char[][] GUAVA_CLOSEABLES = { COM, GOOGLE, "common".toCharArray(), IO, "Closeables".toCharArray() }; //$NON-NLS-1$ //$NON-NLS-2$
-	char[][] APACHE_IOUTILS = { ORG, APACHE, COMMONS, IO, "IOUtils".toCharArray() }; //$NON-NLS-1$
-	char[][] APACHE_DBUTILS = { ORG, APACHE, COMMONS, "dbutils".toCharArray(), "DbUtils".toCharArray() }; //$NON-NLS-1$ //$NON-NLS-2$
-	char[] CLOSE_QUIETLY = "closeQuietly".toCharArray(); //$NON-NLS-1$
-	CloseMethodRecord[] closeMethods = new CloseMethodRecord[] {
-		new CloseMethodRecord(GUAVA_CLOSEABLES, CLOSE_QUIETLY, 1),
-		new CloseMethodRecord(GUAVA_CLOSEABLES, CLOSE, 1),
-		new CloseMethodRecord(APACHE_IOUTILS, CLOSE_QUIETLY, 1),
-		new CloseMethodRecord(APACHE_DBUTILS, CLOSE, 1),
-		new CloseMethodRecord(APACHE_DBUTILS, CLOSE_QUIETLY, 3), // closeQuietly(Connection,Statement,ResultSet) 
-		new CloseMethodRecord(APACHE_DBUTILS, "commitAndClose".toCharArray(), 1), //$NON-NLS-1$
-		new CloseMethodRecord(APACHE_DBUTILS, "commitAndCloseQuietly".toCharArray(), 1), //$NON-NLS-1$
-		new CloseMethodRecord(APACHE_DBUTILS, "rollbackAndClose".toCharArray(), 1), //$NON-NLS-1$
-		new CloseMethodRecord(APACHE_DBUTILS, "rollbackAndCloseQuietly".toCharArray(), 1), //$NON-NLS-1$
-	};
-	// white lists of closeables:
-	char[][] JAVA_IO_WRAPPER_CLOSEABLES = new char[][] {
-		"BufferedInputStream".toCharArray(), //$NON-NLS-1$
-		"BufferedOutputStream".toCharArray(), //$NON-NLS-1$
-		"BufferedReader".toCharArray(), //$NON-NLS-1$
-		"BufferedWriter".toCharArray(), //$NON-NLS-1$
-		"InputStreamReader".toCharArray(), //$NON-NLS-1$
-		"PrintWriter".toCharArray(),  //$NON-NLS-1$
-		"LineNumberReader".toCharArray(), //$NON-NLS-1$
-		"DataInputStream".toCharArray(), //$NON-NLS-1$
-		"DataOutputStream".toCharArray(), //$NON-NLS-1$
-		"ObjectInputStream".toCharArray(), //$NON-NLS-1$
-		"ObjectOutputStream".toCharArray(), //$NON-NLS-1$
-		"FilterInputStream".toCharArray(), //$NON-NLS-1$
-		"FilterOutputStream".toCharArray(), //$NON-NLS-1$
-		"DataInputStream".toCharArray(), //$NON-NLS-1$
-		"DataOutputStream".toCharArray(), //$NON-NLS-1$
-		"PushbackInputStream".toCharArray(), //$NON-NLS-1$
-		"SequenceInputStream".toCharArray(), //$NON-NLS-1$
-		"PrintStream".toCharArray(), //$NON-NLS-1$
-		"PushbackReader".toCharArray(), //$NON-NLS-1$
-		"OutputStreamWriter".toCharArray(), //$NON-NLS-1$
-	};
-	char[][] JAVA_UTIL_ZIP_WRAPPER_CLOSEABLES = new char[][] {
-		"GZIPInputStream".toCharArray(), //$NON-NLS-1$
-		"InflaterInputStream".toCharArray(), //$NON-NLS-1$
-		"DeflaterInputStream".toCharArray(), //$NON-NLS-1$
-		"CheckedInputStream".toCharArray(), //$NON-NLS-1$
-		"ZipInputStream".toCharArray(), //$NON-NLS-1$
-		"JarInputStream".toCharArray(), //$NON-NLS-1$
-		"GZIPOutputStream".toCharArray(), //$NON-NLS-1$
-		"InflaterOutputStream".toCharArray(), //$NON-NLS-1$
-		"DeflaterOutputStream".toCharArray(), //$NON-NLS-1$
-		"CheckedOutputStream".toCharArray(), //$NON-NLS-1$
-		"ZipOutputStream".toCharArray(), //$NON-NLS-1$
-		"JarOutputStream".toCharArray(), //$NON-NLS-1$
-	};
-	char[][][] OTHER_WRAPPER_CLOSEABLES = new char[][][] {
-		{JAVA, "security".toCharArray(), "DigestInputStream".toCharArray()}, //$NON-NLS-1$ //$NON-NLS-2$
-		{JAVA, "security".toCharArray(), "DigestOutputStream".toCharArray()}, //$NON-NLS-1$ //$NON-NLS-2$
-		{JAVA, "beans".toCharArray(), "XMLEncoder".toCharArray()}, //$NON-NLS-1$ //$NON-NLS-2$
-		{JAVA, "beans".toCharArray(), "XMLDecoder".toCharArray()}, //$NON-NLS-1$ //$NON-NLS-2$
-		{JAVAX, "sound".toCharArray(), "sampled".toCharArray(), "AudioInputStream".toCharArray()}, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	};
-	char[][] JAVA_IO_RESOURCE_FREE_CLOSEABLES = new char[][] {			
-		"StringReader".toCharArray(), //$NON-NLS-1$
-		"StringWriter".toCharArray(), //$NON-NLS-1$
-		"ByteArrayInputStream".toCharArray(), //$NON-NLS-1$
-		"ByteArrayOutputStream".toCharArray(), //$NON-NLS-1$
-		"CharArrayReader".toCharArray(), //$NON-NLS-1$
-		"CharArrayWriter".toCharArray(), //$NON-NLS-1$
-		"StringBufferInputStream".toCharArray(), //$NON-NLS-1$
-	};
-	char[][] RESOURCE_FREE_CLOSEABLE_STREAM = new char[][] {
-		JAVA, UTIL, "stream".toCharArray(), "Stream".toCharArray() //$NON-NLS-1$ //$NON-NLS-2$
-	};
-	
-	// different assertion utilities:
-	char[] ASSERT_CLASS = "Assert".toCharArray(); //$NON-NLS-1$
-	char[][] ORG_ECLIPSE_CORE_RUNTIME_ASSERT = new char[][] { ORG, ECLIPSE, CORE, RUNTIME, ASSERT_CLASS };
-	// ... methods:
-	char[] IS_NOTNULL = "isNotNull".toCharArray(); //$NON-NLS-1$
-	
-	char[] JUNIT = "junit".toCharArray(); //$NON-NLS-1$
-	char[] FRAMEWORK = "framework".toCharArray(); //$NON-NLS-1$
-	char[][] JUNIT_FRAMEWORK_ASSERT = new char[][] { JUNIT, FRAMEWORK, ASSERT_CLASS };
-	char[][] ORG_JUNIT_ASSERT = new char[][] { ORG, JUNIT, ASSERT_CLASS };
-	// ... methods:
-	char[] ASSERT_NULL = "assertNull".toCharArray(); //$NON-NLS-1$
-	char[] ASSERT_NOTNULL = "assertNotNull".toCharArray(); //$NON-NLS-1$
-	char[] ASSERT_TRUE = "assertTrue".toCharArray(); //$NON-NLS-1$
-	char[] ASSERT_FALSE = "assertFalse".toCharArray(); //$NON-NLS-1$
-	
-	char[] VALIDATE_CLASS = "Validate".toCharArray(); //$NON-NLS-1$
-	char[][] ORG_APACHE_COMMONS_LANG_VALIDATE = new char[][] { ORG, APACHE, COMMONS, LANG, VALIDATE_CLASS };
-	char[][] ORG_APACHE_COMMONS_LANG3_VALIDATE = new char[][] { ORG, APACHE, COMMONS, LANG3, VALIDATE_CLASS };
-	char[][] ORG_ECLIPSE_JDT_INTERNAL_COMPILER_LOOKUP_TYPEBINDING = new char[][] { ORG, ECLIPSE, JDT, INTERNAL, COMPILER, LOOKUP, TYPEBINDING };
-	char[][] ORG_ECLIPSE_JDT_CORE_DOM_ITYPEBINDING = new char[][] { ORG, ECLIPSE, JDT, CORE, DOM, ITYPEBINDING };
-
-	// ... methods:
-	char[] IS_TRUE = "isTrue".toCharArray(); //$NON-NLS-1$
-	char[] NOT_NULL = "notNull".toCharArray(); //$NON-NLS-1$
-	
-	char[][] COM_GOOGLE_COMMON_BASE_PRECONDITIONS = new char[][] { 
-			COM, GOOGLE, "common".toCharArray(), "base".toCharArray(), "Preconditions".toCharArray() }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-	// ... methods:
-	char[] CHECK_NOT_NULL = "checkNotNull".toCharArray(); //$NON-NLS-1$
-	char[] CHECK_ARGUMENT = "checkArgument".toCharArray(); //$NON-NLS-1$
-	char[] CHECK_STATE = "checkState".toCharArray(); //$NON-NLS-1$
-
-	// ... methods in java.util.Objects:
-	char[] REQUIRE_NON_NULL = "requireNonNull".toCharArray(); //$NON-NLS-1$
-	
-	// different @Inject annotations are relevant for @NonNull fields
+//	char[][] GUAVA_CLOSEABLES = { COM, GOOGLE, "common".toCharArray(), IO, "Closeables".toCharArray() }; //$NON-NLS-1$ //$NON-NLS-2$
+//	char[][] APACHE_IOUTILS = { ORG, APACHE, COMMONS, IO, "IOUtils".toCharArray() }; //$NON-NLS-1$
+//	char[][] APACHE_DBUTILS = { ORG, APACHE, COMMONS, "dbutils".toCharArray(), "DbUtils".toCharArray() }; //$NON-NLS-1$ //$NON-NLS-2$
+//	char[] CLOSE_QUIETLY = "closeQuietly".toCharArray(); //$NON-NLS-1$
+//	CloseMethodRecord[] closeMethods = new CloseMethodRecord[] {
+//		new CloseMethodRecord(GUAVA_CLOSEABLES, CLOSE_QUIETLY, 1),
+//		new CloseMethodRecord(GUAVA_CLOSEABLES, CLOSE, 1),
+//		new CloseMethodRecord(APACHE_IOUTILS, CLOSE_QUIETLY, 1),
+//		new CloseMethodRecord(APACHE_DBUTILS, CLOSE, 1),
+//		new CloseMethodRecord(APACHE_DBUTILS, CLOSE_QUIETLY, 3), // closeQuietly(Connection,Statement,ResultSet) 
+//		new CloseMethodRecord(APACHE_DBUTILS, "commitAndClose".toCharArray(), 1), //$NON-NLS-1$
+//		new CloseMethodRecord(APACHE_DBUTILS, "commitAndCloseQuietly".toCharArray(), 1), //$NON-NLS-1$
+//		new CloseMethodRecord(APACHE_DBUTILS, "rollbackAndClose".toCharArray(), 1), //$NON-NLS-1$
+//		new CloseMethodRecord(APACHE_DBUTILS, "rollbackAndCloseQuietly".toCharArray(), 1), //$NON-NLS-1$
+//	};
+//	// white lists of closeables:
+//	char[][] JAVA_IO_WRAPPER_CLOSEABLES = new char[][] {
+//		"BufferedInputStream".toCharArray(), //$NON-NLS-1$
+//		"BufferedOutputStream".toCharArray(), //$NON-NLS-1$
+//		"BufferedReader".toCharArray(), //$NON-NLS-1$
+//		"BufferedWriter".toCharArray(), //$NON-NLS-1$
+//		"InputStreamReader".toCharArray(), //$NON-NLS-1$
+//		"PrintWriter".toCharArray(),  //$NON-NLS-1$
+//		"LineNumberReader".toCharArray(), //$NON-NLS-1$
+//		"DataInputStream".toCharArray(), //$NON-NLS-1$
+//		"DataOutputStream".toCharArray(), //$NON-NLS-1$
+//		"ObjectInputStream".toCharArray(), //$NON-NLS-1$
+//		"ObjectOutputStream".toCharArray(), //$NON-NLS-1$
+//		"FilterInputStream".toCharArray(), //$NON-NLS-1$
+//		"FilterOutputStream".toCharArray(), //$NON-NLS-1$
+//		"DataInputStream".toCharArray(), //$NON-NLS-1$
+//		"DataOutputStream".toCharArray(), //$NON-NLS-1$
+//		"PushbackInputStream".toCharArray(), //$NON-NLS-1$
+//		"SequenceInputStream".toCharArray(), //$NON-NLS-1$
+//		"PrintStream".toCharArray(), //$NON-NLS-1$
+//		"PushbackReader".toCharArray(), //$NON-NLS-1$
+//		"OutputStreamWriter".toCharArray(), //$NON-NLS-1$
+//	};
+//	char[][] JAVA_UTIL_ZIP_WRAPPER_CLOSEABLES = new char[][] {
+//		"GZIPInputStream".toCharArray(), //$NON-NLS-1$
+//		"InflaterInputStream".toCharArray(), //$NON-NLS-1$
+//		"DeflaterInputStream".toCharArray(), //$NON-NLS-1$
+//		"CheckedInputStream".toCharArray(), //$NON-NLS-1$
+//		"ZipInputStream".toCharArray(), //$NON-NLS-1$
+//		"JarInputStream".toCharArray(), //$NON-NLS-1$
+//		"GZIPOutputStream".toCharArray(), //$NON-NLS-1$
+//		"InflaterOutputStream".toCharArray(), //$NON-NLS-1$
+//		"DeflaterOutputStream".toCharArray(), //$NON-NLS-1$
+//		"CheckedOutputStream".toCharArray(), //$NON-NLS-1$
+//		"ZipOutputStream".toCharArray(), //$NON-NLS-1$
+//		"JarOutputStream".toCharArray(), //$NON-NLS-1$
+//	};
+//	char[][][] OTHER_WRAPPER_CLOSEABLES = new char[][][] {
+//		{JAVA, "security".toCharArray(), "DigestInputStream".toCharArray()}, //$NON-NLS-1$ //$NON-NLS-2$
+//		{JAVA, "security".toCharArray(), "DigestOutputStream".toCharArray()}, //$NON-NLS-1$ //$NON-NLS-2$
+//		{JAVA, "beans".toCharArray(), "XMLEncoder".toCharArray()}, //$NON-NLS-1$ //$NON-NLS-2$
+//		{JAVA, "beans".toCharArray(), "XMLDecoder".toCharArray()}, //$NON-NLS-1$ //$NON-NLS-2$
+//		{JAVAX, "sound".toCharArray(), "sampled".toCharArray(), "AudioInputStream".toCharArray()}, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+//	};
+//	char[][] JAVA_IO_RESOURCE_FREE_CLOSEABLES = new char[][] {			
+//		"StringReader".toCharArray(), //$NON-NLS-1$
+//		"StringWriter".toCharArray(), //$NON-NLS-1$
+//		"ByteArrayInputStream".toCharArray(), //$NON-NLS-1$
+//		"ByteArrayOutputStream".toCharArray(), //$NON-NLS-1$
+//		"CharArrayReader".toCharArray(), //$NON-NLS-1$
+//		"CharArrayWriter".toCharArray(), //$NON-NLS-1$
+//		"StringBufferInputStream".toCharArray(), //$NON-NLS-1$
+//	};
+//	char[][] RESOURCE_FREE_CLOSEABLE_STREAM = new char[][] {
+//		JAVA, UTIL, "stream".toCharArray(), "Stream".toCharArray() //$NON-NLS-1$ //$NON-NLS-2$
+//	};
+//	
+//	// different assertion utilities:
+//	char[] ASSERT_CLASS = "Assert".toCharArray(); //$NON-NLS-1$
+//	char[][] ORG_ECLIPSE_CORE_RUNTIME_ASSERT = new char[][] { ORG, ECLIPSE, CORE, RUNTIME, ASSERT_CLASS };
+//	// ... methods:
+//	char[] IS_NOTNULL = "isNotNull".toCharArray(); //$NON-NLS-1$
+//	
+//	char[] JUNIT = "junit".toCharArray(); //$NON-NLS-1$
+//	char[] FRAMEWORK = "framework".toCharArray(); //$NON-NLS-1$
+//	char[][] JUNIT_FRAMEWORK_ASSERT = new char[][] { JUNIT, FRAMEWORK, ASSERT_CLASS };
+//	char[][] ORG_JUNIT_ASSERT = new char[][] { ORG, JUNIT, ASSERT_CLASS };
+//	// ... methods:
+//	char[] ASSERT_NULL = "assertNull".toCharArray(); //$NON-NLS-1$
+//	char[] ASSERT_NOTNULL = "assertNotNull".toCharArray(); //$NON-NLS-1$
+//	char[] ASSERT_TRUE = "assertTrue".toCharArray(); //$NON-NLS-1$
+//	char[] ASSERT_FALSE = "assertFalse".toCharArray(); //$NON-NLS-1$
+//	
+//	char[] VALIDATE_CLASS = "Validate".toCharArray(); //$NON-NLS-1$
+//	char[][] ORG_APACHE_COMMONS_LANG_VALIDATE = new char[][] { ORG, APACHE, COMMONS, LANG, VALIDATE_CLASS };
+//	char[][] ORG_APACHE_COMMONS_LANG3_VALIDATE = new char[][] { ORG, APACHE, COMMONS, LANG3, VALIDATE_CLASS };
+//	char[][] ORG_ECLIPSE_JDT_INTERNAL_COMPILER_LOOKUP_TYPEBINDING = new char[][] { ORG, ECLIPSE, JDT, INTERNAL, COMPILER, LOOKUP, TYPEBINDING };
+//	char[][] ORG_ECLIPSE_JDT_CORE_DOM_ITYPEBINDING = new char[][] { ORG, ECLIPSE, JDT, CORE, DOM, ITYPEBINDING };
+//
+//	// ... methods:
+//	char[] IS_TRUE = "isTrue".toCharArray(); //$NON-NLS-1$
+//	char[] NOT_NULL = "notNull".toCharArray(); //$NON-NLS-1$
+//	
+//	char[][] COM_GOOGLE_COMMON_BASE_PRECONDITIONS = new char[][] { 
+//			COM, GOOGLE, "common".toCharArray(), "base".toCharArray(), "Preconditions".toCharArray() }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+//	// ... methods:
+//	char[] CHECK_NOT_NULL = "checkNotNull".toCharArray(); //$NON-NLS-1$
+//	char[] CHECK_ARGUMENT = "checkArgument".toCharArray(); //$NON-NLS-1$
+//	char[] CHECK_STATE = "checkState".toCharArray(); //$NON-NLS-1$
+//
+//	// ... methods in java.util.Objects:
+//	char[] REQUIRE_NON_NULL = "requireNonNull".toCharArray(); //$NON-NLS-1$
+//	
+//	// different @Inject annotations are relevant for @NonNull fields
 	char[] INJECT_PACKAGE = "inject".toCharArray(); //$NON-NLS-1$
 	char[] INJECT_TYPE = "Inject".toCharArray(); //$NON-NLS-1$
 	char[][] JAVAX_ANNOTATION_INJECT_INJECT = new char[][] { JAVAX, INJECT_PACKAGE, INJECT_TYPE };
-	char[][] COM_GOOGLE_INJECT_INJECT = new char[][] {COM, GOOGLE, INJECT_PACKAGE, INJECT_TYPE };
+//	char[][] COM_GOOGLE_INJECT_INJECT = new char[][] {COM, GOOGLE, INJECT_PACKAGE, INJECT_TYPE };
 	//    detail for the above:
 	char[] OPTIONAL = "optional".toCharArray(); //$NON-NLS-1$
 

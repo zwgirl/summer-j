@@ -421,9 +421,10 @@ public abstract class Annotation extends Expression {
 			case TypeIds.T_JavaLangSafeVarargs :
 				tagBits |= TagBits.AnnotationSafeVarargs;
 				break;
-			case TypeIds.T_JavaLangInvokeMethodHandlePolymorphicSignature :
-				tagBits |= TagBits.AnnotationPolymorphicSignature;
-				break;
+			//cym 2015-04-25
+//			case TypeIds.T_JavaLangInvokeMethodHandlePolymorphicSignature :
+//				tagBits |= TagBits.AnnotationPolymorphicSignature;
+//				break;
 			case TypeIds.T_ConfiguredAnnotationNullable :
 				tagBits |= TagBits.AnnotationNullable;
 				break;

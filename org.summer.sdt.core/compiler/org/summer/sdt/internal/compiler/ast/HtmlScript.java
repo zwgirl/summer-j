@@ -2,7 +2,6 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
-import org.summer.sdt.internal.compiler.lookup.Scope;
 
 public class HtmlScript extends HtmlNode{
 	public MethodDeclaration method;
@@ -25,7 +24,7 @@ public class HtmlScript extends HtmlNode{
 	}
 	
 	@Override
-	public StringBuffer html(BlockScope scope, int indent, StringBuffer output, char[] _this) {
+	public StringBuffer html(BlockScope scope, int indent, StringBuffer output, String _this) {
 		output.append("<script type = 'text/javascript'>");
 		Statement[] statements = method.statements;
 		if(statements != null){
@@ -57,10 +56,13 @@ public class HtmlScript extends HtmlNode{
 	}
 
 	@Override
-	protected StringBuffer doGenerateExpression(Scope scope, int indent,
-			StringBuffer output) {
-		// TODO Auto-generated method stub
-		return null;
+	protected StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String _this) {
+		return output;
+	}
+
+	@Override
+	public StringBuffer option(BlockScope scope, int indent, StringBuffer output, String _this) {
+		return output;
 	}
 
 }

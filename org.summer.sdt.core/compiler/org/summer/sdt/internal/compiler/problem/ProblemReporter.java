@@ -2199,31 +2199,32 @@ public class ProblemReporter extends ProblemHandler {
 	}
 	public void fieldHiding(FieldDeclaration fieldDecl, Binding hiddenVariable) {
 		FieldBinding field = fieldDecl.binding;
-		if (CharOperation.equals(TypeConstants.SERIALVERSIONUID, field.name)
-				&& field.isStatic()
-				&& field.isPrivate()
-				&& field.isFinal()
-				&& TypeBinding.equalsEquals(TypeBinding.LONG, field.type)) {
-			ReferenceBinding referenceBinding = field.declaringClass;
-			if (referenceBinding != null) {
-				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
-					return; // do not report field hiding for serialVersionUID field for class that implements Serializable
-				}
-			}
-		}
-		if (CharOperation.equals(TypeConstants.SERIALPERSISTENTFIELDS, field.name)
-				&& field.isStatic()
-				&& field.isPrivate()
-				&& field.isFinal()
-				&& field.type.dimensions() == 1
-				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTSTREAMFIELD, field.type.leafComponentType().readableName())) {
-			ReferenceBinding referenceBinding = field.declaringClass;
-			if (referenceBinding != null) {
-				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
-					return; // do not report field hiding for serialPersistenFields field for class that implements Serializable
-				}
-			}
-		}
+		//cym 2015-04-24
+//		if (CharOperation.equals(TypeConstants.SERIALVERSIONUID, field.name)
+//				&& field.isStatic()
+//				&& field.isPrivate()
+//				&& field.isFinal()
+//				&& TypeBinding.equalsEquals(TypeBinding.LONG, field.type)) {
+//			ReferenceBinding referenceBinding = field.declaringClass;
+//			if (referenceBinding != null) {
+//				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
+//					return; // do not report field hiding for serialVersionUID field for class that implements Serializable
+//				}
+//			}
+//		}
+//		if (CharOperation.equals(TypeConstants.SERIALPERSISTENTFIELDS, field.name)
+//				&& field.isStatic()
+//				&& field.isPrivate()
+//				&& field.isFinal()
+//				&& field.type.dimensions() == 1
+//				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTSTREAMFIELD, field.type.leafComponentType().readableName())) {
+//			ReferenceBinding referenceBinding = field.declaringClass;
+//			if (referenceBinding != null) {
+//				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
+//					return; // do not report field hiding for serialPersistenFields field for class that implements Serializable
+//				}
+//			}
+//		}
 		boolean isLocal = hiddenVariable instanceof LocalVariableBinding;
 		int severity = computeSeverity(isLocal ? IProblem.FieldHidingLocalVariable : IProblem.FieldHidingField);
 		if (severity == ProblemSeverities.Ignore) return;
@@ -8856,6 +8857,8 @@ public class ProblemReporter extends ProblemHandler {
 			constructorDecl.sourceStart,
 			constructorDecl.sourceEnd);
 	}
+	
+	//cym 2015-04-24
 	public void unusedPrivateField(FieldDeclaration fieldDecl) {
 	
 		int severity = computeSeverity(IProblem.UnusedPrivateField);
@@ -8863,29 +8866,30 @@ public class ProblemReporter extends ProblemHandler {
 	
 		FieldBinding field = fieldDecl.binding;
 	
-		if (CharOperation.equals(TypeConstants.SERIALVERSIONUID, field.name)
-				&& field.isStatic()
-				&& field.isFinal()
-				&& TypeBinding.equalsEquals(TypeBinding.LONG, field.type)) {
-			ReferenceBinding referenceBinding = field.declaringClass;
-			if (referenceBinding != null) {
-				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
-					return; // do not report unused serialVersionUID field for class that implements Serializable
-				}
-			}
-		}
-		if (CharOperation.equals(TypeConstants.SERIALPERSISTENTFIELDS, field.name)
-				&& field.isStatic()
-				&& field.isFinal()
-				&& field.type.dimensions() == 1
-				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTSTREAMFIELD, field.type.leafComponentType().readableName())) {
-			ReferenceBinding referenceBinding = field.declaringClass;
-			if (referenceBinding != null) {
-				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
-					return; // do not report unused serialVersionUID field for class that implements Serializable
-				}
-			}
-		}
+		//cym 2015-04-24
+//		if (CharOperation.equals(TypeConstants.SERIALVERSIONUID, field.name)
+//				&& field.isStatic()
+//				&& field.isFinal()
+//				&& TypeBinding.equalsEquals(TypeBinding.LONG, field.type)) {
+//			ReferenceBinding referenceBinding = field.declaringClass;
+//			if (referenceBinding != null) {
+//				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
+//					return; // do not report unused serialVersionUID field for class that implements Serializable
+//				}
+//			}
+//		}
+//		if (CharOperation.equals(TypeConstants.SERIALPERSISTENTFIELDS, field.name)
+//				&& field.isStatic()
+//				&& field.isFinal()
+//				&& field.type.dimensions() == 1
+//				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTSTREAMFIELD, field.type.leafComponentType().readableName())) {
+//			ReferenceBinding referenceBinding = field.declaringClass;
+//			if (referenceBinding != null) {
+//				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
+//					return; // do not report unused serialVersionUID field for class that implements Serializable
+//				}
+//			}
+//		}
 		if (excludeDueToAnnotation(fieldDecl.annotations, IProblem.UnusedPrivateField)) return;
 		this.handle(
 				IProblem.UnusedPrivateField,
@@ -8907,39 +8911,39 @@ public class ProblemReporter extends ProblemHandler {
 		if (severity == ProblemSeverities.Ignore) return;
 	
 		MethodBinding method = methodDecl.binding;
-	
-		// no report for serialization support 'void readObject(ObjectInputStream)'
-		if (!method.isStatic()
-				&& TypeBinding.VOID == method.returnType
-				&& method.parameters.length == 1
-				&& method.parameters[0].dimensions() == 0
-				&& CharOperation.equals(method.selector, TypeConstants.READOBJECT)
-				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTINPUTSTREAM, method.parameters[0].readableName())) {
-			return;
-		}
-		// no report for serialization support 'void writeObject(ObjectOutputStream)'
-		if (!method.isStatic()
-				&& TypeBinding.VOID == method.returnType
-				&& method.parameters.length == 1
-				&& method.parameters[0].dimensions() == 0
-				&& CharOperation.equals(method.selector, TypeConstants.WRITEOBJECT)
-				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTOUTPUTSTREAM, method.parameters[0].readableName())) {
-			return;
-		}
-		// no report for serialization support 'Object readResolve()'
-		if (!method.isStatic()
-				&& TypeIds.T_JavaLangObject == method.returnType.id
-				&& method.parameters.length == 0
-				&& CharOperation.equals(method.selector, TypeConstants.READRESOLVE)) {
-			return;
-		}
-		// no report for serialization support 'Object writeReplace()'
-		if (!method.isStatic()
-				&& TypeIds.T_JavaLangObject == method.returnType.id
-				&& method.parameters.length == 0
-				&& CharOperation.equals(method.selector, TypeConstants.WRITEREPLACE)) {
-			return;
-		}
+	//cym 2015-04-24
+//		// no report for serialization support 'void readObject(ObjectInputStream)'
+//		if (!method.isStatic()
+//				&& TypeBinding.VOID == method.returnType
+//				&& method.parameters.length == 1
+//				&& method.parameters[0].dimensions() == 0
+//				&& CharOperation.equals(method.selector, TypeConstants.READOBJECT)
+//				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTINPUTSTREAM, method.parameters[0].readableName())) {
+//			return;
+//		}
+//		// no report for serialization support 'void writeObject(ObjectOutputStream)'
+//		if (!method.isStatic()
+//				&& TypeBinding.VOID == method.returnType
+//				&& method.parameters.length == 1
+//				&& method.parameters[0].dimensions() == 0
+//				&& CharOperation.equals(method.selector, TypeConstants.WRITEOBJECT)
+//				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTOUTPUTSTREAM, method.parameters[0].readableName())) {
+//			return;
+//		}
+//		// no report for serialization support 'Object readResolve()'
+//		if (!method.isStatic()
+//				&& TypeIds.T_JavaLangObject == method.returnType.id
+//				&& method.parameters.length == 0
+//				&& CharOperation.equals(method.selector, TypeConstants.READRESOLVE)) {
+//			return;
+//		}
+//		// no report for serialization support 'Object writeReplace()'
+//		if (!method.isStatic()
+//				&& TypeIds.T_JavaLangObject == method.returnType.id
+//				&& method.parameters.length == 0
+//				&& CharOperation.equals(method.selector, TypeConstants.WRITEREPLACE)) {
+//			return;
+//		}
 		if (excludeDueToAnnotation(methodDecl.annotations, IProblem.UnusedPrivateMethod)) return;
 		
 		this.handle(

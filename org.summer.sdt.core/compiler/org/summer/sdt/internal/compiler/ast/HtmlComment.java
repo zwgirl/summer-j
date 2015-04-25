@@ -18,15 +18,25 @@ public class HtmlComment extends HtmlNode{
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		return output;
 	}
-	
-	public StringBuffer html(BlockScope scope, int indent, StringBuffer output){
+
+	@Override
+	public StringBuffer printExpression(int indent, StringBuffer output) {
 		output.append(source);
 		return output;
 	}
 
 	@Override
-	public StringBuffer printExpression(int indent, StringBuffer output) {
-		output.append(source);
+	protected StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String _this) {
+		return output;
+	}
+
+	@Override
+	public StringBuffer html(BlockScope scope, int indent, StringBuffer output, String _this) {
+		return output.append(source);
+	}
+
+	@Override
+	public StringBuffer option(BlockScope scope, int indent, StringBuffer output, String _this) {
 		return output;
 	}
 }

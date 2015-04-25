@@ -79,8 +79,9 @@ public class AnnotationBinding {
 			result[index++] = buildMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, env);
 		if ((annotationTagBits & TagBits.AnnotationSuppressWarnings) != 0)
 			result[index++] = buildMarkerAnnotation(TypeConstants.JAVA_LANG_SUPPRESSWARNINGS, env);
-		if ((annotationTagBits & TagBits.AnnotationPolymorphicSignature) != 0)
-			result[index++] = buildMarkerAnnotationForMemberType(TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_$_POLYMORPHICSIGNATURE, env);
+		//cym 2015-04-24
+//		if ((annotationTagBits & TagBits.AnnotationPolymorphicSignature) != 0)
+//			result[index++] = buildMarkerAnnotationForMemberType(TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_$_POLYMORPHICSIGNATURE, env);
 		if ((annotationTagBits & TagBits.AnnotationSafeVarargs) != 0)
 			result[index++] = buildMarkerAnnotation(TypeConstants.JAVA_LANG_SAFEVARARGS, env);
 		return result;
