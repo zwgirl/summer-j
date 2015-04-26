@@ -19,11 +19,6 @@ public class HtmlText  extends HtmlNode {
 	}
 
 	@Override
-	public void generateCode(BlockScope currentScope, CodeStream codeStream) {
-		
-	}
-
-	@Override
 	public void resolve(BlockScope scope) {
 		
 	}
@@ -131,6 +126,10 @@ public class HtmlText  extends HtmlNode {
 
 	@Override
 	protected StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String _this) {
+		if(CharOperation.hasContent(source)){
+			output.append("$.a(").append(parentNode).append(", ").append("$.t(\"");
+			output.append(CharOperation.eascape(source)).append("\"));");
+		}
 		return output;
 	}
 
