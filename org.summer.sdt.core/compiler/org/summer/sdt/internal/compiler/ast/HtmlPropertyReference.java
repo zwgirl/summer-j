@@ -1,8 +1,11 @@
 package org.summer.sdt.internal.compiler.ast;
 
+import java.util.Stack;
+
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
+import org.summer.sdt.internal.compiler.html.CssProperties;
 import org.summer.sdt.internal.compiler.html.HtmlTagConstants;
 import org.summer.sdt.internal.compiler.html.Namespace;
 import org.summer.sdt.internal.compiler.impl.Constant;
@@ -48,8 +51,12 @@ public class HtmlPropertyReference extends Expression{
 		this(source, postions, null);
 	}
 	
-	public char[] name(){
+	public char[] hyphenName(){
 		return CharOperation.concatWith(this.tokens, '-');
+	}
+	
+	public char[] camelName(){
+		return CssProperties.toCamel(CharOperation.concatWith(this.tokens, '-'));
 	}
 	
 	public Constant optimizedBooleanConstant() {
@@ -87,7 +94,7 @@ public class HtmlPropertyReference extends Expression{
 		}
 		
 		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
-		FieldBinding fieldBinding = this.binding = scope.getField(this.receiverType, this.name(), null);
+		FieldBinding fieldBinding = this.binding = scope.getField(this.receiverType, this.camelName(), null);
 		
 		//cym 2012-02-12
 		if(fieldBinding.isValidBinding() && (fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
@@ -171,25 +178,33 @@ public class HtmlPropertyReference extends Expression{
 	@Override
 	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
 		if(this.receiver != null){
-			output.append(this.receiver.name());
+			output.append(this.receiver.hyphenName());
 			output.append('.');
 		}
-		output.append(this.name());
+		output.append(this.hyphenName());
 		return output;
 	}
 	
 	public StringBuffer html(Scope scope, int indent, StringBuffer output){
-		output.append(this.name());
+		output.append(this.hyphenName());
 		return output;
 	}
 	
 	public StringBuffer buildInjectPart(Scope scope, int indent, StringBuffer output){
-		output.append("[\"");
-		if(this.receiver != null){
-			output.append(this.receiver.name()).append("\"");
+		output.append("[\""); 
+		HtmlPropertyReference r = this.receiver;
+		Stack<HtmlPropertyReference> s = new Stack<HtmlPropertyReference>();
+		while(r != null){
+			s.push(r);
+			r = r.receiver;
+		}
+		
+		while(!s.isEmpty()){
+			output.append(s.pop().hyphenName()).append("\"");
 			output.append(", \"");
 		}
-		output.append(this.name()).append("\"");
+		
+		output.append(this.hyphenName()).append("\"");
 		output.append("]");
 		
 		return output;
@@ -197,10 +212,10 @@ public class HtmlPropertyReference extends Expression{
 
 	public StringBuffer option(BlockScope scope, int indent, StringBuffer output) {
 		if(this.receiver != null){
-			output.append(this.receiver.name());
+			output.append(this.receiver.hyphenName());
 			output.append('.');
 		}
-		output.append(this.name());
+		output.append(this.hyphenName());
 		return output;
 	}
 

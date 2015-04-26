@@ -261,7 +261,15 @@ public class HtmlElement extends HtmlNode {
 				output.append("$.t();");
 			} else {
 				if(this.namespace != null){
-					output.append("$.ns(\"").append(namespace).append("\", ");
+					if((namespace.length == 26 && CharOperation.equals(namespace, Namespace.SVG))){
+						output.append("$.svg(");
+					} else {
+						output.append("$.ns(\"").append(namespace).append("\", ");
+					}
+				} else if(defaultNamespace != null){
+					if(defaultNamespace.length == 26 && CharOperation.equals(defaultNamespace, Namespace.SVG)){
+						output.append("$.svg(");
+					}
 				} else {
 					output.append("$.n(");
 				}
@@ -317,7 +325,11 @@ public class HtmlElement extends HtmlNode {
 				output.append("$.t();");
 			} else {
 				if(this.namespace != null){
-					output.append("$.ns(\"").append(namespace).append("\", ");
+					if(namespace.length == 26 && CharOperation.equals(namespace, Namespace.SVG)){
+						output.append("$.nSVG(\"").append("\", ");
+					} else {
+						output.append("$.ns(\"").append(namespace).append("\", ");
+					}
 				} else {
 					output.append("$.n(");
 				}
@@ -432,7 +444,7 @@ public class HtmlElement extends HtmlNode {
 			} else {
 				output.append('>');
 				if(script){
-					markupExtensionScript(scope, indent, output, true);
+					markupExtensionScript(scope, indent, output, false);
 				}
 				for(HtmlNode child : this.children){
 					child.html(scope, indent + 1, output, _this);

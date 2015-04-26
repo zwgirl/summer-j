@@ -509,7 +509,7 @@ StartTag ::= < SimpleName : HtmlName
 StartTag ::= < HtmlName
 /.$putCase consumeHtmlStartTag(); $break ./
 StartTag ::= < . HtmlName
-/.$putCase consumeHtmlJoinElementStartTag(); $break ./
+/.$putCase consumeHtmlAttributeElementStartTag(); $break ./
 StartTag ::= < SimpleName : switch
 StartTag ::= < switch
 /.$putCase consumeHtmlSwitchStartTag(); $break ./
@@ -554,11 +554,11 @@ CloseTag ::= </ var
 AttributeStart ::= HtmlName
 /.$putCase consumeHtmlAttributeStart(); $break ./
 AttributeStart ::= SimpleName : HtmlName
-/.$putCase consumeHtmlAttachAttributeStart(); $break ./
+/.$putCase consumeHtmlNSAttributeStart(); $break ./
 AttributeStart ::= HtmlName . HtmlName
-/.$putCase consumeHtmlAttributeWithReceiverStart(); $break ./
---AttributeStart ::= HtmlName . HtmlName . HtmlName
---/.$putCase consumeHtmlAttributeWithReceiverStart(); $break ./
+/.$putCase consumeHtmlAttributeTwoStart(); $break ./
+AttributeStart ::= HtmlName . HtmlName . HtmlName
+/.$putCase consumeHtmlAttributeThreeStart(); $break ./
 AttributeStart ::= in 
 /.$putCase consumeHtmlInAttributeStart(); $break ./
 AttributeStart ::= class
@@ -567,11 +567,21 @@ AttributeStart ::= for
 /.$putCase consumeHtmlForAttributeStart(); $break ./
 /:$readableName AttributeStart:/
 
-Attribute ::= AttributeStart
-/.$putCase consumeHtmlAttributeWithoutValue(); $break ./
-/:$readableName Attribute:/
+----Attribute ::= AttributeStart
+----/.$putCase consumeHtmlAttributeEmpty(); $break ./
+--Attribute ::= AttributeStart = StringLiteral
+--Attribute ::= AttributeStart = IntegerLiteral
+--Attribute ::= AttributeStart = LongLiteral
+--Attribute ::= AttributeStart = FloatingPointLiteral
+--Attribute ::= AttributeStart = DoubleLiteral
+--Attribute ::= AttributeStart = CharacterLiteral
+--Attribute ::= AttributeStart = BooleanLiteral
+--Attribute ::= AttributeStart = MarkupExtenson
+--Attribute ::= AttributeStart = FunctionExpression
+--/.$putCase consumeHtmlAttribute(); $break ./
+--/:$readableName Attribute:/
 
-Attribute ::= AttributeStart '=' AttributeValue
+Attribute ::= AttributeStart '=' PropertyExpression
 /.$putCase consumeHtmlAttribute(); $break ./
 /:$readableName Attribute:/
 
@@ -585,17 +595,25 @@ AttributeList ::= AttributeList Attribute
 /.$putCase consumeHtmlAttributeList(); $break ./
 /:$readableName AttributeList:/
 
-AttributeValue ::= StringLiteral
-AttributeValue ::= IntegerLiteral
-AttributeValue ::= LongLiteral
-AttributeValue ::= FloatingPointLiteral
-AttributeValue ::= DoubleLiteral
-AttributeValue ::= CharacterLiteral
-AttributeValue ::= BooleanLiteral
-AttributeValue ::= MarkupExtenson
-AttributeValue ::= FunctionExpression
-/.$putCase consumeHtmlAttributeValue(); $break ./
-/:$readableName ValueExpression:/
+PropertyExpression ::= StringLiteral
+PropertyExpression ::= IntegerLiteral
+PropertyExpression ::= LongLiteral
+PropertyExpression ::= FloatingPointLiteral
+PropertyExpression ::= DoubleLiteral
+PropertyExpression ::= CharacterLiteral
+PropertyExpression ::= BooleanLiteral
+PropertyExpression ::= MarkupExtenson
+PropertyExpression ::= FunctionExpression
+
+--AttributeListopt ::= $empty
+--/.$putCase consumeHtmlAttributeListopt(); $break ./
+--AttributeListopt -> AttributeList
+--/:$readableName AttributeListopt:/
+--
+--AttributeList -> Attribute
+--AttributeList ::= AttributeList Attribute
+--/.$putCase consumeHtmlAttributeList(); $break ./
+--/:$readableName AttributeList:/
 
 FunctionExpression ::= FunctionExpressionHeader MethodBody
 /.$putCase consumeHtmlFunctionExpression(); $break ./

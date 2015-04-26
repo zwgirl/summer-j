@@ -51,6 +51,8 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	
 	private int propertyKind;
 	
+	public char[] namespace;
+	
 	public HtmlAttribute(HtmlPropertyReference property) {
 		super();
 		this.property = property;
@@ -78,7 +80,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	
 	@Override
 	public StringBuffer printStatement(int indent, StringBuffer output) {
-		output.append(property.name());
+		output.append(property.hyphenName());
 		output.append(" = ");
 		value.printExpression(indent, output);
 		return output;
@@ -92,8 +94,10 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	private void internalResolve(BlockScope scope){
 		if(isXml()){
 			this.resolvedType = scope.getJavaLangString();
-		} if(isXmlns() || property.isDefaultXmlns()){
+		} else if(isXmlns() || property.isDefaultXmlns()){
 			this.resolvedType = scope.getJavaLangString();
+		} else if(this.prefix != null){
+			this.namespace = scope.getNamespace(this.prefix);
 		} else {
 			this.resolvedType = property.resolveType(scope);
 		}
@@ -280,13 +284,13 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			output.append(" = ").append(node).append(";");
 			return output;
 		} else if(this.prefix != null){
-			HtmlPropertyReference attachProp = this.property;
-			if(attachProp.receiverType == null){
-				return output;
+			output.append("$.attrNS(\"");
+			if(this.namespace != null){
+				output.append(this.namespace);
+			} else {
+				output.append(this.prefix);
 			}
-			output.append("$.attrNS(");
-			attachProp.receiverType.generate(output, scope.enclosingSourceType());
-			output.append(".xmlns, ").append(JsConstant.NODE_NAME).append(", \"");
+			output.append("\", ").append(JsConstant.NODE_NAME).append(", \"");
 			this.property.doGenerateExpression(scope, indent, output).append("\", ");
 			this.value.generateExpression(scope, indent, output).append(");");
 			return output;
@@ -307,7 +311,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case FUNCTION:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append(JsConstant.NODE_NAME).append(".addEventListener('").append(CharOperation.subarray(this.property.name(), 2, -1)).append("', ");
+			output.append(JsConstant.NODE_NAME).append(".addEventListener('").append(CharOperation.subarray(this.property.hyphenName(), 2, -1)).append("', ");
 			if(this.field != null){
 				if(this.field.isStatic()){
 					output.append(this.field.declaringClass.sourceName).append('.');

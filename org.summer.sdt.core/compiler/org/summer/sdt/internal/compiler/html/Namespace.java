@@ -36,4 +36,8 @@ public final class Namespace {
 		char[][] result = mapping.getMappingClass(name);
 		return result;
 	}
+	
+	public static void main(String[] args) {
+		System.out.println("length : " + SVG.length);
+	}
 }

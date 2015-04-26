@@ -1814,8 +1814,8 @@ public class ProblemReporter extends ProblemHandler {
 	public void duplicateNamedElementInType(HtmlPropertyReference fieldDecl) {
 		this.handle(
 			IProblem.DuplicateField,
-			new String[] {new String("element"), new String(fieldDecl.name())},
-			new String[] {new String("element"), new String(fieldDecl.name())},
+			new String[] {new String("element"), new String(fieldDecl.hyphenName())},
+			new String[] {new String("element"), new String(fieldDecl.hyphenName())},
 			fieldDecl.sourceStart,
 			fieldDecl.sourceEnd);
 	}
@@ -3907,7 +3907,7 @@ public class ProblemReporter extends ProblemHandler {
 		this.handle(
 				IProblem.NoPropertyDefinedInElement,
 				NoArgument,
-				new String[]{new String(fieldRef.name())},
+				new String[]{new String(fieldRef.hyphenName())},
 				ProblemSeverities.Warning,
 				fieldRef.sourceStart,
 				fieldRef.sourceEnd);
@@ -3925,7 +3925,7 @@ public class ProblemReporter extends ProblemHandler {
 	
 	//cym 2014-12-26
 	public void invalidProperty(HtmlPropertyReference fieldRef, TypeBinding searchedType) {
-		if(isRecoveredName(fieldRef.name())) return;
+		if(isRecoveredName(fieldRef.hyphenName())) return;
 	
 		int id = IProblem.UndefinedField;
 		FieldBinding field = fieldRef.binding;
@@ -3949,8 +3949,8 @@ public class ProblemReporter extends ProblemHandler {
 			case ProblemReasons.NotVisible :
 				this.handle(
 					IProblem.NotVisibleField,
-					new String[] {new String(fieldRef.name()), new String(field.declaringClass.readableName())},
-					new String[] {new String(fieldRef.name()), new String(field.declaringClass.shortReadableName())},
+					new String[] {new String(fieldRef.hyphenName()), new String(field.declaringClass.readableName())},
+					new String[] {new String(fieldRef.hyphenName()), new String(field.declaringClass.shortReadableName())},
 					nodeSourceStart(field, fieldRef),
 					nodeSourceEnd(field, fieldRef));
 				return;

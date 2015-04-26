@@ -314,38 +314,58 @@ public class SelectionParser extends AssistParser {
 	
 	protected void consumeHtmlJoinAttributeStart() {
 		//AttributeStart ::= HtmlName . HtmlName
-		int index;
-		/* no need to take action if not inside assist identifiers */
-		if ((index = indexOfAssistIdentifier()) < 0) {
+		char[] assistIdentifier ;
+		if ((assistIdentifier = assistIdentifier()) == null){
 			super.consumeHtmlAttributeStart();
 			return;
 		}
 		
-		/* retrieve identifiers subset and whole positions, the assist node positions
-		should include the entire replaced source. */
-		int length = this.identifierLengthStack[this.identifierLengthPtr];
-		char[][] tokens = identifierSubSet(index+1); // include the assistIdentifier
-		this.identifierLengthPtr--;
-		this.identifierPtr -= length;
+		int flag = -1;
+		char[][] tokens;
+		int length = this.identifierLengthStack[this.identifierLengthPtr--];
+		// iterate first awaiting identifiers backwards
+		for (int i = 0; i < length; i++){
+			if (this.identifierStack[this.identifierPtr - i] == assistIdentifier){
+				flag = 1;
+				break;
+			}
+		}
 		
-//		char[][] tokens;
-//		int length = this.identifierLengthStack[this.identifierLengthPtr--];
-//		this.identifierPtr -= length;
-//		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens = new char[length][], 0, length);
+		this.identifierPtr -= length;
+		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens = new char[length][], 0, length);
 		
 		long[] positions;
 		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
 		
+		
 		char[][] tokens2;
 		length = this.identifierLengthStack[this.identifierLengthPtr--];
+		for (int i = 0; i < length; i++){
+			if (this.identifierStack[this.identifierPtr - i] == assistIdentifier){
+				flag = 2;
+				break;
+			}
+		}
+		
 		this.identifierPtr -= length;
 		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens2 = new char[length][], 0, length);
-		
 		long[] positions2;
 		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions2 = new long[length], 0, length);
 		
-		HtmlPropertyReference propertyReference = new HtmlPropertyReference(
-				tokens, positions, new SelectionOnHtmlPropertyReference(tokens2, positions2));
+		HtmlPropertyReference propertyReference = null;
+		switch(flag){
+		case 1:
+			propertyReference = new SelectionOnHtmlPropertyReference(
+					tokens, positions, new HtmlPropertyReference(tokens2, positions2));
+			break;
+		case 2:
+			propertyReference = new HtmlPropertyReference(
+					tokens, positions, new SelectionOnHtmlPropertyReference(tokens2, positions2));
+			break;
+		default:
+			propertyReference = new HtmlPropertyReference(
+					tokens, positions, new HtmlPropertyReference(tokens2, positions2));
+		}
 		
 		HtmlAttribute attr = new HtmlAttribute(propertyReference);
 		
@@ -357,7 +377,6 @@ public class SelectionParser extends AssistParser {
 	
 	@Override
 	protected void consumeHtmlStartTag() {
-		
 //		StartTag ::= '<' HtmlName
 		int index;
 		
@@ -420,24 +439,6 @@ public class SelectionParser extends AssistParser {
 		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
 		pushOnElementStack(element);
 		
-//		char[][] tokens;
-//		int length = this.identifierLengthStack[this.identifierLengthPtr--];
-//		this.identifierPtr -= length;
-//		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens = new char[length][], 0, length);
-//		
-//		long[] positions;
-//		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
-//		
-//		long prefixPos = this.identifierPositionStack[this.identifierPtr];
-//		char[] prefix = this.identifierStack[this.identifierPtr--];
-//		this.identifierLengthPtr--;
-//		
-//		HtmlElement element = new HtmlElement(tokens, positions, prefix, prefixPos, new HtmlTypeReference(tokens, positions));
-//		element.tagBits &= HtmlBits.COMMON_ELEMENT;
-//		
-////		element.type = new SingleTypeReference1(tokens, positions);
-//		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
-//		pushOnElementStack(element);
 	}
 	
 //	protected void consumeHtmlAttributeWithReceiver() {

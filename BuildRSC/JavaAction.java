@@ -198,7 +198,7 @@ protected void consumeRule(int act) {
 			break;
  
     case 116 : if (DEBUG) { System.out.println("StartTag ::= LESS DOT HtmlName"); }  //$NON-NLS-1$
-		    consumeHtmlJoinElementStartTag();  
+		    consumeHtmlAttributeElementStartTag();  
 			break;
  
     case 118 : if (DEBUG) { System.out.println("StartTag ::= LESS switch"); }  //$NON-NLS-1$
@@ -254,30 +254,30 @@ protected void consumeRule(int act) {
 			break;
  
     case 133 : if (DEBUG) { System.out.println("AttributeStart ::= SimpleName COLON HtmlName"); }  //$NON-NLS-1$
-		    consumeHtmlAttachAttributeStart();  
+		    consumeHtmlNSAttributeStart();  
 			break;
  
     case 134 : if (DEBUG) { System.out.println("AttributeStart ::= HtmlName DOT HtmlName"); }  //$NON-NLS-1$
-		    consumeHtmlAttributeWithReceiverStart();  
+		    consumeHtmlAttributeTwoStart();  
 			break;
  
-    case 135 : if (DEBUG) { System.out.println("AttributeStart ::= in"); }  //$NON-NLS-1$
+    case 135 : if (DEBUG) { System.out.println("AttributeStart ::= HtmlName DOT HtmlName DOT HtmlName"); }  //$NON-NLS-1$
+		    consumeHtmlAttributeThreeStart();  
+			break;
+ 
+    case 136 : if (DEBUG) { System.out.println("AttributeStart ::= in"); }  //$NON-NLS-1$
 		    consumeHtmlInAttributeStart();  
 			break;
  
-    case 136 : if (DEBUG) { System.out.println("AttributeStart ::= class"); }  //$NON-NLS-1$
+    case 137 : if (DEBUG) { System.out.println("AttributeStart ::= class"); }  //$NON-NLS-1$
 		    consumeHtmlClassAttributeStart();  
 			break;
  
-    case 137 : if (DEBUG) { System.out.println("AttributeStart ::= for"); }  //$NON-NLS-1$
+    case 138 : if (DEBUG) { System.out.println("AttributeStart ::= for"); }  //$NON-NLS-1$
 		    consumeHtmlForAttributeStart();  
 			break;
  
-    case 138 : if (DEBUG) { System.out.println("Attribute ::= AttributeStart"); }  //$NON-NLS-1$
-		    consumeHtmlAttributeWithoutValue();  
-			break;
- 
-    case 139 : if (DEBUG) { System.out.println("Attribute ::= AttributeStart EQUAL AttributeValue"); }  //$NON-NLS-1$
+    case 139 : if (DEBUG) { System.out.println("Attribute ::= AttributeStart EQUAL PropertyExpression"); }  //$NON-NLS-1$
 		    consumeHtmlAttribute();  
 			break;
  
@@ -287,10 +287,6 @@ protected void consumeRule(int act) {
  
     case 143 : if (DEBUG) { System.out.println("AttributeList ::= AttributeList Attribute"); }  //$NON-NLS-1$
 		    consumeHtmlAttributeList();  
-			break;
- 
-    case 152 : if (DEBUG) { System.out.println("AttributeValue ::= FunctionExpression"); }  //$NON-NLS-1$
-		    consumeHtmlAttributeValue();  
 			break;
  
     case 153 : if (DEBUG) { System.out.println("FunctionExpression ::= FunctionExpressionHeader..."); }  //$NON-NLS-1$
