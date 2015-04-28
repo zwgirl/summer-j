@@ -1874,6 +1874,63 @@ ClassInstanceCreationExpression ::= ClassInstanceCreationExpressionName OnlyType
 /.$putCase consumeClassInstanceCreationExpressionQualifiedWithTypeArguments() ; $break ./
 /:$readableName ClassInstanceCreationExpression:/
 
+--MemberInitializer
+--cym 2015-05-28
+PrimaryNoNewArray -> ObjectCreator
+ObjectCreator ::= 'new' ObjectInitializer
+/.$putCase consumeClassInstanceCreationExpressionWithInitializer() ; $break ./
+
+ObjectInitializer ::= { $empty }
+/.$putCase consumeEmptyObjectInitializer() ; $break ./
+ObjectInitializer ::= { MemberInitializerList }
+/.$putCase consumeObjectInitializer() ; $break ./
+/:$readableName ObjectInitializer:/
+
+MemberInitializerList ::= MemberInitializer
+/.$putCase consumeMemberInitializerList() ; $break ./
+
+MemberInitializerList ::= MemberInitializerList  ,  MemberInitializer
+/.$putCase consumeMemberInitializerList() ; $break ./
+/:$readableName MemberInitializerList:/
+
+MemberInitializer ::= Identifier : InitializerValue
+/.$putCase consumeMemberInitializer() ; $break ./
+/:$readableName MemberInitializer:/
+
+InitializerValue -> Expression
+--/.$putCase consumeInitializerValue() ; $break ./
+/:$readableName InitializerValue:/
+
+--InitializerValue -> ObjectOrCollectionInitializer
+----/.$putCase consumeObjectOrCollectionInitializer() ; $break ./
+--/:$readableName ObjectOrCollectionInitializer:/
+
+--CollectionInitializer ::= { ElementInitializerList }
+--/.$putCase consumeCollectionInitializer() ; $break ./
+
+--CollectionInitializer ::= { ElementInitializerList , }
+--/.$putCase consumeCollectionInitializerWithEndComma() ; $break ./
+--/:$readableName CollectionInitializer:/
+
+--ElementInitializerList ::= ElementInitializer
+----/.$putCase consumeElementInitializerList() ; $break ./
+
+--ElementInitializerList ::= ElementInitializerList , ElementInitializer
+--/.$putCase consumeElementInitializerList() ; $break ./
+--/:$readableName ElementInitializerList:/
+
+----ElementInitializer ::= non-assignment-expression
+--ElementInitializer ::= {   ExpressionList   }
+--/.$putCase consumeElementInitializer() ; $break ./
+--/:$readableName ElementInitializer:/
+
+--ExpressionList ::= Expression
+----/.$putCase consumeExpressionList() ; $break ./
+
+--ExpressionList ::= ExpressionList  ,  Expression
+--/.$putCase consumeExpressionList() ; $break ./
+--/:$readableName ExpressionList:/
+
 --cym add 2014-10-29
 --MemberInitializer
 --ClassInstanceCreationExpression ::= 'new' ClassType   ObjectOrCollectionInitializer

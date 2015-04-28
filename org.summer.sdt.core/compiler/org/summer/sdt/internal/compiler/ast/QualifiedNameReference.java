@@ -1168,7 +1168,17 @@ public class QualifiedNameReference extends NameReference {
 				output.append(((LocalVariableBinding) this.binding).name);
 			} else if(this.binding instanceof FieldBinding){
 				FieldBinding field = (FieldBinding) this.binding;
-				output.append("this.").append(field.name);
+				if(field.declaringClass.id != TypeIds.T_JavaLangWindow &&
+						field.declaringClass.id != TypeIds.T_JavaLangGlobal){
+					output.append("this.");
+					if ((this.bits & ASTNode.DepthMASK) != 0) { // outer access ?
+						int depths = (this.bits & ASTNode.DepthMASK) >> ASTNode.DepthSHIFT;
+						for(int i = 0; i < depths; i++){
+							output.append("__enclosing.");
+						}
+					}
+				}
+				output.append(field.name);
 			}
 			
 			for(int index = 0; index < otherBindings.length; index++){

@@ -25,6 +25,7 @@ import org.summer.sdt.internal.compiler.impl.Constant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.LocalVariableBinding;
 import org.summer.sdt.internal.compiler.lookup.LookupEnvironment;
+import org.summer.sdt.internal.compiler.lookup.Scope;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 
 public class CompoundAssignment extends Assignment implements OperatorIds {
@@ -220,5 +221,10 @@ public int nullStatus(FlowInfo flowInfo, FlowContext flowContext) {
 			this.expression.traverse(visitor, scope);
 		}
 		visitor.endVisit(this, scope);
+	}
+	
+	protected StringBuffer doGenerateExpression(Scope scope, int indent, StringBuffer output) {
+		this.lhs.generateExpression(scope, indent, output).append(operatorToString()); //$NON-NLS-1$
+		return this.expression.generateExpression(scope, indent, output);
 	}
 }

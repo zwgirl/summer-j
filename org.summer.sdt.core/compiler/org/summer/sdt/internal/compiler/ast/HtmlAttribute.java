@@ -407,8 +407,8 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		output.append("=");
 		switch(propertyKind){
 		case FUNCTION:
-			output.append("\"");
 			if(this.field != null){
+				output.append("\"");
 				if(this.field.isStatic()){
 					this.field.declaringClass.generate(output, scope.classScope().enclosingSourceType());
 					output.append('.');
@@ -421,8 +421,10 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 						output.append(((Literal)this.value).source());
 					}
 				}
+				output.append("(event);\" ");
+			} else if(this.value != null){
+				this.value.generateExpression(scope, indent, output);
 			}
-			output.append("(event);\" ");
 			break;
 		default:
 			this.value.generateExpression(scope, indent, output);

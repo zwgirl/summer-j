@@ -143,6 +143,10 @@ public interface TypeIds {
 	final int T_JavaLangFragmentSetting = 112;
 	final int T_JavaLangFragment = 113;
 	
+	//cym 2015-05-28
+	final int T_JavaLangWindow = 114;
+	final int T_JavaLangGlobal = 115;
+	
 	// new in 3.9 to identify known @Inject annotations
 	final int T_JavaxInjectInject = 80;
 	final int T_ComGoogleInjectInject = 81;
@@ -280,7 +284,4 @@ public interface TypeIds {
 	 */
 	final int InheritableBits = BitAutoCloseable | BitCloseable | BitUninternedType;
 	
-	//cym 2015-04-13
-	final int BitHtmlPage = 32;
-
 } 

@@ -3657,6 +3657,19 @@ public abstract class Scope {
 		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_COMPONENT, this);
 	}
 	
+	//cym 2015-04-28
+	public final ReferenceBinding getJavaLangWindow() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_WINDOW);
+		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_WINDOW, this);
+	}
+	
+	//cym 2015-04-28
+	public final ReferenceBinding getJavaLangGlobal() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_GLOBAL);
+		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_GLOBAL, this);
+	}
 
 	public final ReferenceBinding getJavaLangThrowable() {
 		CompilationUnitScope unitScope = compilationUnitScope();

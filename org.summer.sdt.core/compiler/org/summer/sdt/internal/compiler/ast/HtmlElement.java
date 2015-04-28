@@ -433,6 +433,10 @@ public class HtmlElement extends HtmlNode {
 			output.append(")();");
 			
 			output.append("\n");
+			printIndent(indent+1, output);
+			output.append("document.documentElement.__dataContext = new (__lc(\"java.lang.DataContext\"))({dataItem:__this, mode:__lc(\"java.lang.DataContextMode\").Root});");
+			
+			output.append("\n");
 			printIndent(indent, output);
 			output.append("</script>");
 		} else {
@@ -474,14 +478,14 @@ public class HtmlElement extends HtmlNode {
 			output.append("<script id='").append(scriptId).append("' type = 'text/javascript'").append('>');
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append("$('").append(scriptId).append("')").append(".parentNode.setTemplate(");
-			output.append("\"name\", new (");
+			output.append("$('").append(scriptId).append("')").append(".parentNode.addTemplate(");
+			output.append("new (");
 			this.type.resolvedType.generate(output, scope.classScope().enclosingSourceType());
 			output.append(")(");
 			
 			this.option(scope, indent, output, _this);
 			
-			output.append(");");
+			output.append("));");
 			
 			output.append("\n");
 			printIndent(indent, output);

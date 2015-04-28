@@ -666,6 +666,14 @@ abstract public class ReferenceBinding extends TypeBinding {
 							return;
 						}
 						return;
+					case 'G' :   //cym 2015-05-28
+						switch (typeName.length) {
+						case 6 :
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_GLOBAL[2]))
+								this.id = TypeIds.T_JavaLangGlobal;
+							return;
+						}
+						return;
 					case 'I' :
 						switch (typeName.length) {
 							case 7 :
@@ -783,6 +791,14 @@ abstract public class ReferenceBinding extends TypeBinding {
 					case 'V' :
 						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_VOID[2]))
 							this.id = TypeIds.T_JavaLangVoid;
+						return;
+					case 'W' :   //cym 2015-05-28
+						switch (typeName.length) {
+						case 6 :
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_WINDOW[2]))
+								this.id = TypeIds.T_JavaLangWindow;
+							return;
+						}
 						return;
 				}
 			break;
