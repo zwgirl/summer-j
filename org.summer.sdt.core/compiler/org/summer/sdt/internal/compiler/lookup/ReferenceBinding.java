@@ -571,17 +571,26 @@ abstract public class ReferenceBinding extends TypeBinding {
 									this.id = TypeIds.T_JavaLangArray;
 								}
 								return;
-							case 13 :
-								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_AUTOCLOSEABLE[2])) {
-									this.id = TypeIds.T_JavaLangAutoCloseable;
-									this.typeBits |= TypeIds.BitAutoCloseable; 
-								}
-								return;
+								//cym 2015-04-28
+//							case 13 :
+//								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_AUTOCLOSEABLE[2])) {
+//									this.id = TypeIds.T_JavaLangAutoCloseable;
+//									this.typeBits |= TypeIds.BitAutoCloseable; 
+//								}
+//								return;
 								//cym 2015-04-24
 //							case 14:
 //								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ASSERTIONERROR[2]))
 //									this.id = TypeIds.T_JavaLangAssertionError;
 //								return;
+						}
+						return;
+					case 'a' :
+						switch(typeName.length) {
+							case 9: //cym 2015-04-28
+								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ARGUMENTS[2]))
+									this.id = TypeIds.T_JavaLangArguments;
+								return;
 						}
 						return;
 					case 'B' :
@@ -695,9 +704,20 @@ abstract public class ReferenceBinding extends TypeBinding {
 							this.id = TypeIds.T_JavaLangLong;
 						return;
 					case 'M' :   //cym add 2015-02-12
-						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_MODULE[2]))
-							this.id = TypeIds.T_JavaLangModule;
-						return;	
+//						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_MODULE[2]))
+//							this.id = TypeIds.T_JavaLangModule;
+//						return;	
+						
+						switch (typeName.length) {
+						case 6 :
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_MODULE[2]))
+								this.id = TypeIds.T_JavaLangModule;
+							return;	
+						case 4 :   //2015-04-28
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_MATH[2]))
+								this.id = TypeIds.T_JavaLangMath;
+							return;
+						}
 					case 'N' :
 						if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_NOCLASSDEFERROR[2]))
 							this.id = TypeIds.T_JavaLangNoClassDefError;

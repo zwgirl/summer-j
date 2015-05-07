@@ -80,7 +80,7 @@ public class HtmlTypeReference extends TypeReference {
 		caculateActualTokens(scope);
 		try{
 		if(this.actualTokens.length == 1){
-		    this.resolvedType = scope.getType(this.actualTokens[this.actualTokens.length-1]);
+		    this.resolvedType = scope.getType(this.actualTokens[0]);
 			return this.resolvedType;
 		} else {
 			Binding binding = scope.getOnlyPackage(CharOperation.subarray(this.actualTokens, 0, this.actualTokens.length-1));

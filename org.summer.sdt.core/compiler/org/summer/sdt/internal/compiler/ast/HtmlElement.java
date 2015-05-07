@@ -120,6 +120,8 @@ public class HtmlElement extends HtmlNode {
 	}
 	
 	protected void internalResolve(BlockScope parent) {
+		if(this.resolvedType != null) return;
+		
 		if(scope == null) {
 			createScope(parent);
 		}
@@ -153,10 +155,10 @@ public class HtmlElement extends HtmlNode {
 			this.resolvedType = type.resolveType(scope);
 		}
 		
-		HtmlTypeReference hRef = (HtmlTypeReference) type;
-		if(namedField != null){
-			this.namedField.type = new QualifiedTypeReference(hRef.actualTokens, hRef.positions);
-		}
+//		HtmlTypeReference hRef = (HtmlTypeReference) type;
+//		if(namedField != null){
+//			this.namedField.type = new QualifiedTypeReference(hRef.actualTokens, hRef.positions);
+//		}
 		
 		if(this.closeType != null){
 			closeType.resolveType(this.scope);
@@ -421,6 +423,17 @@ public class HtmlElement extends HtmlNode {
 			printIndent(indent, output);
 			output.append("<script type = 'text/javascript' src = '/lark/java/lang/bindings.js'> </script>");
 			//build class definition
+//			ClassScope classScope = scope.enclosingClassScope();
+//			TypeDeclaration typeDecl = classScope.referenceContext;
+//			output.append("\n");
+//			printIndent(indent, output);
+//			output.append("<script type = 'text/javascript' >");
+//			output.append("\n");
+//			printIndent(indent+1, output);
+//			output.append("var __this = new (");
+//			typeDecl.generateInternal(classScope, indent + 1, output);
+//			output.append(")();");
+			
 			ClassScope classScope = scope.enclosingClassScope();
 			TypeDeclaration typeDecl = classScope.referenceContext;
 			output.append("\n");
@@ -429,7 +442,7 @@ public class HtmlElement extends HtmlNode {
 			output.append("\n");
 			printIndent(indent+1, output);
 			output.append("var __this = new (");
-			typeDecl.generateInternal(classScope, indent + 1, output);
+			typeDecl.binding.generate(output, null);
 			output.append(")();");
 			
 			output.append("\n");

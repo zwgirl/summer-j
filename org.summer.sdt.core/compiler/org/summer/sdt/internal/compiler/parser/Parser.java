@@ -9133,6 +9133,18 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		attribute.sourceStart = attribute.bodyStart = (int) (positions[0] >>> 32);
 		attribute.sourceEnd = (int) positions[positions.length - 1];
 		
+		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
+
+		//check named attribute
+		if(CharOperation.equals(attribute.property.hyphenName(), HtmlAttribute.NAME)){
+			if((element.tagBits & HtmlBits.NamedField) != 0){
+				problemReporter().duplicateNamedElementInType(attribute.property);
+			} else {
+				attribute.tagBits |= HtmlBits.NamedField;
+				element.tagBits |= HtmlBits.NamedField;
+			}
+		}
+		
 		pushOnAttributeStack(attribute);
 	}
 
@@ -9155,17 +9167,17 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		attribute.sourceStart = attribute.bodyStart = (int)prefixPos >>> 32;
 		attribute.sourceEnd = (int)positions[positions.length-1];
 		
-//		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
+		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
 
 		//check named attribute
-//		if(CharOperation.equals(attribute.property.name(), HtmlAttribute.NAME)){
-//			if((element.tagBits & HtmlBits.NamedField) != 0){
-//				problemReporter().duplicateNamedElementInType(attribute.property);
-//			} else {
-//				attribute.tagBits |= HtmlBits.NamedField;
-//				element.tagBits |= HtmlBits.NamedField;
-//			}
-//		}
+		if(CharOperation.equals(attribute.property.hyphenName(), HtmlAttribute.NAME)){
+			if((element.tagBits & HtmlBits.NamedField) != 0){
+				problemReporter().duplicateNamedElementInType(attribute.property);
+			} else {
+				attribute.tagBits |= HtmlBits.NamedField;
+				element.tagBits |= HtmlBits.NamedField;
+			}
+		}
 		
 		pushOnAttributeStack(attribute);
 	}
@@ -9215,18 +9227,18 @@ public class Parser extends CommitRollbackParser implements ConflictedParser, Op
 		
 		HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
 		
-		//check named attribute
-//		if((attribute.tagBits & HtmlBits.NamedField) != 0){
-//			StringLiteral str = (StringLiteral) attribute.value;
-//			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
-//			fieldDecl.type = element.type;
-//			fieldDecl.bits |= ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal;
-//			
-//			element.namedField = fieldDecl;
-//			
-//			pushOnAstStack(fieldDecl);
-//			concatNodeLists();
-//		}
+//		check named attribute
+		if((attribute.tagBits & HtmlBits.NamedField) != 0){
+			StringLiteral str = (StringLiteral) attribute.value;
+			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd, element);
+			fieldDecl.type = element.type;
+			fieldDecl.bits |= ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal;
+			
+			element.namedField = fieldDecl;
+			
+			pushOnAstStack(fieldDecl);
+			concatNodeLists();
+		}
 	}
 	
 	protected void consumeHtmlNSStartTag(){

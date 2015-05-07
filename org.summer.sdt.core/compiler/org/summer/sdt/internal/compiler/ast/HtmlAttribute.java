@@ -49,6 +49,8 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	public static final int BOOLEAN = 7;
 	public static final int STRING = 8;
 	
+	public static final char[] NAME = "name".toCharArray();
+	
 	private int propertyKind;
 	
 	public char[] namespace;

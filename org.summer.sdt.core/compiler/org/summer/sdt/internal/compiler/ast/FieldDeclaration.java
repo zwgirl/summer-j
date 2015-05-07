@@ -73,18 +73,28 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 	public MethodDeclaration setter;
 	public MethodDeclaration getter;
 	//cym 2015-02-13 end
+	
+	//cym 2015-05-04
+	public HtmlElement element;
 
 	public FieldDeclaration() {
 		// for subtypes or conversion
 	}
 	
-	public FieldDeclaration(	char[] name, int sourceStart, int sourceEnd) {
+	public FieldDeclaration(char[] name, int sourceStart, int sourceEnd) {
 		this.name = name;
 		//due to some declaration like
 		// int x, y = 3, z , x ;
 		//the sourceStart and the sourceEnd is ONLY on  the name
 		this.sourceStart = sourceStart;
 		this.sourceEnd = sourceEnd;
+	}
+	
+	//cym 2015-05-04
+	public FieldDeclaration(char[] name, int sourceStart, int sourceEnd, HtmlElement element) {
+		this(name, sourceStart, sourceEnd);
+		
+		this.element = element;
 	}
 	
 	public FlowInfo analyseCode(MethodScope initializationScope, FlowContext flowContext, FlowInfo flowInfo) {

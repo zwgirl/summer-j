@@ -80,6 +80,7 @@ public class BlockScope extends Scope {
 	public BlockScope(Scope parent, HtmlElement element) {
 		this(Scope.BLOCK_SCOPE, parent);
 		this.element = element;
+		this.element.scope = this;
 	}
 
 	public BlockScope(BlockScope parent) {

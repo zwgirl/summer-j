@@ -516,6 +516,9 @@ StartTag ::= < switch
 StartTag ::= < SimpleName : var
 StartTag ::= < var
 /.$putCase consumeHtmlVarStartTag(); $break ./
+StartTag ::= < SimpleName : if
+StartTag ::= < if
+/.$putCase consumeHtmlIfStartTag(); $break ./
 /:$readableName StartTag:/
 
 ElementStart ::= StartTag AttributeListopt
@@ -549,6 +552,10 @@ CloseTag ::= </ SimpleName : var
 /.$putCase consumeHtmlNSVarCloseTag(); $break ./
 CloseTag ::= </ var
 /.$putCase consumeHtmlVarCloseTag(); $break ./
+CloseTag ::= </ SimpleName : if
+/.$putCase consumeHtmlNSIfCloseTag(); $break ./
+CloseTag ::= </ if
+/.$putCase consumeHtmlIfCloseTag(); $break ./
 /:$readableName CloseTag:/
 
 AttributeStart ::= HtmlName
@@ -1730,6 +1737,9 @@ PrimaryNoNewArray ::= PrimitiveType '.' 'class'
 PrimaryNoNewArray -> MethodInvocation
 PrimaryNoNewArray -> ArrayAccess
 
+--cym 2015-05-28
+--PrimaryNoNewArray -> ObjectCreator
+
 -----------------------------------------------------------------------
 --                   Start of rules for JSR 335
 -----------------------------------------------------------------------
@@ -1874,32 +1884,33 @@ ClassInstanceCreationExpression ::= ClassInstanceCreationExpressionName OnlyType
 /.$putCase consumeClassInstanceCreationExpressionQualifiedWithTypeArguments() ; $break ./
 /:$readableName ClassInstanceCreationExpression:/
 
---MemberInitializer
---cym 2015-05-28
-PrimaryNoNewArray -> ObjectCreator
-ObjectCreator ::= 'new' ObjectInitializer
-/.$putCase consumeClassInstanceCreationExpressionWithInitializer() ; $break ./
+----cym 2015-05-06
+----MemberInitializer
+--ObjectCreator ::= 'new' ObjectInitializer
+--/.$putCase consumeClassInstanceCreationExpressionWithInitializer() ; $break ./
+--
+--ObjectInitializer ::= { $empty }
+--/.$putCase consumeEmptyObjectInitializer() ; $break ./
+--ObjectInitializer ::= { MemberInitializerList }
+--/.$putCase consumeObjectInitializer() ; $break ./
+--/:$readableName ObjectInitializer:/
+--
+--MemberInitializerList ::= MemberInitializer
+--/.$putCase consumeMemberInitializerList() ; $break ./
+--
+--MemberInitializerList ::= MemberInitializerList  ,  MemberInitializer
+--/.$putCase consumeMemberInitializerList() ; $break ./
+--/:$readableName MemberInitializerList:/
+--
+--MemberInitializer ::= Identifier : InitializerValue
+--/.$putCase consumeMemberInitializer() ; $break ./
+--/:$readableName MemberInitializer:/
+--
+--InitializerValue -> Expression
+----/.$putCase consumeInitializerValue() ; $break ./
+--/:$readableName InitializerValue:/
+----cym 2015-05-06
 
-ObjectInitializer ::= { $empty }
-/.$putCase consumeEmptyObjectInitializer() ; $break ./
-ObjectInitializer ::= { MemberInitializerList }
-/.$putCase consumeObjectInitializer() ; $break ./
-/:$readableName ObjectInitializer:/
-
-MemberInitializerList ::= MemberInitializer
-/.$putCase consumeMemberInitializerList() ; $break ./
-
-MemberInitializerList ::= MemberInitializerList  ,  MemberInitializer
-/.$putCase consumeMemberInitializerList() ; $break ./
-/:$readableName MemberInitializerList:/
-
-MemberInitializer ::= Identifier : InitializerValue
-/.$putCase consumeMemberInitializer() ; $break ./
-/:$readableName MemberInitializer:/
-
-InitializerValue -> Expression
---/.$putCase consumeInitializerValue() ; $break ./
-/:$readableName InitializerValue:/
 
 --InitializerValue -> ObjectOrCollectionInitializer
 ----/.$putCase consumeObjectOrCollectionInitializer() ; $break ./

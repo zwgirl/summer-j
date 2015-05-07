@@ -576,32 +576,14 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		if (this.ignoreFurtherInvestigation) {
 			if (this.binding == null)
 				return;
-			ClassFile.createProblemType(
-				this,
-				this.scope.referenceCompilationUnit().compilationResult);
+			ClassFile.createProblemType(this, this.scope.referenceCompilationUnit().compilationResult);
 			return;
 		}
-		
-//		//cym 2015-01-11
-//		if((this.bits & (ASTNode.IsAnonymousType | ASTNode.IsLocalType | ASTNode.IsMemberType)) == 0 
-//				&& (this.modifiers & ClassFileConstants.AccAnnotation) == 0 && (this.modifiers & ClassFileConstants.AccFunction) == 0){
-//			if((this.binding.modifiers & ClassFileConstants.AccModule) == 0){
-//				generateJavascript(scope);
-//			}
-//
-////			if(this.htmlElements != null && this.htmlElements.length == 1 &&
-////					CharOperation.equals(((ReferenceBinding)this.htmlElements[0].type.resolvedType).compoundName, TypeConstants.ORG_W3C_HTML_HTML)){
-////				generateHtml(this.scope);
-////			}
-//			if(this.htmlElements != null && this.htmlElements.length == 1 &&
-//					(this.htmlBits & HtmlBits.IsHtmlPage) != 0){
-//				generateHtml(this.scope);
-//			}
-//		}
 		
 		//cym 2015-04-13
 		if((this.binding.tagBits & TagBits.IsHtmlPage) != 0){
 			generateHtml(this.scope);
+			generateJavascript(this.scope);
 		} else {
 			if((this.bits & (ASTNode.IsAnonymousType | ASTNode.IsLocalType | ASTNode.IsMemberType)) == 0 
 					&& (this.modifiers & ClassFileConstants.AccAnnotation) == 0 && (this.modifiers & ClassFileConstants.AccFunction) == 0){
@@ -748,10 +730,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				this.scope.referenceCompilationUnit().compilationResult);
 		}
 	}
-	
-//	private void buildDOM(HtmlElement element, BlockScope scope, int indent, StringBuffer output) {
-//		element.generateExpression(initializerScope, indent, output);
-//	}
 	
 	private void html(HtmlElement element, BlockScope scope, int indent, StringBuffer output) {
 		element.html(scope, indent, output, "__this");
@@ -2681,7 +2659,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		
 		//set prototype.__proto__
-		if(type.binding.superclass != null && !type.binding.isInterface()){ // && type.binding.superclass.id != TypeIds.T_JavaLangObject){
+		if(type.binding.superclass != null && !type.binding.isInterface() && 
+				type.binding.id != TypeIds.T_JavaLangMath &&
+				type.binding.id != TypeIds.T_JavaLangArguments){
 			ReferenceBinding superBinding = type.binding.superclass;
 			output.append("\n");
 			printIndent(indent, output);
@@ -2962,7 +2942,17 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		//Class information
 		output.append("\n");
 		
-		if((type.binding.sourceName != null && type.binding.sourceName.length > 0) && type.binding.sourceName[0] == 'C' && CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_CLASS)){   //if Class Type
+		processClazz(type, indent, output);
+	}
+
+	private void processClazz(TypeDeclaration type, int indent, StringBuffer output) {
+		if(type.binding.id == TypeIds.T_JavaLangMath ||
+				type.binding.id == TypeIds.T_JavaLangArguments){
+			return;
+		}
+		
+		if((type.binding.sourceName != null && type.binding.sourceName.length > 0) 
+				&& type.binding.sourceName[0] == 'C' && CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_CLASS)){   //if Class Type
 			printIndent(indent, output).append(type.getTypeName()).append(".prototype.__class = new Class(");
 		} else {
 			if(type.binding.isAnonymousType()){
@@ -2982,6 +2972,12 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append(type.binding.sourceName).append(", ");
 		}
 
+//		output.append("\"");
+//		if(type.binding.fPackage != null){
+//			output.append(CharOperation.concatWith(type.binding.fPackage.compoundName, '.'));
+//		}
+//		output.append("\"");
+//		output.append(", ");
 		
 		if(type.binding.superclass != null){
 			ReferenceBinding baseBinding = type.binding.superclass;
@@ -3055,6 +3051,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		
 		output.append(";");
 	}
+	
+	
 	
 	private void processHtml(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
 		if(!type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE))){

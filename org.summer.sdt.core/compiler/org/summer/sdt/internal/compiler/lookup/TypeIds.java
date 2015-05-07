@@ -147,6 +147,10 @@ public interface TypeIds {
 	final int T_JavaLangWindow = 114;
 	final int T_JavaLangGlobal = 115;
 	
+	//cym 2015-05-29
+	final int T_JavaLangMath = 116;
+	final int T_JavaLangArguments = 117;
+	
 	// new in 3.9 to identify known @Inject annotations
 	final int T_JavaxInjectInject = 80;
 	final int T_ComGoogleInjectInject = 81;
@@ -283,5 +287,4 @@ public interface TypeIds {
 	 * Set of type bits that should be inherited by any sub types.
 	 */
 	final int InheritableBits = BitAutoCloseable | BitCloseable | BitUninternedType;
-	
 } 

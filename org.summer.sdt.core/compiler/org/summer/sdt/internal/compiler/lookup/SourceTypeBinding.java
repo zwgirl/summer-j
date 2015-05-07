@@ -56,6 +56,7 @@ import org.summer.sdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.summer.sdt.internal.compiler.ast.Annotation;
 import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
+import org.summer.sdt.internal.compiler.ast.HtmlElement;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.MemberValuePair;
 import org.summer.sdt.internal.compiler.ast.MethodDeclaration;
@@ -866,12 +867,25 @@ public class SourceTypeBinding extends ReferenceBinding {
 		ReferenceBinding enclosingType = enclosingType();
 		if (enclosingType != null && enclosingType.isViewedAsDeprecated() && !isDeprecated())
 			this.modifiers |= ExtraCompilerModifiers.AccDeprecatedImplicitly;
+		
+		elements(); //cym 2015-05-04
+		
 		fields();
 		methods();
-	
+		
 		for (int i = 0, length = this.memberTypes.length; i < length; i++)
 			((SourceTypeBinding) this.memberTypes[i]).faultInTypesForFieldsAndMethods();
 	}
+	
+	private void elements() {
+		HtmlElement[] elements = this.scope.referenceContext.htmlElements;
+		if(elements != null){
+			for(HtmlElement element : elements){
+				element.resolve(new BlockScope(this.scope.referenceContext.initializerScope, element));
+			}
+		}
+	}
+
 	// NOTE: the type of each field of a source type is resolved when needed
 	public FieldBinding[] fields() {
 		
@@ -1940,10 +1954,15 @@ public class SourceTypeBinding extends ReferenceBinding {
 			try {
 				initializationScope.initializedField = field;
 				FieldDeclaration fieldDecl = fieldDecls[f];
-				TypeBinding fieldType =
-					fieldDecl.getKind() == AbstractVariableDeclaration.ENUM_CONSTANT
-						? initializationScope.environment().convertToRawType(this, false /*do not force conversion of enclosing types*/) // enum constant is implicitly of declaring enum type
-						: fieldDecl.type.resolveType(initializationScope, true /* check bounds*/);
+//				TypeBinding fieldType =
+//					fieldDecl.getKind() == AbstractVariableDeclaration.ENUM_CONSTANT
+//						? initializationScope.environment().convertToRawType(this, false /*do not force conversion of enclosing types*/) // enum constant is implicitly of declaring enum type
+//						: fieldDecl.type.resolveType(initializationScope, true /* check bounds*/);
+				//cym 2015-05-04
+				TypeBinding fieldType = fieldDecl.element != null ? fieldDecl.type.resolveType(fieldDecl.element.scope) : 
+						fieldDecl.getKind() == AbstractVariableDeclaration.ENUM_CONSTANT
+							? initializationScope.environment().convertToRawType(this, false /*do not force conversion of enclosing types*/) // enum constant is implicitly of declaring enum type
+							: fieldDecl.type.resolveType(initializationScope, true /* check bounds*/);
 				field.type = fieldType;
 				field.modifiers &= ~ExtraCompilerModifiers.AccUnresolved;
 				if (fieldType == null) {
