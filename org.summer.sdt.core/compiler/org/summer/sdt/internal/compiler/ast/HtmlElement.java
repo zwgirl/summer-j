@@ -2,10 +2,8 @@ package org.summer.sdt.internal.compiler.ast;
 
 import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.internal.compiler.ASTVisitor;
-import org.summer.sdt.internal.compiler.html.HtmlTagConstants;
 import org.summer.sdt.internal.compiler.html.Namespace;
 import org.summer.sdt.internal.compiler.impl.Constant;
-import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.Scope;
@@ -127,28 +125,7 @@ public class HtmlElement extends HtmlNode {
 		}
 			
 		processNamespace(this.scope);
-		
-		char[] selector = CharOperation.concatWith(this.tokens, '-');
-		switch(selector.length){
-		case 8:
-			if(selector[0] == 'f'){
-				if(CharOperation.equals(selector, HtmlTagConstants.FRAGMENT)){
-					this.tagBits |= HtmlBits.Fragment;
-				}
-			} else if(selector[0] == 't'){
-				if(CharOperation.equals(selector, HtmlTagConstants.TEMPLATE)){
-					this.tagBits |= HtmlBits.Template;
-				}
-			}
-			break;
-		case 19: //collection-template
-			if(selector[0] == 'c'){
-				if(CharOperation.equals(selector, HtmlTagConstants.COLLECTION_TEMPLATE)){
-					this.tagBits |= HtmlBits.CollectionTemplate;
-				}
-			}
-			break;
-		}
+
 		
 		this.constant = Constant.NotAConstant;
 		if(this.type != null){
@@ -230,136 +207,44 @@ public class HtmlElement extends HtmlNode {
 		}
 	}
 	
-	protected StringBuffer scriptDom(BlockScope parent, int indent, StringBuffer output, String node, String _this){
-		output.append("\n");
-		printIndent(indent, output);
-		output.append("(function(p){");
-		
-		switch(this.resolvedType.id){
-		case TypeIds.T_JavaLangTemplateSetting:
-		case TypeIds.T_JavaLangCollectionTemplateSetting:
-		case TypeIds.T_JavaLangFragmentSetting:
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append("p.setTemplate(\"");
-			if(this.name == null){
-				output.append(name.value());
-			} else {
-				ClassScope classScope = scope.classScope();
-				String scriptId = "_" + classScope.scriptId++;
-				output.append(scriptId);
-			}
-			output.append("\", new (");
-			this.type.resolvedType.generate(output, scope.classScope().enclosingSourceType());
-			output.append(")(");
-			
-			this.option(scope, indent, output, _this);
-			
-			output.append("));");
-			break;
-		default: 
-			output.append("var n = "); 
-			if(this.resolvedType.id == TypeIds.T_OrgW3cDomText){
-				output.append("$.t();");
-			} else {
-				if(this.namespace != null){
-					if((namespace.length == 26 && CharOperation.equals(namespace, Namespace.SVG))){
-						output.append("$.svg(");
-					} else {
-						output.append("$.ns(\"").append(namespace).append("\", ");
-					}
-				} else if(defaultNamespace != null){
-					if(defaultNamespace.length == 26 && CharOperation.equals(defaultNamespace, Namespace.SVG)){
-						output.append("$.svg(");
-					}
-				} else {
-					output.append("$.n(");
-				}
-				output.append("\"").append(type.getLastToken()).append("\");");
-			}
-			output.append('\n');
-			printIndent(indent + 1, output).append("$.a(p, n);");
-			
-			for(HtmlAttribute attr : this.attributes){
-				attr.scriptDom(this.scope, indent, output, "n", _this);
-			}
-			
-			for(HtmlNode child : this.children){
-				child.scriptDom(this.scope, indent + 1, output, "n", _this);
-			}
+	protected StringBuffer scriptDom(BlockScope parentScope, int indent, StringBuffer output, String node, String _this){
+		printIndent(indent, output.append("\n")).append("(function(p){");
+
+		if(this.resolvedType.isSubtypeOf(scope.getJavaLangTag())){
+			tagScript(parentScope, indent, output, _this);
+		} else {
+			ff(indent, output, "p", _this);
 		}
-		output.append("\n");
-		printIndent(indent, output);
+		printIndent(indent, output.append("\n"));
 		output.append("}).call(").append(_this).append(", ").append(node).append(");");
 		return output;
 	}
 	
-	//used in createRoot method of itemTemplate
-	public void templateRootElement(Scope parentScope, int indent, StringBuffer output, String parent, String _this){
-		switch(this.resolvedType.id){
-		case TypeIds.T_JavaLangTemplateSetting:
-		case TypeIds.T_JavaLangCollectionTemplateSetting:
-		case TypeIds.T_JavaLangFragmentSetting:
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append("p.setTemplate(\"");
-			if(this.name != null){
-				output.append(name.value());
-			} else {
-				ClassScope classScope = scope.classScope();
-				String scriptId = "_" + classScope.scriptId++;
-				output.append(scriptId);
-			}
-			output.append("\", new (");
-			this.type.resolvedType.generate(output, scope.classScope().enclosingSourceType());
-			output.append(")(");
-			
-			this.option(scope, indent, output, _this);
-			
-			output.append("));");
-			break;
-		default:
-			output.append("this.before(data);");
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append("var n = "); 
-			if(this.resolvedType.id == TypeIds.T_OrgW3cDomText){
-				output.append("$.t();");
-			} else {
-				if(this.namespace != null){
-					if(namespace.length == 26 && CharOperation.equals(namespace, Namespace.SVG)){
-						output.append("$.nSVG(\"").append("\", ");
-					} else {
-						output.append("$.ns(\"").append(namespace).append("\", ");
-					}
+	private void ff(int indent, StringBuffer output, String parent, String _this) {
+		printIndent(indent + 1, output.append("\n")).append("var n = "); 
+		if(this.resolvedType.id == TypeIds.T_OrgW3cDomText){
+			output.append("$.t();");
+		} else {
+			if(this.namespace != null){
+				if(namespace.length == 26 && CharOperation.equals(namespace, Namespace.SVG)){
+					output.append("$.svg(");
 				} else {
-					output.append("$.n(");
+					output.append("$.ns(\"").append(namespace).append("\", ");
 				}
-				output.append("\"").append(type.getLastToken()).append("\");");
+			} else {
+				output.append("$.n(");
 			}
-			
-			output.append('\n');
-			printIndent(indent + 1, output).append(JsConstant.APPEND_CHILD).append("(parent, n);");
-			
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append("this._rootNodes.push(").append(JsConstant.NODE_NAME).append(");");
-			
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append("this.setupDataContext(n, data, index);");
-			
-			for(HtmlAttribute attr : this.attributes){
-				attr.scriptDom(scope, indent, output, JsConstant.NODE_NAME, _this);
-			}
-			
-			for(HtmlNode child : this.children){
-				child.scriptDom(scope, indent + 1, output, "n", _this);
-			}
-			
-			output.append('\n');
-			printIndent(indent+3, output);
-			output.append("this.after(data, index);");
+			output.append("\"").append(type.getLastToken()).append("\");");
+		}
+		
+		printIndent(indent + 1, output.append('\n')).append("$.a").append("(").append(parent).append(" , n);");
+		
+		for(HtmlAttribute attr : this.attributes){
+			attr.scriptDom(scope, indent, output, "n", _this);
+		}
+		
+		for(HtmlNode child : this.children){
+			child.scriptDom(scope, indent + 1, output, "n", _this);
 		}
 	}
 	
@@ -367,29 +252,20 @@ public class HtmlElement extends HtmlNode {
 		if(this.resolvedType == null){
 			return output;
 		}
-		if((this.tagBits & HtmlBits.Lark_Element_Mask) !=0){
-			if((this.tagBits & HtmlBits.Fragment) != 0){
-				if(this.type.resolvedType != null){
-
-				}
-				return output;
-			} else if((this.tagBits & HtmlBits.Template) != 0){
-				if(this.type.resolvedType != null){
-					output.append("<!--template -->\n");
-					larkElementScript(scope, indent, output, _this, false);
-				}
-				return output;
-			}else if((this.tagBits & HtmlBits.CollectionTemplate) != 0){
-				if(this.type.resolvedType != null){
-					output.append("<!--collection-template -->\n");
-					larkElementScript(scope, indent, output, _this, false);
-				}
-				return output;
-			} 
-		} 
 		
 		if(this.resolvedType.id == TypeIds.T_OrgW3cDomText){
 			processTextNode(scope, indent, output, _this);
+			return output;
+		}
+		
+		if(this.resolvedType.isSubtypeOf(scope.getJavaLangTag())){
+//			tagElementScript(scope, indent, output, _this);
+			ClassScope classScope = scope.classScope();
+			String scriptId = "_" + classScope.scriptId++;
+			output.append("<script id='").append(scriptId).append("' type = 'text/javascript'").append('>');
+			tagScript(scope, indent, output, new StringBuffer().append("$('").append(scriptId).append("').parentNode").toString());
+			
+			printIndent(indent, output.append("\n")).append("</script>");
 			return output;
 		}
 		
@@ -410,18 +286,14 @@ public class HtmlElement extends HtmlNode {
 				child.html(scope, indent + 1, output, _this);
 			}
 			//output meta
-			output.append("\n");
-			printIndent(indent, output);
+			printIndent(indent, output.append("\n"));
 			output.append("<script type = 'text/javascript' src = '/lark/js/stub.js'> </script>");
-			output.append("\n");
-			printIndent(indent, output);
+			printIndent(indent, output.append("\n"));
 			output.append("<script type = 'text/javascript' src = '/lark/java/lang/buildins.js'> </script>");
-			output.append("\n");
-			printIndent(indent, output);
-			output.append("<script type = 'text/javascript' src = '/lark/org/w3c/dom/dom.js'> </script>");
-			output.append("\n");
-			printIndent(indent, output);
+			printIndent(indent, output.append("\n"));
 			output.append("<script type = 'text/javascript' src = '/lark/java/lang/bindings.js'> </script>");
+			printIndent(indent, output.append("\n"));
+			output.append("<script type = 'text/javascript' src = '/lark/org/w3c/dom/dom.js'> </script>");
 			//build class definition
 //			ClassScope classScope = scope.enclosingClassScope();
 //			TypeDeclaration typeDecl = classScope.referenceContext;
@@ -436,21 +308,17 @@ public class HtmlElement extends HtmlNode {
 			
 			ClassScope classScope = scope.enclosingClassScope();
 			TypeDeclaration typeDecl = classScope.referenceContext;
-			output.append("\n");
-			printIndent(indent, output);
+			printIndent(indent, output.append("\n"));
 			output.append("<script type = 'text/javascript' >");
-			output.append("\n");
-			printIndent(indent+1, output);
+			printIndent(indent+1, output.append("\n"));
 			output.append("var __this = new (");
 			typeDecl.binding.generate(output, null);
 			output.append(")();");
 			
-			output.append("\n");
-			printIndent(indent+1, output);
-			output.append("document.documentElement.__dataContext = new (__lc(\"java.lang.DataContext\"))({dataItem:__this, mode:__lc(\"java.lang.DataContextMode\").Root});");
+			printIndent(indent+1, output.append("\n"));
+			output.append("document.documentElement.addDataContext(new (__lc(\"java.lang.DataContext\"))({dataItem:__this, name:\"ROOT\"}));");
 			
-			output.append("\n");
-			printIndent(indent, output);
+			printIndent(indent, output.append("\n"));
 			output.append("</script>");
 		} else {
 			if((this.tagBits & HtmlBits.SimpleElement) != 0){
@@ -485,25 +353,26 @@ public class HtmlElement extends HtmlNode {
 		output.append("</script>");
 	}
 
-	private StringBuffer larkElementScript(BlockScope scope, int indent, StringBuffer output, String _this, boolean sibling){
-			ClassScope classScope = scope.classScope();
-			String scriptId = "_" + classScope.scriptId++;
-			output.append("<script id='").append(scriptId).append("' type = 'text/javascript'").append('>');
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append("$('").append(scriptId).append("')").append(".parentNode.addTemplate(");
-			output.append("new (");
-			this.type.resolvedType.generate(output, scope.classScope().enclosingSourceType());
-			output.append(")(");
-			
-			this.option(scope, indent, output, _this);
-			
-			output.append("));");
-			
-			output.append("\n");
-			printIndent(indent, output);
-			output.append("</script>");
-		return output;
+	private void tagScript(BlockScope scope, int indent, StringBuffer output, String node) {
+		printIndent(indent + 1, output.append("\n")).append("var t = new (");
+		this.type.resolvedType.generate(output, scope.classScope().enclosingSourceType());
+		output.append(")(");
+		output.append(node);
+		output.append(");");
+		
+		for(HtmlAttribute attr : this.attributes){
+			attr.scriptDom(this.scope, indent + 1, output, "t", "t");
+		}
+		
+		printIndent(indent + 1, output.append("\n")).append("t.bodyHandler = function(p){");
+
+		for(HtmlNode child : this.children){
+			child.scriptDom(scope, indent + 2, output, "this", "this");
+		}
+		
+		printIndent(indent + 2, output.append("\n")).append("};");
+
+		printIndent(indent + 1, output.append("\n")).append("t.body();");
 	}
 	
 	private StringBuffer markupExtensionScript(BlockScope scope, int indent, StringBuffer output, boolean sibling){

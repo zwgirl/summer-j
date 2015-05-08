@@ -3059,29 +3059,19 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			return;
 		}
 		if(type.htmlElements == null) {
-			output.append(type.binding.sourceName).append(".prototype.").append("doApplyTemplate").append(" = function(parent, data, index) {};");
+			output.append(type.binding.sourceName).append(".prototype.").append("doBody").append(" = function() {};");
 			return;
 		}
 		
-		output.append('\n');
-		printIndent(indent, output);
+		printIndent(indent, output.append('\n'));
 		
-		output.append(type.binding.sourceName).append(".prototype.").append("doApplyTemplate").append(" = function(parent, data, index) {");
+		output.append(type.binding.sourceName).append(".prototype.").append("doBody").append(" = function() {");
 		
 		for(HtmlElement element : type.htmlElements){
-			output.append('\n');
-			printIndent(indent+1, output);
-			output.append("(function() {");
-			
-			element.templateRootElement(scope, indent + 2, output, "parent", "this");
-			
-			output.append('\n');
-			printIndent(indent+1, output);
-			output.append("}).call(this);");
+			element.scriptDom(element.scope, indent + 1, output, "this", "this");
 		}
 		
-		output.append('\n');
-		printIndent(indent, output);
+		printIndent(indent, output.append('\n'));
 		output.append("};");
 	}
 	

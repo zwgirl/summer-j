@@ -137,11 +137,12 @@ public interface TypeIds {
 	final int T_OrgW3cDomText = 107;
 	
 	final int T_JavaLangTemplate = 108;
-	final int T_JavaLangBaseTemplateSetting = 109;
-	final int T_JavaLangTemplateSetting = 110;
-	final int T_JavaLangCollectionTemplateSetting = 111;
-	final int T_JavaLangFragmentSetting = 112;
-	final int T_JavaLangFragment = 113;
+//	final int T_JavaLangBaseTemplateSetting = 109;
+//	final int T_JavaLangTemplateSetting = 110;
+//	final int T_JavaLangCollectionTemplateSetting = 111;
+//	final int T_JavaLangFragmentSetting = 112;
+//	final int T_JavaLangFragment = 113;
+	final int T_JavaLangTag = 109;
 	
 	//cym 2015-05-28
 	final int T_JavaLangWindow = 114;

@@ -264,7 +264,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			me.scriptDom(scope, indent, output, node, _this);
 			
 			output.append(".inject(");
-			output.append(JsConstant.NODE_NAME).append(", ");
+			output.append(node).append(", ");
 			this.property.buildInjectPart(scope, indent, output);
 			output.append(");");
 			return output;
@@ -292,7 +292,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			} else {
 				output.append(this.prefix);
 			}
-			output.append("\", ").append(JsConstant.NODE_NAME).append(", \"");
+			output.append("\", ").append(node).append(", \"");
 			this.property.doGenerateExpression(scope, indent, output).append("\", ");
 			this.value.generateExpression(scope, indent, output).append(");");
 			return output;
@@ -303,7 +303,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			}
 			output.append("$.attrNS(");
 			attachProp.receiverType.generate(output, scope.enclosingSourceType());
-			output.append(".xmlns, ").append(JsConstant.NODE_NAME).append(", \"");
+			output.append(".xmlns, ").append(node).append(", \"");
 			this.property.doGenerateExpression(scope, indent, output).append("\", ");
 			this.value.generateExpression(scope, indent, output).append(");");
 			return output;
@@ -313,7 +313,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case FUNCTION:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append(JsConstant.NODE_NAME).append(".addEventListener('").append(CharOperation.subarray(this.property.hyphenName(), 2, -1)).append("', ");
+			output.append(node).append(".addEventListener('").append(CharOperation.subarray(this.property.hyphenName(), 2, -1)).append("', ");
 			if(this.field != null){
 				if(this.field.isStatic()){
 					output.append(this.field.declaringClass.sourceName).append('.');
@@ -332,7 +332,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case CLASS:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append(JsConstant.NODE_NAME).append('.');
+			output.append(node).append('.');
 			this.property.doGenerateExpression(scope, indent, output);
 			
 			output.append(" = ");
@@ -342,7 +342,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case ENUM:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append(JsConstant.NODE_NAME).append('.');
+			output.append(node).append('.');
 			this.property.doGenerateExpression(scope, indent, output);
 			output.append(" = ");
 			((ReferenceBinding)this.property.binding.type).generate(output, null);
@@ -360,10 +360,19 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			output.append("\n");
 			printIndent(indent + 1, output);
 			
-			output.append("$.attr(").append(JsConstant.NODE_NAME).append(',');
-			output.append(" \"");
-			this.property.doGenerateExpression(scope, indent, output).append("\", ");
-			this.value.generateExpression(scope, indent, output).append(");");
+			if(scope.element.resolvedType.isSubtypeOf(scope.getJavaLangTag())){
+				output.append("\n");
+				printIndent(indent + 1, output);
+				output.append(node).append('.');
+				this.property.doGenerateExpression(scope, indent, output);
+				output.append(" = ");
+				this.value.generateExpression(scope, indent, output).append(";");
+			} else {
+				output.append("$.attr(").append(node).append(',');
+				output.append(" \"");
+				this.property.doGenerateExpression(scope, indent, output).append("\", ");
+				this.value.generateExpression(scope, indent, output).append(");");
+			}
 		}
 		return output;
 	}

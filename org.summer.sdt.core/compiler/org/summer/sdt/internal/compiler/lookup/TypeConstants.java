@@ -48,6 +48,7 @@ public interface TypeConstants {
 	char[] ARGUMENTS = "arguments".toCharArray(); //$NON-NLS-1$  //cym 2015-04-28
 	char[] BASETEMPLATESETTING = "BaseTemplateSetting".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] TEMPLATE = "Template".toCharArray(); //$NON-NLS-1$  //cym 2015-04-14
+	char[] TAG = "Tag".toCharArray(); //$NON-NLS-1$  //cym 2015-05-08
 	char[] TEMPLATESETTING = "TemplateSetting".toCharArray(); //$NON-NLS-1$  //cym 2015-04-25
 	char[] COLLECTIONTEMPLATESETTING = "CollectionTemplateSetting".toCharArray(); //$NON-NLS-1$  //cym 2015-04-25
 	char[] FRAGMENT = "Fragment".toCharArray(); //$NON-NLS-1$  //cym 2015-04-25
@@ -171,8 +172,8 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_WINDOW = {JAVA, LANG, WINDOW};  //cym 2014-12-13
 	char[][] JAVA_LANG_MATH = {JAVA, LANG, MATH};  //cym 2015-04-28
 	char[][] JAVA_LANG_ARGUMENTS = {JAVA, LANG, ARGUMENTS};  //cym 2015-04-28
-	char[][] JAVA_LANG_BASETEMPLATESETTING = {JAVA, LANG, BASETEMPLATESETTING};  //cym 2015-04-14
 	char[][] JAVA_LANG_TEMPLATE = {JAVA, LANG, TEMPLATE};  //cym 2015-04-14
+	char[][] JAVA_LANG_TAG = {JAVA, LANG, TAG};  //cym 2015-05-08
 	char[][] JAVA_LANG_PAGE = {JAVA, LANG, PAGE};  //cym 2015-04-13
 	char[][] JAVA_LANG_TEMPLATESETTING = {JAVA, LANG, TEMPLATESETTING};  //cym 2015-04-25
 	char[][] JAVA_LANG_COLLECTIONTEMPLATESETTING = {JAVA, LANG, COLLECTIONTEMPLATESETTING};  //cym 2015-04-25

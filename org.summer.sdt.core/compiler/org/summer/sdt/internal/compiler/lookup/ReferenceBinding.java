@@ -603,9 +603,9 @@ abstract public class ReferenceBinding extends TypeBinding {
 								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_BOOLEAN[2]))
 									this.id = TypeIds.T_JavaLangBoolean;
 								return;
-							case 19 :   //cym 2015-04-25
-								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_BASETEMPLATESETTING[2]))
-									this.id = TypeIds.T_JavaLangBaseTemplateSetting;
+							case 8 :   //cym 2015-04-25
+								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_TEMPLATE[2]))
+									this.id = TypeIds.T_JavaLangTemplate;
 								return;
 						}
 						return;
@@ -625,10 +625,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_CLASSNOTFOUNDEXCEPTION[2]))
 									this.id = TypeIds.T_JavaLangClassNotFoundException;
 								return;
-							case 25 :  //cym 2015-04-25
-								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_COLLECTIONTEMPLATESETTING[2]))
-									this.id = TypeIds.T_JavaLangCollectionTemplateSetting;
-								return;
+//							case 25 :  //cym 2015-04-25
+//								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_COLLECTIONTEMPLATESETTING[2]))
+//									this.id = TypeIds.T_JavaLangCollectionTemplateSetting;
+//								return;
 						}
 						return;
 					case 'D' :
@@ -669,10 +669,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FUNCTIONAL_INTERFACE[2]))
 								this.id = TypeIds.T_JavaLangFunctionalInterface;
 							return;
-						case 8 :  //cym 2015-04-25
-							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FRAGMENT[2]))
-								this.id = TypeIds.T_JavaLangFragment;
-							return;
+//						case 8 :  //cym 2015-04-25
+//							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_FRAGMENT[2]))
+//								this.id = TypeIds.T_JavaLangFragment;
+//							return;
 						}
 						return;
 					case 'G' :   //cym 2015-05-28
@@ -794,6 +794,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 						return;
 					case 'T' :
 						switch (typeName.length) {
+						case 3 :   //cym 2015-04-25
+							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_TAG[2]))
+								this.id = TypeIds.T_JavaLangTag;
+							return;
 						case 8 :   //cym 2015-04-25
 							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_TEMPLATE[2]))
 								this.id = TypeIds.T_JavaLangTemplate;
@@ -802,10 +806,10 @@ abstract public class ReferenceBinding extends TypeBinding {
 							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_THROWABLE[2]))
 								this.id = TypeIds.T_JavaLangThrowable;
 							return;
-						case 15 :   //cym 2015-04-25
-							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_TEMPLATESETTING[2]))
-								this.id = TypeIds.T_JavaLangTemplateSetting;
-							return;
+//						case 15 :   //cym 2015-04-25
+//							if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_TEMPLATESETTING[2]))
+//								this.id = TypeIds.T_JavaLangTemplateSetting;
+//							return;
 						}
 						return;
 					case 'V' :
