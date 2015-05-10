@@ -367,6 +367,13 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 				this.property.doGenerateExpression(scope, indent, output);
 				output.append(" = ");
 				this.value.generateExpression(scope, indent, output).append(";");
+			} else if(scope.element.resolvedType.id == TypeIds.T_OrgW3cDomText){
+				output.append("\n");
+				printIndent(indent + 1, output);
+				output.append(node).append('.');
+				this.property.doGenerateExpression(scope, indent, output);
+				output.append(" = ");
+				this.value.generateExpression(scope, indent, output).append(";");
 			} else {
 				output.append("$.attr(").append(node).append(',');
 				output.append(" \"");

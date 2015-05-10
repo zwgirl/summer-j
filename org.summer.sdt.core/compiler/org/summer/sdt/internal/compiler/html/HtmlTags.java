@@ -342,7 +342,7 @@ public class HtmlTags extends TagMapping{
 //		maps.put("media".toCharArray(), new char[][]{ORG, W3C, HTMLPKG, "HTMLMediaElement".toCharArray()});
 //		maps.put("template".toCharArray(), new char[][]{ORG, W3C, HTMLPKG, "HTMLTemplateElement".toCharArray()});
 		
-		maps.put("text".toCharArray(), new char[][]{ORG, W3C, DOM, "Text".toCharArray()});
+		maps.put("Text".toCharArray(), new char[][]{ORG, W3C, DOM, "Text".toCharArray()});
 	}
 	
 	public char[][] getMappingClass(char[] name){

@@ -126,11 +126,29 @@ public class HtmlText  extends HtmlNode {
 
 	@Override
 	protected StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String _this) {
-		if(CharOperation.hasContent(source)){
-			output.append("$.a(").append(parentNode).append(", ").append("$.t(\"");
-			output.append(CharOperation.eascape(source)).append("\"));");
+		if(hasTrueContent()){
+			if(CharOperation.hasContent(source)){
+				output.append("$.a(").append(parentNode).append(", ").append("$.t(\"");
+				output.append(CharOperation.eascape(source)).append("\"));");
+			}	
 		}
 		return output;
+	}
+
+	private boolean hasTrueContent() {
+		for(int i=0, length=this.source.length; i<length;i++){
+			switch (this.source[i]) {
+			case 10 : /* \ u000a: LINE FEED               */
+			case 12 : /* \ u000c: FORM FEED               */
+			case 13 : /* \ u000d: CARRIAGE RETURN         */
+			case 32 : /* \ u0020: SPACE                   */
+			case 9 : /* \ u0009: HORIZONTAL TABULATION   */
+				break;
+			default :
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

@@ -3657,6 +3657,13 @@ public abstract class Scope {
 		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_TAG, this);
 	}
 	
+	//cym 2015-05-08
+	public final ReferenceBinding getOrgWcTextNode() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.ORG_W3C_DOM_TEXT);
+		return unitScope.environment.getResolvedType(TypeConstants.ORG_W3C_DOM_TEXT, this);
+	}
+	
 	//cym 2015-02-17
 	public final ReferenceBinding getJavaLangConmponent() {
 		CompilationUnitScope unitScope = compilationUnitScope();

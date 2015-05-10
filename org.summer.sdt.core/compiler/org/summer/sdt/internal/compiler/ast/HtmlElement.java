@@ -211,7 +211,7 @@ public class HtmlElement extends HtmlNode {
 		printIndent(indent, output.append("\n")).append("(function(p){");
 
 		if(this.resolvedType.isSubtypeOf(scope.getJavaLangTag())){
-			tagScript(parentScope, indent, output, _this);
+			tagScript(parentScope, indent, output, node, _this);
 		} else {
 			ff(indent, output, "p", _this);
 		}
@@ -223,7 +223,7 @@ public class HtmlElement extends HtmlNode {
 	private void ff(int indent, StringBuffer output, String parent, String _this) {
 		printIndent(indent + 1, output.append("\n")).append("var n = "); 
 		if(this.resolvedType.id == TypeIds.T_OrgW3cDomText){
-			output.append("$.t();");
+			output.append("$.t(\"\");");
 		} else {
 			if(this.namespace != null){
 				if(namespace.length == 26 && CharOperation.equals(namespace, Namespace.SVG)){
@@ -231,6 +231,8 @@ public class HtmlElement extends HtmlNode {
 				} else {
 					output.append("$.ns(\"").append(namespace).append("\", ");
 				}
+			} else if(defaultNamespace != null && (defaultNamespace.length == 26 && CharOperation.equals(defaultNamespace, Namespace.SVG))){
+				output.append("$.svg(");
 			} else {
 				output.append("$.n(");
 			}
@@ -259,11 +261,10 @@ public class HtmlElement extends HtmlNode {
 		}
 		
 		if(this.resolvedType.isSubtypeOf(scope.getJavaLangTag())){
-//			tagElementScript(scope, indent, output, _this);
 			ClassScope classScope = scope.classScope();
 			String scriptId = "_" + classScope.scriptId++;
 			output.append("<script id='").append(scriptId).append("' type = 'text/javascript'").append('>');
-			tagScript(scope, indent, output, new StringBuffer().append("$('").append(scriptId).append("').parentNode").toString());
+			tagScript(scope, indent, output, new StringBuffer().append("$('").append(scriptId).append("').parentNode").toString(), "__this");
 			
 			printIndent(indent, output.append("\n")).append("</script>");
 			return output;
@@ -353,7 +354,7 @@ public class HtmlElement extends HtmlNode {
 		output.append("</script>");
 	}
 
-	private void tagScript(BlockScope scope, int indent, StringBuffer output, String node) {
+	private void tagScript(BlockScope scope, int indent, StringBuffer output, String node, String _this) {
 		printIndent(indent + 1, output.append("\n")).append("var t = new (");
 		this.type.resolvedType.generate(output, scope.classScope().enclosingSourceType());
 		output.append(")(");
@@ -361,13 +362,13 @@ public class HtmlElement extends HtmlNode {
 		output.append(");");
 		
 		for(HtmlAttribute attr : this.attributes){
-			attr.scriptDom(this.scope, indent + 1, output, "t", "t");
+			attr.scriptDom(this.scope, indent + 1, output, "t", _this);
 		}
 		
 		printIndent(indent + 1, output.append("\n")).append("t.bodyHandler = function(p){");
 
 		for(HtmlNode child : this.children){
-			child.scriptDom(scope, indent + 2, output, "this", "this");
+			child.scriptDom(scope, indent + 2, output, "this", _this);
 		}
 		
 		printIndent(indent + 2, output.append("\n")).append("};");
