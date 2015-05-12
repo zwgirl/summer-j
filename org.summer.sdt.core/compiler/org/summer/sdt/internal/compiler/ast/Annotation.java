@@ -380,6 +380,12 @@ public abstract class Annotation extends Expression {
 			case TypeIds.T_JavaLangOverload:
 				tagBits |= TagBits.AnnotationOverload; 
 				break;
+				
+			//cym add 2015-05-11
+			// overload annotation
+			case TypeIds.T_JavaLangAttribute:
+				tagBits |= TagBits.AnnotationAttribute; 
+				break;
 			//cym add 2015-02-12
 			// module annotation
 			case TypeIds.T_JavaLangModule:

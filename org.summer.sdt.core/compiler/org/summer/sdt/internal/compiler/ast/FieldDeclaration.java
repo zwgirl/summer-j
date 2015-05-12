@@ -264,10 +264,16 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 			if (this.annotations != null) {
 				for (int i = 0, max = this.annotations.length; i < max; i++) {
 					TypeBinding resolvedAnnotationType = this.annotations[i].resolvedType;
+					
+					//cym 2015-05-11
+					if((resolvedAnnotationType.getAnnotationTagBits() & TagBits.AnnotationAttribute) != 0){
+						this.binding.tagBits |= TagBits.AnnotationAttribute;
+					}
+					
 					if (resolvedAnnotationType != null && (resolvedAnnotationType.getAnnotationTagBits() & TagBits.AnnotationForTypeUse) != 0) {
 						this.bits |= ASTNode.HasTypeAnnotations;
 						break;
-					}
+					} 
 				}
 			}
 			

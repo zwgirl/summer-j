@@ -18,6 +18,7 @@ import org.summer.sdt.internal.compiler.lookup.ProblemReasons;
 import org.summer.sdt.internal.compiler.lookup.ProblemReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.ReferenceBinding;
 import org.summer.sdt.internal.compiler.lookup.Scope;
+import org.summer.sdt.internal.compiler.lookup.TagBits;
 import org.summer.sdt.internal.compiler.lookup.TypeBinding;
 import org.summer.sdt.internal.compiler.lookup.TypeIds;
 
@@ -37,7 +38,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	public static final int ENUM = 11;
 	public static final int FUNCTION = 12;
 	public static final int CLASS = 13;
-	public static final int TEMPLATESETTING =16;
+//	public static final int TEMPLATESETTING =16;
 	public static final int INSTANCE = 17;
 	
 	public static final int BYTE = 1;
@@ -254,24 +255,43 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	protected boolean hasMarkupExtension(){
 		return this.value instanceof HtmlMarkupExtension;
 	}
-
+	
+	protected boolean isEventHandler(){
+		if(this.resolvedType == null || !(this.resolvedType instanceof ReferenceBinding)){
+			return false;
+		}
+		
+		return (((ReferenceBinding)this.resolvedType).modifiers & ClassFileConstants.AccFunction) != 0;
+	}
+	
 	@Override
-	public StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String node, String _this){
+	public StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String logicParent, String context){
 		if(this.value instanceof HtmlMarkupExtension){
-			output.append("\n");
-			printIndent(indent + 1, output);
+			printIndent(indent + 1, output.append("\n"));
 			HtmlMarkupExtension me = (HtmlMarkupExtension) this.value;
-			me.scriptDom(scope, indent, output, node, _this);
+			
+			me.newMarkupExtension(output, (ReferenceBinding) me.resolvedType);
+			
+			output.append("{");
+			boolean comma = me.buildOptions(scope, indent, output, context);
+			if((property.tagBits & TagBits.AnnotationAttribute) != 0){
+				if(comma){
+					output.append(", ");
+				} 
+				output.append("attribute : true");
+			}
+			
+			output.append("}").append(")");
 			
 			output.append(".inject(");
-			output.append(node).append(", ");
+			output.append(parentNode).append(", ");
 			this.property.buildInjectPart(scope, indent, output);
 			output.append(");");
 			return output;
 		} else if((this.tagBits & HtmlBits.NamedField) != 0){
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append(node).append("[\"");
+			output.append(parentNode).append("[\"");
 			this.property.generateExpression(scope, indent, output);
 			output.append("\"]");
 			output.append(" = ");
@@ -281,9 +301,9 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			output.append(";");
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append("this");
+			output.append(context);
 			output.append('.').append(((Literal) this.value).source());
-			output.append(" = ").append(node).append(";");
+			output.append(" = ").append(parentNode).append(";");
 			return output;
 		} else if(this.prefix != null){
 			output.append("$.attrNS(\"");
@@ -292,20 +312,20 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			} else {
 				output.append(this.prefix);
 			}
-			output.append("\", ").append(node).append(", \"");
+			output.append("\", ").append(parentNode).append(", \"");
 			this.property.doGenerateExpression(scope, indent, output).append("\", ");
 			this.value.generateExpression(scope, indent, output).append(");");
 			return output;
 		}  else if((this.tagBits & HtmlBits.NS_ATTRIBUTE) != 0){
 			HtmlPropertyReference attachProp = this.property;
-			if(attachProp.receiverType == null){
-				return output;
+			if(scope.element.resolvedType.isSubtypeOf(scope.getOrgW3cDomElement())){
+				output.append("$.attrNS(");
+				attachProp.receiverType.generate(output, scope.enclosingSourceType());
+				output.append(".xmlns, ").append(parentNode).append(", \"");
+				this.property.doGenerateExpression(scope, indent, output).append("\", ");
+				this.value.generateExpression(scope, indent, output).append(");");
 			}
-			output.append("$.attrNS(");
-			attachProp.receiverType.generate(output, scope.enclosingSourceType());
-			output.append(".xmlns, ").append(node).append(", \"");
-			this.property.doGenerateExpression(scope, indent, output).append("\", ");
-			this.value.generateExpression(scope, indent, output).append(");");
+
 			return output;
 		}
 		
@@ -313,7 +333,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case FUNCTION:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append(node).append(".addEventListener('").append(CharOperation.subarray(this.property.hyphenName(), 2, -1)).append("', ");
+			output.append(parentNode).append(".addEventListener('").append(CharOperation.subarray(this.property.hyphenName(), 2, -1)).append("', ");
 			if(this.field != null){
 				if(this.field.isStatic()){
 					output.append(this.field.declaringClass.sourceName).append('.');
@@ -321,7 +341,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 						output.append(((Literal)this.value).source());
 					}
 				} else {
-					output.append("this.");
+					output.append(context).append(".");
 					if(this.value instanceof Literal){
 						output.append(((Literal)this.value).source());
 					}
@@ -332,7 +352,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case CLASS:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append(node).append('.');
+			output.append(parentNode).append('.');
 			this.property.doGenerateExpression(scope, indent, output);
 			
 			output.append(" = ");
@@ -342,7 +362,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case ENUM:
 			output.append("\n");
 			printIndent(indent + 1, output);
-			output.append(node).append('.');
+			output.append(parentNode).append('.');
 			this.property.doGenerateExpression(scope, indent, output);
 			output.append(" = ");
 			((ReferenceBinding)this.property.binding.type).generate(output, null);
@@ -357,25 +377,21 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case FLOAT:
 		case DOUBLE:
 		case BOOLEAN:
-			output.append("\n");
-			printIndent(indent + 1, output);
-			
 			if(scope.element.resolvedType.isSubtypeOf(scope.getJavaLangTag())){
-				output.append("\n");
-				printIndent(indent + 1, output);
-				output.append(node).append('.');
+				printIndent(indent + 1, output.append("\n"));
+				output.append(parentNode).append('.');
 				this.property.doGenerateExpression(scope, indent, output);
 				output.append(" = ");
 				this.value.generateExpression(scope, indent, output).append(";");
 			} else if(scope.element.resolvedType.id == TypeIds.T_OrgW3cDomText){
-				output.append("\n");
-				printIndent(indent + 1, output);
-				output.append(node).append('.');
+				printIndent(indent + 1, output.append("\n"));
+				output.append(parentNode).append('.');
 				this.property.doGenerateExpression(scope, indent, output);
 				output.append(" = ");
 				this.value.generateExpression(scope, indent, output).append(";");
 			} else {
-				output.append("$.attr(").append(node).append(',');
+				printIndent(indent + 1, output.append("\n"));
+				output.append("$.attr(").append(parentNode).append(',');
 				output.append(" \"");
 				this.property.doGenerateExpression(scope, indent, output).append("\", ");
 				this.value.generateExpression(scope, indent, output).append(");");
@@ -384,12 +400,12 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		return output;
 	}
 	
-	public StringBuffer scriptElement(BlockScope scope, int indent, StringBuffer output, String node, String _this) {
+	public StringBuffer scriptElement(BlockScope scope, int indent, StringBuffer output, String parentNode, String logicParent, String context) {
 		if(this.value instanceof HtmlMarkupExtension){
 			output.append("\n");
 			printIndent(indent + 1, output);
 			HtmlMarkupExtension me = (HtmlMarkupExtension) this.value;
-			me.scriptDom(scope, indent, output, node, _this);
+			me.scriptDom(scope, indent, output, parentNode, logicParent, context);
 			
 			output.append(".inject(");
 			output.append(JsConstant.NODE_NAME).append(", ");
@@ -399,9 +415,8 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		} 
 		
 		if(this.field != null){
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append(node).append("[\"");
+			printIndent(indent + 1, output.append("\n"));
+			output.append(parentNode).append("[\"");
 			this.property.generateExpression(scope, indent, output);
 			output.append("\"]");
 			output.append(" = ");
@@ -409,18 +424,16 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 				this.value.generateExpression(scope, indent, output);
 			}
 			output.append(";");
-			output.append("\n");
-			printIndent(indent + 1, output);
-			output.append("this");
+			printIndent(indent + 1, output.append("\n")).append("_this");
 			output.append('.').append(((Literal) this.value).source());
-			output.append(" = ").append(node).append(";");
+			output.append(" = ").append(parentNode).append(";");
 			return output;
 		}
 		return output;
 	}
 	
 	@Override
-	public StringBuffer html(BlockScope scope, int indent, StringBuffer output, String _this) {
+	public StringBuffer html(BlockScope scope, int indent, StringBuffer output, String context) {
 		this.property.html(scope, indent, output);
 		output.append("=");
 		switch(propertyKind){
@@ -434,7 +447,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 						output.append(((Literal)this.value).source());
 					}
 				} else {
-					output.append(_this).append('.');
+					output.append(context).append('.');
 					if(this.value instanceof Literal){
 						output.append(((Literal)this.value).source());
 					}
@@ -465,7 +478,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	}
 	
 	@Override
-	public StringBuffer option(BlockScope scope, int indent, StringBuffer output, String _this) {
+	public StringBuffer option(BlockScope scope, int indent, StringBuffer output, String context) {
 		
 		this.property.option(scope, indent, output).append(" : ");
 		switch(propertyKind){
@@ -485,18 +498,18 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 						output.append(((Literal)this.value).source());
 					}
 				} else {
-					output.append(_this).append('.');
+					output.append(context).append('.');
 					if(this.value instanceof Literal){
 						output.append(((Literal)this.value).source());
 					}
 				}
 			}
 			return output;
-		case TEMPLATESETTING:
-			output.append("new (");
-			this.binding.generate(output, null);
-			output.append(")()");
-			return output;
+//		case TEMPLATESETTING:
+//			output.append("new (");
+//			this.binding.generate(output, null);
+//			output.append(")()");
+//			return output;
 		case INSTANCE:
 		case BYTE:
 		case SHORT:
@@ -508,7 +521,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case STRING:
 			if(this.value instanceof HtmlMarkupExtension){
 				HtmlMarkupExtension me = (HtmlMarkupExtension) value;
-				me.optionValue(scope, indent, output, _this);
+				me.optionValue(scope, indent, output, context);
 			} else {
 				Literal s = (Literal) this.value;
 				if(s instanceof StringLiteral){

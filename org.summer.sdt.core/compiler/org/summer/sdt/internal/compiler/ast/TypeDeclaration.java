@@ -3054,21 +3054,42 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	
 	
 	
+//	private void processHtml(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
+//		if(!type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE))){
+//			return;
+//		}
+//		if(type.htmlElements == null) {
+//			output.append(type.binding.sourceName).append(".prototype.").append("doBody").append(" = function() {};");
+//			return;
+//		}
+//		
+//		printIndent(indent, output.append('\n'));
+//		
+//		output.append(type.binding.sourceName).append(".prototype.").append("doBody").append(" = function() {");
+//		
+//		for(HtmlElement element : type.htmlElements){
+//			element.scriptDom(element.scope, indent + 1, output, "this", "this");
+//		}
+//		
+//		printIndent(indent, output.append('\n'));
+//		output.append("};");
+//	}
+	
 	private void processHtml(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
 		if(!type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE))){
 			return;
 		}
 		if(type.htmlElements == null) {
-			output.append(type.binding.sourceName).append(".prototype.").append("doBody").append(" = function() {};");
+			output.append(type.binding.sourceName).append(".prototype.").append("doBody").append(" = function(__p, __l, __ctx) {};");
 			return;
 		}
 		
 		printIndent(indent, output.append('\n'));
 		
-		output.append(type.binding.sourceName).append(".prototype.").append("doBody").append(" = function() {");
+		output.append(type.binding.sourceName).append(".prototype.").append("doBody").append(" = function(__p, __l, __ctx) {");
 		
 		for(HtmlElement element : type.htmlElements){
-			element.scriptDom(element.scope, indent + 1, output, "this", "this");
+			element.scriptDom(element.scope, indent + 1, output, "__p", "__l", "__ctx");
 		}
 		
 		printIndent(indent, output.append('\n'));

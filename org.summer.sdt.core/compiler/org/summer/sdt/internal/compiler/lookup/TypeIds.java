@@ -144,6 +144,8 @@ public interface TypeIds {
 //	final int T_JavaLangFragment = 113;
 	final int T_JavaLangTag = 109;
 	
+	final int T_JavaLangAttribute = 110;  //cym 2015-05-11
+	
 	//cym 2015-05-28
 	final int T_JavaLangWindow = 114;
 	final int T_JavaLangGlobal = 115;

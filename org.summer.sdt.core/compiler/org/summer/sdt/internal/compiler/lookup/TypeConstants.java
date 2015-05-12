@@ -27,7 +27,6 @@ package org.summer.sdt.internal.compiler.lookup;
 
 // TODO should rename into TypeNames (once extracted last non name constants)
 public interface TypeConstants {
-
 	char[] JAVA = "java".toCharArray(); //$NON-NLS-1$
 	char[] JAVAX = "javax".toCharArray(); //$NON-NLS-1$
 	char[] LANG = "lang".toCharArray(); //$NON-NLS-1$
@@ -49,12 +48,14 @@ public interface TypeConstants {
 //	char[] BASETEMPLATESETTING = "BaseTemplateSetting".toCharArray(); //$NON-NLS-1$  //cym 2015-01-13
 	char[] TEMPLATE = "Template".toCharArray(); //$NON-NLS-1$  //cym 2015-04-14
 	char[] TAG = "Tag".toCharArray(); //$NON-NLS-1$  //cym 2015-05-08
+	char[] ATTRIBUTE = "Attribute".toCharArray();  //$NON-NLS-1$  //cym 2015-05-11
 //	char[] TEMPLATESETTING = "TemplateSetting".toCharArray(); //$NON-NLS-1$  //cym 2015-04-25
 //	char[] COLLECTIONTEMPLATESETTING = "CollectionTemplateSetting".toCharArray(); //$NON-NLS-1$  //cym 2015-04-25
 	char[] FRAGMENT = "Fragment".toCharArray(); //$NON-NLS-1$  //cym 2015-04-25
 	char[] PAGE = "Page".toCharArray(); //$NON-NLS-1$  //cym 2015-04-13
 	char[] EVENT = "Event".toCharArray(); //$NON-NLS-1$  //cym cym 2015-04-24
 	char[] TEXTNODE = "Text".toCharArray(); //$NON-NLS-1$  //cym cym 2015-04-24
+	char[] ELEMENT = "Element".toCharArray(); //$NON-NLS-1$  //cym cym 2015-05-10
 	char[] HTML_ELEMENT = "HTMLHtmlElement".toCharArray(); //$NON-NLS-1$  //cym cym 2015-04-24
 	char[] SVG_ELEMENT = "SVGSVGElement".toCharArray(); //$NON-NLS-1$  //cym cym 2015-04-24
 	char[] HEAD_ELEMENT = "HTMLHeadElement".toCharArray(); //$NON-NLS-1$  //cym 2015-04-24
@@ -175,10 +176,10 @@ public interface TypeConstants {
 	char[][] JAVA_LANG_TEMPLATE = {JAVA, LANG, TEMPLATE};  //cym 2015-04-14
 	char[][] JAVA_LANG_TAG = {JAVA, LANG, TAG};  //cym 2015-05-08
 	char[][] JAVA_LANG_PAGE = {JAVA, LANG, PAGE};  //cym 2015-04-13
+	char[][] JAVA_LANG_ATTRIBUTE = {JAVA, LANG, ATTRIBUTE};  //cym 2015-04-13
 //	char[][] JAVA_LANG_TEMPLATESETTING = {JAVA, LANG, TEMPLATESETTING};  //cym 2015-04-25
 //	char[][] JAVA_LANG_COLLECTIONTEMPLATESETTING = {JAVA, LANG, COLLECTIONTEMPLATESETTING};  //cym 2015-04-25
 	char[][] JAVA_LANG_FRAGMENT = {JAVA, LANG, FRAGMENT};  //cym 2015-04-25
-	
 	
 	char[][] JAVA_LANG_COMPONENT = {JAVA, LANG, COMPONENT};  //cym 2015-01-13
 	char[][] ORG_W3C_HTML_HTML = {ORG, W3C, HTMLPKG, HTML_ELEMENT};  //cym 2015-04-24
@@ -189,6 +190,7 @@ public interface TypeConstants {
 	char[][] ORG_W3C_SVG_SVG = {ORG, W3C, SVGPKG, SVG_ELEMENT};  //cym 2015-04-24
 	char[][] ORG_W3C_EVENT_EVENT = {ORG, W3C, EVENTPKG, EVENT};  //cym 2015-04-24
 	char[][] ORG_W3C_DOM_TEXT = {ORG, W3C, DOM, TEXTNODE};  //cym 2015-04-24
+	char[][] ORG_W3C_DOM_ELEMENT =  {ORG, W3C, DOM, ELEMENT};   //cym 2015-04-13
 	char[][] JAVA_LANG_STRING = {JAVA, LANG, "String".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_STRINGBUFFER = {JAVA, LANG, "StringBuffer".toCharArray()}; //$NON-NLS-1$
 	char[][] JAVA_LANG_STRINGBUILDER = {JAVA, LANG, "StringBuilder".toCharArray()}; //$NON-NLS-1$

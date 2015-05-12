@@ -34,7 +34,7 @@ public abstract class HtmlNode extends Expression {
 		return output;
 	}
 	
-	protected abstract StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String _this);
+	protected abstract StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String logicParent, String context);
 	
 	public abstract StringBuffer html(BlockScope scope, int indent, StringBuffer output, String _this);
 	

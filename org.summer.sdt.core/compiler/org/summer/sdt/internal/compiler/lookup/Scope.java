@@ -3658,10 +3658,24 @@ public abstract class Scope {
 	}
 	
 	//cym 2015-05-08
-	public final ReferenceBinding getOrgWcTextNode() {
+	public final ReferenceBinding getOrgW3cDomTextNode() {
 		CompilationUnitScope unitScope = compilationUnitScope();
 		unitScope.recordQualifiedReference(TypeConstants.ORG_W3C_DOM_TEXT);
 		return unitScope.environment.getResolvedType(TypeConstants.ORG_W3C_DOM_TEXT, this);
+	}
+	
+	//cym 2015-05-10
+	public final ReferenceBinding getOrgW3cDomElement() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.ORG_W3C_DOM_ELEMENT);
+		return unitScope.environment.getResolvedType(TypeConstants.ORG_W3C_DOM_ELEMENT, this);
+	}
+	
+	//cym 2015-05-12
+	public final ReferenceBinding getJavalangPage() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_PAGE);
+		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_PAGE, this);
 	}
 	
 	//cym 2015-02-17

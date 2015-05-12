@@ -95,17 +95,73 @@ public class HtmlMarkupExtension extends HtmlElement {
 		return expressionType;
 	}
 
+//	@Override
+//	public StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parent, String _this ) {
+//		if(this.resolvedType == null){
+//			return output;
+//		}
+//		ReferenceBinding rb = (ReferenceBinding) this.resolvedType;
+//		output.append("new (");
+//		rb.generate(output, null);
+//		output.append(")(");
+//		
+//		output.append("{");
+//		boolean comma = false;
+//		for(HtmlAttribute attribute : this.attributes){
+//			if(comma){
+//				output.append(", ");
+//			}
+//			
+//			attribute.option(scope, indent, output, _this);
+//			comma = true;
+//		}
+//		output.append("}");
+//		output.append(")");
+//
+//		return output;
+//	}
+	
 	@Override
-	public StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parent, String _this ) {
+	public StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String logicParent, String context ) {
 		if(this.resolvedType == null){
 			return output;
 		}
+		
 		ReferenceBinding rb = (ReferenceBinding) this.resolvedType;
+		if(rb.isSubtypeOf(scope.getJavalangPage())){
+			output.append("var __m = new (__lc(\"java.lang.Page\"))(");
+			rb.generate(output, scope.enclosingSourceType());
+			output.append(");");
+			
+			boolean comma = false;
+			for(HtmlAttribute attribute : this.attributes){
+				if(comma){
+					output.append(", ");
+				}
+				
+				attribute.scriptDom(scope, indent, output, "__m", logicParent, context);
+				comma = true;
+			}
+		} else {
+			newMarkupExtension(output, rb);
+			
+			output.append("{");
+			buildOptions(scope, indent, output, context);
+			output.append("}");
+			output.append(")");
+		}
+
+		return output;
+	}
+
+	public void newMarkupExtension(StringBuffer output, ReferenceBinding rb) {
 		output.append("new (");
 		rb.generate(output, null);
 		output.append(")(");
-		
-		output.append("{");
+	}
+
+	public boolean buildOptions(BlockScope scope, int indent, StringBuffer output,
+			String _this) {
 		boolean comma = false;
 		for(HtmlAttribute attribute : this.attributes){
 			if(comma){
@@ -115,10 +171,8 @@ public class HtmlMarkupExtension extends HtmlElement {
 			attribute.option(scope, indent, output, _this);
 			comma = true;
 		}
-		output.append("}");
-		output.append(")");
-
-		return output;
+		
+		return comma;
 	}
 	
 	public StringBuffer optionValue(BlockScope scope, int indent, StringBuffer output, String _this){

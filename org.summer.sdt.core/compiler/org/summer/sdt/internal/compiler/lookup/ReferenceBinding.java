@@ -571,6 +571,11 @@ abstract public class ReferenceBinding extends TypeBinding {
 									this.id = TypeIds.T_JavaLangArray;
 								}
 								return;
+							case 9 :   //cym 2015-05-11
+								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_ATTRIBUTE[2])) {
+									this.id = TypeIds.T_JavaLangAttribute;
+								}
+								return;
 								//cym 2015-04-28
 //							case 13 :
 //								if (CharOperation.equals(typeName, TypeConstants.JAVA_LANG_AUTOCLOSEABLE[2])) {

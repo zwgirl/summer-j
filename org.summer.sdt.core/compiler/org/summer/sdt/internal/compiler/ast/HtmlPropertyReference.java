@@ -34,7 +34,7 @@ public class HtmlPropertyReference extends Expression{
 	public FieldBinding binding;
 	public ReferenceBinding receiverType;// exact binding resulting from lookup
 	
-	public int tagBits;
+	public long tagBits;
 
 	public HtmlPropertyReference(char[][] source, long[] postions, HtmlPropertyReference receiver) {
 		this.tokens = source;
@@ -96,10 +96,16 @@ public class HtmlPropertyReference extends Expression{
 		// the case receiverType.isArrayType and token = 'length' is handled by the scope API
 		FieldBinding fieldBinding = this.binding = scope.getField(this.receiverType, this.camelName(), null);
 		
-		//cym 2012-02-12
+		//cym 2015-02-12
 		if(fieldBinding.isValidBinding() && (fieldBinding.modifiers & ClassFileConstants.AccProperty) == 0){
 			scope.problemReporter().invalidProperty(this, this.receiverType);   //TODO need more clear  //cym 2015-02-27
 		}
+		
+		//cym 2015-05-11
+		if((fieldBinding.tagBits & TagBits.AnnotationAttribute) != 0){
+			this.tagBits |= TagBits.AnnotationAttribute;
+		}
+		
 		if (!fieldBinding.isValidBinding()) {
 			this.constant = Constant.NotAConstant;
 			if (this.receiverType instanceof ProblemReferenceBinding) {

@@ -56,7 +56,7 @@ public class HtmlScript extends HtmlNode{
 	}
 
 	@Override
-	protected StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String _this) {
+	protected StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String logicParent, String context) {
 		return output;
 	}
 

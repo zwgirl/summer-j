@@ -125,7 +125,7 @@ public class HtmlText  extends HtmlNode {
 	}
 
 	@Override
-	protected StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String _this) {
+	protected StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String logicParent, String _this) {
 		if(hasTrueContent()){
 			if(CharOperation.hasContent(source)){
 				output.append("$.a(").append(parentNode).append(", ").append("$.t(\"");

@@ -180,6 +180,7 @@ public class CompilerOptions {
 	public static final String OPTION_SyntacticNullAnalysisForFields = "org.summer.sdt.core.compiler.problem.syntacticNullAnalysisForFields"; //$NON-NLS-1$
 	public static final String OPTION_InheritNullAnnotations = "org.summer.sdt.core.compiler.annotation.inheritNullAnnotations";  //$NON-NLS-1$
 	public static final String OPTION_ReportNonnullParameterAnnotationDropped = "org.summer.sdt.core.compiler.problem.nonnullParameterAnnotationDropped";  //$NON-NLS-1$
+	
 	/**
 	 * Possible values for configurable options
 	 */
