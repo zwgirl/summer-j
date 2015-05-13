@@ -790,7 +790,8 @@ public class AllocationExpression extends Expression implements Invocation {
 					output.append(binding.declaringClass.sourceName);
 				} else {
 					output.append('(');
-					output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')");
+					output.append("__lc(\"").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.'))
+						.append("\", \"").append(this.binding.declaringClass.computeFileName()).append("\")");
 					output.append(')');
 				}
 			}

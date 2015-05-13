@@ -1,6 +1,9 @@
 package org.bark.remoting;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 public final class SerializerFactory {
@@ -8,7 +11,7 @@ public final class SerializerFactory {
 	private static final Map<Class<?>, Serializer> serializers = new HashMap<>();
 //	private static final EnumSerializer enumSerializer = new EnumSerializer();
 //	private static final ArraySerializer arraySerializer = new ArraySerializer();
-//	static {
+	static {
 //		serializers.put(int.class, new IntSerializer());
 //		serializers.put(short.class, new IntSerializer());
 //		serializers.put(byte.class, new IntSerializer());
@@ -34,7 +37,13 @@ public final class SerializerFactory {
 ////		serializers.put(java.sql.Time.class, new SQLTimeSerializer());
 ////		
 ////		serializers.put(java.sql.Timestamp.class, new SQLTimestampSerializer());
-//	}
+		
+		serializers.put(ArrayList.class, new ArrayListSerializer());
+		serializers.put(LinkedList.class, new LinkedListSerializer());
+		
+		serializers.put(AbstractMap.class, new AbstractMapSerializer());
+		serializers.put(HashMap.class, new HashMapSerializer());
+	}
 	private SerializerFactory() {
 	}
 

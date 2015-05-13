@@ -2391,7 +2391,8 @@ abstract public class ReferenceBinding extends TypeBinding {
 			} else if((this.modifiers & ClassFileConstants.AccNative) != 0){
 				output.append(this.sourceName);
 			} else {
-				output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.')).append("\")");
+				output.append("__lc(\"").append(CharOperation.concatWith(this.compoundName, '.')) //.append("\")")
+						.append("\", \"").append(this.computeFileName()).append("\")");
 			}
 		}
 	}

@@ -22,6 +22,7 @@ import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_
 
 import java.util.List;
 
+import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.compiler.IProblem;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ast.TypeReference.AnnotationCollector;
@@ -459,9 +460,17 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		printIndent(indent, output);
 		output.append("Object.defineProperty(");
 		if(this.isStatic()){
-			output.append(binding.declaringClass.sourceName);
+			if(binding.declaringClass.isAnonymousType()){
+				output.append("Anonym");
+			} else {
+				output.append(binding.declaringClass.sourceName);
+			}
 		} else {
-			output.append(binding.declaringClass.sourceName).append(".prototype");
+			if(binding.declaringClass.isAnonymousType()){
+				output.append("Anonym.prototype");
+			} else {
+				output.append(binding.declaringClass.sourceName).append(".prototype");
+			}
 		}
 		
 		output.append(", \"").append(this.name).append("\", ").append('{').append("\n");

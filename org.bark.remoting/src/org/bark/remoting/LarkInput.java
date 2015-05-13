@@ -96,6 +96,9 @@ public class LarkInput {
 					handlers[i] = Enum.valueOf((Class) clazz, element.getString(LarkConstants.VALUE));
 				} else if (clazz.equals(String.class)) {
 					handlers[i] = element.getString(VALUE);
+				} else if (clazz.equals(Number.class)) {
+					JsonNumber number = element.getJsonNumber(VALUE);
+					handlers[i] = number == null ? null : number.doubleValue();
 				} else if (clazz.equals(java.util.Date.class)) {
 					handlers[i] = new java.util.Date(element.getInt(VALUE));
 				} else if (clazz.equals(java.sql.Date.class)) {
@@ -125,11 +128,35 @@ public class LarkInput {
 						} else {
 							datas[j] = handlers[((JsonNumber)element).intValue()];
 						}
+						flags[i] = true;
 					}
-				} else {
+//				} else {
+//					Deserializer deser = DeserializerFactory.getInstance().getDeserializer(clazzs[i]);
+//					deser.readObject(root.getJsonObject(i), handlers, handlers[i]);
+				}
+			}
+			
+			for (int i = 0; i < length; i++) {
+				if (flags[i]) {
+					continue;
+				}
+				
+//				if(clazzs[i].isArray()){
+//					JsonArray elements = root.getJsonObject(i).getJsonArray(LarkConstants.VALUE);
+//					Object[] datas = (Object[]) handlers[i];
+//					for(int j = 0, size = elements.size(); j < size; j++){
+//						JsonValue element = elements.get(j);
+//						if(element == JsonValue.NULL){
+//							datas[j] = null;
+//						} else {
+//							datas[j] = handlers[((JsonNumber)element).intValue()];
+//						}
+//						flags[i] = true;
+//					}
+//				} else {
 					Deserializer deser = DeserializerFactory.getInstance().getDeserializer(clazzs[i]);
 					deser.readObject(root.getJsonObject(i), handlers, handlers[i]);
-				}
+//				}
 			}
 
 			return handlers[0];

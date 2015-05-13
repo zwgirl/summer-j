@@ -122,26 +122,24 @@ public class HtmlMarkupExtension extends HtmlElement {
 //	}
 	
 	@Override
-	public StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String logicParent, String context ) {
+	public StringBuffer scriptDom(BlockScope parentScope, int indent, StringBuffer output, String parentNode, String logicParent, String context ) {
 		if(this.resolvedType == null){
 			return output;
 		}
 		
 		ReferenceBinding rb = (ReferenceBinding) this.resolvedType;
 		if(rb.isSubtypeOf(scope.getJavalangPage())){
-			output.append("var __m = new (__lc(\"java.lang.Page\"))(");
+			output.append("var __m = new (__lc(\"java.lang.ProxyPage\"))(");
 			rb.generate(output, scope.enclosingSourceType());
+			output.append(".prototype.__class");
+			output.append(", ").append(parentNode);
 			output.append(");");
 			
-			boolean comma = false;
 			for(HtmlAttribute attribute : this.attributes){
-				if(comma){
-					output.append(", ");
-				}
-				
 				attribute.scriptDom(scope, indent, output, "__m", logicParent, context);
-				comma = true;
 			}
+			
+			output.append("__m");
 		} else {
 			newMarkupExtension(output, rb);
 			
@@ -160,22 +158,21 @@ public class HtmlMarkupExtension extends HtmlElement {
 		output.append(")(");
 	}
 
-	public boolean buildOptions(BlockScope scope, int indent, StringBuffer output,
-			String _this) {
+	public boolean buildOptions(BlockScope scope, int indent, StringBuffer output, String context) {
 		boolean comma = false;
 		for(HtmlAttribute attribute : this.attributes){
 			if(comma){
 				output.append(", ");
 			}
 			
-			attribute.option(scope, indent, output, _this);
+			attribute.option(scope, indent, output, context);
 			comma = true;
 		}
 		
 		return comma;
 	}
 	
-	public StringBuffer optionValue(BlockScope scope, int indent, StringBuffer output, String _this){
+	public StringBuffer optionValue(BlockScope scope, int indent, StringBuffer output, String context){
 		if(this.resolvedType == null){
 			return output;
 		}
@@ -191,7 +188,7 @@ public class HtmlMarkupExtension extends HtmlElement {
 				output.append(", ");
 			}
 			
-			attribute.option(scope, indent, output, _this);
+			attribute.option(scope, indent, output, context);
 			comma = true;
 		}
 		output.append("}");

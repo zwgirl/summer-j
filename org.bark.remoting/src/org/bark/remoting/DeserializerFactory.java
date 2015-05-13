@@ -1,5 +1,9 @@
 package org.bark.remoting;
 
+import java.util.AbstractCollection;
+import java.util.AbstractList;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,7 +12,7 @@ public final class DeserializerFactory {
 	private static final Map<Class<?>, Deserializer> deseserializers = new HashMap<>();
 //	private static final EnumDeserializer enumDeserializer = new EnumDeserializer();
 //	private static final ArrayDeserializer arrayDeserializer = new ArrayDeserializer();
-//	static {
+	static {
 //		deseserializers.put(int.class, new IntDeserializer());
 //		deseserializers.put(short.class, new IntDeserializer());
 //		deseserializers.put(byte.class, new IntDeserializer());
@@ -25,8 +29,13 @@ public final class DeserializerFactory {
 //		deseserializers.put(Double.class, new DoubleDeserializer());
 //		deseserializers.put(Boolean.class, new BooleanDeserializer());
 //		
-//		deseserializers.put(Class.class, new ClassDeserializer());
-//	}
+		deseserializers.put(AbstractCollection.class, new AbstractCollectionDeserializer());
+		deseserializers.put(AbstractList.class, new AbstractListDeserializer());
+		deseserializers.put(ArrayList.class, new ArrayListDeserializer());
+		
+		deseserializers.put(AbstractMap.class, new AbstractMapDeserializer());
+		deseserializers.put(HashMap.class, new HashMapDeserializer());
+	}
 	private DeserializerFactory() {
 	}
 

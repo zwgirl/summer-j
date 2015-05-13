@@ -47,7 +47,7 @@ public class LarkOutput {
 	    			element.add(LarkConstants.VALUE, (float)shared);
 	    		} else if(clazz.equals(Double.class)) {
 	    			element.add(LarkConstants.CLASS, "java.lang.Double");
-	    			element.add(LarkConstants.VALUE, (short)shared);
+	    			element.add(LarkConstants.VALUE, (double)shared);
 	    		} else if(clazz.equals(Class.class)) {
 	    			element.add(LarkConstants.CLASS, "java.lang.Class");
 	    			element.add(LarkConstants.VALUE, (String)clazz.getName());

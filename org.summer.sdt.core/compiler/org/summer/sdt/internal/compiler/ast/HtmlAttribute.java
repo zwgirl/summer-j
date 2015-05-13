@@ -377,7 +377,13 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		case FLOAT:
 		case DOUBLE:
 		case BOOLEAN:
-			if(scope.element.resolvedType.isSubtypeOf(scope.getJavaLangTag())){
+			if(scope.element.resolvedType.isSubtypeOf(scope.getJavalangPage())){
+				printIndent(indent + 1, output.append("\n"));
+				output.append(parentNode).append(".set(\"");
+				this.property.doGenerateExpression(scope, indent, output);
+				output.append("\", ");
+				this.value.generateExpression(scope, indent, output).append(");");
+			} else if(scope.element.resolvedType.isSubtypeOf(scope.getJavalangPage())){
 				printIndent(indent + 1, output.append("\n"));
 				output.append(parentNode).append('.');
 				this.property.doGenerateExpression(scope, indent, output);
@@ -415,19 +421,37 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		} 
 		
 		if(this.field != null){
-			printIndent(indent + 1, output.append("\n"));
-			output.append(parentNode).append("[\"");
-			this.property.generateExpression(scope, indent, output);
-			output.append("\"]");
-			output.append(" = ");
-			if(this.value instanceof Literal){
-				this.value.generateExpression(scope, indent, output);
+//			printIndent(indent + 1, output.append("\n"));
+//			output.append(parentNode).append("[\"");
+//			this.property.generateExpression(scope, indent, output);
+//			output.append("\"]");
+//			output.append(" = ");
+//			if(this.value instanceof Literal){
+//				this.value.generateExpression(scope, indent, output);
+//			}
+//			output.append(";");
+//			printIndent(indent + 1, output.append("\n")).append(context);
+//			output.append('.').append(((Literal) this.value).source());
+//			output.append(" = ").append(parentNode).append(";");
+//			return output;
+			
+			output.append("\n");
+			printIndent(indent + 1, output);
+			output.append(parentNode).append(".addEventListener('").append(CharOperation.subarray(this.property.hyphenName(), 2, -1)).append("', ");
+			if(this.field != null){
+				if(this.field.isStatic()){
+					output.append(this.field.declaringClass.sourceName).append('.');
+					if(this.value instanceof Literal){
+						output.append(((Literal)this.value).source());
+					}
+				} else {
+					output.append(context).append(".");
+					if(this.value instanceof Literal){
+						output.append(((Literal)this.value).source());
+					}
+				}
 			}
-			output.append(";");
-			printIndent(indent + 1, output.append("\n")).append("_this");
-			output.append('.').append(((Literal) this.value).source());
-			output.append(" = ").append(parentNode).append(";");
-			return output;
+			output.append(", false);");
 		}
 		return output;
 	}

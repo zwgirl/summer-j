@@ -2796,25 +2796,25 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			}
 		}
 		
-		if((this.binding.tagBits & TagBits.AnnotationRemotingBean) != 0){
+		if((type.binding.tagBits & TagBits.AnnotationRemotingBean) != 0){
 			//readObject
 			output.append('\n');
 			printIndent(indent, output);
 			output.append(type.binding.sourceName).append(".prototype.__readObject = function(json, handlers, obj) {");
 			
 			//process superclass readObject
-			if(this.superclass != null){
+			if(type.superclass != null){
 				output.append('\n');
 				printIndent(indent + 1, output);
-				this.superclass.resolvedType.generate(output, null);
+				type.superclass.resolvedType.generate(output, null);
 				output.append(".prototype.__readObject(json, handlers, obj);");
 			}
 		    
-			if(this.fields != null){
+			if(type.fields != null){
 				output.append('\n');
 				printIndent(indent + 1, output);
 				output.append("var __propVal = null;");
-				for(FieldDeclaration field : this.fields){
+				for(FieldDeclaration field : type.fields){
 					if(field.isStatic() || (field.modifiers & ClassFileConstants.AccTransient) != 0
 							|| (field.modifiers & ClassFileConstants.AccProperty) != 0
 							|| (field.modifiers & ClassFileConstants.AccIndexer) != 0){
@@ -2867,21 +2867,21 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append(type.binding.sourceName).append(".prototype.__writeObject = function(obj, handlers) {");
 			
 			//process superclass readObject
-			if(this.superclass != null){
+			if(type.superclass != null){
 				output.append('\n');
 				printIndent(indent + 1, output);
-				this.superclass.resolvedType.generate(output, null);
+				type.superclass.resolvedType.generate(output, null);
 				output.append(".prototype.__writeObject(obj, handlers);");
 			}
 			
 			if(this.fields != null){
 				output.append('\n');
 				printIndent(indent + 1, output);
-				output.append("var __r = {\"").append("__clazz").append("\" : \"").append(CharOperation.concatWith(this.binding.compoundName, '.')).append("\"};");
+				output.append("var __r = {\"").append("__clazz").append("\" : \"").append(CharOperation.concatWith(type.binding.compoundName, '.')).append("\"};");
 				output.append('\n');
 				printIndent(indent + 1, output);
 				output.append("var __propVal = null;");
-				for(FieldDeclaration field : this.fields){
+				for(FieldDeclaration field : type.fields){
 					if(field.isStatic() || (field.modifiers & ClassFileConstants.AccTransient) != 0
 							|| (field.modifiers & ClassFileConstants.AccProperty) != 0
 							|| (field.modifiers & ClassFileConstants.AccIndexer) != 0){
@@ -3214,20 +3214,21 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						output.append("\n");
 						cstrCall.generateStatement(scope, indent, output);
 					}
+					generateFields(scope, indent + 1, output, true, type);
 				} else {   //this()
-					output.append("\n");
-					output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
-					if(cstrCall.arguments != null){
-						for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
-							output.append(", ");
-							cstrCall.arguments[j].generateExpression(scope, indent, output);
-						}
-					}
-					output.append(");");
+					generateFields(scope, indent + 1, output, true, type);
+//					output.append("\n");
+//					output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
+//					if(cstrCall.arguments != null){
+//						for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
+//							output.append(", ");
+//							cstrCall.arguments[j].generateExpression(scope, indent, output);
+//						}
+//					}
+//					output.append(");");
+					cstrCall.generateStatement(scope, indent, output);
 				}
 			}
-			
-			generateFields(scope, indent + 1, output, true, type);
 			
 			if(constructor.statements != null){
 				for(int i=0, length = constructor.statements.length; i < length; i++){
