@@ -20,11 +20,10 @@ public class HashMapSerializer implements Serializer {
 	    map.forEach((Object key, Object v)->{
 	    	JsonArrayBuilder entry = bf.createArrayBuilder();
 	    	entry.add(handler.shared(key));
-	    	entry.add(handler.shared(value));
+	    	entry.add(handler.shared(v));
 	    	elements.add(entry);
 	    });
         
         builder.add(LarkConstants.VALUE, elements);
-      }
-
+	}
 }

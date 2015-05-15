@@ -65,7 +65,7 @@ public class LarkOutput {
 	    			element.add(LarkConstants.CLASS, clazz.getName());
 	    			element.add(LarkConstants.VALUE, ((Enum)shared).name());
 	    		} else {
-		    		element.add(CLASS, obj.getClass().getName());
+		    		element.add(CLASS, shared.getClass().getName());
 		    		Serializer ser = SerializerFactory.getInstance().getSerializer(shared.getClass());
 			    	ser.writeObject(element, referenceProcess, shared);
 	    		}
@@ -75,6 +75,12 @@ public class LarkOutput {
 	    }
 	   
 		return array.build();
+	}
+	
+	public static void main(String[] args){
+    	Number g=10;
+    	System.out.println(g.getClass());
+    	
 	}
 }
 

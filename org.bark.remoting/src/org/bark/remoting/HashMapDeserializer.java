@@ -19,5 +19,5 @@ public class HashMapDeserializer implements Deserializer {
         	}
         }
         return map;
-      }
+	}
 }
