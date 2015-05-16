@@ -1070,32 +1070,21 @@ public class SingleNameReference extends NameReference implements OperatorIds {
 			FieldBinding field = (FieldBinding) this.binding;
 			if(field.isStatic()){
 				field.declaringClass.generate(output, scope.classScope().enclosingSourceType());
-				output.append(".").append(this.token);
+				output.append(".");
 			} else {
-				if(field.declaringClass.sourceName != null && field.declaringClass.sourceName.length > 0 && (field.declaringClass.sourceName[0] == 'W' || field.declaringClass.sourceName[0] == 'G') &&
-						(CharOperation.equals(field.declaringClass.compoundName, TypeConstants.JAVA_LANG_WINDOW) 
-							|| CharOperation.equals(field.declaringClass.compoundName, TypeConstants.JAVA_LANG_GLOBAL))){
-					
-				} else {
+				if(field.declaringClass.id != TypeIds.T_JavaLangWindow &&
+						field.declaringClass.id != TypeIds.T_JavaLangGlobal){
 					output.append("this.");
 					if ((this.bits & ASTNode.DepthMASK) != 0) { // outer access ?
-						//process GLobal and Window
-						if((field.declaringClass.sourceName[0] == 'W' || field.declaringClass.sourceName[0] == 'G') &&
-								(CharOperation.equals(field.declaringClass.compoundName, TypeConstants.JAVA_LANG_WINDOW) 
-									|| CharOperation.equals(field.declaringClass.compoundName, TypeConstants.JAVA_LANG_GLOBAL))){
-						} else {
-							int depths = (this.bits & ASTNode.DepthMASK) >> ASTNode.DepthSHIFT;
-							for(int i = 0; i < depths; i++){
-								output.append("__enclosing.");
-							}
+						int depths = (this.bits & ASTNode.DepthMASK) >> ASTNode.DepthSHIFT;
+						for(int i = 0; i < depths; i++){
+							output.append("__enclosing.");
 						}
 					}
 				}
-				output.append(this.token);
 			}
-		} else {
-			output.append(this.token);
 		}
+		output.append(this.token);
 		
 		return output;
 	}

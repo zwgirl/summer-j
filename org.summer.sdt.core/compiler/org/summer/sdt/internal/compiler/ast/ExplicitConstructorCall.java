@@ -522,67 +522,43 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 		if(this.binding == null){
 			return output;
 		}
-		if(this.binding.declaringClass.isMemberType()){
-			output.append("(function(){\n");
-			printIndent(indent + 1, output).append("var r = {__enclosing : this, __proto__: ");
-			output.append(this.binding.declaringClass.getMemberTypeName()).append(".prototype");
-			output.append("};\n");
-			printIndent(indent + 1, output).append(this.binding.declaringClass.sourceName).append(".apply(r, arguments");
-			output.append(");\n");
-			printIndent(indent + 1, output).append("return r;\n"); 
-			printIndent(indent, output).append("}).call(this");
-			outputArguments(scope, indent, output, true);
+		
+		if(this.isSuperAccess()){
+			MethodBinding codegenBinding = this.binding.original();
+			ReferenceBinding targetType = codegenBinding.declaringClass;
+
+			if((this.binding.declaringClass.modifiers & ClassFileConstants.AccNative) !=0){
+				return output;
+			} 
 			
-			if(this.binding != null && (this.binding.getAnnotationTagBits() & TagBits.AnnotationOverload) != 0){
-				if(this.arguments != null && this.arguments.length > 0){
-					output.append(", ");
-				}
+			output.append("__lc(\"").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.'))
+				.append("\", \"").append(this.binding.declaringClass.computeFileName()).append("\")");//.append("')");
+			output.append(".call(this");
+			outputArguments(scope, indent, output, true);
+			// special name&ordinal argument generation for enum constructors
+			if (targetType.erasure().id == TypeIds.T_JavaLangEnum || targetType.isEnum()) {
+				output.append(", arguments[arguments.length-2], arguments[arguments.length-1]");
+			}
+			
+			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
+				output.append(", ");
 				if(this.binding.overload != null){
 					output.append("\"").append(this.binding.overload).append("\"");
 				}
 			}
 			output.append(')');
-			return output;
 		} else {
-			
 			MethodBinding codegenBinding = this.binding.original();
 			ReferenceBinding targetType = codegenBinding.declaringClass;
 
-//			output.append("new "); 
 			if((this.binding.declaringClass.modifiers & ClassFileConstants.AccNative) !=0){
-					int id = this.binding.declaringClass.id;
-					if(id != TypeIds.NoId){
-						switch(id){
-						case TypeIds.T_char:
-						case TypeIds.T_JavaLangCharacter:
-						case TypeIds.T_byte:
-						case TypeIds.T_JavaLangByte:
-						case TypeIds.T_short:
-						case TypeIds.T_JavaLangShort:
-						case TypeIds.T_int:
-						case TypeIds.T_JavaLangInteger:
-						case TypeIds.T_long:
-						case TypeIds.T_JavaLangLong:
-						case TypeIds.T_float:
-						case TypeIds.T_JavaLangFloat:
-						case TypeIds.T_double:
-						case TypeIds.T_JavaLangDouble:
-							output.append("return Number");
-						}
-					} else { // type null for enum constant initializations
-					output.append(this.binding.declaringClass.sourceName()); 
-				}
-			} else {
-				// special name&ordinal argument generation for enum constructors
-//				if (targetType.erasure().id == TypeIds.T_JavaLangEnum || targetType.isEnum()) {
-//					output.append("Enum");
-//				} else {
-					output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')");
-//				}
-			}
+				return output;
+			} 
 			
+			output.append("__lc(\"").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.'))
+				.append("\", \"").append(this.binding.declaringClass.computeFileName()).append("\")");//.append("')");
 			output.append(".call(this");
-			outputArguments(scope, indent, output, false);
+			outputArguments(scope, indent, output, true);
 			// special name&ordinal argument generation for enum constructors
 			if (targetType.erasure().id == TypeIds.T_JavaLangEnum || targetType.isEnum()) {
 				output.append(", arguments[arguments.length-2], arguments[arguments.length-1]");
@@ -596,6 +572,53 @@ public class ExplicitConstructorCall extends Statement implements Invocation {
 			}
 			output.append(')');
 		}
+		
+//		if(this.binding.declaringClass.isMemberType()){
+//			output.append("(function(){\n");
+//			printIndent(indent + 1, output).append("var r = {__enclosing : this, __proto__: ");
+//			output.append(this.binding.declaringClass.getMemberTypeName()).append(".prototype");
+//			output.append("};\n");
+//			printIndent(indent + 1, output).append(this.binding.declaringClass.sourceName).append(".apply(r, arguments");
+//			output.append(");\n");
+//			printIndent(indent + 1, output).append("return r;\n"); 
+//			printIndent(indent, output).append("}).call(this");
+//			outputArguments(scope, indent, output, true);
+//			
+//			if(this.binding != null && (this.binding.getAnnotationTagBits() & TagBits.AnnotationOverload) != 0){
+//				if(this.arguments != null && this.arguments.length > 0){
+//					output.append(", ");
+//				}
+//				if(this.binding.overload != null){
+//					output.append("\"").append(this.binding.overload).append("\"");
+//				}
+//			}
+//			output.append(')');
+//			return output;
+//		} else {
+//			MethodBinding codegenBinding = this.binding.original();
+//			ReferenceBinding targetType = codegenBinding.declaringClass;
+//
+//			if((this.binding.declaringClass.modifiers & ClassFileConstants.AccNative) !=0){
+//				output.append(this.binding.declaringClass.sourceName()); 
+//				return output;
+//			} 
+//			
+//			output.append("__lc('").append(CharOperation.concatWith(this.binding.declaringClass.compoundName, '.')).append("')");
+//			output.append(".call(this");
+//			outputArguments(scope, indent, output, true);
+//			// special name&ordinal argument generation for enum constructors
+//			if (targetType.erasure().id == TypeIds.T_JavaLangEnum || targetType.isEnum()) {
+//				output.append(", arguments[arguments.length-2], arguments[arguments.length-1]");
+//			}
+//			
+//			if(this.binding != null && (this.binding.tagBits & TagBits.AnnotationOverload) != 0){
+//				output.append(", ");
+//				if(this.binding.overload != null){
+//					output.append("\"").append(this.binding.overload).append("\"");
+//				}
+//			}
+//			output.append(')');
+//		}
 		
 		return output;
 	}

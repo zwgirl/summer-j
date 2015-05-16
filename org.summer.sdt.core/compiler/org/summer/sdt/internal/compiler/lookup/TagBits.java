@@ -159,6 +159,8 @@ public interface TagBits {
 	/** @since 3.8 canceling null-default annotation for PackageBinding or TypeBinding or MethodBinding: */
 	long AnnotationNullUnspecifiedByDefault = ASTNode.Bit59L;
 	
+	//cym 2015-05-11
+	long AnnotationAttribute = ASTNode.Bit56L;
 	//cym 2015-03-18
 //	/** From Java 8 */
 //	long AnnotationFunctionalInterface = ASTNode.Bit60L;
@@ -176,6 +178,13 @@ public interface TagBits {
 	
 	/** summer cym 2015-02-12*/
 	long AnnotationModule = ASTNode.Bit63L;   //AnnotationFunctionalInterface
+	
+	//html tag
+	long SimpleElement = ASTNode.Bit32L;
+	long ComplexElement = ASTNode.Bit33L;
+	
+	//cym 2015-04-13
+	long IsHtmlPage = ASTNode.Bit60L;
 	
 	long AllStandardAnnotationsMask =
 				  AnnotationTargetMASK

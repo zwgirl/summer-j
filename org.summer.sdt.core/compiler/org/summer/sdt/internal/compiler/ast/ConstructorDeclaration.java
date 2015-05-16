@@ -116,9 +116,12 @@ public class ConstructorDeclaration extends AbstractMethodDeclaration {
 				if (!methodBinding.canBeSeenBy(SuperReference.implicitSuperConstructorCall(), this.scope))
 					break checkUnused;
 				ReferenceBinding declaringClass = constructorBinding.declaringClass;
+				//cym 2015-04-25
+//				if (constructorBinding.isPublic() && constructorBinding.parameters.length == 0 &&
+//						declaringClass.isStatic() &&
+//						declaringClass.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoExternalizable, false) != null)
 				if (constructorBinding.isPublic() && constructorBinding.parameters.length == 0 &&
-						declaringClass.isStatic() &&
-						declaringClass.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoExternalizable, false) != null)
+					declaringClass.isStatic())
 					break checkUnused;
 				// otherwise default super constructor exists, so go ahead and complain unused.
 			}

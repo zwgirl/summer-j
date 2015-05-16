@@ -273,40 +273,22 @@ public abstract class Engine implements ITypeRequestor {
 		return null;
 	}
 	
-	//cym 2015-02-22
-	private ASTNode parserElement(XAMLElement element, int position){
-		for(Attribute attribute : element.attributes){
-			if(attribute.property.sourceStart < position && attribute.property.sourceEnd >= position){
-				return attribute.property;
-			} 
-			if(attribute.value.sourceStart < position && attribute.value.sourceEnd >= position){
-				if(attribute.value instanceof MarkupExtension){
-					MarkupExtension markup = (MarkupExtension) attribute.value;
-					return parserElement(markup, position);
-				}
-				return attribute.value;
-			}
-		}
-		
-		for(XAMLElement child : element.children){
-			if(child.sourceStart < position && child.sourceEnd >= position){
-				return parserElement(child, position);
-			}
-		}
-		return null;
-		
-	}
-
 	private ASTNode parseBlockStatements(
 		TypeDeclaration type,
 		CompilationUnitDeclaration unit,
 		int position) {
 		
 		//cym 2014-12-09
-		if(type.element != null){
-			ASTNode node = parserElement(type.element, position);
-			if(node != null){
-				return node;
+		if(type.htmlElements != null){
+			ASTNode node = null;
+			int length = type.htmlElements.length;
+			for (int i = 0; i < length; i++) {
+				HtmlElement element = type.htmlElements[i];
+				node = element.parserElement(position);
+//				node = parserElement(element, position);
+				if(node != null){
+					return node;
+				}
 			}
 		}
 		

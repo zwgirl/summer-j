@@ -158,12 +158,9 @@ public abstract class ASTVisitor {
 	public void endVisit(FieldReference fieldReference, ClassScope scope) {
 		// do nothing by default
 	}
+	
 	//cym 2014-12-26
-	public void endVisit(PropertyReference propertyReference, BlockScope scope) {
-		// do nothing by default
-	}
-	//cym 2014-12-26
-	public void endVisit(PropertyReference propertyReference, ClassScope scope) {
+	public void endVisit(HtmlPropertyReference propertyReference, BlockScope scope) {
 		// do nothing by default
 	}
 	
@@ -516,23 +513,11 @@ public abstract class ASTVisitor {
 	}
 	
 	//XAML
-	public void endVisit(XAMLElement element, ClassScope scope) {
+	public void endVisit(HtmlElement element, ClassScope scope) {
 		// do nothing by default
 	}
 	
-	public void endVisit(ObjectElement element, ClassScope scope) {
-		// do nothing by default
-	}
-	
-	public void endVisit(AttributeElement element, ClassScope scope) {
-		// do nothing by default
-	}
-	
-	public void endVisit(CommonAttribute element, ClassScope scope) {
-		// do nothing by default
-	}
-	
-	public void endVisit(MarkupExtension element, ClassScope scope) {
+	public void endVisit(HtmlMarkupExtension element, ClassScope scope) {
 		// do nothing by default
 	}
 	//END XAML
@@ -674,14 +659,10 @@ public abstract class ASTVisitor {
 		return true; // do nothing by default, keep traversing
 	}
 	
-	//cym 2014-12-26
-	public boolean visit(PropertyReference propertyReference, BlockScope scope) {
+	//cym 2015-04-14
+	public boolean visit(HtmlPropertyReference propertyReference, BlockScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
-	public boolean visit(PropertyReference propertyReference, ClassScope scope) {
-		return true; // do nothing by default, keep traversing
-	}
-	//cym 2014-12-26 end
 	
 	public boolean visit(FloatLiteral floatLiteral, BlockScope scope) {
 		return true; // do nothing by default, keep traversing
@@ -1038,25 +1019,13 @@ public abstract class ASTVisitor {
 		return true; // do nothing by default, keep traversing
 	}
 	
-	//XAML
-	public boolean visit(XAMLElement element, ClassScope scope) {
+	//HTML
+	public boolean visit(HtmlElement element, ClassScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
 	
-	public boolean visit(ObjectElement element, ClassScope scope) {
+	public boolean visit(HtmlMarkupExtension element, ClassScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
-	
-	public boolean visit(AttributeElement element, ClassScope scope) {
-		return true; // do nothing by default, keep traversing
-	}
-	
-	public boolean visit(CommonAttribute element, ClassScope scope) {
-		return true; // do nothing by default, keep traversing
-	}
-	
-	public boolean visit(MarkupExtension element, ClassScope scope) {
-		return true; // do nothing by default, keep traversing
-	}
-	//END XAML
+	//END HTML
 }

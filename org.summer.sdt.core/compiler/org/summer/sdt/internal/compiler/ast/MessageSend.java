@@ -153,27 +153,28 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 		// recording the closing of AutoCloseable resources:
 		CompilerOptions compilerOptions = currentScope.compilerOptions();
 		boolean analyseResources = compilerOptions.analyseResourceLeaks;
-		if (analyseResources) {
-			if (nonStatic) {
-				// closeable.close()
-				if (CharOperation.equals(TypeConstants.CLOSE, this.selector)) {
-					recordCallingClose(currentScope, flowContext, flowInfo, this.receiver);
-				}
-			} else if (this.arguments != null && this.arguments.length > 0 && FakedTrackingVariable.isAnyCloseable(this.arguments[0].resolvedType)) {
-				// Helper.closeMethod(closeable, ..)
-				for (int i=0; i<TypeConstants.closeMethods.length; i++) {
-					CloseMethodRecord record = TypeConstants.closeMethods[i];
-					if (CharOperation.equals(record.selector, this.selector)
-							&& CharOperation.equals(record.typeName, this.binding.declaringClass.compoundName)) 
-					{
-						int len = Math.min(record.numCloseableArgs, this.arguments.length);
-						for (int j=0; j<len; j++)
-							recordCallingClose(currentScope, flowContext, flowInfo, this.arguments[j]);
-						break;
-					}
-				}
-			}
-		}
+		//cym 2015-04-24
+//		if (analyseResources) {
+//			if (nonStatic) {
+//				// closeable.close()
+//				if (CharOperation.equals(TypeConstants.CLOSE, this.selector)) {
+//					recordCallingClose(currentScope, flowContext, flowInfo, this.receiver);
+//				}
+//			} else if (this.arguments != null && this.arguments.length > 0 && FakedTrackingVariable.isAnyCloseable(this.arguments[0].resolvedType)) {
+//				// Helper.closeMethod(closeable, ..)
+//				for (int i=0; i<TypeConstants.closeMethods.length; i++) {
+//					CloseMethodRecord record = TypeConstants.closeMethods[i];
+//					if (CharOperation.equals(record.selector, this.selector)
+//							&& CharOperation.equals(record.typeName, this.binding.declaringClass.compoundName)) 
+//					{
+//						int len = Math.min(record.numCloseableArgs, this.arguments.length);
+//						for (int j=0; j<len; j++)
+//							recordCallingClose(currentScope, flowContext, flowInfo, this.arguments[j]);
+//						break;
+//					}
+//				}
+//			}
+//		}
 	
 		if (nonStatic) {
 			this.receiver.checkNPE(currentScope, flowContext, flowInfo);
@@ -250,60 +251,61 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 			TypeBinding parameterType = parameters[argumentIdx];
 			if (this.actualReceiverType != null && parameterType != null) {
 				switch (this.actualReceiverType.id) {
-					case TypeIds.T_OrgEclipseCoreRuntimeAssert:
-						if (parameterType.id == TypeIds.T_boolean)
-							return TRUE_ASSERTION;
-						if (parameterType.id == TypeIds.T_JavaLangObject && CharOperation.equals(TypeConstants.IS_NOTNULL, this.selector))
-							return NONNULL_ASSERTION;
-						break;
-					case TypeIds.T_JunitFrameworkAssert:
-					case TypeIds.T_OrgJunitAssert:
-						if (parameterType.id == TypeIds.T_boolean) {
-							if (CharOperation.equals(TypeConstants.ASSERT_TRUE, this.selector))
-								return TRUE_ASSERTION;
-							if (CharOperation.equals(TypeConstants.ASSERT_FALSE, this.selector))
-								return FALSE_ASSERTION;
-						} else if (parameterType.id == TypeIds.T_JavaLangObject) {
-							if (CharOperation.equals(TypeConstants.ASSERT_NOTNULL, this.selector))
-								return NONNULL_ASSERTION;
-							if (CharOperation.equals(TypeConstants.ASSERT_NULL, this.selector))
-								return NULL_ASSERTION;
-						}
-						break;
-					case TypeIds.T_OrgApacheCommonsLangValidate:
-						if (parameterType.id == TypeIds.T_boolean) {
-							if (CharOperation.equals(TypeConstants.IS_TRUE, this.selector))
-								return TRUE_ASSERTION;
-						} else if (parameterType.id == TypeIds.T_JavaLangObject) {
-							if (CharOperation.equals(TypeConstants.NOT_NULL, this.selector))
-								return NONNULL_ASSERTION;
-						}
-						break;
-					case TypeIds.T_OrgApacheCommonsLang3Validate:
-						if (parameterType.id == TypeIds.T_boolean) {
-							if (CharOperation.equals(TypeConstants.IS_TRUE, this.selector))
-								return TRUE_ASSERTION;
-						} else if (parameterType.isTypeVariable()) {
-							if (CharOperation.equals(TypeConstants.NOT_NULL, this.selector))
-								return NONNULL_ASSERTION;
-						}
-						break;
-					case TypeIds.T_ComGoogleCommonBasePreconditions:
-						if (parameterType.id == TypeIds.T_boolean) {
-							if (CharOperation.equals(TypeConstants.CHECK_ARGUMENT, this.selector)
-								|| CharOperation.equals(TypeConstants.CHECK_STATE, this.selector))
-								return TRUE_ASSERTION;
-						} else if (parameterType.isTypeVariable()) {
-							if (CharOperation.equals(TypeConstants.CHECK_NOT_NULL, this.selector))
-								return NONNULL_ASSERTION;
-						}
-						break;					
-					case TypeIds.T_JavaUtilObjects:
-						if (parameterType.isTypeVariable()) {
-							if (CharOperation.equals(TypeConstants.REQUIRE_NON_NULL, this.selector))
-								return NONNULL_ASSERTION;
-						}
-						break;					
+				//cym 2015-04-24
+//					case TypeIds.T_OrgEclipseCoreRuntimeAssert:
+//						if (parameterType.id == TypeIds.T_boolean)
+//							return TRUE_ASSERTION;
+//						if (parameterType.id == TypeIds.T_JavaLangObject && CharOperation.equals(TypeConstants.IS_NOTNULL, this.selector))
+//							return NONNULL_ASSERTION;
+//						break;
+//					case TypeIds.T_JunitFrameworkAssert:
+//					case TypeIds.T_OrgJunitAssert:
+//						if (parameterType.id == TypeIds.T_boolean) {
+//							if (CharOperation.equals(TypeConstants.ASSERT_TRUE, this.selector))
+//								return TRUE_ASSERTION;
+//							if (CharOperation.equals(TypeConstants.ASSERT_FALSE, this.selector))
+//								return FALSE_ASSERTION;
+//						} else if (parameterType.id == TypeIds.T_JavaLangObject) {
+//							if (CharOperation.equals(TypeConstants.ASSERT_NOTNULL, this.selector))
+//								return NONNULL_ASSERTION;
+//							if (CharOperation.equals(TypeConstants.ASSERT_NULL, this.selector))
+//								return NULL_ASSERTION;
+//						}
+//						break;
+//					case TypeIds.T_OrgApacheCommonsLangValidate:
+//						if (parameterType.id == TypeIds.T_boolean) {
+//							if (CharOperation.equals(TypeConstants.IS_TRUE, this.selector))
+//								return TRUE_ASSERTION;
+//						} else if (parameterType.id == TypeIds.T_JavaLangObject) {
+//							if (CharOperation.equals(TypeConstants.NOT_NULL, this.selector))
+//								return NONNULL_ASSERTION;
+//						}
+//						break;
+//					case TypeIds.T_OrgApacheCommonsLang3Validate:
+//						if (parameterType.id == TypeIds.T_boolean) {
+//							if (CharOperation.equals(TypeConstants.IS_TRUE, this.selector))
+//								return TRUE_ASSERTION;
+//						} else if (parameterType.isTypeVariable()) {
+//							if (CharOperation.equals(TypeConstants.NOT_NULL, this.selector))
+//								return NONNULL_ASSERTION;
+//						}
+//						break;
+//					case TypeIds.T_ComGoogleCommonBasePreconditions:
+//						if (parameterType.id == TypeIds.T_boolean) {
+//							if (CharOperation.equals(TypeConstants.CHECK_ARGUMENT, this.selector)
+//								|| CharOperation.equals(TypeConstants.CHECK_STATE, this.selector))
+//								return TRUE_ASSERTION;
+//						} else if (parameterType.isTypeVariable()) {
+//							if (CharOperation.equals(TypeConstants.CHECK_NOT_NULL, this.selector))
+//								return NONNULL_ASSERTION;
+//						}
+//						break;					
+//					case TypeIds.T_JavaUtilObjects:
+//						if (parameterType.isTypeVariable()) {
+//							if (CharOperation.equals(TypeConstants.REQUIRE_NON_NULL, this.selector))
+//								return NONNULL_ASSERTION;
+//						}
+//						break;					
 				}
 			}
 		}
@@ -1374,7 +1376,8 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 //				this.actualReceiverType.generate(output, scope.classScope().enclosingSourceType());
 				output.append('.').append("prototype.");
 			} else if(this.binding.isDefaultMethod()){
-				output.append(this.binding.declaringClass.sourceName);
+				this.binding.declaringClass.generate(output, scope.classScope().enclosingSourceType());
+//				output.append(this.binding.declaringClass.sourceName);
 				output.append(".prototype.");
 			} else if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0){
 				
@@ -1394,8 +1397,22 @@ public class MessageSend extends Expression implements IPolyExpression, Invocati
 				output.append(".call");
 			}
 			
+			if(this.binding.isDefaultMethod()){
+				output.append(".call");
+			}
+			
 			output.append('(') ;
 			if((this.binding.modifiers & ClassFileConstants.AccPrivate) != 0 || this.receiver instanceof SuperReference){
+				if (this.receiver.isImplicitThis() || this.receiver.isThis() || this.receiver.isSuper()){ 
+					output.append("this");
+					comma = true;
+				} else {
+					this.receiver.doGenerateExpression(scope, indent, output);
+					comma = true;
+				}
+			}
+			
+			if(this.binding.isDefaultMethod()){
 				if (this.receiver.isImplicitThis() || this.receiver.isThis() || this.receiver.isSuper()){ 
 					output.append("this");
 					comma = true;

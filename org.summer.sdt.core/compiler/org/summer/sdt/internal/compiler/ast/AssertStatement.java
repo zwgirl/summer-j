@@ -78,11 +78,12 @@ public class AssertStatement extends Statement {
 			if (isOptimizedTrueAssertion){
 				currentScope.problemReporter().fakeReachable(this.exceptionArgument);
 			} else {
-				flowContext.checkExceptionHandlers(
-					currentScope.getJavaLangAssertionError(),
-					this,
-					exceptionInfo,
-					currentScope);
+				//cym 2015-04-24
+//				flowContext.checkExceptionHandlers(
+//					currentScope.getJavaLangAssertionError(),
+//					this,
+//					exceptionInfo,
+//					currentScope);
 			}
 		}
 	

@@ -66,6 +66,22 @@ public class BlockScope extends Scope {
 	
 	//cym 2015-03-03 for secret variable used in forEach
 	public Set<char[]> secrets = new HashSet<char[]>();
+	
+	//used for htmlElement resolve
+	public HtmlElement element;
+	
+	//cym 2015-04-12 for HtmlElement resolve
+	public BlockScope(BlockScope parent, HtmlElement element) {
+		this(parent, true);
+		this.element = element;
+		element.scope = this;
+	}
+	//cym 2015-04-17 for HtmlElement resolve
+	public BlockScope(Scope parent, HtmlElement element) {
+		this(Scope.BLOCK_SCOPE, parent);
+		this.element = element;
+		this.element.scope = this;
+	}
 
 	public BlockScope(BlockScope parent) {
 		this(parent, true);
@@ -1273,5 +1289,33 @@ public class BlockScope extends Scope {
 	
 	public void addSecretVariableName(char[] secretName){
 		secrets.add(secretName);
+	}
+	
+	public char[] getNamespace(char[] prefix) {
+		if(this.element == null){
+			return null;
+		}
+		
+		char[] namespace = null;
+		if(this.element != null){
+			namespace = this.element.getNamespace(prefix);
+		}
+		
+		if(namespace != null){
+			return namespace;
+		}
+		
+		if(parent instanceof BlockScope){
+			BlockScope scope = (BlockScope) parent;
+			return scope.getNamespace(prefix);
+		}
+		
+		return null;
+	}
+	public char[] getDefaultNamespace() {
+		if(this.element != null ){
+			return this.element.getDefaultNamesapce();
+		}
+		return null;
 	}
 }

@@ -82,9 +82,10 @@ public abstract class BinaryMember extends NamedMember {
 		if ((tagBits & TagBits.AnnotationInherited) != 0) {
 			annotations.add(getAnnotation(TypeConstants.JAVA_LANG_ANNOTATION_INHERITED));
 		}
-		if ((tagBits & TagBits.AnnotationPolymorphicSignature) != 0) {
-			annotations.add(getAnnotation(TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_$_POLYMORPHICSIGNATURE));
-		}
+		//cym 2015-04-24
+//		if ((tagBits & TagBits.AnnotationPolymorphicSignature) != 0) {
+//			annotations.add(getAnnotation(TypeConstants.JAVA_LANG_INVOKE_METHODHANDLE_$_POLYMORPHICSIGNATURE));
+//		}
 		if ((tagBits & TagBits.AnnotationSafeVarargs) != 0) {
 			annotations.add(getAnnotation(TypeConstants.JAVA_LANG_SAFEVARARGS));
 		}

@@ -47,7 +47,7 @@ public class LarkOutput {
 	    			element.add(LarkConstants.VALUE, (float)shared);
 	    		} else if(clazz.equals(Double.class)) {
 	    			element.add(LarkConstants.CLASS, "java.lang.Double");
-	    			element.add(LarkConstants.VALUE, (short)shared);
+	    			element.add(LarkConstants.VALUE, (double)shared);
 	    		} else if(clazz.equals(Class.class)) {
 	    			element.add(LarkConstants.CLASS, "java.lang.Class");
 	    			element.add(LarkConstants.VALUE, (String)clazz.getName());
@@ -65,7 +65,7 @@ public class LarkOutput {
 	    			element.add(LarkConstants.CLASS, clazz.getName());
 	    			element.add(LarkConstants.VALUE, ((Enum)shared).name());
 	    		} else {
-		    		element.add(CLASS, obj.getClass().getName());
+		    		element.add(CLASS, shared.getClass().getName());
 		    		Serializer ser = SerializerFactory.getInstance().getSerializer(shared.getClass());
 			    	ser.writeObject(element, referenceProcess, shared);
 	    		}
@@ -75,6 +75,12 @@ public class LarkOutput {
 	    }
 	   
 		return array.build();
+	}
+	
+	public static void main(String[] args){
+    	Number g=10;
+    	System.out.println(g.getClass());
+    	
 	}
 }
 

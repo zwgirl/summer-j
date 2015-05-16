@@ -2714,6 +2714,7 @@ M4 = Platform-specific fourth key
             commandId="org.summer.sdt.debug.ui.commands.StepIntoSelection"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
      <!-- On carbon: Command+F5 starts Voice Over, Ctrl+F5 moves focus to toolbar -->
+     <!--
       <key
             platform="carbon"
             sequence="M1+F5"
@@ -2762,7 +2763,9 @@ M4 = Platform-specific fourth key
             sequence="M2+M3+D J"
             commandId="org.summer.sdt.debug.ui.localJavaShortcut.debug"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            -->
       <!-- On carbon: Shift+Option+D is a character, Command+Option+D is Show/Hide Dock, Command+Control+D is dictionary lookup -->
+       <!--
        <key
             platform="carbon"
             sequence="M2+M3+D J"
@@ -2794,7 +2797,9 @@ M4 = Platform-specific fourth key
             
             commandId="org.summer.sdt.debug.ui.javaAppletShortcut.debug"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+            -->
       <!-- On carbon: Shift+Option+D is a character, Command+Option+D is Show/Hide Dock, Command+Control+D is dictionary lookup -->
+      <!--
       <key
             platform="carbon"
             sequence="M2+M3+D A"
@@ -2822,18 +2827,19 @@ M4 = Platform-specific fourth key
             
             commandId="org.summer.sdt.debug.ui.javaAppletShortcut.run"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-   <key
-         commandId="org.summer.sdt.debug.ui.commands.AllInstances"
-         
-         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-         sequence="M1+M2+N">
-   </key>
-   <key
-         commandId="org.summer.sdt.debug.ui.breakpoint.properties"
-         contextId="org.eclipse.debug.ui.BreakpointView"
-         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-         sequence="M3+ENTER">
-   </key>
+	   <key
+	         commandId="org.summer.sdt.debug.ui.commands.AllInstances"
+	         
+	         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+	         sequence="M1+M2+N">
+	   </key>
+	   <key
+	         commandId="org.summer.sdt.debug.ui.breakpoint.properties"
+	         contextId="org.eclipse.debug.ui.BreakpointView"
+	         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+	         sequence="M3+ENTER">
+	   </key>
+	   -->
    </extension>
    <extension
          point="org.summer.sdt.ui.classpathContainerPage">

@@ -213,7 +213,8 @@ public class ReferenceExpression extends FunctionalExpression implements IPolyEx
 		return (this.binding.isVarargs() || 
 				(isConstructorReference() && this.receiverType.syntheticOuterLocalVariables() != null && currentScope.methodScope().isStatic) ||
 				this.expectedType instanceof IntersectionTypeBinding18 || // marker interfaces require alternate meta factory.
-				this.expectedType.findSuperTypeOriginatingFrom(currentScope.getJavaIoSerializable()) != null || // serialization support.
+				//cym 2015-04-24
+//				this.expectedType.findSuperTypeOriginatingFrom(currentScope.getJavaIoSerializable()) != null || // serialization support.
 				this.requiresBridges()); // bridges.
 		// To fix: We should opt for direct code generation wherever possible.
 	}

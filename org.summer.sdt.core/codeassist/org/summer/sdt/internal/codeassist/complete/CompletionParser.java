@@ -2082,174 +2082,131 @@ public class CompletionParser extends AssistParser {
 		if (checkNameCompletion()) return;
 	}
 	
-	//cym 2014-12-09
-	protected void consumeElementTag(){
-		/* no need to take action if not inside completed identifiers */
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeElementTag();
-			return;
-		}
-		
-		ObjectElement element = new ObjectElement();
-		pushOnElementStack(element);
-		
-		element.type = createSingleAssistTypeReference(
-				assistIdentifier(),
-				this.identifierPositionStack[this.identifierPtr--]);
-		
-		this.assistNode = element.type;
-		this.lastCheckPoint = element.type.sourceEnd + 1;
-		
-		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
-	}
-	
-	protected void consumeAttribute() {
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeAttribute();
-			return;
-		}
-		
-		// SimpleName = expression 
-		char[] token = this.identifierStack[this.identifierPtr];
-		long positions = this.identifierPositionStack[this.identifierPtr--];
-		
-		CompletionOnPropertyAccess fr = new CompletionOnPropertyAccess(token, positions, false);
-		this.assistNode = fr;
-		this.lastCheckPoint = fr.sourceEnd + 1;
-		
-		Attribute attr = new Attribute(fr);
-		
-		this.identifierLengthPtr--;
-		attr.value =  this.expressionStack[this.expressionPtr--];
-		this.expressionLengthPtr--;
-		
-		attr.sourceStart = (int) (positions >>> 32);
-		
-		pushOnAttributeStack(attr);
-	}
-	
-	protected void consumeAttributeWithPropertyReference() {
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeAttributeWithPropertyReference();
-			return;
-		}
-		
-		PropertyReference propertyReference = new CompletionOnPropertyAccess(
-				this.identifierStack[this.identifierPtr],
-				this.identifierPositionStack[this.identifierPtr--], 
-				new CompletionOnPropertyAccess(
-						this.identifierStack[this.identifierPtr], 
-						this.identifierPositionStack[this.identifierPtr--], false), 
-						false);
-		this.identifierLengthPtr--;
-		this.identifierLengthPtr--;
-		
-		Attribute attr = new Attribute(propertyReference);
-		
-		attr.value = this.expressionStack[this.expressionPtr--];
-		expressionLengthPtr--;
-		pushOnAttributeStack(attr);
-		
-		attr.statementEnd = this.scanner.currentPosition - 1;
-		attr.sourceEnd = this.scanner.currentPosition - 1;
-	}
-	
-	protected void consumeAttributeWithTypeReference(){
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeAttributeWithTypeReference();
-			return;
-		}
-
-		char[] attrName = this.identifierStack[this.identifierPtr];
-		long positions = this.identifierPositionStack[this.identifierPtr--];
-		this.identifierLengthPtr--;
-		
-		TypeReference receiver = new CompletionOnSingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
-		this.identifierLengthPtr--;
-		
-		Attribute attribute = new Attribute(new CompletionOnPropertyAccess(attrName, positions, receiver, false));
-
-		attribute.value =  this.expressionStack[this.expressionPtr--];
-		this.expressionLengthPtr--;
-		
-		attribute.sourceStart = (int) (positions >>> 32);
-		attribute.sourceEnd = attribute.value.sourceEnd;
-		
-		//check named attribute
-		if(CharOperation.equals(attribute.property.token, Attribute.NAME)){
-			ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr1];
-			attribute.bits |= ASTNode.IsNamedAttribute;
-			if((attribute.bits & ASTNode.IsNamedAttribute) != 0){
-				problemReporter().duplicateNamedElementInType(attribute.property);
-			} else {
-				attribute.bits |= ASTNode.IsNamedAttribute;
-			}
-			StringLiteral str = (StringLiteral) attribute.value;
-			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
-			fieldDecl.type = element.type;
-			fieldDecl.bits |= ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal;
-			
-			pushOnAstStack(fieldDecl);
-			concatNodeLists();
-		}
-		
-		pushOnAttributeStack(attribute);
-	}
-	
-	protected void consumeMarkupExtensionTag(){
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeMarkupExtensionTag();
-			return;
-		}
-		MarkupExtension markupExtension = new MarkupExtension();
-		markupExtension.type = createSingleAssistTypeReference(
-				assistIdentifier(),
-				this.identifierPositionStack[this.identifierPtr--]);
-		
-		pushOnExpressionStack(markupExtension);	
-	}
-	
-	protected void consumeAttributeElementTag(){
-		//AttributeElementTag ::= $empty
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			this.identifierPtr--;
-			this.identifierLengthPtr--;
-			if(this.indexOfAssistIdentifier() != 0 ) {
-				this.identifierPtr++;
-				this.identifierLengthPtr++;
-				super.consumeAttributeElementTag();
-			} else {
-				AttributeElement element = new AttributeElement();
-				element.sourceStart = this.intStack[this.intPtr--];
-				
-				element.property = new PropertyReference(
-						this.identifierStack[this.identifierPtr],
-						this.identifierPositionStack[this.identifierPtr--]);
-				this.identifierLengthPtr--;
-				
-				element.type = new CompletionOnSingleTypeReference(
-						this.identifierStack[this.identifierPtr],
-						this.identifierPositionStack[this.identifierPtr--]);
-				this.identifierLengthPtr--;
-				
-				pushOnElementStack(element);
-			}
-		} else {
-			AttributeElement element = new AttributeElement();
-			element.sourceStart = this.intStack[this.intPtr--];
-			
-			element.property = new CompletionOnPropertyAccess(
-					this.identifierStack[this.identifierPtr],
-					this.identifierPositionStack[this.identifierPtr--], false);
-			this.identifierLengthPtr--;
-			
-			element.type = new SingleTypeReference(
-					this.identifierStack[this.identifierPtr],
-					this.identifierPositionStack[this.identifierPtr--]);
-			this.identifierLengthPtr--;
-			pushOnElementStack(element);
-		}
-	}
+//	//cym 2014-12-09
+//	protected void consumeHtmlElementTag(){
+//		/* no need to take action if not inside completed identifiers */
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlElementTag();
+//			return;
+//		}
+//		
+//		HtmlElement element = new HtmlElement();
+//		pushOnElementStack(element);
+//		
+//		element.type = createSingleAssistTypeReference(
+//				assistIdentifier(),
+//				this.identifierPositionStack[this.identifierPtr--]);
+//		
+//		this.assistNode = element.type;
+//		this.lastCheckPoint = element.type.sourceEnd + 1;
+//		
+//		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
+//	}
+//	
+//	protected void consumeHtmlAttribute() {
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlAttribute();
+//			return;
+//		}
+//		
+//		// SimpleName = expression 
+//		char[] token = this.identifierStack[this.identifierPtr];
+//		long positions = this.identifierPositionStack[this.identifierPtr--];
+//		
+//		CompletionOnHtmlSimplePropertyAccess fr = new CompletionOnHtmlSimplePropertyAccess(token, positions, false);
+//		this.assistNode = fr;
+//		this.lastCheckPoint = fr.sourceEnd + 1;
+//		
+//		HtmlAttribute attr = new HtmlAttribute(fr);
+//		
+//		this.identifierLengthPtr--;
+//		attr.value =  this.expressionStack[this.expressionPtr--];
+//		this.expressionLengthPtr--;
+//		
+//		attr.sourceStart = (int) (positions >>> 32);
+//		
+//		pushOnAttributeStack(attr);
+//	}
+//	
+//	protected void consumeHtmlAttributeWithReceiver() {
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlAttributeWithReceiver();
+//			return;
+//		}
+//		
+//		HtmlPropertyReference propertyReference = new CompletionOnHtmlPropertyAccess(
+//				this.identifierStack[this.identifierPtr],
+//				this.identifierPositionStack[this.identifierPtr--], 
+//				new CompletionOnHtmlSimplePropertyAccess(
+//						this.identifierStack[this.identifierPtr], 
+//						this.identifierPositionStack[this.identifierPtr--], false), 
+//						false);
+//		this.identifierLengthPtr--;
+//		this.identifierLengthPtr--;
+//		
+//		HtmlAttribute attr = new HtmlAttribute(propertyReference);
+//		
+//		attr.value = this.expressionStack[this.expressionPtr--];
+//		expressionLengthPtr--;
+//		pushOnAttributeStack(attr);
+//		
+//		attr.statementEnd = this.scanner.currentPosition - 1;
+//		attr.sourceEnd = this.scanner.currentPosition - 1;
+//	}
+//	
+//	protected void consumeHtmlAttachAttribute(){
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlAttachAttribute();
+//			return;
+//		}
+//
+//		char[] attrName = this.identifierStack[this.identifierPtr];
+//		long positions = this.identifierPositionStack[this.identifierPtr--];
+//		this.identifierLengthPtr--;
+//		
+//		TypeReference receiver = new CompletionOnSingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
+//		this.identifierLengthPtr--;
+//		
+//		HtmlAttribute attribute = new HtmlAttribute(new CompletionOnHtmlAttachProperty(attrName, positions, receiver, false));
+//
+//		attribute.value =  this.expressionStack[this.expressionPtr--];
+//		this.expressionLengthPtr--;
+//		
+//		attribute.sourceStart = (int) (positions >>> 32);
+//		attribute.sourceEnd = attribute.value.sourceEnd;
+//		
+//		//check named attribute
+//		if(CharOperation.equals(attribute.property.token, HtmlAttribute.NAME)){
+//			HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
+//			if((attribute.tagBits & HtmlBits.NamedField) != 0){
+//				problemReporter().duplicateNamedElementInType(attribute.property);
+//			} else {
+//				attribute.tagBits |= HtmlBits.NamedField;
+//			}
+//			StringLiteral str = (StringLiteral) attribute.value;
+//			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
+//			fieldDecl.type = element.type;
+//			fieldDecl.bits |= ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal;
+//			
+//			pushOnAstStack(fieldDecl);
+//			concatNodeLists();
+//		}
+//		
+//		pushOnAttributeStack(attribute);
+//	}
+//	
+//	protected void consumeHtmlMarkupExtenson(){
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlMarkupExtenson();
+//			return;
+//		}
+//		HtmlMarkupExtension markupExtension = new HtmlMarkupExtension();
+//		markupExtension.type = createSingleAssistTypeReference(
+//				assistIdentifier(),
+//				this.identifierPositionStack[this.identifierPtr--]);
+//		
+//		pushOnExpressionStack(markupExtension);	
+//	}
 	
 	protected void consumeArrayCreationExpressionWithInitializer() {
 		super.consumeArrayCreationExpressionWithInitializer();

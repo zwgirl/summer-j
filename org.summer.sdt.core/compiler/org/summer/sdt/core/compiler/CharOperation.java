@@ -3826,6 +3826,27 @@ public final class CharOperation {
 		return subarray(result, 0 , index);
 	}
 	
+	public static boolean hasContent(char[] data){
+		boolean result = false;
+		l:for(int i=0, length = data.length; i< length; i++){
+			if(isWhitespace(data[i])){
+				continue;
+			}
+			switch(data[i]){
+			case 10 : /* \ u000a: LINE FEED               */
+			case 12 : /* \ u000c: FORM FEED               */
+			case 13 : /* \ u000d: CARRIAGE RETURN         */
+			case 32 : /* \ u0020: SPACE                   */
+			case 9 : /* \ u0009: HORIZONTAL TABULATION   */
+			break;
+			default:
+				result = true;
+				break l;
+			}
+		}
+		return result;
+	}
+	
 	public static void main(String[] args) {
 		char test[] = "3\n\r\"\'".toCharArray();
 		char[] r = eascape(test);

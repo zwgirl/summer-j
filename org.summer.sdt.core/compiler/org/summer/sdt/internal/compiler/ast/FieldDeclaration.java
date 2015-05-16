@@ -22,6 +22,7 @@ import static org.summer.sdt.internal.compiler.ast.ExpressionContext.ASSIGNMENT_
 
 import java.util.List;
 
+import org.summer.sdt.core.compiler.CharOperation;
 import org.summer.sdt.core.compiler.IProblem;
 import org.summer.sdt.internal.compiler.ASTVisitor;
 import org.summer.sdt.internal.compiler.ast.TypeReference.AnnotationCollector;
@@ -73,18 +74,28 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 	public MethodDeclaration setter;
 	public MethodDeclaration getter;
 	//cym 2015-02-13 end
+	
+	//cym 2015-05-04
+	public HtmlElement element;
 
 	public FieldDeclaration() {
 		// for subtypes or conversion
 	}
 	
-	public FieldDeclaration(	char[] name, int sourceStart, int sourceEnd) {
+	public FieldDeclaration(char[] name, int sourceStart, int sourceEnd) {
 		this.name = name;
 		//due to some declaration like
 		// int x, y = 3, z , x ;
 		//the sourceStart and the sourceEnd is ONLY on  the name
 		this.sourceStart = sourceStart;
 		this.sourceEnd = sourceEnd;
+	}
+	
+	//cym 2015-05-04
+	public FieldDeclaration(char[] name, int sourceStart, int sourceEnd, HtmlElement element) {
+		this(name, sourceStart, sourceEnd);
+		
+		this.element = element;
 	}
 	
 	public FlowInfo analyseCode(MethodScope initializationScope, FlowContext flowContext, FlowInfo flowInfo) {
@@ -254,10 +265,16 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 			if (this.annotations != null) {
 				for (int i = 0, max = this.annotations.length; i < max; i++) {
 					TypeBinding resolvedAnnotationType = this.annotations[i].resolvedType;
+					
+					//cym 2015-05-11
+					if((resolvedAnnotationType.getAnnotationTagBits() & TagBits.AnnotationAttribute) != 0){
+						this.binding.tagBits |= TagBits.AnnotationAttribute;
+					}
+					
 					if (resolvedAnnotationType != null && (resolvedAnnotationType.getAnnotationTagBits() & TagBits.AnnotationForTypeUse) != 0) {
 						this.bits |= ASTNode.HasTypeAnnotations;
 						break;
-					}
+					} 
 				}
 			}
 			
@@ -443,9 +460,17 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		printIndent(indent, output);
 		output.append("Object.defineProperty(");
 		if(this.isStatic()){
-			output.append(binding.declaringClass.sourceName);
+			if(binding.declaringClass.isAnonymousType()){
+				output.append("Anonym");
+			} else {
+				output.append(binding.declaringClass.sourceName);
+			}
 		} else {
-			output.append(binding.declaringClass.sourceName).append(".prototype");
+			if(binding.declaringClass.isAnonymousType()){
+				output.append("Anonym.prototype");
+			} else {
+				output.append(binding.declaringClass.sourceName).append(".prototype");
+			}
 		}
 		
 		output.append(", \"").append(this.name).append("\", ").append('{').append("\n");
@@ -492,12 +517,5 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		
 		return output;
 	}
-	
-	//cym 2015-02-13
-	public void parseBlockStatements(
-			Initializer initializer,
-			TypeDeclaration type,
-			CompilationUnitDeclaration unit){
-		
-	}
+
 }

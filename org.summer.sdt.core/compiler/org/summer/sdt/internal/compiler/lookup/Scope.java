@@ -3556,11 +3556,12 @@ public abstract class Scope {
 		return new ProblemMethodBinding(selector, argumentTypes, ProblemReasons.NotFound);
 	}
 
-	public final ReferenceBinding getJavaIoSerializable() {
-		CompilationUnitScope unitScope = compilationUnitScope();
-		unitScope.recordQualifiedReference(TypeConstants.JAVA_IO_SERIALIZABLE);
-		return unitScope.environment.getResolvedType(TypeConstants.JAVA_IO_SERIALIZABLE, this);
-	}
+	//cym 2015-04-24
+//	public final ReferenceBinding getJavaIoSerializable() {
+//		CompilationUnitScope unitScope = compilationUnitScope();
+//		unitScope.recordQualifiedReference(TypeConstants.JAVA_IO_SERIALIZABLE);
+//		return unitScope.environment.getResolvedType(TypeConstants.JAVA_IO_SERIALIZABLE, this);
+//	}
 
 	public final ReferenceBinding getJavaLangAnnotationAnnotation() {
 		CompilationUnitScope unitScope = compilationUnitScope();
@@ -3568,11 +3569,12 @@ public abstract class Scope {
 		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_ANNOTATION_ANNOTATION, this);
 	}
 
-	public final ReferenceBinding getJavaLangAssertionError() {
-		CompilationUnitScope unitScope = compilationUnitScope();
-		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_ASSERTIONERROR);
-		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_ASSERTIONERROR, this);
-	}
+	//cym 2015-04-24
+//	public final ReferenceBinding getJavaLangAssertionError() {
+//		CompilationUnitScope unitScope = compilationUnitScope();
+//		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_ASSERTIONERROR);
+//		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_ASSERTIONERROR, this);
+//	}
 
 	public final ReferenceBinding getJavaLangClass() {
 		CompilationUnitScope unitScope = compilationUnitScope();
@@ -3648,6 +3650,34 @@ public abstract class Scope {
 		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_TEMPLATE, this);
 	}
 	
+	//cym 2015-05-08
+	public final ReferenceBinding getJavaLangTag() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_TAG);
+		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_TAG, this);
+	}
+	
+	//cym 2015-05-08
+	public final ReferenceBinding getOrgW3cDomTextNode() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.ORG_W3C_DOM_TEXT);
+		return unitScope.environment.getResolvedType(TypeConstants.ORG_W3C_DOM_TEXT, this);
+	}
+	
+	//cym 2015-05-10
+	public final ReferenceBinding getOrgW3cDomElement() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.ORG_W3C_DOM_ELEMENT);
+		return unitScope.environment.getResolvedType(TypeConstants.ORG_W3C_DOM_ELEMENT, this);
+	}
+	
+	//cym 2015-05-12
+	public final ReferenceBinding getJavalangPage() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_PAGE);
+		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_PAGE, this);
+	}
+	
 	//cym 2015-02-17
 	public final ReferenceBinding getJavaLangConmponent() {
 		CompilationUnitScope unitScope = compilationUnitScope();
@@ -3655,6 +3685,19 @@ public abstract class Scope {
 		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_COMPONENT, this);
 	}
 	
+	//cym 2015-04-28
+	public final ReferenceBinding getJavaLangWindow() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_WINDOW);
+		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_WINDOW, this);
+	}
+	
+	//cym 2015-04-28
+	public final ReferenceBinding getJavaLangGlobal() {
+		CompilationUnitScope unitScope = compilationUnitScope();
+		unitScope.recordQualifiedReference(TypeConstants.JAVA_LANG_GLOBAL);
+		return unitScope.environment.getResolvedType(TypeConstants.JAVA_LANG_GLOBAL, this);
+	}
 
 	public final ReferenceBinding getJavaLangThrowable() {
 		CompilationUnitScope unitScope = compilationUnitScope();
@@ -4882,17 +4925,18 @@ public abstract class Scope {
 					case TypeIds.T_long:
 					case TypeIds.T_float:
 					case TypeIds.T_double:
-						TypeBinding superType = getJavaIoSerializable();
-						if (!typesToVisit.contains(superType)) {
-							typesToVisit.add(superType);
-							max++;
-						}
-						superType = getJavaLangCloneable();
-						if (!typesToVisit.contains(superType)) {
-							typesToVisit.add(superType);
-							max++;
-						}
-						superType = getJavaLangObject();
+						//cym 2015-04-24
+//						TypeBinding superType = getJavaIoSerializable();
+//						if (!typesToVisit.contains(superType)) {
+//							typesToVisit.add(superType);
+//							max++;
+//						}
+//						superType = getJavaLangCloneable();
+//						if (!typesToVisit.contains(superType)) {
+//							typesToVisit.add(superType);
+//							max++;
+//						}
+						TypeBinding superType = getJavaLangObject();
 						if (!typesToVisit.contains(superType)) {
 							typesToVisit.add(superType);
 							max++;

@@ -40,7 +40,6 @@ import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.TypeDeclaration;
 import org.summer.sdt.internal.compiler.ast.TypeParameter;
 import org.summer.sdt.internal.compiler.ast.TypeReference;
-import org.summer.sdt.internal.compiler.ast.XAMLElement;
 import org.summer.sdt.internal.compiler.classfmt.ClassFileConstants;
 import org.summer.sdt.internal.compiler.env.AccessRestriction;
 import org.summer.sdt.internal.compiler.problem.AbortCompilation;
@@ -54,6 +53,9 @@ public class ClassScope extends Scope {
 	public TypeReference superTypeReference;
 	java.util.ArrayList<Object> deferredBoundChecks; // contains TypeReference or Runnable. TODO consider making this a List<Runnable>
 
+	//cym 2015-04-13 for id of script element, increasment for every script
+	public int scriptId = 0;
+	
 	public ClassScope(Scope parent, TypeDeclaration context) {
 		super(Scope.CLASS_SCOPE, parent);
 		this.referenceContext = context;
@@ -1196,9 +1198,10 @@ public class ClassScope extends Scope {
 				// only want to reach here when no errors are reported
 				sourceType.setSuperClass(superclass);
 				sourceType.typeBits |= (superclass.typeBits & TypeIds.InheritableBits);
-				// further analysis against white lists for the unlikely case we are compiling java.io.*:
-				if ((sourceType.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0)
-					sourceType.typeBits |= sourceType.applyCloseableClassWhitelists();
+				//cym 2015-04-24
+//				// further analysis against white lists for the unlikely case we are compiling java.io.*:
+//				if ((sourceType.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0)
+//					sourceType.typeBits |= sourceType.applyCloseableClassWhitelists();
 				return true;
 			}
 		}
@@ -1342,9 +1345,10 @@ public class ClassScope extends Scope {
 			}
 			// only want to reach here when no errors are reported
 			sourceType.typeBits |= (superInterface.typeBits & TypeIds.InheritableBits);
+			//cym 2015-04-24
 			// further analysis against white lists for the unlikely case we are compiling java.util.stream.Stream:
-			if ((sourceType.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0)
-				sourceType.typeBits |= sourceType.applyCloseableInterfaceWhitelists();
+//			if ((sourceType.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0)
+//				sourceType.typeBits |= sourceType.applyCloseableInterfaceWhitelists();
 			interfaceBindings[count++] = superInterface;
 		}
 		// hold onto all correctly resolved superinterfaces

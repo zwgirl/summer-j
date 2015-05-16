@@ -36,13 +36,13 @@ import org.summer.sdt.internal.compiler.html.HtmlFile;
 import org.summer.sdt.internal.compiler.impl.CompilerOptions;
 import org.summer.sdt.internal.compiler.impl.ReferenceContext;
 import org.summer.sdt.internal.compiler.java.JavaFile;
+import org.summer.sdt.internal.compiler.javascript.JsConstant;
 import org.summer.sdt.internal.compiler.javascript.JsFile;
 import org.summer.sdt.internal.compiler.javascript.JsTypes;
 import org.summer.sdt.internal.compiler.lookup.Binding;
 import org.summer.sdt.internal.compiler.lookup.BlockScope;
 import org.summer.sdt.internal.compiler.lookup.ClassScope;
 import org.summer.sdt.internal.compiler.lookup.CompilationUnitScope;
-import org.summer.sdt.internal.compiler.lookup.ElementScope;
 import org.summer.sdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.summer.sdt.internal.compiler.lookup.FieldBinding;
 import org.summer.sdt.internal.compiler.lookup.LocalTypeBinding;
@@ -108,8 +108,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 	// 1.5 support
 	public TypeParameter[] typeParameters;
 	
-	//XAML root element
-	public XAMLElement element;
+	//Html root element2
+	public HtmlElement[] htmlElements;
+	public int htmlBits;
 	
 	//cym 2015-02-13 for function type
 	public Argument[] arguments = ASTNode.NO_ARGUMENTS;
@@ -575,21 +576,19 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		if (this.ignoreFurtherInvestigation) {
 			if (this.binding == null)
 				return;
-			ClassFile.createProblemType(
-				this,
-				this.scope.referenceCompilationUnit().compilationResult);
+			ClassFile.createProblemType(this, this.scope.referenceCompilationUnit().compilationResult);
 			return;
 		}
 		
-		//cym 2015-01-11
-		if((this.bits & (ASTNode.IsAnonymousType | ASTNode.IsLocalType | ASTNode.IsMemberType)) == 0 
-				&& (this.modifiers & ClassFileConstants.AccAnnotation) == 0 && (this.modifiers & ClassFileConstants.AccFunction) == 0){
-			if((this.binding.modifiers & ClassFileConstants.AccModule) == 0){
-				generateJavascript(scope);
-			}
-
-			if(this.element != null && CharOperation.equals(((ReferenceBinding)this.element.type.resolvedType).compoundName, TypeConstants.ORG_W3C_HTML_HTML)){
-				generateHtml(this.scope);
+		//cym 2015-04-13
+		if((this.binding.tagBits & TagBits.IsHtmlPage) != 0){
+			generateHtml(this.scope);
+			generateJavascript(this.scope);
+		} else {
+			if((this.bits & (ASTNode.IsAnonymousType | ASTNode.IsLocalType | ASTNode.IsMemberType)) == 0 
+					&& (this.modifiers & ClassFileConstants.AccAnnotation) == 0 && (this.modifiers & ClassFileConstants.AccFunction) == 0){
+				if((this.binding.modifiers & ClassFileConstants.AccModule) == 0)
+					generateJavascript(scope);
 			}
 		}
 		
@@ -714,11 +713,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			StringBuffer output = htmlFile.content;
 			
 			output.append("<!DOCTYPE HTML>").append('\n');
-			if(this.element != null ){
-				if((this.element.bits & ASTNode.HasDynamicContent) != 0){
-					buildDOM(element, this.scope, 0, output);
-				} else {
-					buildHTML(element, this.scope, 0, output);
+			if(this.htmlElements != null ){
+				for(HtmlElement element : this.htmlElements){
+					html(element, element.createScope(scope), 0, output);
 				}
 			}
 			
@@ -734,12 +731,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 	}
 	
-	private void buildDOM(XAMLElement element, Scope scope, int indent, StringBuffer output) {
-		element.generateExpression(initializerScope, indent, output);
-	}
-	
-	private void buildHTML(XAMLElement element, Scope scope, int indent, StringBuffer output) {
-		element.generateStaticHTML(initializerScope, indent, output);
+	private void html(HtmlElement element, BlockScope scope, int indent, StringBuffer output) {
+		element.html(scope, indent, output, "__this");
 	}
 
 	public void generateJavascript(CompilationUnitScope unitScope) {
@@ -1049,9 +1042,11 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append(" {"); //$NON-NLS-1$
 		
 		//for XAML
-		if(this.element != null){
+		if(this.htmlElements != null){
 			output.append('\n');
-			this.element.print(indent + 1, output).append("\n");
+			for(HtmlElement element : this.htmlElements){
+				element.print(indent + 1, output).append("\n");
+			}
 		}
 		
 		if (this.memberTypes != null) {
@@ -1184,53 +1179,74 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			if ((this.bits & ASTNode.UndocumentedEmptyBlock) != 0) {
 				this.scope.problemReporter().undocumentedEmptyBlock(this.bodyStart-1, this.bodyEnd);
 			}
-			boolean needSerialVersion =
-							this.scope.compilerOptions().getSeverity(CompilerOptions.MissingSerialVersion) != ProblemSeverities.Ignore
-							&& sourceType.isClass()
-							&& sourceType.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoExternalizable, false /*Externalizable is not a class*/) == null
-							&& sourceType.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null;
-	
-			if (needSerialVersion) {
-				// if Object writeReplace() throws java.io.ObjectStreamException is present, then no serialVersionUID is needed
-				// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=101476
-				CompilationUnitScope compilationUnitScope = this.scope.compilationUnitScope();
-				MethodBinding methodBinding = sourceType.getExactMethod(TypeConstants.WRITEREPLACE, Binding.NO_TYPES, compilationUnitScope);
-				ReferenceBinding[] throwsExceptions;
-				needSerialVersion =
-					methodBinding == null
-						|| !methodBinding.isValidBinding()
-						|| methodBinding.returnType.id != TypeIds.T_JavaLangObject
-						|| (throwsExceptions = methodBinding.thrownExceptions).length != 1
-						|| throwsExceptions[0].id != TypeIds.T_JavaIoObjectStreamException;
-				if (needSerialVersion) {
-					// check the presence of an implementation of the methods
-					// private void writeObject(java.io.ObjectOutputStream out) throws IOException
-					// private void readObject(java.io.ObjectInputStream out) throws IOException
-					boolean hasWriteObjectMethod = false;
-					boolean hasReadObjectMethod = false;
-					TypeBinding argumentTypeBinding = this.scope.getType(TypeConstants.JAVA_IO_OBJECTOUTPUTSTREAM, 3);
-					if (argumentTypeBinding.isValidBinding()) {
-						methodBinding = sourceType.getExactMethod(TypeConstants.WRITEOBJECT, new TypeBinding[] { argumentTypeBinding }, compilationUnitScope);
-						hasWriteObjectMethod = methodBinding != null
-								&& methodBinding.isValidBinding()
-								&& methodBinding.modifiers == ClassFileConstants.AccPrivate
-								&& methodBinding.returnType == TypeBinding.VOID
-								&& (throwsExceptions = methodBinding.thrownExceptions).length == 1
-								&& throwsExceptions[0].id == TypeIds.T_JavaIoException;
+			
+			//cym 2015-04-13 check implements Page interface
+			boolean isHtmlPage = sourceType.isClass() && sourceType.id != TypeIds.T_JavaLangPage
+					&& sourceType.findSuperTypeOriginatingFrom(TypeIds.T_JavaLangPage, false) != null /*Page is not a class*/;
+			if(isHtmlPage){
+				sourceType.tagBits |= TagBits.IsHtmlPage;
+			}
+			
+			//check element cym 2014-12-09
+			if(this.htmlElements != null){
+				if(isHtmlPage){
+					if(htmlElements.length > 1){
+						this.scope.problemReporter().tooManyHtmlElements(this);
 					}
-					argumentTypeBinding = this.scope.getType(TypeConstants.JAVA_IO_OBJECTINPUTSTREAM, 3);
-					if (argumentTypeBinding.isValidBinding()) {
-						methodBinding = sourceType.getExactMethod(TypeConstants.READOBJECT, new TypeBinding[] { argumentTypeBinding }, compilationUnitScope);
-						hasReadObjectMethod = methodBinding != null
-								&& methodBinding.isValidBinding()
-								&& methodBinding.modifiers == ClassFileConstants.AccPrivate
-								&& methodBinding.returnType == TypeBinding.VOID
-								&& (throwsExceptions = methodBinding.thrownExceptions).length == 1
-								&& throwsExceptions[0].id == TypeIds.T_JavaIoException;
-					}
-					needSerialVersion = !hasWriteObjectMethod || !hasReadObjectMethod;
+				}
+				for(HtmlElement element : this.htmlElements){
+					element.resolve(new BlockScope(this.initializerScope, element));
 				}
 			}
+			
+			//cym 2015-04-12
+//			boolean needSerialVersion =
+//							this.scope.compilerOptions().getSeverity(CompilerOptions.MissingSerialVersion) != ProblemSeverities.Ignore
+//							&& sourceType.isClass()
+//							&& sourceType.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoExternalizable, false /*Externalizable is not a class*/) == null
+//							&& sourceType.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null;
+//	
+//			if (needSerialVersion) {
+//				// if Object writeReplace() throws java.io.ObjectStreamException is present, then no serialVersionUID is needed
+//				// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=101476
+//				CompilationUnitScope compilationUnitScope = this.scope.compilationUnitScope();
+//				MethodBinding methodBinding = sourceType.getExactMethod(TypeConstants.WRITEREPLACE, Binding.NO_TYPES, compilationUnitScope);
+//				ReferenceBinding[] throwsExceptions;
+//				needSerialVersion =
+//					methodBinding == null
+//						|| !methodBinding.isValidBinding()
+//						|| methodBinding.returnType.id != TypeIds.T_JavaLangObject
+//						|| (throwsExceptions = methodBinding.thrownExceptions).length != 1
+//						|| throwsExceptions[0].id != TypeIds.T_JavaIoObjectStreamException;
+//				if (needSerialVersion) {
+//					// check the presence of an implementation of the methods
+//					// private void writeObject(java.io.ObjectOutputStream out) throws IOException
+//					// private void readObject(java.io.ObjectInputStream out) throws IOException
+//					boolean hasWriteObjectMethod = false;
+//					boolean hasReadObjectMethod = false;
+//					TypeBinding argumentTypeBinding = this.scope.getType(TypeConstants.JAVA_IO_OBJECTOUTPUTSTREAM, 3);
+//					if (argumentTypeBinding.isValidBinding()) {
+//						methodBinding = sourceType.getExactMethod(TypeConstants.WRITEOBJECT, new TypeBinding[] { argumentTypeBinding }, compilationUnitScope);
+//						hasWriteObjectMethod = methodBinding != null
+//								&& methodBinding.isValidBinding()
+//								&& methodBinding.modifiers == ClassFileConstants.AccPrivate
+//								&& methodBinding.returnType == TypeBinding.VOID
+//								&& (throwsExceptions = methodBinding.thrownExceptions).length == 1
+//								&& throwsExceptions[0].id == TypeIds.T_JavaIoException;
+//					}
+//					argumentTypeBinding = this.scope.getType(TypeConstants.JAVA_IO_OBJECTINPUTSTREAM, 3);
+//					if (argumentTypeBinding.isValidBinding()) {
+//						methodBinding = sourceType.getExactMethod(TypeConstants.READOBJECT, new TypeBinding[] { argumentTypeBinding }, compilationUnitScope);
+//						hasReadObjectMethod = methodBinding != null
+//								&& methodBinding.isValidBinding()
+//								&& methodBinding.modifiers == ClassFileConstants.AccPrivate
+//								&& methodBinding.returnType == TypeBinding.VOID
+//								&& (throwsExceptions = methodBinding.thrownExceptions).length == 1
+//								&& throwsExceptions[0].id == TypeIds.T_JavaIoException;
+//					}
+//					needSerialVersion = !hasWriteObjectMethod || !hasReadObjectMethod;
+//				}
+//			}
 			// generics (and non static generic members) cannot extend Throwable
 			if (sourceType.findSuperTypeOriginatingFrom(TypeIds.T_JavaLangThrowable, true) != null) {
 				ReferenceBinding current = sourceType;
@@ -1277,12 +1293,13 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 								this.ignoreFurtherInvestigation = true;
 								continue;
 							}
-							if (needSerialVersion
-									&& ((fieldBinding.modifiers & (ClassFileConstants.AccStatic | ClassFileConstants.AccFinal)) == (ClassFileConstants.AccStatic | ClassFileConstants.AccFinal))
-									&& CharOperation.equals(TypeConstants.SERIALVERSIONUID, fieldBinding.name)
-									&& TypeBinding.equalsEquals(TypeBinding.LONG, fieldBinding.type)) {
-								needSerialVersion = false;
-							}
+							//cym 2015-04-12
+//							if (needSerialVersion
+//									&& ((fieldBinding.modifiers & (ClassFileConstants.AccStatic | ClassFileConstants.AccFinal)) == (ClassFileConstants.AccStatic | ClassFileConstants.AccFinal))
+//									&& CharOperation.equals(TypeConstants.SERIALVERSIONUID, fieldBinding.name)
+//									&& TypeBinding.equalsEquals(TypeBinding.LONG, fieldBinding.type)) {
+//								needSerialVersion = false;
+//							}
 							localMaxFieldCount++;
 							lastVisibleFieldID = field.binding.id;
 							break;
@@ -1307,23 +1324,24 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			if (this.maxFieldCount < localMaxFieldCount) {
 				this.maxFieldCount = localMaxFieldCount;
 			}
-			if (needSerialVersion) {
-				//check that the current type doesn't extend javax.rmi.CORBA.Stub
-				TypeBinding javaxRmiCorbaStub = this.scope.getType(TypeConstants.JAVAX_RMI_CORBA_STUB, 4);
-				if (javaxRmiCorbaStub.isValidBinding()) {
-					ReferenceBinding superclassBinding = this.binding.superclass;
-					loop: while (superclassBinding != null) {
-						if (TypeBinding.equalsEquals(superclassBinding, javaxRmiCorbaStub)) {
-							needSerialVersion = false;
-							break loop;
-						}
-						superclassBinding = superclassBinding.superclass();
-					}
-				}
-				if (needSerialVersion) {
-					this.scope.problemReporter().missingSerialVersion(this);
-				}
-			}
+			//cym 2015-04-12
+//			if (needSerialVersion) {
+//				//check that the current type doesn't extend javax.rmi.CORBA.Stub
+//				TypeBinding javaxRmiCorbaStub = this.scope.getType(TypeConstants.JAVAX_RMI_CORBA_STUB, 4);
+//				if (javaxRmiCorbaStub.isValidBinding()) {
+//					ReferenceBinding superclassBinding = this.binding.superclass;
+//					loop: while (superclassBinding != null) {
+//						if (TypeBinding.equalsEquals(superclassBinding, javaxRmiCorbaStub)) {
+//							needSerialVersion = false;
+//							break loop;
+//						}
+//						superclassBinding = superclassBinding.superclass();
+//					}
+//				}
+//				if (needSerialVersion) {
+//					this.scope.problemReporter().missingSerialVersion(this);
+//				}
+//			}
 	
 			// check extends/implements for annotation type
 			switch(kind(this.modifiers)) {
@@ -1357,11 +1375,6 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					}
 					break;
 			}
-			
-			//check element cym 2014-12-09
-			if(this.element != null){
-				this.element.resolve(new ElementScope(this.element, this.scope));
-			}
 	
 			int missingAbstractMethodslength = this.missingAbstractMethods == null ? 0 : this.missingAbstractMethods.length;
 			int methodsLength = this.methods == null ? 0 : this.methods.length;
@@ -1378,6 +1391,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			 * cym 2015-04-07 function resolve: returntype and parameter types
 			 */
 			if(this.returnType != null){
+				
 			}
 			
 			if(this.arguments != null){
@@ -2298,7 +2312,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				this.scope.referenceCompilationUnit().compilationResult);
 		}
 	}
-
+	
+	//embed script of html 
 	public void generateInternal(Scope scope, int indent, StringBuffer output) {
 		output.append("(function(){ ");
 		
@@ -2645,7 +2660,9 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		}
 		
 		//set prototype.__proto__
-		if(type.binding.superclass != null && !type.binding.isInterface()){ // && type.binding.superclass.id != TypeIds.T_JavaLangObject){
+		if(type.binding.superclass != null && !type.binding.isInterface() && 
+				type.binding.id != TypeIds.T_JavaLangMath &&
+				type.binding.id != TypeIds.T_JavaLangArguments){
 			ReferenceBinding superBinding = type.binding.superclass;
 			output.append("\n");
 			printIndent(indent, output);
@@ -2697,13 +2714,21 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 					continue;
 				}
 				
+				//skip html inline method and script
+				if((method.bits & ASTNode.HTML_INLINE_METHOD) != 0){
+					continue;
+				}
+				if((method.bits & ASTNode.HTML_SCRIPT_METHOD) != 0){
+					continue;
+				}
+				
 				if((method.modifiers & ClassFileConstants.AccPrivate) != 0){
 					generatePrivateMethod((MethodDeclaration) method, type.scope, indent, output);
 					continue;
 				}
 				
 				//exclude non default method of interface 
-				if((this.modifiers & ClassFileConstants.AccInterface) != 0 && (method.modifiers & ClassFileConstants.AccDefault) == 0){
+				if((this.modifiers & ClassFileConstants.AccInterface) != 0 && !method.isDefaultMethod()){
 					continue;
 				}
 				
@@ -2755,8 +2780,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		//generate static fields
 		generateFields(type.scope, indent, output, false, type);
 		
-		//process XAML Element
-		processXAML(type.scope, type, indent, output);
+		//process Html Element
+		processHtml(type.scope, type, indent, output);
 		
 		if(type.memberTypes != null){
 			for(TypeDeclaration member : type.memberTypes){
@@ -2772,25 +2797,25 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			}
 		}
 		
-		if((this.binding.tagBits & TagBits.AnnotationRemotingBean) != 0){
+		if((type.binding.tagBits & TagBits.AnnotationRemotingBean) != 0){
 			//readObject
 			output.append('\n');
 			printIndent(indent, output);
 			output.append(type.binding.sourceName).append(".prototype.__readObject = function(json, handlers, obj) {");
 			
 			//process superclass readObject
-			if(this.superclass != null){
+			if(type.superclass != null){
 				output.append('\n');
 				printIndent(indent + 1, output);
-				this.superclass.resolvedType.generate(output, null);
+				type.superclass.resolvedType.generate(output, null);
 				output.append(".prototype.__readObject(json, handlers, obj);");
 			}
 		    
-			if(this.fields != null){
+			if(type.fields != null){
 				output.append('\n');
 				printIndent(indent + 1, output);
 				output.append("var __propVal = null;");
-				for(FieldDeclaration field : this.fields){
+				for(FieldDeclaration field : type.fields){
 					if(field.isStatic() || (field.modifiers & ClassFileConstants.AccTransient) != 0
 							|| (field.modifiers & ClassFileConstants.AccProperty) != 0
 							|| (field.modifiers & ClassFileConstants.AccIndexer) != 0){
@@ -2843,21 +2868,21 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append(type.binding.sourceName).append(".prototype.__writeObject = function(obj, handlers) {");
 			
 			//process superclass readObject
-			if(this.superclass != null){
+			if(type.superclass != null){
 				output.append('\n');
 				printIndent(indent + 1, output);
-				this.superclass.resolvedType.generate(output, null);
+				type.superclass.resolvedType.generate(output, null);
 				output.append(".prototype.__writeObject(obj, handlers);");
 			}
 			
 			if(this.fields != null){
 				output.append('\n');
 				printIndent(indent + 1, output);
-				output.append("var __r = {\"").append("__clazz").append("\" : \"").append(CharOperation.concatWith(this.binding.compoundName, '.')).append("\"};");
+				output.append("var __r = {\"").append("__clazz").append("\" : \"").append(CharOperation.concatWith(type.binding.compoundName, '.')).append("\"};");
 				output.append('\n');
 				printIndent(indent + 1, output);
 				output.append("var __propVal = null;");
-				for(FieldDeclaration field : this.fields){
+				for(FieldDeclaration field : type.fields){
 					if(field.isStatic() || (field.modifiers & ClassFileConstants.AccTransient) != 0
 							|| (field.modifiers & ClassFileConstants.AccProperty) != 0
 							|| (field.modifiers & ClassFileConstants.AccIndexer) != 0){
@@ -2918,7 +2943,17 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		//Class information
 		output.append("\n");
 		
-		if((type.binding.sourceName != null && type.binding.sourceName.length > 0) && type.binding.sourceName[0] == 'C' && CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_CLASS)){   //if Class Type
+		processClazz(type, indent, output);
+	}
+
+	private void processClazz(TypeDeclaration type, int indent, StringBuffer output) {
+		if(type.binding.id == TypeIds.T_JavaLangMath ||
+				type.binding.id == TypeIds.T_JavaLangArguments){
+			return;
+		}
+		
+		if((type.binding.sourceName != null && type.binding.sourceName.length > 0) 
+				&& type.binding.sourceName[0] == 'C' && CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_CLASS)){   //if Class Type
 			printIndent(indent, output).append(type.getTypeName()).append(".prototype.__class = new Class(");
 		} else {
 			if(type.binding.isAnonymousType()){
@@ -2938,6 +2973,12 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			output.append(type.binding.sourceName).append(", ");
 		}
 
+//		output.append("\"");
+//		if(type.binding.fPackage != null){
+//			output.append(CharOperation.concatWith(type.binding.fPackage.compoundName, '.'));
+//		}
+//		output.append("\"");
+//		output.append(", ");
 		
 		if(type.binding.superclass != null){
 			ReferenceBinding baseBinding = type.binding.superclass;
@@ -3012,41 +3053,48 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append(";");
 	}
 	
-	private void processXAML(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
-		if(type.element != null && (type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE)) ||
-				type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_COMPONENT)))){
-			output.append('\n');
-			printIndent(indent, output);
-			output.append(type.binding.sourceName).append(".prototype.").append("doCreate").append(" = function(parent, data) {");
-			output.append('\n');
-			printIndent(indent, output);
-			((ObjectElement)type.element).buildElement(scope, indent, output, "parent", "this");
-			output.append('\n');
-			printIndent(indent, output);
-			output.append("};");
-		} else if(type.element != null && type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_ITEMTEMPLATE))){
-			output.append('\n');
-			printIndent(indent, output);
-			output.append(type.binding.sourceName).append(".prototype.").append("createRoot").append(" = function(parent, item) {");
-			((ObjectElement)type.element).buildRootElement(scope, indent, output, "parent", "this");
-			output.append('\n');
-			printIndent(indent + 1, output);
-			output.append("return _n;");
-			
-			output.append('\n');
-			printIndent(indent, output);
-			output.append("};");
-			
-			output.append('\n');
-			printIndent(indent, output);
-			output.append(type.binding.sourceName).append(".prototype.").append("createChild").append(" = function(parent) {");
-			if(type.element.children != null && type.element.children.length > 0){
-				type.element.buildDOMScript(scope, indent + 1, output, "parent", "this");
-			}
-			output.append('\n');
-			printIndent(indent, output);
-			output.append("};");
+	
+	
+//	private void processHtml(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
+//		if(!type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE))){
+//			return;
+//		}
+//		if(type.htmlElements == null) {
+//			output.append(type.binding.sourceName).append(".prototype.").append("doBody").append(" = function() {};");
+//			return;
+//		}
+//		
+//		printIndent(indent, output.append('\n'));
+//		
+//		output.append(type.binding.sourceName).append(".prototype.").append("doBody").append(" = function() {");
+//		
+//		for(HtmlElement element : type.htmlElements){
+//			element.scriptDom(element.scope, indent + 1, output, "this", "this");
+//		}
+//		
+//		printIndent(indent, output.append('\n'));
+//		output.append("};");
+//	}
+	
+	private void processHtml(Scope scope, TypeDeclaration type, int indent, StringBuffer output){
+		if(!type.binding.isSubtypeOf(scope.environment().getType(TypeConstants.JAVA_LANG_TEMPLATE))){
+			return;
 		}
+		if(type.htmlElements == null) {
+			output.append(type.binding.sourceName).append(".prototype.").append("doBody").append(" = function(__p, __l, __ctx) {};");
+			return;
+		}
+		
+		printIndent(indent, output.append('\n'));
+		
+		output.append(type.binding.sourceName).append(".prototype.").append("doBody").append(" = function(__p, __l, __ctx) {");
+		
+		for(HtmlElement element : type.htmlElements){
+			element.scriptDom(element.scope, indent + 1, output, "__p", "__l", "__ctx");
+		}
+		
+		printIndent(indent, output.append('\n'));
+		output.append("};");
 	}
 	
 	private char[] getMethodName(AbstractMethodDeclaration method){
@@ -3167,20 +3215,21 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 						output.append("\n");
 						cstrCall.generateStatement(scope, indent, output);
 					}
+					generateFields(scope, indent + 1, output, true, type);
 				} else {   //this()
-					output.append("\n");
-					output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
-					if(cstrCall.arguments != null){
-						for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
-							output.append(", ");
-							cstrCall.arguments[j].generateExpression(scope, indent, output);
-						}
-					}
-					output.append(");");
+					generateFields(scope, indent + 1, output, true, type);
+//					output.append("\n");
+//					output.append(cstrCall.binding.declaringClass.sourceName).append(".call(this");
+//					if(cstrCall.arguments != null){
+//						for(int j = 0, length1 = cstrCall.arguments.length; j < length1; j++){
+//							output.append(", ");
+//							cstrCall.arguments[j].generateExpression(scope, indent, output);
+//						}
+//					}
+//					output.append(");");
+					cstrCall.generateStatement(scope, indent, output);
 				}
 			}
-			
-			generateFields(scope, indent + 1, output, true, type);
 			
 			if(constructor.statements != null){
 				for(int i=0, length = constructor.statements.length; i < length; i++){

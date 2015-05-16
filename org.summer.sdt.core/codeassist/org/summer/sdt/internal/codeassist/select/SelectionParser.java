@@ -29,7 +29,7 @@ import org.summer.sdt.internal.compiler.ast.AllocationExpression;
 import org.summer.sdt.internal.compiler.ast.Annotation;
 import org.summer.sdt.internal.compiler.ast.Argument;
 import org.summer.sdt.internal.compiler.ast.ArrayAllocationExpression;
-import org.summer.sdt.internal.compiler.ast.Attribute;
+import org.summer.sdt.internal.compiler.ast.HtmlAttribute;
 import org.summer.sdt.internal.compiler.ast.CaseStatement;
 import org.summer.sdt.internal.compiler.ast.CastExpression;
 import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -37,7 +37,9 @@ import org.summer.sdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.summer.sdt.internal.compiler.ast.Expression;
 import org.summer.sdt.internal.compiler.ast.FieldDeclaration;
 import org.summer.sdt.internal.compiler.ast.FieldReference;
-import org.summer.sdt.internal.compiler.ast.CommonAttribute;
+import org.summer.sdt.internal.compiler.ast.HtmlBits;
+import org.summer.sdt.internal.compiler.ast.HtmlElement;
+import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
 import org.summer.sdt.internal.compiler.ast.ImportReference;
 import org.summer.sdt.internal.compiler.ast.LambdaExpression;
 import org.summer.sdt.internal.compiler.ast.LocalDeclaration;
@@ -46,8 +48,7 @@ import org.summer.sdt.internal.compiler.ast.MemberValuePair;
 import org.summer.sdt.internal.compiler.ast.MessageSend;
 import org.summer.sdt.internal.compiler.ast.NameReference;
 import org.summer.sdt.internal.compiler.ast.NormalAnnotation;
-import org.summer.sdt.internal.compiler.ast.ObjectElement;
-import org.summer.sdt.internal.compiler.ast.PropertyReference;
+import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
 import org.summer.sdt.internal.compiler.ast.QualifiedAllocationExpression;
 import org.summer.sdt.internal.compiler.ast.Reference;
 import org.summer.sdt.internal.compiler.ast.ReferenceExpression;
@@ -55,6 +56,7 @@ import org.summer.sdt.internal.compiler.ast.ReturnStatement;
 import org.summer.sdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.summer.sdt.internal.compiler.ast.SingleNameReference;
 import org.summer.sdt.internal.compiler.ast.SingleTypeReference;
+import org.summer.sdt.internal.compiler.ast.HtmlTypeReference;
 import org.summer.sdt.internal.compiler.ast.Statement;
 import org.summer.sdt.internal.compiler.ast.StringLiteral;
 import org.summer.sdt.internal.compiler.ast.SuperReference;
@@ -284,104 +286,278 @@ public class SelectionParser extends AssistParser {
 		}
 	}
 	
-	protected void consumeAttributeWithPropertyReference() {
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeAttributeWithPropertyReference();
+	protected void consumeHtmlAttributeStart() {
+//		Attribute ::= HtmlName
+		
+		int index;
+		/* no need to take action if not inside assist identifiers */
+		if ((index = indexOfAssistIdentifier()) < 0) {
+			super.consumeHtmlAttributeStart();
 			return;
 		}
-		
-		PropertyReference propertyReference = null;
-		char[] assistIdentifier = assistIdentifier();
-		if(this.identifierStack[this.identifierPtr] == assistIdentifier){
-			propertyReference = new SelectionOnPropertyReference(
-					this.identifierStack[this.identifierPtr],
-					this.identifierPositionStack[this.identifierPtr--],
-					new PropertyReference(
-							this.identifierStack[this.identifierPtr], 
-							this.identifierPositionStack[this.identifierPtr--]));
-		} else {
-			propertyReference = new PropertyReference(
-					this.identifierStack[this.identifierPtr],
-					this.identifierPositionStack[this.identifierPtr--],
-					new SelectionOnPropertyReference(
-							this.identifierStack[this.identifierPtr], 
-							this.identifierPositionStack[this.identifierPtr--]));
-		}
+		/* retrieve identifiers subset and whole positions, the assist node positions
+			should include the entire replaced source. */
+		int length = this.identifierLengthStack[this.identifierLengthPtr];
+		char[][] subset = identifierSubSet(index+1); // include the assistIdentifier
 		this.identifierLengthPtr--;
-		this.identifierLengthPtr--;
+		this.identifierPtr -= length;
 		
-		Attribute attr = new Attribute(propertyReference);
+		long[] positions;
+		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
 		
-		attr.value = this.expressionStack[this.expressionPtr--];
-		expressionLengthPtr--;
-		pushOnAttributeStack(attr);
-		
-		attr.statementEnd = this.scanner.currentPosition - 1;
-		attr.sourceEnd = this.scanner.currentPosition - 1;
-		
-	}
-	
-	protected void consumeAttribute() {
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeAttribute();
-			return;
-		}
-		
-		char[] attrName = this.identifierStack[this.identifierPtr];
-		long positions = this.identifierPositionStack[this.identifierPtr--];
-		this.identifierLengthPtr--;
-		
-		Attribute attribute = new Attribute(new SelectionOnPropertyReference(attrName, positions));
-		attribute.value =  this.expressionStack[this.expressionPtr--];
-		this.expressionLengthPtr--;
-		
-		attribute.sourceStart = (int) (positions >>> 32);
-		attribute.sourceEnd = attribute.value.sourceEnd;
+		HtmlAttribute attribute = new HtmlAttribute(new SelectionOnHtmlPropertyReference(subset, positions, null));
+		attribute.sourceStart = attribute.bodyStart = (int) (positions[0] >>> 32);
+		attribute.sourceEnd = (int) positions[positions.length - 1];
 		
 		pushOnAttributeStack(attribute);
 	}
 	
-	protected void consumeAttributeWithTypeReference(){
-		if ((indexOfAssistIdentifier(true)) < 0) {
-			super.consumeAttributeWithTypeReference();
+	protected void consumeHtmlJoinAttributeStart() {
+		//AttributeStart ::= HtmlName . HtmlName
+		char[] assistIdentifier ;
+		if ((assistIdentifier = assistIdentifier()) == null){
+			super.consumeHtmlAttributeStart();
 			return;
 		}
-
-		char[] attrName = this.identifierStack[this.identifierPtr];
-		long positions = this.identifierPositionStack[this.identifierPtr--];
-		this.identifierLengthPtr--;
 		
-		TypeReference receiver = new SelectionOnSingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
-		this.identifierLengthPtr--;
-		
-		Attribute attr = new Attribute(new SelectionOnPropertyReference(attrName, positions, receiver));
-
-		attr.value =  this.expressionStack[this.expressionPtr--];
-		this.expressionLengthPtr--;
-		
-		attr.sourceStart = (int) (positions >>> 32);
-		attr.sourceEnd = attr.value.sourceEnd;
-		
-		//check named attribute
-		if(CharOperation.equals(attr.property.token, Attribute.NAME)){
-			ObjectElement element = (ObjectElement) this.elementStack[this.elementPtr1];
-			attr.bits |= ASTNode.IsNamedAttribute;
-			if((attr.bits & ASTNode.IsNamedAttribute) != 0){
-				problemReporter().duplicateNamedElementInType(attr.property);
-			} else {
-				attr.bits |= ASTNode.IsNamedAttribute;
+		int flag = -1;
+		char[][] tokens;
+		int length = this.identifierLengthStack[this.identifierLengthPtr--];
+		// iterate first awaiting identifiers backwards
+		for (int i = 0; i < length; i++){
+			if (this.identifierStack[this.identifierPtr - i] == assistIdentifier){
+				flag = 1;
+				break;
 			}
-			StringLiteral str = (StringLiteral) attr.value;
-			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
-			fieldDecl.type = element.type;
-			fieldDecl.bits |= ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal;
-			
-			pushOnAstStack(fieldDecl);
-			concatNodeLists();
 		}
 		
+		this.identifierPtr -= length;
+		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens = new char[length][], 0, length);
+		
+		long[] positions;
+		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
+		
+		
+		char[][] tokens2;
+		length = this.identifierLengthStack[this.identifierLengthPtr--];
+		for (int i = 0; i < length; i++){
+			if (this.identifierStack[this.identifierPtr - i] == assistIdentifier){
+				flag = 2;
+				break;
+			}
+		}
+		
+		this.identifierPtr -= length;
+		System.arraycopy(this.identifierStack, this.identifierPtr + 1, tokens2 = new char[length][], 0, length);
+		long[] positions2;
+		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions2 = new long[length], 0, length);
+		
+		HtmlPropertyReference propertyReference = null;
+		switch(flag){
+		case 1:
+			propertyReference = new SelectionOnHtmlPropertyReference(
+					tokens, positions, new HtmlPropertyReference(tokens2, positions2));
+			break;
+		case 2:
+			propertyReference = new HtmlPropertyReference(
+					tokens, positions, new SelectionOnHtmlPropertyReference(tokens2, positions2));
+			break;
+		default:
+			propertyReference = new HtmlPropertyReference(
+					tokens, positions, new HtmlPropertyReference(tokens2, positions2));
+		}
+		
+		HtmlAttribute attr = new HtmlAttribute(propertyReference);
+		
 		pushOnAttributeStack(attr);
+		
+		attr.statementEnd = this.scanner.currentPosition - 1;
+		attr.sourceEnd = this.scanner.currentPosition - 1;
 	}
+	
+	@Override
+	protected void consumeHtmlStartTag() {
+//		StartTag ::= '<' HtmlName
+		int index;
+		
+		/* no need to take action if not inside assist identifiers */
+		if ((index = indexOfAssistIdentifier()) < 0) {
+			super.consumeHtmlStartTag();
+			return;
+		}
+		
+		this.nestedElement++;
+		
+		/* retrieve identifiers subset and whole positions, the assist node positions
+			should include the entire replaced source. */
+		int length = this.identifierLengthStack[this.identifierLengthPtr];
+		char[][] tokens = identifierSubSet(index+1); // include the assistIdentifier
+		this.identifierLengthPtr--;
+		this.identifierPtr -= length;
+		
+		long[] positions;
+		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
+		
+		HtmlElement element = new HtmlElement(tokens, positions, new SelectionOnHtmlTypeReference(tokens, positions));
+		element.tagBits &= HtmlBits.COMMON_ELEMENT;
+		
+		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
+		pushOnElementStack(element);
+	}
+	
+	protected void consumeHtmlNSStartTag(){
+//		StartTag ::= '<' SimpleName : HtmlName
+		
+		int index;
+		if ((index = this.indexOfAssistIdentifier()) < 0) {
+			super.consumeHtmlNSStartTag();
+			return;
+		} else if(this.identifierLengthPtr > -1 &&
+					(this.identifierLengthStack[this.identifierLengthPtr] - 1) != index) {
+			super.consumeHtmlNSStartTag();
+			return;
+		}
+		
+		this.nestedElement++;
+		/* retrieve identifiers subset and whole positions, the assist node positions
+		should include the entire replaced source. */
+		int length = this.identifierLengthStack[this.identifierLengthPtr];
+		char[][] tokens = identifierSubSet(index+1); // include the assistIdentifier
+		this.identifierLengthPtr--;
+		this.identifierPtr -= length;
+		
+		long[] positions;
+		System.arraycopy(this.identifierPositionStack, this.identifierPtr + 1, positions = new long[length], 0, length);
+		
+		long prefixPos = this.identifierPositionStack[this.identifierPtr];
+		char[] prefix = this.identifierStack[this.identifierPtr--];
+		this.identifierLengthPtr--;
+		
+		HtmlElement element = new HtmlElement(tokens, positions, prefix, prefixPos, new SelectionOnHtmlTypeReference(tokens, positions));
+		element.tagBits &= HtmlBits.COMMON_ELEMENT;
+		
+		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
+		pushOnElementStack(element);
+		
+	}
+	
+//	protected void consumeHtmlAttributeWithReceiver() {
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlAttributeWithReceiver();
+//			return;
+//		}
+//		
+//		HtmlPropertyReference propertyReference = null;
+//		char[] assistIdentifier = assistIdentifier();
+//		if(this.identifierStack[this.identifierPtr] == assistIdentifier){
+//			propertyReference = new SelectionOnHtmlPropertyReference(
+//					this.identifierStack[this.identifierPtr],
+//					this.identifierPositionStack[this.identifierPtr--],
+//					new HtmlSimplePropertyReference(
+//							this.identifierStack[this.identifierPtr], 
+//							this.identifierPositionStack[this.identifierPtr--]));
+//		} else {
+//			propertyReference = new HtmlPropertyReference(
+//					this.identifierStack[this.identifierPtr],
+//					this.identifierPositionStack[this.identifierPtr--],
+//					new SelectionOnSimplePropertyRef(
+//							this.identifierStack[this.identifierPtr], 
+//							this.identifierPositionStack[this.identifierPtr--]));
+//		}
+//		this.identifierLengthPtr--;
+//		this.identifierLengthPtr--;
+//		
+//		HtmlAttribute attr = new HtmlAttribute(propertyReference);
+//		
+//		attr.value = this.expressionStack[this.expressionPtr--];
+//		expressionLengthPtr--;
+//		pushOnAttributeStack(attr);
+//		
+//		attr.statementEnd = this.scanner.currentPosition - 1;
+//		attr.sourceEnd = this.scanner.currentPosition - 1;
+//		
+//	}
+	
+//	protected void consumeHtmlAttribute() {
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlAttribute();
+//			return;
+//		}
+//		
+//		char[] attrName = this.identifierStack[this.identifierPtr];
+//		long positions = this.identifierPositionStack[this.identifierPtr--];
+//		this.identifierLengthPtr--;
+//		
+//		HtmlAttribute attribute = new HtmlAttribute(new SelectionOnSimplePropertyRef(attrName, positions));
+//		attribute.value =  this.expressionStack[this.expressionPtr--];
+//		this.expressionLengthPtr--;
+//		
+//		attribute.sourceStart = (int) (positions >>> 32);
+//		attribute.sourceEnd = attribute.value.sourceEnd;
+//		
+//		pushOnAttributeStack(attribute);
+//	}
+//	
+//	@Override
+//	protected void consumeHtmlElementTag() {
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlElementTag();
+//			return;
+//		}
+//		this.nestedElement++;
+//		HtmlElement element = new HtmlElement();
+//		
+//		element.type = new SelectionOnSingleTypeReference1(
+//				this.identifierStack[this.identifierPtr],
+//				this.identifierPositionStack[this.identifierPtr--]);
+//		this.identifierLengthPtr--;
+//		
+//		element.sourceStart = element.bodyStart = this.intStack[this.intPtr--];
+//		element.sourceEnd = element.type.sourceEnd;
+//		
+//		pushOnElementStack(element);
+//	}
+//	
+//	protected void consumeHtmlAttachAttribute(){
+//		if ((indexOfAssistIdentifier(true)) < 0) {
+//			super.consumeHtmlAttachAttribute();
+//			return;
+//		}
+//
+//		char[] attrName = this.identifierStack[this.identifierPtr];
+//		long positions = this.identifierPositionStack[this.identifierPtr--];
+//		this.identifierLengthPtr--;
+//		
+//		TypeReference receiver = new SelectionOnSingleTypeReference(this.identifierStack[this.identifierPtr], this.identifierPositionStack[this.identifierPtr--]);
+//		this.identifierLengthPtr--;
+//		
+//		HtmlAttribute attr = new HtmlAttribute(new SelectionOnHtmlAttachProperty(attrName, positions, receiver));
+//
+//		attr.value =  this.expressionStack[this.expressionPtr--];
+//		this.expressionLengthPtr--;
+//		
+//		attr.sourceStart = (int) (positions >>> 32);
+//		attr.sourceEnd = attr.value.sourceEnd;
+//		
+//		//check named attribute
+//		if(CharOperation.equals(attr.property.token, HtmlAttribute.NAME)){
+//			HtmlElement element = (HtmlElement) this.elementStack[this.elementPtr1];
+//			if((attr.tagBits & HtmlBits.NamedField) != 0){
+//				problemReporter().duplicateNamedElementInType(attr.property);
+//			} else {
+//				attr.tagBits |= HtmlBits.NamedField;
+//			}
+//			StringLiteral str = (StringLiteral) attr.value;
+//			FieldDeclaration fieldDecl = new FieldDeclaration(str.source(), str.sourceStart, str.sourceEnd);
+//			fieldDecl.type = element.type;
+//			fieldDecl.bits |= ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal;
+//			
+//			pushOnAstStack(fieldDecl);
+//			concatNodeLists();
+//		}
+//		
+//		pushOnAttributeStack(attr);
+//	}
 	
 //	protected void consumeAttribute() {
 //		if ((indexOfAssistIdentifier(true)) < 0) {

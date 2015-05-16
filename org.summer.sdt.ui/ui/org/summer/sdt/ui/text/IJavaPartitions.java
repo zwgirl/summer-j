@@ -48,5 +48,9 @@ public interface IJavaPartitions {
 	String JAVA_CHARACTER= "__java_character";  //$NON-NLS-1$
 	
 	//cym 2015-03-24
-	String JAVA_XAML_COMMENT= "__java_xaml_comment"; //$NON-NLS-1$
+	String JAVA_HTML_COMMENT= "__java_xaml_comment"; //$NON-NLS-1$
+	
+	//cym 2015-04-08
+	String JAVA_HTML_CONTENT= "__java_html_content"; //$NON-NLS-1$
+	
 }

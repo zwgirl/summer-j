@@ -115,7 +115,7 @@ public class CompletionScanner extends Scanner {
 	protected int getNextToken0() throws InvalidInputException {
 		if(this.PCDATA){
 			this.startPosition = this.currentPosition - 1;
-			if(pcdata()){
+			if(htmlPcdata()){
 				return TokenNamePCDATA;
 			}
 		}
@@ -309,7 +309,7 @@ public class CompletionScanner extends Scanner {
 							if(getNextChar('!')) {
 								if(getNextChar('-')){
 									if(getNextChar('-')){
-										if(xmlComment()){
+										if(htmlComment()){
 											return TokenNameXmlComment;
 										}
 									}

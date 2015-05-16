@@ -396,7 +396,7 @@ public class ReturnStatement extends Statement {
 			output.append(" ");
 			this.expression.doGenerateExpression(scope, indent, output) ;
 		}
-		return output.append(";");
+		return output; //.append(";");
 	}
 	
 	@Override
@@ -404,6 +404,7 @@ public class ReturnStatement extends Statement {
 			StringBuffer output) {
 		printIndent(indent, output);
 		generateExpression(scope, indent, output);
+		output.append(";");
 		return output;
 	}
 }

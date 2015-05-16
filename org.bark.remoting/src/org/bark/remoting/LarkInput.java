@@ -29,46 +29,7 @@ public class LarkInput {
 				
 				flags[i] = true;
 				
-				Class<?> clazz = null;
-				if(className.charAt(0) == '<'){   //pritimive type
-					switch(className.charAt(1)){
-					case 'B':
-						clazz = byte.class;
-						handlers[i] = (byte)element.getJsonNumber(VALUE).intValue();
-						continue;
-					case 'S':
-						clazz = short.class;
-						handlers[i] = (short)element.getJsonNumber(VALUE).intValue();
-						continue;
-					case 'I':
-						clazz = int.class;
-						handlers[i] = element.getJsonNumber(VALUE).intValue();
-						continue;
-					case 'C':
-						clazz = char.class;
-						handlers[i] = (char)element.getJsonNumber(VALUE).intValue();
-						continue;
-					case 'L':
-						clazz = long.class;
-						handlers[i] = (long)element.getJsonNumber(VALUE).longValue();
-						continue;
-					case 'F':
-						clazz = float.class;
-						handlers[i] = (float)element.getJsonNumber(VALUE).doubleValue();
-						continue;
-					case 'D':
-						clazz = double.class;
-						handlers[i] = (double)element.getJsonNumber(VALUE).doubleValue();
-						continue;
-					case 'Z':
-						clazz = boolean.class;
-						handlers[i] = element.getBoolean(VALUE);
-						continue;
-					}
-				} 
-				
-				clazz = Class.forName(className);
-				clazzs[i] = clazz;
+				Class<?> clazz = clazzs[i] = Class.forName(className);
 				if (clazz.isArray()) {
 					JsonArray jsonArray = element.getJsonArray(VALUE);
 					handlers[i] = Array.newInstance(Class.forName("java.lang.Object"), jsonArray.size());
@@ -96,6 +57,13 @@ public class LarkInput {
 					handlers[i] = Enum.valueOf((Class) clazz, element.getString(LarkConstants.VALUE));
 				} else if (clazz.equals(String.class)) {
 					handlers[i] = element.getString(VALUE);
+				} else if (clazz.equals(Number.class)) {
+					JsonNumber num = element.getJsonNumber(VALUE);
+					if(num.isIntegral()){
+						handlers[i] = element.getJsonNumber(VALUE).intValue();
+					} else {
+						handlers[i] = element.getJsonNumber(VALUE).doubleValue();
+					}
 				} else if (clazz.equals(java.util.Date.class)) {
 					handlers[i] = new java.util.Date(element.getInt(VALUE));
 				} else if (clazz.equals(java.sql.Date.class)) {

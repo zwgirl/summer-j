@@ -102,9 +102,10 @@ import org.summer.sdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.summer.sdt.internal.compiler.ast.CompoundAssignment;
 import org.summer.sdt.internal.compiler.ast.ConditionalExpression;
 import org.summer.sdt.internal.compiler.ast.ConstructorDeclaration;
-import org.summer.sdt.internal.compiler.ast.PropertyReference;
+import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
+import org.summer.sdt.internal.compiler.ast.HtmlPropertyReference;
 import org.summer.sdt.internal.compiler.ast.StringLiteral;
-import org.summer.sdt.internal.compiler.ast.XAMLElement;
+import org.summer.sdt.internal.compiler.ast.HtmlElement;
 import org.summer.sdt.internal.compiler.ast.EqualExpression;
 import org.summer.sdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.summer.sdt.internal.compiler.ast.Expression;
@@ -1810,11 +1811,11 @@ public class ProblemReporter extends ProblemHandler {
 	 * @param type
 	 * @param fieldDecl
 	 */
-	public void duplicateNamedElementInType(PropertyReference fieldDecl) {
+	public void duplicateNamedElementInType(HtmlPropertyReference fieldDecl) {
 		this.handle(
 			IProblem.DuplicateField,
-			new String[] {new String("element"), new String(fieldDecl.token)},
-			new String[] {new String("element"), new String(fieldDecl.token)},
+			new String[] {new String("element"), new String(fieldDecl.hyphenName())},
+			new String[] {new String("element"), new String(fieldDecl.hyphenName())},
 			fieldDecl.sourceStart,
 			fieldDecl.sourceEnd);
 	}
@@ -2198,31 +2199,32 @@ public class ProblemReporter extends ProblemHandler {
 	}
 	public void fieldHiding(FieldDeclaration fieldDecl, Binding hiddenVariable) {
 		FieldBinding field = fieldDecl.binding;
-		if (CharOperation.equals(TypeConstants.SERIALVERSIONUID, field.name)
-				&& field.isStatic()
-				&& field.isPrivate()
-				&& field.isFinal()
-				&& TypeBinding.equalsEquals(TypeBinding.LONG, field.type)) {
-			ReferenceBinding referenceBinding = field.declaringClass;
-			if (referenceBinding != null) {
-				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
-					return; // do not report field hiding for serialVersionUID field for class that implements Serializable
-				}
-			}
-		}
-		if (CharOperation.equals(TypeConstants.SERIALPERSISTENTFIELDS, field.name)
-				&& field.isStatic()
-				&& field.isPrivate()
-				&& field.isFinal()
-				&& field.type.dimensions() == 1
-				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTSTREAMFIELD, field.type.leafComponentType().readableName())) {
-			ReferenceBinding referenceBinding = field.declaringClass;
-			if (referenceBinding != null) {
-				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
-					return; // do not report field hiding for serialPersistenFields field for class that implements Serializable
-				}
-			}
-		}
+		//cym 2015-04-24
+//		if (CharOperation.equals(TypeConstants.SERIALVERSIONUID, field.name)
+//				&& field.isStatic()
+//				&& field.isPrivate()
+//				&& field.isFinal()
+//				&& TypeBinding.equalsEquals(TypeBinding.LONG, field.type)) {
+//			ReferenceBinding referenceBinding = field.declaringClass;
+//			if (referenceBinding != null) {
+//				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
+//					return; // do not report field hiding for serialVersionUID field for class that implements Serializable
+//				}
+//			}
+//		}
+//		if (CharOperation.equals(TypeConstants.SERIALPERSISTENTFIELDS, field.name)
+//				&& field.isStatic()
+//				&& field.isPrivate()
+//				&& field.isFinal()
+//				&& field.type.dimensions() == 1
+//				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTSTREAMFIELD, field.type.leafComponentType().readableName())) {
+//			ReferenceBinding referenceBinding = field.declaringClass;
+//			if (referenceBinding != null) {
+//				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
+//					return; // do not report field hiding for serialPersistenFields field for class that implements Serializable
+//				}
+//			}
+//		}
 		boolean isLocal = hiddenVariable instanceof LocalVariableBinding;
 		int severity = computeSeverity(isLocal ? IProblem.FieldHidingLocalVariable : IProblem.FieldHidingField);
 		if (severity == ProblemSeverities.Ignore) return;
@@ -3894,7 +3896,7 @@ public class ProblemReporter extends ProblemHandler {
 			nodeSourceEnd(indexer, arrayRef));
 	}
 	//cym 2015-04-02
-	public void noPropertyDefineInElement(PropertyReference fieldRef) {
+	public void noPropertyDefineInElement(HtmlPropertyReference fieldRef) {
 //		this.handle(
 //			IProblem.NoPropertyDefinedInElement,
 //			NoArgument,
@@ -3905,15 +3907,25 @@ public class ProblemReporter extends ProblemHandler {
 		this.handle(
 				IProblem.NoPropertyDefinedInElement,
 				NoArgument,
-				new String[]{new String(fieldRef.token)},
+				new String[]{new String(fieldRef.hyphenName())},
 				ProblemSeverities.Warning,
 				fieldRef.sourceStart,
 				fieldRef.sourceEnd);
 	}
 	
+	//cym 2015-04-21
+	public void invalidEnumLiternal(Literal liternal) {
+		this.handle(
+				IProblem.InvalidEnumLiteral,
+				NoArgument,
+				new String[]{new String(liternal.source())},
+				liternal.sourceStart,
+				liternal.sourceEnd);
+	}
+	
 	//cym 2014-12-26
-	public void invalidProperty(PropertyReference fieldRef, TypeBinding searchedType) {
-		if(isRecoveredName(fieldRef.token)) return;
+	public void invalidProperty(HtmlPropertyReference fieldRef, TypeBinding searchedType) {
+		if(isRecoveredName(fieldRef.hyphenName())) return;
 	
 		int id = IProblem.UndefinedField;
 		FieldBinding field = fieldRef.binding;
@@ -3937,8 +3949,8 @@ public class ProblemReporter extends ProblemHandler {
 			case ProblemReasons.NotVisible :
 				this.handle(
 					IProblem.NotVisibleField,
-					new String[] {new String(fieldRef.token), new String(field.declaringClass.readableName())},
-					new String[] {new String(fieldRef.token), new String(field.declaringClass.shortReadableName())},
+					new String[] {new String(fieldRef.hyphenName()), new String(field.declaringClass.readableName())},
+					new String[] {new String(fieldRef.hyphenName()), new String(field.declaringClass.shortReadableName())},
 					nodeSourceStart(field, fieldRef),
 					nodeSourceEnd(field, fieldRef));
 				return;
@@ -3946,7 +3958,7 @@ public class ProblemReporter extends ProblemHandler {
 				id = IProblem.AmbiguousField;
 				break;
 			case ProblemReasons.NoProperEnclosingInstance:
-				noSuchEnclosingInstance(fieldRef.actualReceiverType, fieldRef/*.receiver*/, false);
+				noSuchEnclosingInstance(fieldRef.resolvedType, fieldRef/*.receiver*/, false);
 				return;
 			case ProblemReasons.NonStaticReferenceInStaticContext :
 				id = IProblem.NonStaticFieldFromStaticInvocation;
@@ -7915,6 +7927,16 @@ public class ProblemReporter extends ProblemHandler {
 			typeDeclaration.sourceStart,
 			typeDeclaration.sourceEnd);
 	}
+	//cym 2015-04-13
+	public void tooManyHtmlElements(TypeDeclaration typeDeclaration) {
+		this.handle(
+			IProblem.TooManyHtmlElements,
+			new String[]{ new String(typeDeclaration.binding.readableName())},
+			new String[]{ new String(typeDeclaration.binding.shortReadableName())},
+			ProblemSeverities.Abort | ProblemSeverities.Error | ProblemSeverities.Fatal,
+			typeDeclaration.sourceStart,
+			typeDeclaration.sourceEnd);
+	}
 	public void tooManyParametersForSyntheticMethod(AbstractMethodDeclaration method) {
 		MethodBinding binding = method.binding;
 		String selector = null;
@@ -8835,6 +8857,8 @@ public class ProblemReporter extends ProblemHandler {
 			constructorDecl.sourceStart,
 			constructorDecl.sourceEnd);
 	}
+	
+	//cym 2015-04-24
 	public void unusedPrivateField(FieldDeclaration fieldDecl) {
 	
 		int severity = computeSeverity(IProblem.UnusedPrivateField);
@@ -8842,29 +8866,30 @@ public class ProblemReporter extends ProblemHandler {
 	
 		FieldBinding field = fieldDecl.binding;
 	
-		if (CharOperation.equals(TypeConstants.SERIALVERSIONUID, field.name)
-				&& field.isStatic()
-				&& field.isFinal()
-				&& TypeBinding.equalsEquals(TypeBinding.LONG, field.type)) {
-			ReferenceBinding referenceBinding = field.declaringClass;
-			if (referenceBinding != null) {
-				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
-					return; // do not report unused serialVersionUID field for class that implements Serializable
-				}
-			}
-		}
-		if (CharOperation.equals(TypeConstants.SERIALPERSISTENTFIELDS, field.name)
-				&& field.isStatic()
-				&& field.isFinal()
-				&& field.type.dimensions() == 1
-				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTSTREAMFIELD, field.type.leafComponentType().readableName())) {
-			ReferenceBinding referenceBinding = field.declaringClass;
-			if (referenceBinding != null) {
-				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
-					return; // do not report unused serialVersionUID field for class that implements Serializable
-				}
-			}
-		}
+		//cym 2015-04-24
+//		if (CharOperation.equals(TypeConstants.SERIALVERSIONUID, field.name)
+//				&& field.isStatic()
+//				&& field.isFinal()
+//				&& TypeBinding.equalsEquals(TypeBinding.LONG, field.type)) {
+//			ReferenceBinding referenceBinding = field.declaringClass;
+//			if (referenceBinding != null) {
+//				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
+//					return; // do not report unused serialVersionUID field for class that implements Serializable
+//				}
+//			}
+//		}
+//		if (CharOperation.equals(TypeConstants.SERIALPERSISTENTFIELDS, field.name)
+//				&& field.isStatic()
+//				&& field.isFinal()
+//				&& field.type.dimensions() == 1
+//				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTSTREAMFIELD, field.type.leafComponentType().readableName())) {
+//			ReferenceBinding referenceBinding = field.declaringClass;
+//			if (referenceBinding != null) {
+//				if (referenceBinding.findSuperTypeOriginatingFrom(TypeIds.T_JavaIoSerializable, false /*Serializable is not a class*/) != null) {
+//					return; // do not report unused serialVersionUID field for class that implements Serializable
+//				}
+//			}
+//		}
 		if (excludeDueToAnnotation(fieldDecl.annotations, IProblem.UnusedPrivateField)) return;
 		this.handle(
 				IProblem.UnusedPrivateField,
@@ -8886,39 +8911,39 @@ public class ProblemReporter extends ProblemHandler {
 		if (severity == ProblemSeverities.Ignore) return;
 	
 		MethodBinding method = methodDecl.binding;
-	
-		// no report for serialization support 'void readObject(ObjectInputStream)'
-		if (!method.isStatic()
-				&& TypeBinding.VOID == method.returnType
-				&& method.parameters.length == 1
-				&& method.parameters[0].dimensions() == 0
-				&& CharOperation.equals(method.selector, TypeConstants.READOBJECT)
-				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTINPUTSTREAM, method.parameters[0].readableName())) {
-			return;
-		}
-		// no report for serialization support 'void writeObject(ObjectOutputStream)'
-		if (!method.isStatic()
-				&& TypeBinding.VOID == method.returnType
-				&& method.parameters.length == 1
-				&& method.parameters[0].dimensions() == 0
-				&& CharOperation.equals(method.selector, TypeConstants.WRITEOBJECT)
-				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTOUTPUTSTREAM, method.parameters[0].readableName())) {
-			return;
-		}
-		// no report for serialization support 'Object readResolve()'
-		if (!method.isStatic()
-				&& TypeIds.T_JavaLangObject == method.returnType.id
-				&& method.parameters.length == 0
-				&& CharOperation.equals(method.selector, TypeConstants.READRESOLVE)) {
-			return;
-		}
-		// no report for serialization support 'Object writeReplace()'
-		if (!method.isStatic()
-				&& TypeIds.T_JavaLangObject == method.returnType.id
-				&& method.parameters.length == 0
-				&& CharOperation.equals(method.selector, TypeConstants.WRITEREPLACE)) {
-			return;
-		}
+	//cym 2015-04-24
+//		// no report for serialization support 'void readObject(ObjectInputStream)'
+//		if (!method.isStatic()
+//				&& TypeBinding.VOID == method.returnType
+//				&& method.parameters.length == 1
+//				&& method.parameters[0].dimensions() == 0
+//				&& CharOperation.equals(method.selector, TypeConstants.READOBJECT)
+//				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTINPUTSTREAM, method.parameters[0].readableName())) {
+//			return;
+//		}
+//		// no report for serialization support 'void writeObject(ObjectOutputStream)'
+//		if (!method.isStatic()
+//				&& TypeBinding.VOID == method.returnType
+//				&& method.parameters.length == 1
+//				&& method.parameters[0].dimensions() == 0
+//				&& CharOperation.equals(method.selector, TypeConstants.WRITEOBJECT)
+//				&& CharOperation.equals(TypeConstants.CharArray_JAVA_IO_OBJECTOUTPUTSTREAM, method.parameters[0].readableName())) {
+//			return;
+//		}
+//		// no report for serialization support 'Object readResolve()'
+//		if (!method.isStatic()
+//				&& TypeIds.T_JavaLangObject == method.returnType.id
+//				&& method.parameters.length == 0
+//				&& CharOperation.equals(method.selector, TypeConstants.READRESOLVE)) {
+//			return;
+//		}
+//		// no report for serialization support 'Object writeReplace()'
+//		if (!method.isStatic()
+//				&& TypeIds.T_JavaLangObject == method.returnType.id
+//				&& method.parameters.length == 0
+//				&& CharOperation.equals(method.selector, TypeConstants.WRITEREPLACE)) {
+//			return;
+//		}
 		if (excludeDueToAnnotation(methodDecl.annotations, IProblem.UnusedPrivateMethod)) return;
 		
 		this.handle(
@@ -10463,7 +10488,7 @@ public class ProblemReporter extends ProblemHandler {
 	}
 	
 	//cym 2015-03-22
-	public void elementMustHaveMatchTag(XAMLElement element) {
+	public void elementMustHaveMatchTag(HtmlElement element) {
 		this.handle(
 				IProblem.HTNLElementMustHaveMatchedTag,
 				new String[] {

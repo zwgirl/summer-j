@@ -1794,16 +1794,28 @@ class ASTConverter {
 		}
 		
 		//cym add 2015-03-21
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.PropertyReference) {
-			return convert((org.summer.sdt.internal.compiler.ast.PropertyReference) expression);
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlPropertyReference) {
+			return convert((org.summer.sdt.internal.compiler.ast.HtmlPropertyReference) expression);
+		} 
+//		//cym add 2015-04-14
+//		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlAttachProperty) {
+//			return convert((org.summer.sdt.internal.compiler.ast.HtmlAttachProperty) expression);
+//		}
+//		//cym add 2015-04-14
+//		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference) {
+//			return convert((org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference) expression);
+//		}
+		
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlMarkupExtension) {
+			return convert((org.summer.sdt.internal.compiler.ast.HtmlMarkupExtension) expression);
 		} 
 		
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.MarkupExtension) {
-			return convert((org.summer.sdt.internal.compiler.ast.MarkupExtension) expression);
-		} 
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlElement) {
+			return convert((org.summer.sdt.internal.compiler.ast.HtmlElement) expression);
+		}
 		
-		if (expression instanceof org.summer.sdt.internal.compiler.ast.FunctionExpression) {
-			return convert((org.summer.sdt.internal.compiler.ast.FunctionExpression) expression);
+		if (expression instanceof org.summer.sdt.internal.compiler.ast.HtmlFunctionExpression) {
+			return convert((org.summer.sdt.internal.compiler.ast.HtmlFunctionExpression) expression);
 		}
 
 		return null;
@@ -2978,9 +2990,11 @@ class ASTConverter {
 		}
 		
 		//cym 2015-03-21
-		if(typeDeclaration.element != null){
-			org.summer.sdt.internal.compiler.ast.XAMLElement element = typeDeclaration.element;
-			typeDecl.setElement(convert(element));
+		if(typeDeclaration.htmlElements != null){
+//			org.summer.sdt.internal.compiler.ast.XAMLElement element = typeDeclaration.elements;
+			for(org.summer.sdt.internal.compiler.ast.HtmlElement element : typeDeclaration.htmlElements){
+				typeDecl.htmlElements().add(convert(element));
+			}
 		}
 		
 		this.referenceContext = oldReferenceContext;
@@ -3083,37 +3097,37 @@ class ASTConverter {
 	}
 	
 	//TODO cym 2015-03-21 
-	public XAMLElement convert(org.summer.sdt.internal.compiler.ast.XAMLElement element) {
-		final XAMLElement xamlElement = new XAMLElement(this.ast);
-		xamlElement.setSourceRange(element.sourceStart, element.sourceEnd - element.sourceStart + 1);
-		xamlElement.setType(convertType(element.type));
+	public HtmlElement convert(org.summer.sdt.internal.compiler.ast.HtmlElement element) {
+		final HtmlElement htmlElement = new HtmlElement(this.ast);
+		htmlElement.setSourceRange(element.sourceStart, element.sourceEnd - element.sourceStart + 1);
+		htmlElement.setType(convertType(element.type));
 		if(element.closeType != null){
-			xamlElement.setCloseType(convertType(element.closeType));
+			htmlElement.setCloseType(convertType(element.closeType));
 		}
 
-		for(org.summer.sdt.internal.compiler.ast.Attribute attribute : element.attributes){
-			xamlElement.attributes().add(convert(attribute));
+		for(org.summer.sdt.internal.compiler.ast.HtmlAttribute attribute : element.attributes){
+			htmlElement.attributes().add(convert(attribute));
 		}
 		
-		for(org.summer.sdt.internal.compiler.ast.XAMLElement child : element.children){
-			if(child instanceof org.summer.sdt.internal.compiler.ast.PCDATA ||
-					child instanceof org.summer.sdt.internal.compiler.ast.Script ||
-					child instanceof org.summer.sdt.internal.compiler.ast.XAMLComment){
-//				xamlElement.children().add(convert((org.summer.sdt.internal.compiler.ast.PCDATA)child));
+		for(org.summer.sdt.internal.compiler.ast.HtmlNode child : element.children){
+			if(child instanceof org.summer.sdt.internal.compiler.ast.HtmlText ||
+					child instanceof org.summer.sdt.internal.compiler.ast.HtmlScript ||
+					child instanceof org.summer.sdt.internal.compiler.ast.HtmlComment){
+//				xamlElement.children().add(convert((org.summer.sdt.internal.compiler.ast.HtmlText)child));
 				continue;
 			} else {
-				xamlElement.children().add(convert(child));
+				htmlElement.children().add(convert(child));
 			}
 		}
-		return xamlElement;
+		return htmlElement;
 	}
 	
 	//TODO cym 2015-03-21 
-	public MarkupExtension convert(org.summer.sdt.internal.compiler.ast.MarkupExtension markup) {
-		final MarkupExtension xamlElement = new MarkupExtension(this.ast);
+	public HtmlMarkupExtension convert(org.summer.sdt.internal.compiler.ast.HtmlMarkupExtension markup) {
+		final HtmlMarkupExtension xamlElement = new HtmlMarkupExtension(this.ast);
 		xamlElement.setSourceRange(markup.sourceStart, markup.sourceEnd - markup.sourceStart + 1);
 		xamlElement.setType(convertType(markup.type));
-		for(org.summer.sdt.internal.compiler.ast.Attribute attribute : markup.attributes){
+		for(org.summer.sdt.internal.compiler.ast.HtmlAttribute attribute : markup.attributes){
 			xamlElement.attributes().add(convert(attribute));
 		}
 
@@ -3121,7 +3135,7 @@ class ASTConverter {
 	}
 	
 	//TODO cym 2015-03-30 
-	public FunctionExpression convert(org.summer.sdt.internal.compiler.ast.FunctionExpression functionExpression) {
+	public FunctionExpression convert(org.summer.sdt.internal.compiler.ast.HtmlFunctionExpression functionExpression) {
 		final FunctionExpression function = new FunctionExpression(this.ast);
 		function.setSourceRange(functionExpression.sourceStart, functionExpression.sourceEnd - functionExpression.sourceStart + 1);
 //		xamlElement.setType(convertType(function.type));
@@ -3133,18 +3147,34 @@ class ASTConverter {
 	}
 	
 	//TODO cym 2015-03-21 
-	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.PropertyReference propertyReference) {
+	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.HtmlPropertyReference propertyReference) {
 		final FieldAccess fieldAccess = new FieldAccess(this.ast);
 		fieldAccess.setSourceRange(propertyReference.sourceStart, propertyReference.sourceEnd - propertyReference.sourceStart + 1);
 		fieldAccess.setName(convert1(propertyReference));
 
 		return fieldAccess;
 	}
+//	//2015-04-14
+//	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.HtmlSimplePropertyReference propertyReference) {
+//		final FieldAccess fieldAccess = new FieldAccess(this.ast);
+//		fieldAccess.setSourceRange(propertyReference.sourceStart, propertyReference.sourceEnd - propertyReference.sourceStart + 1);
+//		fieldAccess.setName(convert1(propertyReference));
+//
+//		return fieldAccess;
+//	}
+//	//2015-04-14
+//	public FieldAccess convert(org.summer.sdt.internal.compiler.ast.HtmlAttachProperty propertyReference) {
+//		final FieldAccess fieldAccess = new FieldAccess(this.ast);
+//		fieldAccess.setSourceRange(propertyReference.sourceStart, propertyReference.sourceEnd - propertyReference.sourceStart + 1);
+//		fieldAccess.setName(convert1(propertyReference));
+//
+//		return fieldAccess;
+//	}
 	
 	//TODO cym 2015-03-21 
-	public SimpleName convert1(org.summer.sdt.internal.compiler.ast.PropertyReference propertyReference) {
+	public SimpleName convert1(org.summer.sdt.internal.compiler.ast.HtmlPropertyReference propertyReference) {
 		final SimpleName name = new SimpleName(this.ast);
-		name.internalSetIdentifier(new String(propertyReference.token));
+		name.internalSetIdentifier(new String(propertyReference.hyphenName()));
 		if (this.resolveBindings) {
 			recordNodes(name, propertyReference);
 		}
@@ -3153,7 +3183,7 @@ class ASTConverter {
 	}
 	
 	//cym add 2014-11-11
-	public Expression convert(org.summer.sdt.internal.compiler.ast.PCDATA expression) {
+	public Expression convert(org.summer.sdt.internal.compiler.ast.HtmlText expression) {
 		int length = expression.sourceEnd - expression.sourceStart + 1;
 		int sourceStart = expression.sourceStart;
 		StringLiteral literal = new StringLiteral(this.ast);
@@ -3166,10 +3196,10 @@ class ASTConverter {
 	}
 	
 	//TODO cym 2015-03-21 
-	public Attribute convert(org.summer.sdt.internal.compiler.ast.Attribute attribute) {
-		final Attribute xamlAttribute = new Attribute(this.ast);
+	public HtmlAttribute convert(org.summer.sdt.internal.compiler.ast.HtmlAttribute attribute) {
+		final HtmlAttribute xamlAttribute = new HtmlAttribute(this.ast);
 		xamlAttribute.setSourceRange(attribute.sourceStart, attribute.sourceEnd - attribute.sourceStart + 1);
-		xamlAttribute.setProperty(convert(attribute.property));
+		xamlAttribute.setProperty((FieldAccess) convert(attribute.property));
 		xamlAttribute.setValue(convert(attribute.value));
 		return xamlAttribute;
 	}
@@ -3634,7 +3664,120 @@ class ASTConverter {
 		int sourceStart = typeReference.sourceStart;
 		int length = 0;
 		int dimensions = typeReference.dimensions();
-		if (typeReference instanceof org.summer.sdt.internal.compiler.ast.SingleTypeReference) {
+		
+		//cym 2015-04-15
+		if (typeReference instanceof org.summer.sdt.internal.compiler.ast.HtmlTypeReference) {
+			annotations = typeReference.annotations != null ? typeReference.annotations[0] : null;
+			int annotationsEnd = annotations != null ? annotations[annotations.length - 1].declarationSourceEnd + 1 : -1;
+			// this is either an ArrayTypeReference or a SingleTypeReference
+			char[] name = ((org.summer.sdt.internal.compiler.ast.HtmlTypeReference) typeReference).getTypeName()[0];
+			length = typeReference.sourceEnd - typeReference.sourceStart + 1;
+			// need to find out if this is an array type of primitive types or not
+			if (isPrimitiveType(name)) {
+				int[] positions = retrieveEndOfElementTypeNamePosition(sourceStart < annotationsEnd ? annotationsEnd : sourceStart, sourceStart + length);
+				int end = positions[1];
+				if (end == -1) {
+					end = sourceStart + length - 1;
+				}
+				final PrimitiveType primitiveType = new PrimitiveType(this.ast);
+				primitiveType.setPrimitiveTypeCode(getPrimitiveTypeCode(name));
+				primitiveType.setSourceRange(sourceStart, end - sourceStart + 1);
+				type = primitiveType;
+				if (typeReference.annotations != null && (annotations = typeReference.annotations[0]) != null) {
+					annotateType(primitiveType, annotations);
+				}
+			} else if (typeReference instanceof ParameterizedSingleTypeReference) {
+				ParameterizedSingleTypeReference parameterizedSingleTypeReference = (ParameterizedSingleTypeReference) typeReference;
+				final SimpleName simpleName = new SimpleName(this.ast);
+				simpleName.internalSetIdentifier(new String(name));
+				int[] positions = retrieveEndOfElementTypeNamePosition(sourceStart < annotationsEnd ? annotationsEnd : sourceStart, sourceStart + length);
+				int end = positions[1];
+				if (end == -1) {
+					end = sourceStart + length - 1;
+				}
+				if (positions[0] != -1) {
+					simpleName.setSourceRange(positions[0], end - positions[0] + 1);
+				} else {
+					simpleName.setSourceRange(sourceStart, end - sourceStart + 1);					
+				}
+
+				switch(this.ast.apiLevel) {
+					case AST.JLS2_INTERNAL :
+						SimpleType simpleType = new SimpleType(this.ast);
+						simpleType.setName(simpleName);
+						simpleType.setFlags(simpleType.getFlags() | ASTNode.MALFORMED);
+						simpleType.setSourceRange(sourceStart, end - sourceStart + 1);
+						type = simpleType;
+						if (this.resolveBindings) {
+							this.recordNodes(simpleName, typeReference);
+						}
+						break;
+					default :
+						simpleType = new SimpleType(this.ast);
+						simpleType.setName(simpleName);
+						simpleType.setSourceRange(simpleName.getStartPosition(), simpleName.getLength());
+						if (typeReference.annotations != null && (annotations = typeReference.annotations[0]) != null) {
+							annotateType(simpleType, annotations);
+						}
+						int newSourceStart = simpleType.getStartPosition();
+						if (newSourceStart > 0 && newSourceStart < sourceStart) 
+							sourceStart = newSourceStart;
+						final ParameterizedType parameterizedType = new ParameterizedType(this.ast);
+						parameterizedType.setType(simpleType);
+						type = parameterizedType;
+						TypeReference[] typeArguments = parameterizedSingleTypeReference.typeArguments;
+						if (typeArguments != null) {
+							Type type2 = null;
+							for (int i = 0, max = typeArguments.length; i < max; i++) {
+								type2 = convertType(typeArguments[i]);
+								((ParameterizedType) type).typeArguments().add(type2);
+								end = type2.getStartPosition() + type2.getLength() - 1;
+							}
+							end = retrieveClosingAngleBracketPosition(end + 1);
+							type.setSourceRange(sourceStart, end - sourceStart + 1);
+						} else {
+							type.setSourceRange(sourceStart, end - sourceStart + 1);
+						}
+						if (this.resolveBindings) {
+							this.recordNodes(simpleName, typeReference);
+							this.recordNodes(simpleType, typeReference);
+						}
+				}
+			} else {
+				final SimpleName simpleName = new SimpleName(this.ast);
+				simpleName.internalSetIdentifier(new String(name));
+				// we need to search for the starting position of the first brace in order to set the proper length
+				// PR http://dev.eclipse.org/bugs/show_bug.cgi?id=10759
+				int[] positions = retrieveEndOfElementTypeNamePosition(sourceStart < annotationsEnd ? annotationsEnd : sourceStart, sourceStart + length);
+				int end = positions[1];
+				if (end == -1) {
+					end = sourceStart + length - 1;
+				}
+				if (positions[0] != -1) {
+					simpleName.setSourceRange(positions[0], end - positions[0] + 1);
+				} else {
+					simpleName.setSourceRange(sourceStart, end - sourceStart + 1);
+				}
+				final SimpleType simpleType = new SimpleType(this.ast);
+				simpleType.setName(simpleName);
+				type = simpleType;
+				type.setSourceRange(sourceStart, end - sourceStart + 1);
+				type = simpleType;
+				if (this.resolveBindings) {
+					this.recordNodes(simpleName, typeReference);
+				}
+				if (typeReference.annotations != null && (annotations = typeReference.annotations[0]) != null) {
+					annotateType(simpleType, annotations);
+				}
+			}
+			if (dimensions != 0) {
+				type = convertToArray(type, sourceStart, length, dimensions, typeReference.getAnnotationsOnDimensions(true));
+				if (this.resolveBindings) {
+					// store keys for inner types
+					completeRecord((ArrayType) type, typeReference);
+				}
+			}
+		} else if (typeReference instanceof org.summer.sdt.internal.compiler.ast.SingleTypeReference) {
 			annotations = typeReference.annotations != null ? typeReference.annotations[0] : null;
 			int annotationsEnd = annotations != null ? annotations[annotations.length - 1].declarationSourceEnd + 1 : -1;
 			// this is either an ArrayTypeReference or a SingleTypeReference
@@ -3745,7 +3888,7 @@ class ASTConverter {
 					completeRecord((ArrayType) type, typeReference);
 				}
 			}
-		} else {
+		} else { ////cym 2015-04-15 end
 			if (typeReference instanceof ParameterizedQualifiedTypeReference) {
 				ParameterizedQualifiedTypeReference parameterizedQualifiedTypeReference = (ParameterizedQualifiedTypeReference) typeReference;
 				char[][] tokens = parameterizedQualifiedTypeReference.tokens;
@@ -3975,6 +4118,8 @@ class ASTConverter {
 		}
 		return type;
 	}
+	
+
 
 	private Type createBaseType(TypeReference typeReference, long[] positions,
 			org.summer.sdt.internal.compiler.ast.Annotation[][] typeAnnotations, char[][] tokens, int lenth,

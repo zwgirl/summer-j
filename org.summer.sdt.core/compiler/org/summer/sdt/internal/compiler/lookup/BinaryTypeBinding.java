@@ -750,6 +750,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 							for (short i = 0; i < size; i++)
 								// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
 								this.parameters[i] = this.environment.getTypeFromConstantPoolName1(parameterNames[i], 0, -1, false, missingTypeNames, walker.toSupertype(i));
+//								this.parameters[i] = this.environment.getTypeFromSignature(parameterNames[i], 0, -1, false, null, missingTypeNames, walker.toSupertype(i));
 							this.tagBits |= TagBits.HasUnresolvedParameterTypes;
 						}
 					}
@@ -1521,14 +1522,16 @@ public class BinaryTypeBinding extends ReferenceBinding {
 		
 		long range;
 		if ((range = ReferenceBinding.binarySearch(this.fields)) >= 0) {
-			nextMethod: for (int ifield = 0, end = (int)(range >> 32); ifield <= end; ifield++) {
+			nextIndexer: for (int ifield = 0, end = (int)(range >> 32); ifield <= end; ifield++) {
 				FieldBinding field = this.fields[ifield];
 				foundNothing = false; // inner type lookups must know that a method with this name exists
 				if ((field.modifiers & ClassFileConstants.AccIndexer) !=0 && field.parameters.length == argCount) {
 					TypeBinding[] toMatch = field.parameters;
 					for (int iarg = 0; iarg < argCount; iarg++)
-						if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
-							continue nextMethod;
+						//cym 2015-04-13
+//						if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
+						if (!argumentTypes[iarg].isCompatibleWith(toMatch[iarg]))
+							continue nextIndexer;
 					return field;
 				}
 			}
@@ -2220,8 +2223,9 @@ public class BinaryTypeBinding extends ReferenceBinding {
 			}
 		}
 		this.typeBits |= (this.superclass.typeBits & TypeIds.InheritableBits);
-		if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
-			this.typeBits |= applyCloseableClassWhitelists();
+		//cym 2015-04-24
+//		if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
+//			this.typeBits |= applyCloseableClassWhitelists();
 		return this.superclass;
 	}
 	// NOTE: superInterfaces of binary types are resolved when needed
@@ -2256,8 +2260,9 @@ public class BinaryTypeBinding extends ReferenceBinding {
 				}	
 			}
 			this.typeBits |= (this.superInterfaces[i].typeBits & TypeIds.InheritableBits);
-			if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
-				this.typeBits |= applyCloseableInterfaceWhitelists();
+			//cym 2015-04-24
+//			if ((this.typeBits & (TypeIds.BitAutoCloseable|TypeIds.BitCloseable)) != 0) // avoid the side-effects of hasTypeBit()! 
+//				this.typeBits |= applyCloseableInterfaceWhitelists();
 		}
 		this.tagBits &= ~TagBits.HasUnresolvedSuperinterfaces;
 		return this.superInterfaces;

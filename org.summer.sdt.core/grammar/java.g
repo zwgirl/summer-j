@@ -54,10 +54,8 @@ $Terminals
 	boolean break byte case catch char class 
 	continue 
 	const 
---	debugger 
+	debugger 
 	default do double else enum 
-	--event 
---	export 
 	extends false final finally float
 	for function goto if implements import 
 	in 
@@ -70,6 +68,7 @@ $Terminals
 	protected public return short static strictfp super switch
 	synchronized this throw throws transient true try 
 	typeof 
+	var
 	void
 	volatile while
 
@@ -461,108 +460,146 @@ InternalCompilationUnit ::= $empty
 -----------------------------------------------
 -- xaml declaration
 -----------------------------------------------
-Element -> ComplexElement
-Element -> EmptyElement
-Element -> SimpleElement
---Element -> AttributeElement
-Element -> PCDATANode
-Element -> Script
-Element -> CommentNode
-/:$readableName ElementDeclaration:/
+HtmlSection ::= <% NodeListopt %>
 
-ElementListopt ::= $empty
-/.$putCase consumeElementListopt(); $break ./
-ElementListopt -> ElementList
-/:$readableName ElementListopt:/
+Node -> Element
+Node -> TextNode
+Node -> Script
+Node -> CommentNode
+/:$readableName Node:/
 
-ElementList -> Element
-ElementList ::= ElementList Element
-/.$putCase consumeElementList(); $break ./
-/:$readableName ElementList:/
+NodeListopt ::= $empty
+/.$putCase consumeHtmlNodeListopt(); $break ./
+NodeListopt -> NodeList
+/:$readableName NodeListopt:/
 
---Script -> ScriptHeader MethodBody EnterPCDATA %>
---/.$putCase consumeScript(); $break ./
---/:$readableName Script:/
---
---ScriptHeader ::= <%
---/.$putCase consumeScriptHeader(); $break./
---/:$readableName ScriptHeader:/
+NodeList -> Node
+NodeList ::= NodeList Node
+/.$putCase consumeHtmlNodeList(); $break ./
+/:$readableName NodeList:/
 
-Script -> ScriptHeader MethodBody EnterPCDATA >
-/.$putCase consumeScript(); $break ./
+EnterTextNode ::= $empty
+/.$putCase consumeHtmlEnterTextNode(); $break ./
+/:$readableName EnterTextNode:/
+
+Script ::= ScriptHeader MethodBody EnterTextNode >
+/.$putCase consumeHtmlScript(); $break ./
 /:$readableName Script:/
 
 ScriptHeader ::= <
-/.$putCase consumeScriptHeader(); $break./
+/.$putCase consumeHtmlScriptHeader(); $break./
 /:$readableName ScriptHeader:/
 
-PCDATANode ::= PCDATA 
-/.$putCase consumePCDATANode(); $break ./
-/:$readableName PCDATANode:/
+TextNode ::= PCDATA 
+/.$putCase consumeHtmlTextNode(); $break ./
+/:$readableName TextNode:/
 
-CommentNode ::= XmlComment EnterPCDATA
-/.$putCase consumeCommentNode(); $break ./
+CommentNode ::= XmlComment EnterTextNode
+/.$putCase consumeHtmlComment(); $break ./
 /:$readableName CommentNode:/
 
-EmptyElement ::=  ElementTag  EnterCloseTag EnterPCDATA '/>' 
-/.$putCase consumeEmptyElement(); $break ./
+HtmlName -> SimpleName
+HtmlName ::= HtmlName - SimpleName
+/.$putCase consumeHtmlName(); $break ./
+HtmlName ::= HtmlName - IntegerLiteral
+/.$putCase consumeHtmlNameInt(); $break ./
 
-SimpleElement ::=  ElementTag AttributeList  EnterCloseTag EnterPCDATA '/>'
-/.$putCase consumeSimpleElement(); $break ./
+StartTag ::= < SimpleName : HtmlName
+/.$putCase consumeHtmlNSStartTag(); $break ./
+StartTag ::= < HtmlName
+/.$putCase consumeHtmlStartTag(); $break ./
+StartTag ::= < . HtmlName
+/.$putCase consumeHtmlAttributeElementStartTag(); $break ./
+StartTag ::= < SimpleName : switch
+StartTag ::= < switch
+/.$putCase consumeHtmlSwitchStartTag(); $break ./
+StartTag ::= < SimpleName : var
+StartTag ::= < var
+/.$putCase consumeHtmlVarStartTag(); $break ./
+StartTag ::= < SimpleName : if
+StartTag ::= < if
+/.$putCase consumeHtmlIfStartTag(); $break ./
+/:$readableName StartTag:/
 
-ComplexElement ::= ElementStart
-    ElementListopt
-	ElementClose 
-	
-/.$putCase consumeComplexElement(); $break ./
-/:$readableName ComplexElement:/
-/:$recovery_template < identifier:/
-
-ElementStart ::= ElementTag AttributeListopt EnterPCDATA '>' 
-/.$putCase consumeElementStart(); $break ./
+ElementStart ::= StartTag AttributeListopt
+/.$putCase consumeHtmlElementStart(); $break ./
 /:$readableName ElementStart:/
 
-ElementClose ::= '</' EnterCloseTag SimpleName EnterPCDATA '>' 
-/.$putCase consumeElementClose(); $break ./
-/:$readableName ElementClose:/
+Element ::=  ElementStart ExitCloseTag EnterTextNode />
+/.$putCase consumeHtmlSimpleElement(); $break ./
+Element ::= ElementStart EnterTextNode > 
+    NodeListopt
+	CloseTag ExitCloseTag EnterTextNode >
+/.$putCase consumeHtmlElement(); $break ./
+/:$readableName Element:/
+/:$recovery_template <:/
 
-EnterCloseTag ::= $empty
-/.$putCase consumeEnterCloseTag(); $break ./
-/:$readableName EnterCloseTag:/
+ExitCloseTag ::= $empty
+/.$putCase consumeHtmlExitCloseTag(); $break ./
+/:$readableName ExitCloseTag:/
 
-EnterPCDATA ::= $empty
-/.$putCase consumeEnterPCADATA(); $break ./
-/:$readableName EnterPCADATA:/
+CloseTag ::= </ HtmlName
+/.$putCase consumeHtmlCloseTag(); $break ./
+CloseTag ::= </ SimpleName : HtmlName
+/.$putCase consumeHtmlNSCloseTag(); $break ./
+CloseTag ::= </ . HtmlName
+/.$putCase consumeHtmlAttributeElementCloseTag(); $break ./
+
+CloseTag ::= </ SimpleName : switch
+CloseTag ::= </ switch
+/.$putCase consumeHtmlNSSwitchCloseTag(); $break ./
+CloseTag ::= </ SimpleName : var
+/.$putCase consumeHtmlNSVarCloseTag(); $break ./
+CloseTag ::= </ var
+/.$putCase consumeHtmlVarCloseTag(); $break ./
+CloseTag ::= </ SimpleName : if
+/.$putCase consumeHtmlNSIfCloseTag(); $break ./
+CloseTag ::= </ if
+/.$putCase consumeHtmlIfCloseTag(); $break ./
+/:$readableName CloseTag:/
+
+AttributeStart ::= HtmlName
+/.$putCase consumeHtmlAttributeStart(); $break ./
+AttributeStart ::= SimpleName : HtmlName
+/.$putCase consumeHtmlNSAttributeStart(); $break ./
+AttributeStart ::= HtmlName . HtmlName
+/.$putCase consumeHtmlAttributeTwoStart(); $break ./
+AttributeStart ::= HtmlName . HtmlName . HtmlName
+/.$putCase consumeHtmlAttributeThreeStart(); $break ./
+AttributeStart ::= in 
+/.$putCase consumeHtmlInAttributeStart(); $break ./
+AttributeStart ::= class
+/.$putCase consumeHtmlClassAttributeStart(); $break ./
+AttributeStart ::= for
+/.$putCase consumeHtmlForAttributeStart(); $break ./
+/:$readableName AttributeStart:/
+
+----Attribute ::= AttributeStart
+----/.$putCase consumeHtmlAttributeEmpty(); $break ./
+--Attribute ::= AttributeStart = StringLiteral
+--Attribute ::= AttributeStart = IntegerLiteral
+--Attribute ::= AttributeStart = LongLiteral
+--Attribute ::= AttributeStart = FloatingPointLiteral
+--Attribute ::= AttributeStart = DoubleLiteral
+--Attribute ::= AttributeStart = CharacterLiteral
+--Attribute ::= AttributeStart = BooleanLiteral
+--Attribute ::= AttributeStart = MarkupExtenson
+--Attribute ::= AttributeStart = FunctionExpression
+--/.$putCase consumeHtmlAttribute(); $break ./
+--/:$readableName Attribute:/
+
+Attribute ::= AttributeStart '=' PropertyExpression
+/.$putCase consumeHtmlAttribute(); $break ./
+/:$readableName Attribute:/
 
 AttributeListopt ::= $empty
-/.$putCase consumeAttributeListopt(); $break ./
+/.$putCase consumeHtmlAttributeListopt(); $break ./
 AttributeListopt -> AttributeList
 /:$readableName AttributeListopt:/
 
-ElementTag ::= '<' SimpleName
-/.$putCase consumeElementTag(); $break ./
-/:$readableName ElementTag:/
-
---AttributeElementTag ::= $empty
---/.$putCase consumeAttributeElementTag(); $break ./
---/:$readableName AttributeElementTag:/
---AttributeElement ::= '<' SimpleName '.' SimpleName AttributeElementTag EnterPCDATA '>'
---       ElementListopt
---    '</' SimpleName '.' SimpleName EnterPCDATA '>'
---/.$putCase consumeAttributeElement(); $break ./
---/:$readableName AttributeElement:/
-
-Attribute ::= SimpleName ':' SimpleName '=' PropertyExpression
-/.$putCase consumeAttributeWithTypeReference(); $break ./
-Attribute ::= SimpleName '=' PropertyExpression
-/.$putCase consumeAttribute(); $break ./
-Attribute ::= SimpleName '.' SimpleName '=' PropertyExpression
-/.$putCase consumeAttributeWithPropertyReference(); $break ./
-/:$readableName Attribute:/
-
-AttributeList ::= Attribute
+AttributeList -> Attribute
 AttributeList ::= AttributeList Attribute
-/.$putCase consumeAttributeList(); $break ./
+/.$putCase consumeHtmlAttributeList(); $break ./
 /:$readableName AttributeList:/
 
 PropertyExpression ::= StringLiteral
@@ -572,43 +609,31 @@ PropertyExpression ::= FloatingPointLiteral
 PropertyExpression ::= DoubleLiteral
 PropertyExpression ::= CharacterLiteral
 PropertyExpression ::= BooleanLiteral
-
 PropertyExpression ::= MarkupExtenson
-
 PropertyExpression ::= FunctionExpression
 
+--AttributeListopt ::= $empty
+--/.$putCase consumeHtmlAttributeListopt(); $break ./
+--AttributeListopt -> AttributeList
+--/:$readableName AttributeListopt:/
+--
+--AttributeList -> Attribute
+--AttributeList ::= AttributeList Attribute
+--/.$putCase consumeHtmlAttributeList(); $break ./
+--/:$readableName AttributeList:/
+
 FunctionExpression ::= FunctionExpressionHeader MethodBody
-/.$putCase consumeFunctionExpression(); $break ./
+/.$putCase consumeHtmlFunctionExpression(); $break ./
 /:$readableName FunctionExpression:/
 
 FunctionExpressionHeader ::= function
-/.$putCase consumeFunctionExpressionHeader(); $break ./
+/.$putCase consumeHtmlFunctionExpressionHeader(); $break ./
 /:$readableName FunctionExpressionHeader:/
 
-
---MarkupExtensionTag ::= $empty
---/.$putCase consumeMarkupExtensionTag(); $break ./
---/:$readableName MarkupExtensionTag:/
-
-consumeMarkupExtensionTag ::= '{' SimpleName
-/.$putCase consumeMarkupExtensionTag(); $break ./
-/:$readableName consumeMarkupExtensionTag:/
-
-MarkupExtenson ::= consumeMarkupExtensionTag  '}'
-/.$putCase consumeMarkupExtenson(false); $break ./
-
-MarkupExtenson ::= consumeMarkupExtensionTag  AttributeList '}'
-/.$putCase consumeMarkupExtenson(true); $break ./
+MarkupExtenson ::= { SimpleName AttributeListopt }
+/.$putCase consumeHtmlMarkupExtenson(); $break ./
 /:$readableName MarkupExtenson:/
-/:$recovery_template { identifier:/
-
---MarkupExtenson ::= '{' SimpleName MarkupExtensionTag '}'
---/.$putCase consumeMarkupExtenson(false); $break ./
---
---MarkupExtenson ::= '{' SimpleName MarkupExtensionTag AttributeList '}'
---/.$putCase consumeMarkupExtenson(true); $break ./
---/:$readableName MarkupExtenson:/
---/:$recovery_template { identifier:/
+/:$recovery_template }:/
 ----------------------------------------------
 -- xaml end
 -----------------------------------------------
@@ -1712,6 +1737,9 @@ PrimaryNoNewArray ::= PrimitiveType '.' 'class'
 PrimaryNoNewArray -> MethodInvocation
 PrimaryNoNewArray -> ArrayAccess
 
+--cym 2015-05-28
+--PrimaryNoNewArray -> ObjectCreator
+
 -----------------------------------------------------------------------
 --                   Start of rules for JSR 335
 -----------------------------------------------------------------------
@@ -1855,6 +1883,64 @@ ClassInstanceCreationExpression ::= ClassInstanceCreationExpressionName ClassTyp
 ClassInstanceCreationExpression ::= ClassInstanceCreationExpressionName OnlyTypeArguments ClassType EnterInstanceCreationArgumentList '(' ArgumentListopt ')' QualifiedClassBodyopt
 /.$putCase consumeClassInstanceCreationExpressionQualifiedWithTypeArguments() ; $break ./
 /:$readableName ClassInstanceCreationExpression:/
+
+----cym 2015-05-06
+----MemberInitializer
+--ObjectCreator ::= 'new' ObjectInitializer
+--/.$putCase consumeClassInstanceCreationExpressionWithInitializer() ; $break ./
+--
+--ObjectInitializer ::= { $empty }
+--/.$putCase consumeEmptyObjectInitializer() ; $break ./
+--ObjectInitializer ::= { MemberInitializerList }
+--/.$putCase consumeObjectInitializer() ; $break ./
+--/:$readableName ObjectInitializer:/
+--
+--MemberInitializerList ::= MemberInitializer
+--/.$putCase consumeMemberInitializerList() ; $break ./
+--
+--MemberInitializerList ::= MemberInitializerList  ,  MemberInitializer
+--/.$putCase consumeMemberInitializerList() ; $break ./
+--/:$readableName MemberInitializerList:/
+--
+--MemberInitializer ::= Identifier : InitializerValue
+--/.$putCase consumeMemberInitializer() ; $break ./
+--/:$readableName MemberInitializer:/
+--
+--InitializerValue -> Expression
+----/.$putCase consumeInitializerValue() ; $break ./
+--/:$readableName InitializerValue:/
+----cym 2015-05-06
+
+
+--InitializerValue -> ObjectOrCollectionInitializer
+----/.$putCase consumeObjectOrCollectionInitializer() ; $break ./
+--/:$readableName ObjectOrCollectionInitializer:/
+
+--CollectionInitializer ::= { ElementInitializerList }
+--/.$putCase consumeCollectionInitializer() ; $break ./
+
+--CollectionInitializer ::= { ElementInitializerList , }
+--/.$putCase consumeCollectionInitializerWithEndComma() ; $break ./
+--/:$readableName CollectionInitializer:/
+
+--ElementInitializerList ::= ElementInitializer
+----/.$putCase consumeElementInitializerList() ; $break ./
+
+--ElementInitializerList ::= ElementInitializerList , ElementInitializer
+--/.$putCase consumeElementInitializerList() ; $break ./
+--/:$readableName ElementInitializerList:/
+
+----ElementInitializer ::= non-assignment-expression
+--ElementInitializer ::= {   ExpressionList   }
+--/.$putCase consumeElementInitializer() ; $break ./
+--/:$readableName ElementInitializer:/
+
+--ExpressionList ::= Expression
+----/.$putCase consumeExpressionList() ; $break ./
+
+--ExpressionList ::= ExpressionList  ,  Expression
+--/.$putCase consumeExpressionList() ; $break ./
+--/:$readableName ExpressionList:/
 
 --cym add 2014-10-29
 --MemberInitializer
@@ -2324,11 +2410,13 @@ ConstantExpression -> Expression
 
 ClassBodyDeclarationsopt ::= $empty
 /.$putCase consumeEmptyClassBodyDeclarationsopt(); $break ./
-ClassBodyDeclarationsopt -> NestedType ComplexElement
+--ClassBodyDeclarationsopt -> NestedType ComplexElement
+ClassBodyDeclarationsopt -> NestedType HtmlSection
 /.$putCase consumeObjectElementClassBodyDeclarationsopt(); $break ./
 ClassBodyDeclarationsopt ::= NestedType ClassBodyDeclarations
 /.$putCase consumeClassBodyDeclarationsopt(); $break ./
-ClassBodyDeclarationsopt ::= NestedType ComplexElement ClassBodyDeclarations
+--ClassBodyDeclarationsopt ::= NestedType ComplexElement ClassBodyDeclarations
+ClassBodyDeclarationsopt ::= NestedType HtmlSection ClassBodyDeclarations
 /.$putCase consumeClassBodyDeclarationsoptWithObjectElement(); $break ./
 /:$readableName ClassBodyDeclarations:/
 

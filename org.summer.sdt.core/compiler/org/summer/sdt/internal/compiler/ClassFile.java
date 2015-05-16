@@ -5041,6 +5041,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 			}
 			parameterCounter++;
 			int parameterIndex = this.constantPool.literalIndexForType(binding);
+//			int parameterIndex = this.constantPool.literalIndex(binding.genericTypeSignature());
 			this.contents[this.contentsOffset++] = (byte) (parameterIndex >> 8);
 			this.contents[this.contentsOffset++] = (byte) parameterIndex;
 		}

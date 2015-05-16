@@ -80,34 +80,34 @@ public class CompletionOnMemberAccess extends FieldReference {
 		// array types are passed along to find the length field
 	}
 	
-	//cym 2014-12-26
-	public TypeBinding resolveType(ElementScope scope) {
-
-		this.actualReceiverType = scope.context.resolvedType;
-
-//		if ((this.actualReceiverType == null || !this.actualReceiverType.isValidBinding()) && this.receiver instanceof MessageSend) {
-//			MessageSend messageSend = (MessageSend) this.receiver;
-//			if(messageSend.receiver instanceof ThisReference) {
-//				Expression[] arguments = messageSend.arguments;
-//				int length = arguments == null ? 0 : arguments.length;
-//				TypeBinding[] argBindings = new TypeBinding[length];
-//				for (int i = 0; i < length; i++) {
-//					argBindings[i] = arguments[i].resolvedType;
-//					if(argBindings[i] == null || !argBindings[i].isValidBinding()) {
-//						throw new CompletionNodeFound();
-//					}
-//				}
+//	//cym 2014-12-26
+//	public TypeBinding resolveType(ElementScope scope) {
 //
-//				ProblemMethodBinding problemMethodBinding = new ProblemMethodBinding(messageSend.selector, argBindings, ProblemReasons.NotFound);
-//				throw new CompletionNodeFound(this, problemMethodBinding, scope);
-//			}
-//		}
-
-		if (this.actualReceiverType == null || !this.actualReceiverType.isValidBinding())
-			throw new CompletionNodeFound();
-		else
-			throw new CompletionNodeFound(this, this.actualReceiverType, scope);
-		// array types are passed along to find the length field
-	}
+//		this.actualReceiverType = scope.context.resolvedType;
+//
+////		if ((this.actualReceiverType == null || !this.actualReceiverType.isValidBinding()) && this.receiver instanceof MessageSend) {
+////			MessageSend messageSend = (MessageSend) this.receiver;
+////			if(messageSend.receiver instanceof ThisReference) {
+////				Expression[] arguments = messageSend.arguments;
+////				int length = arguments == null ? 0 : arguments.length;
+////				TypeBinding[] argBindings = new TypeBinding[length];
+////				for (int i = 0; i < length; i++) {
+////					argBindings[i] = arguments[i].resolvedType;
+////					if(argBindings[i] == null || !argBindings[i].isValidBinding()) {
+////						throw new CompletionNodeFound();
+////					}
+////				}
+////
+////				ProblemMethodBinding problemMethodBinding = new ProblemMethodBinding(messageSend.selector, argBindings, ProblemReasons.NotFound);
+////				throw new CompletionNodeFound(this, problemMethodBinding, scope);
+////			}
+////		}
+//
+//		if (this.actualReceiverType == null || !this.actualReceiverType.isValidBinding())
+//			throw new CompletionNodeFound();
+//		else
+//			throw new CompletionNodeFound(this, this.actualReceiverType, scope);
+//		// array types are passed along to find the length field
+//	}
 	
 }

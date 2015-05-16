@@ -17,13 +17,11 @@ public class GlobalScope extends Scope{
 
 	@Override
 	public ProblemReporter problemReporter() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.parent.problemReporter();
 	}
 
 	@Override
 	public boolean hasDefaultNullnessFor(int location) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

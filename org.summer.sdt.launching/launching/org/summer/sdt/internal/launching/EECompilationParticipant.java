@@ -148,6 +148,7 @@ public class EECompilationParticipant extends CompilationParticipant {
 	 * @param project the given project or <code>null</code>
 	 * @return the severity level for the given preference key or -1
 	 */
+	@SuppressWarnings("unused")
 	private int getSeverityLevel(String prefkey, IProject project) {
 		IPreferencesService service = Platform.getPreferencesService();
 		List<IScopeContext> scopes = new ArrayList<IScopeContext>();
@@ -174,6 +175,7 @@ public class EECompilationParticipant extends CompilationParticipant {
 	 * @param message the message to set on the new problem
 	 * @param severity the severity level for the new problem
 	 */
+	@SuppressWarnings("unused")
 	private void createJREContainerProblem(IJavaProject javaProject, String message, int severity) {
 		try {
 			IMarker marker = javaProject.getProject().createMarker(JavaRuntime.JRE_CONTAINER_MARKER);

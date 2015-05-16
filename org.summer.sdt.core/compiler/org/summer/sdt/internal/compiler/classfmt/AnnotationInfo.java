@@ -286,6 +286,12 @@ public class AnnotationInfo extends ClassFileStruct implements IBinaryAnnotation
 		currentOffset += 4;
 		if (expectRuntimeVisibleAnno && toplevel) {
 			switch (typeName.length) {
+				case 21:   //cym 2015-05-12
+					if (CharOperation.equals(typeName, ConstantPool.JAVA_LANG_ATTRIBUTE)) {
+						this.standardAnnotationTagBits |= TagBits.AnnotationAttribute;
+						return currentOffset;
+					}
+					break;
 				case 22:
 					if (CharOperation.equals(typeName, ConstantPool.JAVA_LANG_DEPRECATED)) {
 						this.standardAnnotationTagBits |= TagBits.AnnotationDeprecated;
