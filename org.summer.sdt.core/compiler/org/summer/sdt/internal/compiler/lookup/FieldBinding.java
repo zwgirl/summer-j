@@ -28,7 +28,7 @@ public class FieldBinding extends VariableBinding {
 	public int compoundUseFlag = 0; // number or accesses via postIncrement or compoundAssignment
 	
 	//cym 2015-02-13
-	public TypeBinding[] parameters;
+	public TypeBinding parameter;
 	
 	protected FieldBinding() {
 		super(null, null, 0, null);

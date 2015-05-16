@@ -1160,12 +1160,13 @@ public class SourceTypeBinding extends ReferenceBinding {
 	//cym 2014-11-24
 	//NOTE: the return type, arg & exception types of each method of a source type are resolved when needed
 	//searches up the hierarchy as long as no potential (but not exact) match was found.
-	public FieldBinding getExactIndexer(TypeBinding[] argumentTypes, CompilationUnitScope refScope) {
+	@Override
+	public FieldBinding getExactIndexer(TypeBinding argumentType, CompilationUnitScope refScope) {
 		if (!isPrototype())
-			return this.prototype.getExactIndexer(argumentTypes, refScope);
+			return this.prototype.getExactIndexer(argumentType, refScope);
 		
 		// sender from refScope calls recordTypeReference(this)
-		int argCount = argumentTypes.length;
+//		int argCount = argumentType.length;
 		boolean foundNothing = true;
 	
 		if ((this.tagBits & TagBits.AreFieldsComplete) != 0) { // have resolved all arg types & return type of the methods
@@ -1177,15 +1178,15 @@ public class SourceTypeBinding extends ReferenceBinding {
 					}
 					FieldBinding indexer = (FieldBinding) this.fields[ifield];
 					foundNothing = false; // inner type lookups must know that a method with this name exists
-					if (indexer.parameters.length == argCount) {
-						TypeBinding[] toMatch = indexer.parameters;
-						for (int iarg = 0; iarg < argCount; iarg++)
+//					if (indexer.parameters.length == argCount) {
+						TypeBinding toMatch = indexer.parameter;
+//						for (int iarg = 0; iarg < argCount; iarg++)
 							//cym 2015-04-13
 //							if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
-							if (!argumentTypes[iarg].isCompatibleWith(toMatch[iarg]))
+							if (!argumentType.isCompatibleWith(toMatch))
 								continue nextIndexer;
 						return indexer;
-					}
+//					}
 				}
 			}
 		} else {
@@ -1208,7 +1209,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 					FieldBinding indexer = (FieldBinding) this.fields[ifield];
 					if (resolveTypeFor(indexer) == null || indexer.type == null) {
 						fields();
-						return getExactIndexer(argumentTypes, refScope); // try again since the problem indexers have been removed
+						return getExactIndexer(argumentType, refScope); // try again since the problem indexers have been removed
 					}
 				}
 				
@@ -1268,13 +1269,14 @@ public class SourceTypeBinding extends ReferenceBinding {
 					}
 					
 					FieldBinding indexer = this.fields[ifield];
-					TypeBinding[] toMatch = indexer.parameters;
-					if (toMatch.length == argCount) {
-						for (int iarg = 0; iarg < argCount; iarg++)
-							if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
+					TypeBinding toMatch = indexer.parameter;
+//					if (toMatch.length == argCount) {
+//						for (int iarg = 0; iarg < argCount; iarg++)
+//							if (TypeBinding.notEquals(toMatch, argumentType))
+							if (!argumentType.isCompatibleWith(toMatch))
 								continue nextIndexer;
 						return indexer;
-					}
+//					}
 				}
 			}
 		}
@@ -1284,12 +1286,12 @@ public class SourceTypeBinding extends ReferenceBinding {
 				 if (this.superInterfaces.length == 1) {
 					if (refScope != null)
 						refScope.recordTypeReference(this.superInterfaces[0]);
-					return this.superInterfaces[0].getExactIndexer(argumentTypes, refScope);
+					return this.superInterfaces[0].getExactIndexer(argumentType, refScope);
 				 }
 			} else if (this.superclass != null) {
 				if (refScope != null)
 					refScope.recordTypeReference(this.superclass);
-				return this.superclass.getExactIndexer(argumentTypes, refScope);
+				return this.superclass.getExactIndexer(argumentType, refScope);
 			}
 		}
 		return null;
@@ -2240,14 +2242,14 @@ public class SourceTypeBinding extends ReferenceBinding {
 				
 				//cym 2015-02-13
 				boolean foundArgProblem = false;
-				Argument[] arguments = fieldDecls[f].arguments;
-				if (arguments != null) {
+				Argument argument = fieldDecls[f].argument;
+				if (argument != null) {
 					MethodScope methodScope = new MethodScope(this.scope, this.scope.referenceContext, false);
-					int size = arguments.length;
-					TypeBinding[] newParameters = new TypeBinding[size];
-					for (int i = 0; i < size; i++) {
-						Argument arg = arguments[i];
-						if (arg.annotations != null) {
+//					int size = arguments.length;
+//					TypeBinding[] newParameters = new TypeBinding[size];
+//					for (int i = 0; i < size; i++) {
+//						Argument arg = arguments[i];
+						if (argument.annotations != null) {
 							field.tagBits |= TagBits.HasParameterAnnotations;
 						}
 //						// https://bugs.eclipse.org/bugs/show_bug.cgi?id=322817
@@ -2257,7 +2259,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 //							arg.type.bits |= ASTNode.IgnoreRawTypeCheck;
 //						}
 						try {
-							parameterType = arg.type.resolveType(methodScope, true /* check bounds*/);
+							parameterType = argument.type.resolveType(methodScope, true /* check bounds*/);
 						} finally {
 //							if (deferRawTypeCheck) { 
 //								arg.type.bits &= ~ASTNode.IgnoreRawTypeCheck;
@@ -2267,7 +2269,7 @@ public class SourceTypeBinding extends ReferenceBinding {
 						if (parameterType == null) {
 							foundArgProblem = true;
 						} else if (parameterType == TypeBinding.VOID) {
-							methodScope.problemReporter().argumentTypeCannotBeVoid(fieldDecls[f], arg);
+							methodScope.problemReporter().argumentTypeCannotBeVoid(fieldDecls[f], argument);
 							foundArgProblem = true;
 						} else {
 							if ((parameterType.tagBits & TagBits.HasMissingType) != 0) {
@@ -2276,13 +2278,13 @@ public class SourceTypeBinding extends ReferenceBinding {
 							leafType = parameterType.leafComponentType();
 							if (leafType instanceof ReferenceBinding && (((ReferenceBinding) leafType).modifiers & ExtraCompilerModifiers.AccGenericSignature) != 0)
 								field.modifiers |= ExtraCompilerModifiers.AccGenericSignature;
-							newParameters[i] = parameterType;
-							arg.binding = new LocalVariableBinding(arg, parameterType, arg.modifiers, methodScope);
+//							newParameters[i] = parameterType;
+							argument.binding = new LocalVariableBinding(argument, parameterType, argument.modifiers, methodScope);
 						}
-					}
+//					}
 					// only assign parameters if no problems are found
 					if (!foundArgProblem) {
-						field.parameters = newParameters;
+						field.parameter = parameterType;
 					}
 				}
 				

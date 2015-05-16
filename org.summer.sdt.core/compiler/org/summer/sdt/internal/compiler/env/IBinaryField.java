@@ -60,5 +60,5 @@ public interface IBinaryField extends IGenericField {
 	char[] getTypeName();
 	
 	//cym 2014-12-05
-	char[][] getParameters();
+	char[] getParameter();
 }

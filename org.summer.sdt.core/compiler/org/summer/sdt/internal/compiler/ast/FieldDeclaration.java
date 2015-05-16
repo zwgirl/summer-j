@@ -69,7 +69,7 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 	//cym 2015-02-13
 	public int bodyStart;
 	public int bodyEnd;
-	public Argument[] arguments;
+	public Argument argument;
 
 	public MethodDeclaration setter;
 	public MethodDeclaration getter;

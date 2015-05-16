@@ -35,7 +35,7 @@ public class FieldInfo extends ClassFileStruct implements IBinaryField, Comparab
 	
 	//cym 2014-12-04 for indexer parameters
 	static private final char[][] noParameters = CharOperation.NO_CHAR_CHAR;
-	protected char[][] parameters = noParameters;
+	protected char[] parameter; // = noParameters;
 
 	public static FieldInfo createField(byte classFileBytes[], int offsets[], int offset) {
 		FieldInfo fieldInfo = new FieldInfo(classFileBytes, offsets, offset);
@@ -62,14 +62,14 @@ public class FieldInfo extends ClassFileStruct implements IBinaryField, Comparab
 							int pos = readOffset + 8;
 							
 							if (entriesNumber == 0) {
-								fieldInfo.parameters = noParameters;
+//								fieldInfo.parameters = noParameters;
 							} else {
-								fieldInfo.parameters = new char[entriesNumber][];
-								for (int j = 0; j < entriesNumber; j++) {
+//								fieldInfo.parameters = new char[entriesNumber][];
+//								for (int j = 0; j < entriesNumber; j++) {
 									utf8Offset = fieldInfo.constantPoolOffsets[fieldInfo.u2At(pos)] - fieldInfo.structOffset;
-									fieldInfo.parameters[j] = fieldInfo.utf8At(utf8Offset + 3, fieldInfo.u2At(utf8Offset + 1));
+									fieldInfo.parameter = fieldInfo.utf8At(utf8Offset + 3, fieldInfo.u2At(utf8Offset + 1));
 									pos += 2;
-								}
+//								}
 							}
 						}
 						break;
@@ -455,7 +455,8 @@ public class FieldInfo extends ClassFileStruct implements IBinaryField, Comparab
 	}
 	
 	//cym 2014-12-05
-	public char[][] getParameters() {
-		return this.parameters;
+	@Override
+	public char[] getParameter() {
+		return this.parameter;
 	}
 }

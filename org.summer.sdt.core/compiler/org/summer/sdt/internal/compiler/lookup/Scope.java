@@ -1441,7 +1441,7 @@ public abstract class Scope {
 	
 	//cym 2014-11-24
 	// Internal use only - use findMethod()
-	public FieldBinding findIndexer(TypeBinding receiverType, TypeBinding[] argumentTypes, InvocationSite invocationSite, boolean invisibleFieldsOk) {
+	public FieldBinding findIndexer(TypeBinding receiverType, TypeBinding argumentType, InvocationSite invocationSite, boolean invisibleFieldsOk) {
 		CompilationUnitScope unitScope = compilationUnitScope();
 		unitScope.recordTypeReference(receiverType);
 
@@ -1457,7 +1457,7 @@ public abstract class Scope {
 			return new ProblemFieldBinding(currentType, TypeConstants.INDEXER, ProblemReasons.ReceiverTypeNotVisible);
 
 		currentType.initializeForStaticImports();
-		FieldBinding field = currentType.getExactIndexer(argumentTypes, unitScope);
+		FieldBinding field = currentType.getExactIndexer(argumentType, unitScope);
 		// https://bugs.eclipse.org/bugs/show_bug.cgi?id=316456
 		boolean insideTypeAnnotations = this instanceof MethodScope && ((MethodScope) this).insideTypeAnnotation;
 		if (field != null) {
@@ -1501,7 +1501,7 @@ public abstract class Scope {
 			unitScope.recordTypeReference(currentType);
 			currentType.initializeForStaticImports();
 			currentType = (ReferenceBinding) currentType.capture(this, invocationSite == null ? 0 : invocationSite.sourceEnd(), -1);
-			if ((field = currentType.getExactIndexer(argumentTypes, unitScope)) != null) {
+			if ((field = currentType.getExactIndexer(argumentType, unitScope)) != null) {
 				if (invisibleFieldsOk) {
 					return field;
 				}
@@ -1525,7 +1525,7 @@ public abstract class Scope {
 				ReferenceBinding anInterface = interfacesToVisit[i];
 				unitScope.recordTypeReference(anInterface);
 				// no need to capture rcv interface, since member field is going to be static anyway
-				if ((field = anInterface.getExactIndexer(argumentTypes, unitScope)) != null) {
+				if ((field = anInterface.getExactIndexer(argumentType, unitScope)) != null) {
 					if (invisibleFieldsOk) {
 						return field;
 					}
@@ -3103,11 +3103,11 @@ public abstract class Scope {
 	}
 	
 	//cym 2014-11-24
-	public FieldBinding getIndexer(TypeBinding receiverType, TypeBinding[] argumentTypes, InvocationSite invocationSite) {
+	public FieldBinding getIndexer(TypeBinding receiverType, TypeBinding argumentType, InvocationSite invocationSite) {
 		LookupEnvironment env = environment();
 		try {
 			env.missingClassFileLocation = invocationSite;
-			FieldBinding indexer = findIndexer(receiverType, argumentTypes, invocationSite, true /*resolve*/);
+			FieldBinding indexer = findIndexer(receiverType, argumentType, invocationSite, true /*resolve*/);
 			if (indexer != null) return indexer;
 
 			return new ProblemFieldBinding(

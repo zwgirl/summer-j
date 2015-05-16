@@ -39,7 +39,7 @@ public class ParameterizedFieldBinding extends FieldBinding {
 	    this.id = originalField.id;
 	    
 	    //cym 2015-02-13
-	    this.parameters = originalField.parameters;
+	    this.parameter = originalField.parameter;
 	}
 	
 	/**

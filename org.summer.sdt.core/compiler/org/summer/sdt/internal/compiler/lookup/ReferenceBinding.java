@@ -1171,7 +1171,7 @@ abstract public class ReferenceBinding extends TypeBinding {
 	}
 	
 	//cym 2014-11-24
-	public FieldBinding getExactIndexer(TypeBinding[] argumentTypes, CompilationUnitScope refScope) {
+	public FieldBinding getExactIndexer(TypeBinding argumentType, CompilationUnitScope refScope) {
 		return null;
 	}
 	

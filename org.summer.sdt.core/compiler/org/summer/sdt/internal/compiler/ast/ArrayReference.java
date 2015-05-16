@@ -221,7 +221,7 @@ public class ArrayReference extends Reference {
 		}
 		
 		//cym 2014-11-24
-		FieldBinding indexerBinding = this.binding = scope.getIndexer((TypeBinding) this.resolvedType, new TypeBinding[] {positionType}, null);
+		FieldBinding indexerBinding = this.binding = scope.getIndexer((TypeBinding) this.resolvedType, positionType, null);
 		if (!indexerBinding.isValidBinding()) {
 			this.constant = Constant.NotAConstant;
 			if (this.receiver.resolvedType instanceof ProblemReferenceBinding) {

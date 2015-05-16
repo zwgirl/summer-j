@@ -645,10 +645,10 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	//cym 2014-11-24
 	//NOTE: the return type, arg & exception types of each method of a source type are resolved when needed
 	//searches up the hierarchy as long as no potential (but not exact) match was found.
-	public FieldBinding getExactIndexer(TypeBinding[] argumentTypes, CompilationUnitScope refScope) {
+	public FieldBinding getExactIndexer(TypeBinding argumentType, CompilationUnitScope refScope) {
 		fields(); // ensure fields have been initialized... must create all at once unlike methods
 		// sender from refScope calls recordTypeReference(this)
-		int argCount = argumentTypes.length;
+//		int argCount = argumentTypes.length;
 		boolean foundNothing = true;
 	
 		if ((this.tagBits & TagBits.AreFieldsComplete) != 0) { // have resolved all arg types & return type of the methods
@@ -660,15 +660,15 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 					}
 					FieldBinding indexer = this.fields[ifield];
 					foundNothing = false; // inner type lookups must know that a method with this name exists
-					if (indexer.parameters.length == argCount) {
-						TypeBinding[] toMatch = indexer.parameters;
-						for (int iarg = 0; iarg < argCount; iarg++)
+//					if (indexer.parameters.length == argCount) {
+						TypeBinding toMatch = indexer.parameter;
+//						for (int iarg = 0; iarg < argCount; iarg++)
 							//cym 2015-04-13
 //							if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
-							if (!argumentTypes[iarg].isCompatibleWith(toMatch[iarg]))
+							if (!argumentType.isCompatibleWith(toMatch))
 								continue nextIndexer;
 						return indexer;
-					}
+//					}
 				}
 			}
 		} else {
@@ -689,13 +689,13 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 						continue;
 					}
 					
-					TypeBinding[] toMatch = this.fields[ifield].parameters;
-					if (toMatch.length == argCount) {
-						for (int iarg = 0; iarg < argCount; iarg++)
-							if (TypeBinding.notEquals(toMatch[iarg], argumentTypes[iarg]))
+					TypeBinding toMatch = this.fields[ifield].parameter;
+//					if (toMatch.length == argCount) {
+//						for (int iarg = 0; iarg < argCount; iarg++)
+							if (TypeBinding.notEquals(toMatch, argumentType))
 								continue nextIndexer;
 						return this.fields[ifield];
-					}
+//					}
 				}
 			}
 		}
@@ -705,12 +705,12 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 				 if (this.superInterfaces.length == 1) {
 					if (refScope != null)
 						refScope.recordTypeReference(this.superInterfaces[0]);
-					return this.superInterfaces[0].getExactIndexer(argumentTypes, refScope);
+					return this.superInterfaces[0].getExactIndexer(argumentType, refScope);
 				 }
 			} else if (this.superclass != null) {
 				if (refScope != null)
 					refScope.recordTypeReference(this.superclass);
-				return this.superclass.getExactIndexer(argumentTypes, refScope);
+				return this.superclass.getExactIndexer(argumentType, refScope);
 			}
 		}
 		return null;

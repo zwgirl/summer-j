@@ -963,10 +963,10 @@ GetterMethodHeader ::= '&'
 --/:$readableName RemoveMethodHeader:/
 
 ClassMemberDeclaration -> IndexerDeclaration
-IndexerDeclaration ::= IndexerHeader FormalParameter  ']'  '{' AccessorDeclaration '}'
-/.$putCase consumeIndexerDeclaration(); $break./
+--IndexerDeclaration ::= IndexerHeader FormalParameter  ']'  '{' AccessorDeclaration '}'
+--/.$putCase consumeIndexerDeclaration(); $break./
 IndexerDeclaration ::= IndexerHeader FormalParameter  ']'  ';'
-/.$putCase consumeIndexerDeclarationNoAccessor(); $break./
+/.$putCase consumeIndexerDeclaration(); $break./
 /:$readableName IndexerDeclaration:/
 
 IndexerHeader ::= Modifiersopt Type 'this' '['

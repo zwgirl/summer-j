@@ -34,6 +34,8 @@ public interface HtmlBits {
 	int EventCallback = ASTNode.Bit22;		//事件回调
 	
 	//close tag 
+	int NS_IF_ELEMENT = ASTNode.Bit23;
+	int IF_ELEMENT = ASTNode.Bit31;
 	int SWITCH_ELEMENT = ASTNode.Bit24;
 	int NS_SWITCH_ELEMENT = ASTNode.Bit25;
 	int ATTRIBUTE_ELEMENT = ASTNode.Bit26;

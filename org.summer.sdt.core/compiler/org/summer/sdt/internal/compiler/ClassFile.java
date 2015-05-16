@@ -459,7 +459,7 @@ public class ClassFile implements TypeConstants, TypeIds {
 		
 		//cym 2014-12-04
 		if((fieldBinding.modifiers & ClassFileConstants.AccIndexer) != 0){
-			attributesNumber += generateExceptionsAttribute1(fieldBinding.parameters);
+			attributesNumber += generateExceptionsAttribute1(fieldBinding.parameter);
 		}
 		if (this.targetJDK >= ClassFileConstants.JDK1_4) {
 			FieldDeclaration fieldDeclaration = fieldBinding.sourceField();
@@ -508,12 +508,13 @@ public class ClassFile implements TypeConstants, TypeIds {
 		return attributesNumber;
 	}
 
-	private int generateExceptionsAttribute1(TypeBinding[] arguments) {
-		if(arguments == null || arguments.length == 0){
+	private int generateExceptionsAttribute1(TypeBinding argument) {
+		if(argument == null /*|| arguments.length == 0*/){
 			return 0;
 		}
 		int localContentsOffset = this.contentsOffset;
-		int length = arguments.length;
+//		int length = arguments.length;
+		int length = 1;
 		int exSize = 8 + length * 2;
 		if (exSize + this.contentsOffset >= this.contents.length) {
 			resizeContents(exSize);
@@ -530,12 +531,12 @@ public class ClassFile implements TypeConstants, TypeIds {
 		this.contents[localContentsOffset++] = (byte) attributeLength;
 		this.contents[localContentsOffset++] = (byte) (length >> 8);
 		this.contents[localContentsOffset++] = (byte) length;
-		for (int i = 0; i < length; i++) {
+//		for (int i = 0; i < length; i++) {
 			//2015-02-01
-			int exceptionIndex = this.constantPool.literalIndex(arguments[i]);
+			int exceptionIndex = this.constantPool.literalIndex(argument);
 			this.contents[localContentsOffset++] = (byte) (exceptionIndex >> 8);
 			this.contents[localContentsOffset++] = (byte) exceptionIndex;
-		}
+//		}
 		this.contentsOffset = localContentsOffset;
 		return 1;
 	}
