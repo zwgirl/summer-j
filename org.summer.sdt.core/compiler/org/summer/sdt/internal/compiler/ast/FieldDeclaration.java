@@ -517,12 +517,5 @@ public class FieldDeclaration extends AbstractVariableDeclaration {
 		
 		return output;
 	}
-	
-	//cym 2015-02-13
-	public void parseBlockStatements(
-			Initializer initializer,
-			TypeDeclaration type,
-			CompilationUnitDeclaration unit){
-		
-	}
+
 }

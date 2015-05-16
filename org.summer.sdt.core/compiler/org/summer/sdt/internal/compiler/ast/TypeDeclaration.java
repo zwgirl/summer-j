@@ -1391,6 +1391,7 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			 * cym 2015-04-07 function resolve: returntype and parameter types
 			 */
 			if(this.returnType != null){
+				
 			}
 			
 			if(this.arguments != null){

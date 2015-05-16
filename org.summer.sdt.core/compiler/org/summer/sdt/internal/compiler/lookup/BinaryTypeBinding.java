@@ -750,6 +750,7 @@ public class BinaryTypeBinding extends ReferenceBinding {
 							for (short i = 0; i < size; i++)
 								// attempt to find each superinterface if it exists in the cache (otherwise - resolve it when requested)
 								this.parameters[i] = this.environment.getTypeFromConstantPoolName1(parameterNames[i], 0, -1, false, missingTypeNames, walker.toSupertype(i));
+//								this.parameters[i] = this.environment.getTypeFromSignature(parameterNames[i], 0, -1, false, null, missingTypeNames, walker.toSupertype(i));
 							this.tagBits |= TagBits.HasUnresolvedParameterTypes;
 						}
 					}
