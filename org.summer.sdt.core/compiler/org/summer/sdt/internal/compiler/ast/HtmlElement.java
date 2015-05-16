@@ -342,7 +342,7 @@ public class HtmlElement extends HtmlNode {
 			output.append(")();");
 			
 			printIndent(indent+1, output.append("\n"));
-			output.append("document.documentElement.addDataContext(new (__lc(\"java.lang.DataContext\"))({dataItem:__this, name:\"ROOT\"}));");
+			output.append("document.documentElement.addDataContext(new (__lc(\"java.lang.DataContext\"))({dataItem:__this, name:\"ROOT\", standalone:true}));");
 			
 			printIndent(indent, output.append("\n"));
 			output.append("</script>");
