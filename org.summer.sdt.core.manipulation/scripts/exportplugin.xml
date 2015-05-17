@@ -1,10 +1,10 @@
-<project name="org.eclipse.jdt.core.manipulation" default="export" basedir="..">
-<!-- build script to create a plugin from org.eclipse.jdt.core.manipulation -->
+<project name="org.summer.sdt.core.manipulation" default="export" basedir="..">
+<!-- build script to create a plugin from org.summer.sdt.core.manipulation -->
 
 	<target name="init">
 		<tstamp/>
 		<property name="destdir"	value="../../plugin-export" />
-		<property name="plugin"		value="org.eclipse.jdt.core.manipulation" />
+		<property name="plugin"		value="org.summer.sdt.core.manipulation" />
 		<property name="qualifier" value="zzz${DSTAMP}-${TSTAMP}" />
 		
 		<!-- define property ${plugin_version} by reading version from MANIFEST.MF: -->

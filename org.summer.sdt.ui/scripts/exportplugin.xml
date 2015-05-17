@@ -1,10 +1,10 @@
-<project name="org.eclipse.jdt.ui" default="export" basedir="..">
-<!-- build script to create a plugin from org.eclipse.jdt.ui -->
+<project name="org.summer.sdt.ui" default="export" basedir="..">
+<!-- build script to create a plugin from org.summer.sdt.ui -->
 
 	<target name="init">
 		<tstamp/>
 		<property name="destdir"	value="../../plugin-export" />
-		<property name="plugin"		value="org.eclipse.jdt.ui" />
+		<property name="plugin"		value="org.summer.sdt.ui" />
 		<property name="qualifier" value="zzz${DSTAMP}-${TSTAMP}" />
 		
 		<!-- define property ${plugin_version} by reading version from MANIFEST.MF: -->

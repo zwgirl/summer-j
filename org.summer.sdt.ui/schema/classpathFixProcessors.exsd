@@ -65,7 +65,9 @@ A processor can specify to override another processor. An overridden processor i
    <element name="classpathFixProcessor">
       <complexType>
          <sequence>
+         <!--
             <element ref="enablement" minOccurs="0" maxOccurs="1"/>
+            -->
             <element ref="overrides" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="id" type="string" use="required">

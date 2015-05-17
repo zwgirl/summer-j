@@ -12,7 +12,7 @@
 	</target>
 	
 	<target name="properties" if="eclipse.running">
-		<property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter" />
+		<property name="build.compiler" value="org.summer.sdt.core.JDTCompilerAdapter" />
 	</target>
 	
 	<target name="jar-in-jar-loader_zip" depends="init" description="Creates the jar-in-jar-loader.zip">

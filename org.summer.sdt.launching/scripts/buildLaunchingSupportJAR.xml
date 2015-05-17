@@ -20,7 +20,7 @@
 	</target>
 
 	<target name="properties" if="eclipse.running">
-		<property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+		<property name="build.compiler" value="org.summer.sdt.core.JDTCompilerAdapter"/>
 	</target>
 	
 	<target name="lib/launchingsupport.jar" description= "Creates the launchingsupport.jar" depends="init">

@@ -63,9 +63,11 @@ The default variable is the &lt;code&gt;org.summer.sdt.core.IMethod&lt;/code&gt;
 
    <element name="changeMethodSignatureParticipant">
       <complexType>
+      	<!--
          <sequence>
             <element ref="enablement" minOccurs="0" maxOccurs="1"/>
          </sequence>
+         -->
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
