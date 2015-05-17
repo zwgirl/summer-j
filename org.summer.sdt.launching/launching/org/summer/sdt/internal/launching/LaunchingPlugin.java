@@ -543,9 +543,11 @@ public class LaunchingPlugin extends Plugin implements DebugOptionsListener, IEc
 		});
 
 		InstanceScope.INSTANCE.getNode(ID_PLUGIN).addPreferenceChangeListener(this);
-		JavaRuntime.addVMInstallChangedListener(this);
+		// cym 2015-05-16
+		// JavaRuntime.addVMInstallChangedListener(this);
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.PRE_DELETE | IResourceChangeEvent.PRE_CLOSE);
-		DebugPlugin.getDefault().getLaunchManager().addLaunchListener(this);
+		// cym 2015-05-16
+		// DebugPlugin.getDefault().getLaunchManager().addLaunchListener(this);
 		DebugPlugin.getDefault().addDebugEventListener(this);
 	}
 	
