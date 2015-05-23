@@ -240,7 +240,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		}
 	}
 	
-	private boolean isName() {
+	protected boolean isName() {
 		return this.property.isName();
 	}
 
@@ -306,7 +306,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			output.append(" = ").append(parentNode).append(";");
 			return output;
 		} else if(this.prefix != null){
-			output.append("$.attrNS(\"");
+			output.append("_$.attrNS(\"");
 			if(this.namespace != null){
 				output.append(this.namespace);
 			} else {
@@ -319,7 +319,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 		}  else if((this.tagBits & HtmlBits.NS_ATTRIBUTE) != 0){
 			HtmlPropertyReference attachProp = this.property;
 			if(scope.element.resolvedType.isSubtypeOf(scope.getOrgW3cDomElement())){
-				output.append("$.attrNS(");
+				output.append("_$.attrNS(");
 				attachProp.receiverType.generate(output, scope.enclosingSourceType());
 				output.append(".xmlns, ").append(parentNode).append(", \"");
 				this.property.doGenerateExpression(scope, indent, output).append("\", ");
@@ -397,7 +397,7 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 				this.value.generateExpression(scope, indent, output).append(";");
 			} else {
 				printIndent(indent + 1, output.append("\n"));
-				output.append("$.attr(").append(parentNode).append(',');
+				output.append("_$.attr(").append(parentNode).append(',');
 				output.append(" \"");
 				this.property.doGenerateExpression(scope, indent, output).append("\", ");
 				this.value.generateExpression(scope, indent, output).append(");");
@@ -420,21 +420,23 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 			return output;
 		} 
 		
+		if(this.isName()){
+			printIndent(indent + 1, output.append("\n"));
+			output.append(parentNode).append("[\"");
+			this.property.generateExpression(scope, indent, output);
+			output.append("\"]");
+			output.append(" = ");
+			if(this.value instanceof Literal){
+				this.value.generateExpression(scope, indent, output);
+			}
+			output.append(";");
+			printIndent(indent + 1, output.append("\n")).append(context);
+			output.append('.').append(((Literal) this.value).source());
+			output.append(" = ").append(parentNode).append(";");
+			return output;
+		}
+		
 		if(this.field != null){
-//			printIndent(indent + 1, output.append("\n"));
-//			output.append(parentNode).append("[\"");
-//			this.property.generateExpression(scope, indent, output);
-//			output.append("\"]");
-//			output.append(" = ");
-//			if(this.value instanceof Literal){
-//				this.value.generateExpression(scope, indent, output);
-//			}
-//			output.append(";");
-//			printIndent(indent + 1, output.append("\n")).append(context);
-//			output.append('.').append(((Literal) this.value).source());
-//			output.append(" = ").append(parentNode).append(";");
-//			return output;
-			
 			output.append("\n");
 			printIndent(indent + 1, output);
 			output.append(parentNode).append(".addEventListener('").append(CharOperation.subarray(this.property.hyphenName(), 2, -1)).append("', ");

@@ -130,12 +130,13 @@ public class FieldReference extends Reference implements InvocationSite {
 			}		
 		}
 		
+		//cym 2015-05-17 comment
 		//cym 2015-02-12
-		if((this.binding.modifiers & ClassFileConstants.AccProperty) != 0){
-			if((this.binding.tagBits & TagBits.canWriteAccess) == 0){
-				currentScope.problemReporter().cannotAssignToFinalField(this.binding, this);
-			}
-		}
+//		if((this.binding.modifiers & ClassFileConstants.AccProperty) != 0){
+//			if((this.binding.tagBits & TagBits.canWriteAccess) == 0){
+//				currentScope.problemReporter().cannotAssignToFinalField(this.binding, this);
+//			}
+//		}
 		
 		return flowInfo;
 	}

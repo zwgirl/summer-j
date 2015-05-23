@@ -255,9 +255,9 @@ public class ClassScope extends Scope {
 				
 				//cym 2015-02-13
 				if((fieldBinding.modifiers & ClassFileConstants.AccProperty) != 0){
-					if(field.getter != null){
-						fieldBinding.tagBits |= TagBits.canReadAccess;
-					}
+//					if(field.getter != null){
+//						fieldBinding.tagBits |= TagBits.canReadAccess;
+//					}
 					
 					if(field.setter != null){
 						fieldBinding.tagBits |= TagBits.canWriteAccess;

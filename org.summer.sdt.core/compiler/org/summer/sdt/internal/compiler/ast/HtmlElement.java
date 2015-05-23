@@ -246,23 +246,23 @@ public class HtmlElement extends HtmlNode {
 	private void ff(int indent, StringBuffer output, String parentNode, String logicParent, String context) {
 		printIndent(indent + 1, output.append("\n")).append("var __n = "); 
 		if(this.resolvedType.id == TypeIds.T_OrgW3cDomText){
-			output.append("$.t(\"\");");
+			output.append("_$.t(\"\");");
 		} else {
 			if(this.namespace != null){
 				if(namespace.length == 26 && CharOperation.equals(namespace, Namespace.SVG)){
-					output.append("$.svg(");
+					output.append("_$.svg(");
 				} else {
-					output.append("$.ns(\"").append(namespace).append("\", ");
+					output.append("_$.ns(\"").append(namespace).append("\", ");
 				}
 			} else if(defaultNamespace != null && (defaultNamespace.length == 26 && CharOperation.equals(defaultNamespace, Namespace.SVG))){
-				output.append("$.svg(");
+				output.append("_$.svg(");
 			} else {
-				output.append("$.n(");
+				output.append("_$.n(");
 			}
 			output.append("\"").append(type.getLastToken()).append("\");");
 		}
 		
-		printIndent(indent + 1, output.append('\n')).append("$.a").append("(").append(parentNode).append(" , __n);");
+		printIndent(indent + 1, output.append('\n')).append("_$.a").append("(").append(parentNode).append(" , __n);");
 		printIndent(indent + 1, output.append('\n')).append("if(__l) __l.processChild(__n);");
 		
 		for(HtmlAttribute attr : this.attributes){
@@ -288,7 +288,7 @@ public class HtmlElement extends HtmlNode {
 			ClassScope classScope = scope.classScope();
 			String scriptId = "_" + classScope.scriptId++;
 			output.append("<script id='").append(scriptId).append("' type = 'text/javascript'").append('>');
-			String parentNode = new StringBuffer().append("$('").append(scriptId).append("').parentNode").toString();
+			String parentNode = new StringBuffer().append("_$('").append(scriptId).append("').parentNode").toString();
 			scriptDom(scope, indent+1, output, parentNode, "null", "__this");
 			
 			printIndent(indent, output.append("\n")).append("</script>");
@@ -298,7 +298,7 @@ public class HtmlElement extends HtmlNode {
 		boolean script = false;
 		output.append('<').append(type.getLastToken());
 		for(HtmlAttribute attr : this.attributes){
-			if(attr.hasMarkupExtension() || attr.isEventHandler()){
+			if(attr.hasMarkupExtension() || attr.isEventHandler() || attr.isName()){
 				script  = true;
 				continue;
 			}
@@ -372,7 +372,7 @@ public class HtmlElement extends HtmlNode {
 		String scriptId = "_" + classScope.scriptId++;
 		output.append("<script id='").append(scriptId).append("' type = 'text/javascript'").append('>');
 		StringBuffer node = new StringBuffer();
-		node.append("$('").append(scriptId).append("')").append(".parentNode");
+		node.append("_$('").append(scriptId).append("')").append(".parentNode");
 		scriptDom(scope2, indent, output, node.toString(), logicParent, context);
 		output.append("\n");
 		printIndent(indent, output);
@@ -388,14 +388,14 @@ public class HtmlElement extends HtmlNode {
 		output.append("(function(n){");
 		
 		for(HtmlAttribute attr : this.attributes){
-			if(!attr.hasMarkupExtension() && !attr.isEventHandler()){
+			if(!attr.hasMarkupExtension() && !attr.isEventHandler() && !attr.isName()){
 				continue;
 			}
 			attr.scriptElement(scope, indent, output, "n", null, "__this");
 		}
 		output.append("\n");
 		printIndent(indent + 1, output);
-		output.append("})($('").append(scriptId).append("')").append(sibling ? ".previousSibling" : ".parentNode").append(");");
+		output.append("})(_$('").append(scriptId).append("')").append(sibling ? ".previousSibling" : ".parentNode").append(");");
 		
 		output.append("\n");
 		printIndent(indent, output);

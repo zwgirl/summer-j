@@ -39,7 +39,7 @@ public class BarkServletContextListener implements ServletContextListener {
 
 				Class<? extends Module> moduleClazz = (Class<? extends Module>) Class
 						.forName(moduleName);
-				modules[count] = moduleClazz.newInstance();
+				modules[count++] = moduleClazz.newInstance();
 
 			}
 			Injector injector = Guice.createInjector(modules);
