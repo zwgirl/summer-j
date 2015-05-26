@@ -2434,7 +2434,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		output.append("\n");
 		
 		printIndent(indent, output).append(type.getTypeName());
-		output.append(".prototype.__class = new (__lc('java.lang.Class'))(");
+//		output.append(".prototype.__class = new (__lc('java.lang.Class'))(");
+		output.append(".__class = new (__lc('java.lang.Class'))(");
 		
 		output.append("\"").append(CharOperation.concatWith(type.binding.compoundName, '.')).append("\", ");
 		output.append(type.binding.sourceName).append(", ");
@@ -2446,7 +2447,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			} else {
 				baseBinding.generate(output, null);
 			}
-			output.append(".prototype.__class, ");
+//			output.append(".prototype.__class, ");
+			output.append(".__class, ");
 		} else{
 			output.append("null").append(", ");
 		}
@@ -2464,7 +2466,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				} else {
 					binding.generate(output, null);
 				}
-				output.append(".prototype.__class");
+//				output.append(".prototype.__class");
+				output.append(".__class");
 				
 				comma = true;
 			}
@@ -2556,7 +2559,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				}
 				parameters.append(argument.name);
 				((ReferenceBinding)argument.binding.type).generate(output, scope.classScope().enclosingSourceType());
-				output.append(".prototype.__class");
+//				output.append(".prototype.__class");
+				output.append(".__class");
 //				output.append("__lc(\"").append(CharOperation.concatWith(((ReferenceBinding)argument.binding.type).compoundName, '.')).append("\"");
 			}
 		}
@@ -2954,7 +2958,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 		
 		if((type.binding.sourceName != null && type.binding.sourceName.length > 0) 
 				&& type.binding.sourceName[0] == 'C' && CharOperation.equals(type.binding.compoundName, TypeConstants.JAVA_LANG_CLASS)){   //if Class Type
-			printIndent(indent, output).append(type.getTypeName()).append(".prototype.__class = new Class(");
+//			printIndent(indent, output).append(type.getTypeName()).append(".prototype.__class = new Class(");
+			printIndent(indent, output).append(type.getTypeName()).append(".__class = new Class(");
 		} else {
 			if(type.binding.isAnonymousType()){
 				printIndent(indent, output).append(TypeConstants.ANONYM);
@@ -2962,7 +2967,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				printIndent(indent, output).append(type.getTypeName());
 			}
 			
-			output.append(".prototype.__class = new (__lc('java.lang.Class'))(");
+//			output.append(".prototype.__class = new (__lc('java.lang.Class'))(");
+			output.append(".__class = new (__lc('java.lang.Class'))(");
 		}
 		
 		if(type.binding.isAnonymousType()){
@@ -2987,7 +2993,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 			} else {
 				baseBinding.generate(output, null);
 			}
-			output.append(".prototype.__class, ");
+//			output.append(".prototype.__class, ");
+			output.append(".__class, ");
 		} else{
 			output.append("null").append(", ");
 		}
@@ -3005,7 +3012,8 @@ public class TypeDeclaration extends Statement implements ProblemSeverities, Ref
 				} else {
 					binding.generate(output, null);
 				}
-				output.append(".prototype.__class");
+//				output.append(".prototype.__class");
+				output.append(".__class");
 				
 				comma = true;
 			}

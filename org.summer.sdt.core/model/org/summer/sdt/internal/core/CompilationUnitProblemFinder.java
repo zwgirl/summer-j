@@ -246,6 +246,7 @@ public class CompilationUnitProblemFinder extends Compiler {
 			message.append(lineDelimiter);
 			message.append("----------------------------------- SOURCE END -------------------------------------"); //$NON-NLS-1$
 			Util.log(e, message.toString());
+			e.printStackTrace();
 			throw new JavaModelException(e, IJavaModelStatusConstants.COMPILER_FAILURE);
 		} finally {
 			if (environment != null)

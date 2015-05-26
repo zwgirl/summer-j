@@ -128,7 +128,7 @@ public class HtmlText  extends HtmlNode {
 	protected StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String logicParent, String _this) {
 		if(hasTrueContent()){
 			if(CharOperation.hasContent(source)){
-				output.append("$.a(").append(parentNode).append(", ").append("$.t(\"");
+				output.append("_$.a(").append(parentNode).append(", ").append("_$.t(\"");
 				output.append(CharOperation.eascape(source)).append("\"));");
 			}	
 		}

@@ -131,7 +131,8 @@ public class HtmlMarkupExtension extends HtmlElement {
 		if(rb.isSubtypeOf(scope.getJavalangPage())){
 			output.append("var __m = new (__lc(\"java.lang.ProxyPage\"))(");
 			rb.generate(output, scope.enclosingSourceType());
-			output.append(".prototype.__class");
+//			output.append(".prototype.__class");
+			output.append(".__class");
 			output.append(", ").append(parentNode);
 			output.append(");");
 			
