@@ -702,7 +702,7 @@ public class ParameterizedTypeBinding extends ReferenceBinding implements Substi
 	
 		if (foundNothing) {
 			if (isInterface()) {
-				 if (this.superInterfaces.length == 1) {
+				 if (this.superInterfaces != null && this.superInterfaces.length == 1) {
 					if (refScope != null)
 						refScope.recordTypeReference(this.superInterfaces[0]);
 					return this.superInterfaces[0].getExactIndexer(argumentType, refScope);

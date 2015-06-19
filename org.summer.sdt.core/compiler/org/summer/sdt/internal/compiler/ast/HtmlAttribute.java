@@ -267,21 +267,49 @@ public class HtmlAttribute extends HtmlNode implements InvocationSite{
 	@Override
 	public StringBuffer scriptDom(BlockScope scope, int indent, StringBuffer output, String parentNode, String logicParent, String context){
 		if(this.value instanceof HtmlMarkupExtension){
+//			printIndent(indent + 1, output.append("\n"));
+//			HtmlMarkupExtension me = (HtmlMarkupExtension) this.value;
+//			
+//			me.newMarkupExtension(output, (ReferenceBinding) me.resolvedType);
+//			
+//			output.append("{");
+//			boolean comma = me.buildOptions(scope, indent, output, context);
+//			if((property.tagBits & TagBits.AnnotationAttribute) != 0){
+//				if(comma){
+//					output.append(", ");
+//				} 
+//				output.append("attribute : true");
+//			}
+//			
+//			output.append("}").append(")");
+//			
+//			output.append(".inject(");
+//			output.append(parentNode).append(", ");
+//			this.property.buildInjectPart(scope, indent, output);
+//			output.append(");");
+//			return output;
+			
 			printIndent(indent + 1, output.append("\n"));
 			HtmlMarkupExtension me = (HtmlMarkupExtension) this.value;
 			
-			me.newMarkupExtension(output, (ReferenceBinding) me.resolvedType);
-			
-			output.append("{");
-			boolean comma = me.buildOptions(scope, indent, output, context);
-			if((property.tagBits & TagBits.AnnotationAttribute) != 0){
-				if(comma){
-					output.append(", ");
-				} 
-				output.append("attribute : true");
+			TypeBinding tb = me.resolvedType;
+//			ReferenceBinding rb = (ReferenceBinding) this.resolvedType;
+			if(tb instanceof ReferenceBinding && tb.isSubtypeOf(scope.getJavalangPage())){
+				me.scriptDom(scope, indent, output, parentNode, logicParent, context);
+			} else {
+				me.newMarkupExtension(output, (ReferenceBinding) me.resolvedType);
+				
+				output.append("{");
+				boolean comma = me.buildOptions(scope, indent, output, context);
+				if((property.tagBits & TagBits.AnnotationAttribute) != 0){
+					if(comma){
+						output.append(", ");
+					} 
+					output.append("attribute : true");
+				}
+				
+				output.append("}").append(")");
 			}
-			
-			output.append("}").append(")");
 			
 			output.append(".inject(");
 			output.append(parentNode).append(", ");

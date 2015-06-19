@@ -157,6 +157,8 @@ public class HtmlMarkupExtension extends HtmlElement {
 		output.append("new (");
 		rb.generate(output, null);
 		output.append(")(");
+		
+		
 	}
 
 	public boolean buildOptions(BlockScope scope, int indent, StringBuffer output, String context) {
